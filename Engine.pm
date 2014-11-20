@@ -152,6 +152,7 @@ sub get_data_from_parent_zone_1 {
 	my @ns_names;
 	
 	my $r = Net::LDNS->new();
+	$r->recurse(1);
 	$r->cd(1);
 	$r->dnssec(0);
 	my $p = $r->query($domain,"NS"); 
@@ -171,11 +172,13 @@ sub get_data_from_parent_zone_1 {
 	
 	
 	my %algorithm_ids = ( 
-		8 => 'sha1',
+		5 => 'sha1',
+		8 => 'sha256',
 	);
 	my @ds_list;
 	
 	my $r_ds = Net::LDNS->new();
+	$r_ds->recurse(1);
 	$r_ds->cd(1);
 	$r_ds->dnssec(0);
 	my $p_ds = $r_ds->query($domain,"DNSKEY"); 

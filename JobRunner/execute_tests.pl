@@ -15,7 +15,7 @@ local $| = 1;
 use FindBin qw($RealScript $Script $RealBin $Bin);
 FindBin::again();
 ##################################################################
-my $PROJECT_NAME = "Zonemaster-Backend";
+my $PROJECT_NAME = "zonemaster-backend";
 
 my $SCRITP_DIR = __FILE__;
 $SCRITP_DIR = $Bin unless ($SCRITP_DIR =~ /^\//);
@@ -37,10 +37,10 @@ my $PROJECT_BASE_DIR = $PROD_DIR.$PROJECT_NAME."/";
 unshift(@INC, $PROJECT_BASE_DIR);
 ##################################################################
 
-unshift(@INC, $PROD_DIR."Zonemaster-Backend") unless $INC{$PROD_DIR."Zonemaster-Backend"};
+unshift(@INC, $PROD_DIR."zonemaster-backend") unless $INC{$PROD_DIR."zonemaster-backend"};
 require BackendConfig;
 
-my $JOB_RUNNER_DIR = $PROD_DIR."Zonemaster-Backend/JobRunner";
+my $JOB_RUNNER_DIR = $PROD_DIR."zonemaster-backend/JobRunner";
 my $LOG_DIR = BackendConfig->LogDir();
 my $perl_command = BackendConfig->PerlIntereter();
 my $polling_interval = BackendConfig->PollingInterval();

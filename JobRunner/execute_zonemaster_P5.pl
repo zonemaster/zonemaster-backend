@@ -8,7 +8,7 @@ use Data::Dumper;
 use FindBin qw($RealScript $Script $RealBin $Bin);
 FindBin::again();
 ##################################################################
-my $PROJECT_NAME = "Zonemaster-Backend";
+my $PROJECT_NAME = "zonemaster-backend";
 
 my $SCRITP_DIR = __FILE__;
 $SCRITP_DIR = $Bin unless ($SCRITP_DIR =~ /^\//);
@@ -30,7 +30,7 @@ my $PROJECT_BASE_DIR = $PROD_DIR.$PROJECT_NAME."/";
 unshift(@INC, $PROJECT_BASE_DIR);
 ##################################################################
 
-unshift(@INC, $PROD_DIR."Zonemaster-Backend/JobRunner") unless $INC{$PROD_DIR."Zonemaster-Backend/JobRunner"};
+unshift(@INC, $PROD_DIR."zonemaster-zackend/JobRunner") unless $INC{$PROD_DIR."zonemaster-zackend/JobRunner"};
 require Runner;
 
 Runner->new()->run($ARGV[0]);

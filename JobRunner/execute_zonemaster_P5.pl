@@ -30,7 +30,7 @@ my $PROJECT_BASE_DIR = $PROD_DIR.$PROJECT_NAME."/";
 unshift(@INC, $PROJECT_BASE_DIR);
 ##################################################################
 
-unshift(@INC, $PROD_DIR."zonemaster-zackend/JobRunner") unless $INC{$PROD_DIR."zonemaster-zackend/JobRunner"};
+unshift(@INC, $PROD_DIR."zonemaster-backend/JobRunner") unless $INC{$PROD_DIR."zonemaster-backend/JobRunner"};
 require Runner;
 
 Runner->new()->run($ARGV[0]);

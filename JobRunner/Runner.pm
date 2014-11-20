@@ -16,7 +16,7 @@ use Net::LDNS;
 use FindBin qw($RealScript $Script $RealBin $Bin);
 FindBin::again();
 ##################################################################
-my $PROJECT_NAME = "Zonemaster-Backend";
+my $PROJECT_NAME = "zonemaster-backend";
 
 my $SCRITP_DIR = __FILE__;
 $SCRITP_DIR = $Bin unless ($SCRITP_DIR =~ /^\//);
@@ -41,7 +41,7 @@ unshift(@INC, $PROD_DIR."Zonemaster/lib") unless $INC{$PROD_DIR."Zonemaster/lib"
 require Zonemaster;
 require Zonemaster::Translator;
 
-unshift(@INC, $PROD_DIR."Zonemaster-Backend") unless $INC{$PROD_DIR."Zonemaster-Backend"};
+unshift(@INC, $PROD_DIR."zonemaster-backend") unless $INC{$PROD_DIR."zonemaster-backend"};
 require BackendConfig;
 
 sub new{

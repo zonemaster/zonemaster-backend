@@ -24,7 +24,7 @@ use HTML::Entities;
 
 use FindBin qw($RealScript $Script $RealBin $Bin);
 ##################################################################
-my $PROJECT_NAME = "Zonemaster-Backend";
+my $PROJECT_NAME = "zonemaster-backend";
 
 my $SCRITP_DIR = __FILE__;
 $SCRITP_DIR = $Bin unless ($SCRITP_DIR =~ /^\//);
@@ -51,7 +51,7 @@ require Zonemaster;
 require Zonemaster::Nameserver;
 require Zonemaster::DNSName;
 
-unshift(@INC, $PROD_DIR."Zonemaster-Backend") unless $INC{$PROD_DIR."Zonemaster-Backend"};
+unshift(@INC, $PROD_DIR."zonemaster-backend") unless $INC{$PROD_DIR."zonemaster-backend"};
 require BackendConfig;
 require BackendTranslator;
 

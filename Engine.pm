@@ -201,7 +201,12 @@ sub _check_domain {
 	
     if ($dn =~ m/[^[:ascii:]]+/) {
 		if (Net::LDNS::has_idn()) {
-			$dn = Net::LDNS::to_idn(encode_utf8($dn));
+			eval {
+				$dn = Net::LDNS::to_idn(encode_utf8($dn));
+			};
+			if ($@) {
+				return ($dn, { status => 'nok', message => encode_entities("The domain name cannot be converted to the IDN format") });
+			};
 		}
 		else {
 			return ($dn, { status => 'nok', message => encode_entities("$type contains non-ascii characters and IDN conversion is not installed") });
@@ -322,6 +327,7 @@ sub start_domain_test {
 	my($self, $params) = @_;
 	my $result = 0;
 	
+	$params->{domain} =~ s/^\.// unless(!$params->{domain} || $params->{domain} eq '.');
 	my $syntax_result = $self->validate_syntax($params);
 	die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
 	

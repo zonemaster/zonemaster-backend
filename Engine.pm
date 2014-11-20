@@ -89,7 +89,8 @@ sub version_info {
 
 	warn "Engine::1\n";
 	
-	return "Zonemaster ".$Zonemaster::VERSION.", Backend ".$Engine::VERSION;
+#	return "Zonemaster ".$Zonemaster::VERSION.", Backend ".$Engine::VERSION;
+	return "Zonemaster Version: Alpha";
 }
 
 sub get_ns_ips {

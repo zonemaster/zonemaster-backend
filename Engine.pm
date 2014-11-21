@@ -389,6 +389,9 @@ sub get_test_results {
 		if ($test_res->{module} eq 'NAMESERVER') {
 			$res->{ns} = ($test_res->{args}->{ns})?($test_res->{args}->{ns}):('All');
 		}
+		elsif ($test_res->{module} eq 'SYSTEM' && $test_res->{tag} eq 'POLICY_DISABLED' && $test_res->{args}->{name} eq 'Example') {
+			next;
+		}
 		
 		$res->{module} = $test_res->{module};
 		$res->{message} = $translator->translate_tag( $test_res )."\n";

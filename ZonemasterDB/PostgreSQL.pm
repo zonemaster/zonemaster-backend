@@ -227,12 +227,34 @@ sub get_test_history {
 	my $undelegated = (defined $p->{frontend_params}->{nameservers})?("AND (params->'nameservers') IS NOT NULL"):("AND (params->'nameservers') IS NULL");
 
 	my @results;
-	my $query = "SELECT id, creation_time, params->>'advanced_options' AS advanced_options from test_results WHERE params->>'domain'=".$self->dbh->quote($p->{frontend_params}->{domain})." $undelegated ORDER BY id DESC OFFSET $p->{offset} LIMIT $p->{limit}";
+	my $query = "
+		SELECT 
+			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
+			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,
+			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
+			id, 
+			creation_time, 
+			params->>'advanced_options' AS advanced_options 
+		FROM test_results 
+		WHERE params->>'domain'=".$self->dbh->quote($p->{frontend_params}->{domain})." $undelegated 
+		ORDER BY id DESC 
+		OFFSET $p->{offset} LIMIT $p->{limit}";
 	print "$query\n";
 	my $sth1 = $self->dbh->prepare($query);
 	$sth1->execute;
 	while (my $h = $sth1->fetchrow_hashref) {
-		push(@results, { id => $h->{id}, creation_time => $h->{creation_time}, advanced_options => $h->{advanced_options} });
+		my $overall_result = 'ok';
+		if ($h->{nb_critical}) {
+			$overall_result = 'critical';
+		}
+		elsif ($h->{nb_error}) {
+			$overall_result = 'error';
+		}
+		elsif ($h->{nb_warning}) {
+			$overall_result = 'warning';
+		}
+		
+		push(@results, { id => $h->{id}, creation_time => $h->{creation_time}, advanced_options => $h->{advanced_options}, overall_result => $overall_result });
 	}
 	
 	return \@results;

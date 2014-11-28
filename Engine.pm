@@ -172,23 +172,21 @@ sub get_data_from_parent_zone_1 {
 	push(@ns_list, { ns => 'NOT FOUND', ip => '0.0.0.0'}) unless(@ns_list);
 	
 	
-	my %algorithm_ids = ( 
-		5 => 'sha1',
-		8 => 'sha256',
-	);
+	my %algorithm_ids = ( 1 => 'sha1', 2 => 'sha256', 3 => 'ghost', 4 => 'sha384' );
 	my @ds_list;
 	
-	my $r_ds = Net::LDNS->new();
-	$r_ds->recurse(1);
-	$r_ds->cd(1);
-	$r_ds->dnssec(0);
-	my $p_ds = $r_ds->query($domain,"DNSKEY"); 
+    my $zone = Zonemaster->zone($domain);
+    my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
+    if ($ds_p) {
+		my @ds = $ds_p->get_records( 'DS', 'answer' );
 
-	if ($p_ds) {
-		foreach my $dnssec ($p_ds->answer()) {
-			push(@ds_list, { algorithm => $algorithm_ids{$dnssec->ds('sha1')->algorithm()}, digest => $dnssec->ds('sha1')->hexdigest() });
-		}
+		foreach my $ds ( @ds ) {
+			if ( $algorithm_ids{ $ds->digtype } ) {
+				push(@ds_list, { algorithm => $algorithm_ids{$ds->digtype}, digest => $ds->hexdigest });
+			}
+		} 
 	}
+	
 	
 	$result{ns_list} = \@ns_list;
 	$result{ds_list} = \@ds_list;

@@ -83,7 +83,7 @@
 	Router::Simple::Declare
 	Store::CouchDB
 	String::ShellQuote
-	Srtarman
+	Starman
 	Test::More
 	Time::HiRes
 

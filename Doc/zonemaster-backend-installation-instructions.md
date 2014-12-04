@@ -62,6 +62,8 @@
 	Config::IniFiles
 	Data::Dumper
 	DBI
+	DBD::Pg
+	DBD::mysql
 	Digest::MD5
 	Encode
 	File::Slurp

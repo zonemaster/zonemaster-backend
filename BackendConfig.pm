@@ -85,18 +85,20 @@ sub DB_password {
 sub DB_connection_string {
 	my $cfg = _load_config();
 	
+	my $db_engine = $_[1] || $cfg->val( 'DB', 'engine' );
+	
 	my $result;
 	
-	if (lc($cfg->val( 'DB', 'engine' )) eq 'sqlite') {
-		$result = 'DBI:SQLite:database='.$cfg->val( 'DB', 'database_name' );
+	if (lc($db_engine) eq 'sqlite') {
+		$result = 'DBI:SQLite:dbname=/tmp/zonemaster';
 	}
-	elsif (lc($cfg->val( 'DB', 'engine' )) eq 'postgresql') {
+	elsif (lc($db_engine) eq 'postgresql') {
 		$result = 'DBI:Pg:database='.$cfg->val( 'DB', 'database_name' ).';host='.$cfg->val( 'DB', 'database_host' );
 	}
-	elsif (lc($cfg->val( 'DB', 'engine' )) eq 'couchdb') {
+	elsif (lc($db_engine) eq 'couchdb') {
 		$result = 'CouchDB';
 	}
-	elsif (lc($cfg->val( 'DB', 'engine' )) eq 'mysql') {
+	elsif (lc($db_engine) eq 'mysql') {
 		$result = 'MySQL';
 	}
 	

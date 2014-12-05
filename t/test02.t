@@ -42,7 +42,7 @@ my $engine = Engine->new({ db => 'ZonemasterDB::PostgreSQL'} );
 isa_ok($engine, 'Engine');
 
 # create a new memory SQLite database
-ok($engine->{db}->create_db());
+#ok($engine->{db}->create_db());
 
 # add test user
 ok($engine->add_api_user({username => "zonemaster_test", api_key => "zonemaster_test's api key"}) == 1);

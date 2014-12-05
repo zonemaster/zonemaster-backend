@@ -165,6 +165,11 @@ sub run {
 
     $self->{db}->test_results($test_id, Zonemaster->logger->json('INFO'));
 
+	say "Runner finished OK";
+
+	$progress = $self->{db}->test_progress($test_id);
+	say "test [$test_id] test_progress returned [$progress]";
+    
     return;
 } ## end sub run
 

@@ -57,6 +57,8 @@
 	Test files.
 
 ##Install Perl dependencies
+	(the command 'perl Makefile.PL' can be used to help identify the needed dependencies)
+
 	Zonemaster
 
 	Config::IniFiles
@@ -88,6 +90,9 @@
 	Starman
 	Test::More
 	Time::HiRes
+	
+#Test the installation 
+	Run perl Makefile.PL && make test
 
 #edit the configuration file backend_config.ini and copy to /etc/zonemaster/
 

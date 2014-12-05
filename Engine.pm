@@ -243,7 +243,7 @@ sub _check_domain {
 sub validate_syntax {
 	my($self, $syntax_input, $is_internal_check) = @_;
 	
-	my @allowed_params_keys = ('domain', 'ipv4', 'ipv6', 'ds_digest_pairs', 'nameservers', 'profile', 'advanced');
+	my @allowed_params_keys = ('domain', 'ipv4', 'ipv6', 'ds_digest_pairs', 'nameservers', 'profile', 'advanced', 'client_id', 'client_version');
 
 	foreach my $k (keys %$syntax_input) {
 		return { status => 'nok', message => encode_entities("Unknown option in parameters") } unless (grep { $_ eq $k } @allowed_params_keys );

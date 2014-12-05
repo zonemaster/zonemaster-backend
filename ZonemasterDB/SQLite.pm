@@ -38,13 +38,19 @@ require BackendConfig;
 
 with 'ZonemasterDB';
 
-my $connection_string = BackendConfig->DB_connection_string();
+my $connection_string = BackendConfig->DB_connection_string('sqlite');
+print STDERR "$connection_string\n";
 
 has 'dbh' => (
 	is => 'ro',
 	isa => 'DBI::db',
 	default => sub { DBI->connect($connection_string, {RaiseError => 1, AutoCommit => 1}) },
 );
+
+sub DEMOLISH {
+	my ($self) = @_;
+	$self->dbh->disconnect();
+}
 
 sub create_db {
 	my ($self) = @_;
@@ -57,7 +63,7 @@ sub create_db {
 	$self->dbh->do('DROP TABLE IF EXISTS test_results') or die "SQLite Fatal error: " . $self->dbh->errstr();
 
 	$self->dbh->do('CREATE TABLE test_results (
-					id integer PRIMARY KEY,
+					id integer PRIMARY KEY AUTOINCREMENT,
 					batch_id integer NULL,
 					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 					test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -177,6 +183,8 @@ sub create_new_test {
 	
 	($result) = $self->dbh->selectrow_array("SELECT MAX(id) AS id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash'");
 	
+	say "create_new_test returned: [$result]";
+	
 	return $result;
 }
 
@@ -234,6 +242,7 @@ sub get_test_history {
 	while (my $h = $sth1->fetchrow_hashref) {
 		push(@results, { id => $h->{id}, creation_time => $h->{creation_time}, advanced_options => $h->{advanced_options} });
 	}
+	$sth1->finish;
 	
 	return \@results;
 }

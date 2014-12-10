@@ -1,5 +1,5 @@
 package Client;
-our $VERSION = '0.02';
+our $VERSION = '1.0.0';
 
 use strict;
 use warnings;

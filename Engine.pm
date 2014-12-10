@@ -1,6 +1,6 @@
 package Engine;
 
-our $VERSION = '0.04';
+our $VERSION = '1.0.0';
 
 use strict;
 use warnings;
@@ -90,7 +90,7 @@ sub version_info {
 	warn "Engine::1\n";
 	
 #	return "Zonemaster ".$Zonemaster::VERSION.", Backend ".$Engine::VERSION;
-	return "Zonemaster Version: Alpha";
+	return "Zonemaster Version: 1.0.0";
 }
 
 sub get_ns_ips {

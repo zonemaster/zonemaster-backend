@@ -154,7 +154,6 @@ sub get_data_from_parent_zone_1 {
 
     my $zone = Zonemaster->zone($domain);
     my $ns_p = $zone->parent->query_one( $zone->name, 'NS', { dnssec => 0, cd => 1, recurse => 1 } );
-    print STDERR "ds_p:".Dumper($ns_p);
     if ($ns_p) {
 		my @ns = $ns_p->authority();
 

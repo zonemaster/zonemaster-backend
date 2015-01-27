@@ -151,31 +151,24 @@ sub get_data_from_parent_zone_1 {
 
 	my @ns_list;
 	my @ns_names;
-	
-	my $r = Net::LDNS->new();
-	$r->recurse(1);
-	$r->cd(1);
-	$r->dnssec(0);
-	my $p = $r->query($domain,"NS"); 
-	
-	if ($p) {
-		foreach my $ns ($p->answer()) {
-			push(@ns_names, $ns->nsdname());
-		}
-		
-		foreach my $ns_name (@ns_names) {
-			foreach my $ns_ip_pair (@{ $self->get_ns_ips($ns_name)}) {
+
+    my $zone = Zonemaster->zone($domain);
+    my $ns_p = $zone->parent->query_one( $zone->name, 'NS', { dnssec => 0, cd => 1, recurse => 1 } );
+    print STDERR "ds_p:".Dumper($ns_p);
+    if ($ns_p) {
+		my @ns = $ns_p->authority();
+
+		foreach my $ns (@ns) {
+			foreach my $ns_ip_pair (@{ $self->get_ns_ips($ns->nsdname())}) {
 				push(@ns_list, { ns => (keys %$ns_ip_pair)[0], ip => $ns_ip_pair->{(keys %$ns_ip_pair)[0]} });
 			}
 		}
-	} 
-	push(@ns_list, { ns => 'NOT FOUND', ip => '0.0.0.0'}) unless(@ns_list);
-	
+	}
 	
 	my %algorithm_ids = ( 1 => 'sha1', 2 => 'sha256', 3 => 'ghost', 4 => 'sha384' );
 	my @ds_list;
 	
-    my $zone = Zonemaster->zone($domain);
+    $zone = Zonemaster->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
 		my @ds = $ds_p->get_records( 'DS', 'answer' );
@@ -186,7 +179,6 @@ sub get_data_from_parent_zone_1 {
 			}
 		} 
 	}
-	
 	
 	$result{ns_list} = \@ns_list;
 	$result{ds_list} = \@ds_list;

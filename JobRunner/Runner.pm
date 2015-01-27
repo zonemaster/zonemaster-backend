@@ -37,7 +37,7 @@ my $PROJECT_BASE_DIR = $PROD_DIR.$PROJECT_NAME."/";
 unshift(@INC, $PROJECT_BASE_DIR);
 ##################################################################
 
-unshift(@INC, $PROD_DIR."Zonemaster/lib") unless $INC{$PROD_DIR."Zonemaster/lib"};
+unshift(@INC, $PROD_DIR."zonemaster-engine/lib") unless $INC{$PROD_DIR."zonemaster-engine/lib"};
 require Zonemaster;
 require Zonemaster::Translator;
 

@@ -307,6 +307,7 @@ sub validate_syntax {
 		my $r = Net::LDNS->new();
 		$r->cd(1);
 		$r->dnssec(0);
+		$r->recurse(1);
 		my $p = $r->query($dn,"NS");
 		my @a;
 		@a = $p->answer() if ($p);

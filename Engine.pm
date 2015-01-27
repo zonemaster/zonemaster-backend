@@ -232,7 +232,7 @@ sub _check_domain {
 }
 
 sub validate_syntax {
-	my($self, $syntax_input, $is_internal_check) = @_;
+	my($self, $syntax_input) = @_;
 	
 	my @allowed_params_keys = ('domain', 'ipv4', 'ipv6', 'ds_digest_pairs', 'nameservers', 'profile', 'advanced', 'client_id', 'client_version');
 
@@ -278,7 +278,7 @@ sub validate_syntax {
 
 	return $dn_syntax if ($dn_syntax->{status} eq 'nok');
 
-	if ( ( defined $syntax_input->{nameservers} && @{$syntax_input->{nameservers}} ) || $is_internal_check ) {
+	if ( defined $syntax_input->{nameservers} && @{$syntax_input->{nameservers}} ) {
 		foreach my $ns_ip (@{$syntax_input->{nameservers}}) {
 			my ($ns, $ns_syntax) = $self->_check_domain($ns_ip->{ns}, "NS [$ns_ip->{ns}]");
 			return $ns_syntax if ($ns_syntax->{status} eq 'nok');
@@ -308,8 +308,10 @@ sub validate_syntax {
 		$r->cd(1);
 		$r->dnssec(0);
 		my $p = $r->query($dn,"NS");
-		if (!$p) {
-			return { status => 'nok', message => encode_entities('Domain doesn\'t exist') };
+		my @a;
+		@a = $p->answer() if ($p);
+		unless (@a) {
+			return { status => 'nok', message => encode_entities('Domain does not exist') };
 		}
 	}
 

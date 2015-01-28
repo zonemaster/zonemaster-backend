@@ -152,9 +152,9 @@ sub create_new_test {
 sub test_progress {
 	my($self, $test_id, $progress) = @_;
 	
-	$self->dbh->do("UPDATE test_results SET progress=$progress WHERE id=$test_id") if ($progress);
+	$self->dbh->do("UPDATE test_results SET progress=$progress WHERE id=".$self->dbh->quote($test_id)) if ($progress);
 	
-	my ($result) = $self->dbh->selectrow_array("SELECT progress FROM test_results WHERE id=$test_id");
+	my ($result) = $self->dbh->selectrow_array("SELECT progress FROM test_results WHERE id=".$self->dbh->quote($test_id));
 	
 	return $result;
 }
@@ -164,7 +164,7 @@ sub get_test_params {
 	
 	my $result;
 	
-	my ($params_json) = $self->dbh->selectrow_array("SELECT params FROM test_results WHERE id=$test_id");
+	my ($params_json) = $self->dbh->selectrow_array("SELECT params FROM test_results WHERE id=".$self->dbh->quote($test_id));
 	eval {
 		$result = decode_json($params_json);
 	};
@@ -176,11 +176,11 @@ sub get_test_params {
 sub test_results {
 	my($self, $test_id, $results) = @_;
 	
-	$self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ".$self->dbh->quote($results)." WHERE id=$test_id " ) if ($results);
+	$self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ".$self->dbh->quote($results)." WHERE id=".$self->dbh->quote($test_id) ) if ($results);
 	
 	my $result;
 	eval {
-		my ($hrefs) = $self->dbh->selectall_hashref("SELECT * FROM test_results WHERE id=$test_id", 'id');
+		my ($hrefs) = $self->dbh->selectall_hashref("SELECT * FROM test_results WHERE id=".$self->dbh->quote($test_id), 'id');
 		$result = $hrefs->{$test_id};
 		$result->{params} = decode_json($result->{params});
 		$result->{results} = decode_json($result->{results});

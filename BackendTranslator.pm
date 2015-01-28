@@ -44,7 +44,7 @@ sub translate_tag {
         return $entry->{string};
     }
 
-	my $str = decode_utf8(__x( $string, %{ $entry->{args} } ));
+	my $str = decode('iso8859-1',__x( $string, %{ $entry->{args} } ) );
 
 	return $str;
 }

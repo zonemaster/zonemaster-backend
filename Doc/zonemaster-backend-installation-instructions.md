@@ -1,155 +1,84 @@
 #Zonemaster Backend Installation instructions
 
-##Description of required the files
+The documentation covers the following operating systems:
 
-./Engine.pm
-	The main module
+ * Ubuntu 14.04 (LTS)
 
-./backend.psgi
-	The Plack/PSGI module. The main entry module for a Plack/PSGI server (like Starman)
+## Zonemaster Backend installation
 
-./BackendConfig.pm
-	The Configuration file abstraction layer
+### Instructions for Ubuntu 14.04
 
-./backend_config.ini
-	A sample configuration file
+**To get the source code**
 
-./Client.pm
-./client.pl
-	A sample script and library to communicate with the backend.
+    $ sudo apt-get install git build-essential
+    $ git clone https://github.com/dotse/zonemaster-backend.git
 
-./ZonemasterDB.pm
-	The Database abstraction layer.
+**Install package dependencies**
 
-./ZonemasterDB/MySQL.pm
-	The Database abstraction layer MySQL sample backend.
+$ sudo apt-get install libconfig-inifiles-perl libdata-dump-perl libdbi-perl \
+libdbd-pg-perl libdbd-mysql-perl libdigest-md5-file-perl libencode-locale-perl \
+libfile-slurp-perl libfindbin-libs-perl libhtml-parser-perl \
+libio-captureoutput-perl libjson-perl libjson-rpc-perl \
+libdist-zilla-localetextdomain-perl libtest-lwp-useragent-perl libmoose-perl \
+libcatalystx-simplelogin-perl libnet-dns-perl libnet-ip-perl libplack-perl \
+libproc-processtable-perl librouter-simple-perl libstring-shellquote-perl \
+libtest-most-perl libtime-hires-perl postgresql postgresql-contrib starman \
+couchdb dnssec-tools
 
-./ZonemasterDB/SQLite.pm
-	The Database abstraction layer SQLite sample backend.
+**Install CPAN dependencies**
 
-./ZonemasterDB/PostgreSQL.pm
-	The Database abstraction layer PostgreSQL backend.
+Unfortunately `Net::LDNS` has not been packaged for Ubuntu yet. So you need to
+install this dependency from CPAN:
 
-./ZonemasterDB/CouchDB.pm
-	The Database abstraction layer PostgreSQL sample backend.
+    $ sudo perl -MCPAN -e 'install Net::LDNS'
 
-./BackendTranslator.pm
-	The transaltion module.
+If all package dependencies are already installed from the previous section,
+this should compile and install after configuration of your CPAN module
+installer.
 
-./JobRunner/README.txt
-	The JobRunner module description file.
+**Build source code**
 
-./JobRunner/Runner.pm
-	The JobRunner main module.
+    $ cd zonemaster-backend
+    $ perl Makefile.PL
+    Writing Makefile for Zonemaster-backend
+    Writing MYMETA.yml and MYMETA.json
+    $ make test
+    $ sudo make install
 
-./JobRunner/execute_zonemaster_P10.pl
-./JobRunner/execute_zonemaster_P5.pl
-	The scripts to execute tests with differents priorities (application level priorities).
+## Database set up
 
-./JobRunner/execute_tests.pl
-	The main JobRunner entry point to execute from crontab.
+  * [DB]
+  * engine=PostgreSQL
+	The backend database type to use. It can be either PostgreSQL, MySQL, SQLite or CouchDB
+  * user=zonemaster (The database username)
+  * password=zonemaster (The database password)
+  * database_name=zonemaster (The database name)
+  * database_host=localhost (The host where the database is accessible)
+  * polling_interval=0.5 (The frequency at which the database will be checked by the backend process to see if any new domain test requests are availble (in seconds).
+  * [LOG]
+	* log_dir=/var/log/zonemaster/job_runner/ (The place where the JobRunner logfiles will be written)
+  * [PERL]
+	* interpreter=perl (The full name of the perl interpreter (for perlbrew based installations)
+  * [ZONEMASTER]
+	* max_zonemaster_execution_time=300 (The delay after which a test process will be considered hung and hard killed)
+	* number_of_professes_for_frontend_testing=20 (The maximum number of processes for frontend test requests)
+	* number_of_professes_for_batch_testing=20 (The maximum number of processes for batch test requests)
 
-./t/test01.t
-./t/test02.t
-./t/test_mysql_backend.t
-./t/test_validate_syntax.t
-./t/test03.t
-	Test files.
-
-##Install Perl dependencies
-	(the command 'perl Makefile.PL' can be used to help identify the needed dependencies)
-
-	Zonemaster
-
-	Config::IniFiles
-	Data::Dumper
-	DBI
-	DBD::Pg
-	DBD::mysql
-	Digest::MD5
-	Encode
-	File::Slurp
-	FindBin
-	HTML::Entities
-	IO::CaptureOutput
-	JSON
-	JSON::RPC::Dispatch
-	Locale::TextDomain
-	LWP::UserAgent
-	Moose
-	Moose::Role
-	Net::DNS
-	Net::IP
-	Net::LDNS
-	Plack::Builder
-	POSIX
-	Proc::ProcessTable
-	Router::Simple::Declare
-	Store::CouchDB
-	String::ShellQuote
-	Starman
-	Test::More
-	Time::HiRes
+### Create the PostgreSQL Database
+  * psql --version (Verify that PostgreSQL version is higher than 9.3)
+  * A database with the name specified in the configuration file must be created and the database user must have table creation rights.
+  * From the folder containing the Engine.pm module execute the command: perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
 	
-#Test the installation 
-	Run perl Makefile.PL && make test
-
-#edit the configuration file backend_config.ini and copy to /etc/zonemaster/
-
-	* [DB]
-	* engine=PostgreSQL
-		The backend database type to use. Can be either PostgreSQL, MySQL, SQLite or CouchDB
-
-	* user=zonemaster
-		The database username
-		
-	* password=zonemaster
-		The database password
-		
-	* database_name=zonemaster
-		The database name
-		
-	* database_host=localhost
-		The host where the database is accessible
-		
-	* polling_interval=0.5
-		The frequency at which the tafabase will be checked by the backend process to see if any new domain test requests are availble (in seconds).
-
-	* [LOG]
-	* log_dir=/var/log/zonemaster/job_runner/
-		The place where the JobRunner logfiles will be written
-
-	* [PERL]
-	* interpreter=perl
-		The full name of the perl interpreter (for perlbrew based installations)
-
-	* [ZONEMASTER]
-	* max_zonemaster_execution_time=300
-		The delay after which a test process will be considered hung and hard killed.
-		
-	* number_of_professes_for_frontend_testing=20;
-		The maximum number of processes for frontend test requests
-		
-	* number_of_professes_for_batch_testing=20;
-		The maximum number of processes for batch test requests
-
-#Create the PostgreSQL Database
-	- PostgreSQL 9.3 or higher is required
-	- A database with the name specified in the configuration file must be created and the database user must have table creation rights.
-	- From the folder containing the Engine.pm module execute the command: perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
+### Start the backend using the Starman application server
+  * starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+	* or on perlbrew based installations: *
+  * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
 	
-#Start the backend using the Starman application server
-	- starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+### make a test with the client.pl script
+ * Simply run perl client.pl and look for any errors.
 	
-	or on perlbrew based installations:
-	- /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
-	
-#make a test with the client.pl script
-	- simply run perl client.pl and look for any errors.
-	
-#add a crontab entry for the backend process luncher
-	*/15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
-
-	or on perlbrew based installations:
-	*/15 * * * * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
+### Add a crontab entry for the backend process luncher
+ * /15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
+	* or on perlbrew based installations: *
+* /15 * * * * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
 	

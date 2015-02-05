@@ -71,7 +71,7 @@ installer.
 	
 ### Start the backend using the Starman application server
   * starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
-	* or on perlbrew based installations: *
+	*Or on perlbrew based installations:*
   * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
 	
 ### make a test with the client.pl script
@@ -79,6 +79,6 @@ installer.
 	
 ### Add a crontab entry for the backend process luncher
  * /15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
-	* or on perlbrew based installations: *
+	*Or on perlbrew based installations:*
 * /15 * * * * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
 	

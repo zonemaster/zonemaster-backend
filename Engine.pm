@@ -361,14 +361,7 @@ sub get_test_results {
 
 	my $translator;
     $translator = BackendTranslator->new;
-	my $locale = 'en_US';
 	my ($browser_lang) = ($params->{language} =~ /^(\w{2})/);
-	if ($browser_lang eq 'fr') {
-		$translator->locale( 'fr_FR' );
-	}
-	elsif ($browser_lang eq 'sv' || $browser_lang eq 'sw') {
-		$translator->locale( 'sv_SE' );
-	}
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 

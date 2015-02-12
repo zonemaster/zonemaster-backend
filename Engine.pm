@@ -11,8 +11,6 @@ use 5.14.0;
 use Data::Dumper;
 use Encode;
 use Net::DNS;
-use Net::DNS::SEC;
-use Net::DNS::Keyset;
 use JSON;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
@@ -45,7 +43,7 @@ my $PROJECT_BASE_DIR = $PROD_DIR.$PROJECT_NAME."/";
 unshift(@INC, $PROJECT_BASE_DIR);
 ##################################################################
 
-unshift(@INC, $PROD_DIR."Zonemaster/lib") unless $INC{$PROD_DIR."Zonemaster/lib"};
+unshift(@INC, $PROD_DIR."zonemaster-engine/lib") unless $INC{$PROD_DIR."zonemaster-engine/lib"};
 # Zonemaster Modules
 require Zonemaster;
 require Zonemaster::Nameserver;

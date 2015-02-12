@@ -47,7 +47,7 @@ sub translate_tag {
        setlocale( LC_ALL, "sv_SE.UTF-8" );
     }
     else {
-       setlocale( LC_ALL, "fr_FR.UTF-8" );
+       setlocale( LC_ALL, "en_US.UTF-8" );
     }
 
     my $string = $self->data->{ $entry->{module} }{ $entry->{tag} };

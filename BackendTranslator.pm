@@ -6,6 +6,7 @@ use Moose;
 use Locale::TextDomain 'Zonemaster';
 use Encode;
 use Data::Dumper;
+use POSIX qw[setlocale LC_ALL];
 
 use FindBin qw($RealScript $Script $RealBin $Bin);
 ##################################################################
@@ -37,7 +38,17 @@ require Zonemaster::Translator;
 extends 'Zonemaster::Translator';
 
 sub translate_tag {
-    my ( $self, $entry ) = @_;
+    my ( $self, $entry, $browser_lang ) = @_;
+
+    if ($browser_lang eq 'fr') {
+       setlocale( LC_ALL, "fr_FR.UTF-8" );
+    }
+    elsif ($browser_lang eq 'sv') {
+       setlocale( LC_ALL, "sv_SE.UTF-8" );
+    }
+    else {
+       setlocale( LC_ALL, "fr_FR.UTF-8" );
+    }
 
     my $string = $self->data->{ $entry->{module} }{ $entry->{tag} };
 

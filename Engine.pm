@@ -166,7 +166,7 @@ sub get_data_from_parent_zone_1 {
 	
 	my %algorithm_ids = ( 1 => 'sha1', 2 => 'sha256', 3 => 'ghost', 4 => 'sha384' );
 	my @ds_list;
-	
+=coment	
     $zone = Zonemaster->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
@@ -178,7 +178,7 @@ sub get_data_from_parent_zone_1 {
 			}
 		} 
 	}
-	
+=cut
 	$result{ns_list} = \@ns_list;
 	$result{ds_list} = \@ds_list;
 	

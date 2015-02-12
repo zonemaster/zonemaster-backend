@@ -5,6 +5,7 @@ use 5.14.0;
 use Moose;
 use Locale::TextDomain 'Zonemaster';
 use Encode;
+use Data::Dumper;
 
 use FindBin qw($RealScript $Script $RealBin $Bin);
 ##################################################################
@@ -44,7 +45,11 @@ sub translate_tag {
         return $entry->{string};
     }
 
-	my $str = decode('iso8859-1',__x( $string, %{ $entry->{args} } ) );
+	my $str = decode_utf8(__x( $string, %{ $entry->{args} } ));
+#	my $str = __x( $string, %{ $entry->{args} } );
+#	my $translated_string = __x( $string, %{ $entry->{args} } );
+#	say STDERR Dumper($translated_string);
+#	my $str = decode('iso-8859-1', $translated_string);
 
 	return $str;
 }

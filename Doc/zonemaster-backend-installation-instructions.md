@@ -50,20 +50,23 @@ installer.
   * [DB]
   * engine=PostgreSQL (The backend database type to use. It can be either
 PostgreSQL, MySQL, SQLite or CouchDB)
-
-    user=zonemaster (The database username)
-    password=zonemaster (The database password)
-    database_name=zonemaster (The database name)
-    database_host=localhost (The host where the database is accessible)
-    polling_interval=0.5 (The frequency at which the database will be checked by the backend process to see if any new domain test requests are availble (in seconds).
+```
+    user             = zonemaster ## The database username
+    password         = zonemaster ## The database password
+    database_name    = zonemaster ## The database name
+    database_host    = localhost  ## The host where the database is accessible)
+    polling_interval = 0.5        ## The frequency at which the database will be checked 
+                                  ## by the backend process to see if any new domain test 
+                                  ## requests are availble (in seconds).
+```
 
   * [LOG]
 
-    log_dir=/var/log/zonemaster/job_runner/ (The place where the JobRunner logfiles will be written)
+    log_dir = /var/log/zonemaster/job_runner/ (The place where the JobRunner logfiles will be written)
 
   * [PERL]
 
-    interpreter=perl (The full name of the perl interpreter (for perlbrew based installations)
+     interpreter = perl (The full name of the perl interpreter (for perlbrew based installations)
   * [ZONEMASTER]
 
     max_zonemaster_execution_time=300 (The delay after which a test process will be considered hung and hard killed)

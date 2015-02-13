@@ -61,44 +61,53 @@ PostgreSQL, MySQL, SQLite or CouchDB)
 ```
 
   * [LOG]
-
-    log_dir = /var/log/zonemaster/job_runner/ (The place where the JobRunner logfiles will be written)
-
+```
+    log_dir = /var/log/zonemaster/job_runner/ ## The place where the JobRunner logfiles 
+                                              ## will be written
+```
   * [PERL]
-
-     interpreter = perl (The full name of the perl interpreter (for perlbrew based installations)
+```
+     interpreter = perl ## The full name of the perl interpreter 
+                        ## for perlbrew based installations
+```
   * [ZONEMASTER]
-
-    max_zonemaster_execution_time=300 (The delay after which a test process will be considered hung and hard killed)
-    number_of_professes_for_frontend_testing=20 (The maximum number of processes for frontend test requests)
-    number_of_professes_for_batch_testing=20 (The maximum number of processes for batch test requests)
-
+```
+    max_zonemaster_execution_time             = 300 ## The delay after which a test process
+                                                    ## will be considered hung and hard 
+                                                    ## killed
+    number_of_professes_for_frontend_testing  = 20  ## The maximum number of processes for 
+                                                    ## frontend test requests
+    number_of_professes_for_batch_testing     = 20  ## The maximum number of processes for
+                                                    ## batch test requests
+```
 **Create the PostgreSQL Database**
 
     'psql --version' (Verify that PostgreSQL version is higher than 9.3)
 
   * A database with the name specified in the configuration file must be created and the database user must have table creation rights.
   * From the folder containing the Engine.pm module execute the command:
-
+```
     $ perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
-	
+```	
 **Starting starman**
 
   * Start the backend using the Starman application server**
-
+```
     $ sudo starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+```
   * Or on perlbrew based installations:*
-
+```
     $ /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+```
   * Verification	
-
+```
     $ perl client.pl
-	
+```	
 **Add a crontab entry for the backend process luncher**
-
+```
     /15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
-
+```
   *Or on perlbrew based installations:*
-
+```
     /15 * * * * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
-	
+```	

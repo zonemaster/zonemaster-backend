@@ -3,6 +3,7 @@
 The documentation covers the following operating systems:
 
  * Ubuntu 14.04 (LTS)
+ * Debian 7.8
 
 ## Zonemaster Backend installation
 

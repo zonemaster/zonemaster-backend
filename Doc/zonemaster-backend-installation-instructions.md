@@ -95,8 +95,6 @@ for this module**
    * [Run Starman](#q12)
    * [Add crontab entry](#q13)
 
-
-
 ### Database set up <a name="q11"></a>
 
 The backend engine will look for the "backend.conf" file in the /etc/zonemaster/
@@ -156,7 +154,7 @@ PostgreSQL, MySQL, SQLite or CouchDB)
     $ /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
 ```
 
-### Add a crontab entry for the backend process launcher <a name="q3"></a>
+### Add a crontab entry for the backend process launcher <a name="q13"></a>
 ```
     /15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
 ```

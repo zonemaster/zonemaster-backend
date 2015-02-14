@@ -17,7 +17,7 @@ The documentation covers the following operating systems:
 
     $ sudo apt-get install libconfig-inifiles-perl libdata-dump-perl libdbi-perl \
       libdbd-pg-perl libdbd-mysql-perl libdigest-md5-file-perl libencode-locale-perl \
-      libdbd-sqlite-perllibfile-slurp-perl libfindbin-libs-perl libhtml-parser-perl \
+      libdbd-sqlite-perl libfile-slurp-perl libfindbin-libs-perl libhtml-parser-perl \
       libio-captureoutput-perl libjson-perl libjson-rpc-perl \
       libdist-zilla-localetextdomain-perl libtest-lwp-useragent-perl libmoose-perl \
       libcatalystx-simplelogin-perl libnet-dns-perl libnet-ip-perl libplack-perl \

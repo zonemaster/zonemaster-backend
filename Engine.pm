@@ -121,29 +121,6 @@ sub get_ns_ips {
 sub get_data_from_parent_zone {
 	my($self, $domain) = @_;
 
-	my @ns_names;
-	my @result;
-    my $res   = Net::DNS::Resolver->new;
-	
-	my $query = $res->search($domain, 'NS');
-	if ($query) {
-		foreach my $rr ($query->answer) {
-			push(@ns_names, $rr->nsdname);
-		}
-		
-		foreach my $ns_name (@ns_names) {
-			push(@result, @{ $self->get_ns_ips($ns_name)});
-		}
-	} 
-	
-	push(@result, {'NOT FOUND' => '0.0.0.0'}) unless(@result);
-	
-	return \@result;
-}
-
-sub get_data_from_parent_zone_1 {
-	my($self, $domain) = @_;
-
 	my %result;
 	
 	my ($dn, $dn_syntax) = $self->_check_domain($domain, 'Domain name');

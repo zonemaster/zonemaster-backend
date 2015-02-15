@@ -37,11 +37,6 @@ my $router = router {
 		action => "get_data_from_parent_zone"
 	};
 
-	connect "get_data_from_parent_zone_1" => {
-		handler => "+Engine",
-		action => "get_data_from_parent_zone_1"
-	};
-
 	connect "validate_syntax" => {
 		handler => "+Engine",
 		action => "validate_syntax"

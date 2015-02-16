@@ -71,10 +71,10 @@ installer.
 
 A few packages have not been installed:
 
-    $ sudo capn -i Zonemaster (follow the zonemaster-engine installation
+    $ sudo cpan -i Zonemaster (follow the zonemaster-engine installation
 instructions)
-    $ sudo capn -i JSON::RPC::Dispatch
-    $ sudo capn -i Plack::Middleware::Debug
+    $ sudo cpan -i JSON::RPC::Dispatch
+    $ sudo cpan -i Plack::Middleware::Debug
     $ sudo cpan -i Store::CouchDB (if you want to test the CouchDB support)
 
 If all package dependencies are already installed from the previous section,

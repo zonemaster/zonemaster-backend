@@ -3,7 +3,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 sub MY::install {
-    "install ::\n\t\$(This makefile only supports the 'make dist', target)"
+    "install ::\n\t\$(info This makefile only supports the 'make dist', target)"
 }
 
 WriteMakefile(

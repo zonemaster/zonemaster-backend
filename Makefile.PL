@@ -2,6 +2,10 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
+sub MY::install {
+    "install ::\n\t\$(This makefile only supports the 'make dist', target)"
+}
+
 WriteMakefile(
     NAME                => 'zonemaster-backend',
     DISTVNAME		=> 'zonemaster-backend',

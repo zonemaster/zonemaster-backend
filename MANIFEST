@@ -1,7 +1,6 @@
 MANIFEST
 MANIFEST.SKIP
 
-client.pl
 t/test01.t
 t/test02.t
 t/test_mysql_backend.t
@@ -10,7 +9,6 @@ t/test03.t
 backend.psgi
 BackendConfig.pm
 backend_config.ini
-Client.pm
 ZonemasterDB.pm
 Doc/zonemaster-backend-installation-instructions.md
 Engine.pm

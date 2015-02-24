@@ -1,5 +1,7 @@
 package BackendTranslator;
 
+our $VERSION = '1.0.1';
+
 use 5.14.0;
 
 use Moose;

@@ -1,4 +1,7 @@
-package ZonemasterDB v0.0.1;
+package ZonemasterDB;
+
+our $VERSION = '1.0.1';
+
 use Moose::Role;
 
 use utf8;

@@ -18,7 +18,7 @@ The documentation covers the following operating systems:
 
     $ sudo apt-get install libconfig-inifiles-perl libdata-dump-perl libdbi-perl \
       libdbd-pg-perl libdbd-mysql-perl libdigest-md5-file-perl libencode-locale-perl \
-      libdbd-sqlite-perl libfile-slurp-perl libfindbin-libs-perl libhtml-parser-perl \
+      libdbd-sqlite3-perl libfile-slurp-perl libfindbin-libs-perl libhtml-parser-perl \
       libio-captureoutput-perl libjson-perl libjson-rpc-perl \
       libdist-zilla-localetextdomain-perl libtest-lwp-useragent-perl libmoose-perl \
       libcatalystx-simplelogin-perl libnet-dns-perl libnet-ip-perl libplack-perl \
@@ -32,6 +32,9 @@ Unfortunately `Net::LDNS` has not been packaged for Ubuntu yet. So you need to
 install this dependency from CPAN:
 
     $ sudo perl -MCPAN -e 'install Net::LDNS'
+    
+    $ sudo perl -MCPAN -e 'install Plack::Middleware::Debug' 
+    $ sudo perl -MCPAN -e 'install Store::CouchDB' (this doesn't work on Ubuntu yet)
 
 If all package dependencies are already installed from the previous section,
 this should compile and install after configuration of your CPAN module
@@ -41,10 +44,11 @@ installer.
 
     $ cd zonemaster-backend
     $ perl Makefile.PL
-    Writing Makefile for Zonemaster-backend
+    Warning: prerequisite Store::CouchDB 0 not found.
+    Writing Makefile for zonemaster-backend
     Writing MYMETA.yml and MYMETA.json
     $ make test
-    $ sudo make install
+    $ sudo make dist (if you want to generate a .tgz file of the package)
 
    * [Set the Database](#q11)
    * [Run Starman](#q12)
@@ -135,7 +139,7 @@ PostgreSQL, MySQL, SQLite or CouchDB)
 ```
 **Create the PostgreSQL Database**
 
-    'psql --version' (Verify that PostgreSQL version is higher than 9.3)
+    $ psql --version' (Verify that PostgreSQL version is higher than 9.3)
 
   * A database with the name specified in the configuration file must be created and the database user must have table creation rights.
   * From the folder containing the Engine.pm module execute the command:

@@ -11,8 +11,7 @@ The documentation covers the following operating systems:
 Zonemaster-engine should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
-### Instructions for Ubuntu 14.04 with PostgreSQL as the database <a
-name="q1"></a>
+### Instructions for Ubuntu 14.04 with PostgreSQL as the database 
 
 **To get the source code**
 
@@ -46,14 +45,16 @@ Remove the following lines from the makefile "Makefile.PL"
 'Store::CouchDB' => 0,
 ```
 **Build source code**
+```
     $ cd zonemaster-backend
     $ perl Makefile.PL
     Writing Makefile for Zonemaster-backend
     Writing MYMETA.yml and MYMETA.json
     $ make
     $ make test
-
+```
 **Database set up**
+
 Edit the file "backend_config.ini"
 
 ```
@@ -70,7 +71,7 @@ number_of_professes_for_frontend_testing  = 20
 number_of_professes_for_batch_testing     = 20
 ```
 
-**Create the PostgreSQL Database**
+**PostgreSQL Database manipulation**
 ```
 ## Check your PostgreSQL version
 'psql --version' (Verify that PostgreSQL version is higher than 9.3)
@@ -81,21 +82,23 @@ su - postgres
 create user zonemaster WITH PASSWORD 'zonemaster';
 create database zonemaster;
 GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
+```
 
 ## From the folder containing the Engine.pm module execute the command:
- $ perl -MEngine -e 'Engine->new({ db =>
-"ZonemasterDB::PostgreSQL"})->{db}->create_db()'
+```
+ $ perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
+```
 *Ignore the notice response which results as the output of the above command*
 
 ### Starting starman
+```
 $ sudo starman --error-log="Path to your log file" --listen=127.0.0.1:5000
 backend.psgi
-
+```
 ### Add a crontab entry for the backend process launcher <a name="q13"></a>
-/15 * * * * perl
-/home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> "Path to
-your log direcroty"/execute_tests.log 2>&1
-
+```
+*/15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> "Path to your log direcroty"/execute_tests.log 2>&1
+```
 
 
 

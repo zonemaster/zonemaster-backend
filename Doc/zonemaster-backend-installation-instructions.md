@@ -85,6 +85,8 @@ $ psql
 $ createuser zonemaster  WITH PASSWORD 'zonemaster';
 $ create database zonemaster;
 $ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
+$ \q
+$ exit
 ```
 
 **From the folder containing the Engine.pm module execute the command:**

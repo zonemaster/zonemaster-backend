@@ -62,8 +62,9 @@ $ cd logs
 $ touch backend_starman.log
 ```
 **Database set up**
+```
 $ cd ..
-
+```
 Edit the file "backend_config.ini"
 
 ```

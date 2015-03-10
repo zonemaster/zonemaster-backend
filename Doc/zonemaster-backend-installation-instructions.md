@@ -91,8 +91,7 @@ $ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
 
 **Starting starman**
 ```
-$ sudo starman --error-log="Path to your log file" --listen=127.0.0.1:5000
-backend.psgi
+$ sudo starman --error-log="Path to your log file" --listen=127.0.0.1:5000 backend.psgi
 ```
 **Add a crontab entry for the backend process launcher**
 ```

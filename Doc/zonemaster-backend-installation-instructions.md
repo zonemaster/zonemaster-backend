@@ -60,6 +60,7 @@ mkdir logs ## Path to your log directory and the directory name"
 ```
 $ cd logs
 $ touch backend_starman.log
+$ touch execute_tests.log
 ```
 **Database set up**
 ```
@@ -107,8 +108,10 @@ $ vi logs/backend_starman.log ## To verify starman has started
 ```
 $ crontab -e
 ## Add the following line to the crontab entry. Make sure to provide the
-absolute directory path where the file "execute_tests.pl" is 
-*/15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> logs/execute_tests.log 2>&1
+absolute directory path where the file "execute_tests.pl" and the log gile 
+*/15 * * * * perl
+/home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >>
+/home/user/zonemaster-backend/logs/execute_tests.log 2>&1
 ```
 
 

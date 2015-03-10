@@ -76,7 +76,7 @@ number_of_professes_for_batch_testing     = 20
 ## Check your PostgreSQL version
 'psql --version' (Verify that PostgreSQL version is higher than 9.3)
 
-## Connect to Postgres for the first time and create the database and user
+** Connect to Postgres for the first time and create the database and user**
 
 su - postgres
 create user zonemaster WITH PASSWORD 'zonemaster';
@@ -84,18 +84,18 @@ create database zonemaster;
 GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
 ```
 
-## From the folder containing the Engine.pm module execute the command:
+** From the folder containing the Engine.pm module execute the command: **
 ```
  $ perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
 ```
 *Ignore the notice response which results as the output of the above command*
 
-### Starting starman
+** Starting starman **
 ```
 $ sudo starman --error-log="Path to your log file" --listen=127.0.0.1:5000
 backend.psgi
 ```
-### Add a crontab entry for the backend process launcher <a name="q13"></a>
+** Add a crontab entry for the backend process launcher **
 ```
 */15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> "Path to your log direcroty"/execute_tests.log 2>&1
 ```

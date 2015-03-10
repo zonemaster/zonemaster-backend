@@ -46,13 +46,14 @@ Remove the following lines from the makefile "Makefile.PL"
 ```
 **Build source code**
 ```
-    $ cd zonemaster-backend
     $ perl Makefile.PL
     Writing Makefile for Zonemaster-backend
     Writing MYMETA.yml and MYMETA.json
     $ make
     $ make test
 ```
+**mkdir "Path to your log direcroty"
+
 **Database set up**
 
 Edit the file "backend_config.ini"
@@ -77,8 +78,9 @@ $ psql --version (Verify that PostgreSQL version is higher than 9.3)
 
 **Connect to Postgres for the first time and create the database and user**
 
-$ su - postgres
-$ create user zonemaster WITH PASSWORD 'zonemaster';
+$ sudo su - postgres
+$ psql
+$ createuser zonemaster  WITH PASSWORD 'zonemaster';
 $ create database zonemaster;
 $ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
 ```

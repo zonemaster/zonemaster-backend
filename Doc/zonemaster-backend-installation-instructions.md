@@ -52,8 +52,10 @@ Remove the following lines from the makefile "Makefile.PL"
     $ make
     $ make test
 ```
-**mkdir "Path to your log direcroty"
-
+**Create a log directory**
+```
+mkdir "Path to your log directory and the directory name"
+```
 **Database set up**
 
 Edit the file "backend_config.ini"

@@ -1,4 +1,4 @@
-package ZonemasterDB::SQLite;
+package Zonemaster::WebBackend::DB::SQLite;
 
 our $VERSION = '1.0.1';
 

@@ -1,4 +1,4 @@
-package ZonemasterDB::CouchDB;
+package Zonemaster::WebBackend::DB::CouchDB;
 
 our $VERSION = '1.0.1';
 

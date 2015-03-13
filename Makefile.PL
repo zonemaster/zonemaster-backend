@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME         => 'Zonemaster::WebBackend',
     AUTHOR       => q{Michal TOMA <toma@nic.fr>},
-    VERSION_FROM => 'Zonemaster::WebBackend::Engine.pm',
+    VERSION_FROM => 'lib/Zonemaster/WebBackend/Engine.pm',
     ABSTRACT     => 'The Zonemaster project Web Backend engine',
     ( $ExtUtils::MakeMaker::VERSION >= 6.3002
         ? ( 'LICENSE' => 'perl' )

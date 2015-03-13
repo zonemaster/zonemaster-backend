@@ -51,8 +51,8 @@ require Zonemaster::Nameserver;
 require Zonemaster::DNSName;
 
 unshift( @INC, $PROD_DIR . "zonemaster-backend" ) unless $INC{ $PROD_DIR . "zonemaster-backend" };
-require BackendConfig;
-require BackendTranslator;
+require Zonemaster::WebBackend::Config;
+require Zonemaster::WebBackend::Translator;
 
 sub new {
     my ( $type, $params ) = @_;
@@ -71,7 +71,7 @@ sub new {
     }
     else {
         eval {
-            my $backend_module = "ZonemasterDB::" . BackendConfig->BackendDBType();
+            my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
             say "using BackendDBType:[$backend_module]";
             eval "require $backend_module";
             die $@ if $@;
@@ -379,7 +379,7 @@ sub get_test_results {
     #	die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
 
     my $translator;
-    $translator = BackendTranslator->new;
+    $translator = Zonemaster::WebBackend::Translator->new;
     my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data

@@ -9,7 +9,7 @@ use DBI qw(:utils);
 use JSON;
 use Digest::MD5 qw(md5_hex);
 
-use ZonemasterDB;
+use Zonemaster::WebBackend::DB;
 
 use FindBin qw($RealScript $Script $RealBin $Bin);
 ##################################################################
@@ -37,11 +37,11 @@ unshift( @INC, $PROJECT_BASE_DIR );
 ##################################################################
 
 unshift( @INC, $PROD_DIR . "zonemaster-backend" ) unless $INC{ $PROD_DIR . "zonemaster-backend" };
-require BackendConfig;
+require Zonemaster::WebBackend::Config;
 
-with 'ZonemasterDB';
+with 'Zonemaster::WebBackend::DB';
 
-my $connection_string = BackendConfig->DB_connection_string( 'sqlite' );
+my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string( 'sqlite' );
 print STDERR "$connection_string\n";
 
 has 'dbh' => (

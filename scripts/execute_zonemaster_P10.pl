@@ -32,7 +32,7 @@ my $PROJECT_BASE_DIR = $PROD_DIR . $PROJECT_NAME . "/";
 unshift( @INC, $PROJECT_BASE_DIR );
 ##################################################################
 
-unshift( @INC, $PROD_DIR . "zonemaster-backend/JobRunner" ) unless $INC{ $PROD_DIR . "zonemaster-backend/JobRunner" };
-require Runner;
+unshift( @INC, $PROD_DIR . "zonemaster-backend/JobZonemaster::WebBackend::Runner" ) unless $INC{ $PROD_DIR . "zonemaster-backend/JobZonemaster::WebBackend::Runner" };
+require Zonemaster::WebBackend::Runner;
 
-Runner->new()->run( $ARGV[0] );
+Zonemaster::WebBackend::Runner->new()->run( $ARGV[0] );

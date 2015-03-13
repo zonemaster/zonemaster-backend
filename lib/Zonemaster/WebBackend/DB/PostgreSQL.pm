@@ -10,9 +10,9 @@ use JSON;
 use Digest::MD5 qw(md5_hex);
 use Encode;
 
-use ZonemasterDB;
+use Zonemaster::WebBackend::DB;
 
-with 'ZonemasterDB';
+with 'Zonemaster::WebBackend::DB';
 
 #TODO read from configuration file
 my $connection_string = "DBI:Pg:database=zonemaster;host=localhost";

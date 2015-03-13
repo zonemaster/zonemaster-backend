@@ -9,9 +9,9 @@ use DBI qw(:utils);
 use JSON;
 use Digest::MD5 qw(md5_hex);
 
-use ZonemasterDB;
+use Zonemaster::WebBackend::DB;
 
-with 'ZonemasterDB';
+with 'Zonemaster::WebBackend::DB';
 
 #TODO read from config file
 my $connection_string = "DBI:mysql:database=zonemaster;host=localhost";

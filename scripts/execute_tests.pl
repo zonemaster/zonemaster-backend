@@ -40,21 +40,21 @@ unshift( @INC, $PROJECT_BASE_DIR );
 ##################################################################
 
 unshift( @INC, $PROD_DIR . "zonemaster-backend" ) unless $INC{ $PROD_DIR . "zonemaster-backend" };
-require BackendConfig;
+require Zonemaster::WebBackend::Config;
 
 my $JOB_RUNNER_DIR              = $PROD_DIR . "zonemaster-backend/JobRunner";
-my $LOG_DIR                     = BackendConfig->LogDir();
-my $perl_command                = BackendConfig->PerlIntereter();
-my $polling_interval            = BackendConfig->PollingInterval();
-my $zonemaster_timeout_interval = BackendConfig->MaxZonemasterExecutionTime();
-my $frontend_slots              = BackendConfig->NumberOfProfessesForFrontendTesting();
-my $batch_slots                 = BackendConfig->NumberOfProfessesForBatchTesting();
+my $LOG_DIR                     = Zonemaster::WebBackend::Config->LogDir();
+my $perl_command                = Zonemaster::WebBackend::Config->PerlIntereter();
+my $polling_interval            = Zonemaster::WebBackend::Config->PollingInterval();
+my $zonemaster_timeout_interval = Zonemaster::WebBackend::Config->MaxZonemasterExecutionTime();
+my $frontend_slots              = Zonemaster::WebBackend::Config->NumberOfProfessesForFrontendTesting();
+my $batch_slots                 = Zonemaster::WebBackend::Config->NumberOfProfessesForBatchTesting();
 
-my $connection_string = BackendConfig->DB_connection_string();
+my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string();
 my $dbh               = DBI->connect(
     $connection_string,
-    BackendConfig->DB_user(),
-    BackendConfig->DB_password(),
+    Zonemaster::WebBackend::Config->DB_user(),
+    Zonemaster::WebBackend::Config->DB_password(),
     { RaiseError => 1, AutoCommit => 1 }
 );
 

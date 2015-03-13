@@ -12,7 +12,7 @@ use FindBin;
 
 use Plack::Builder;
 
-use Engine;
+use Zonemaster::WebBackend::Engine;
 
 local $| = 1;
 
@@ -23,60 +23,60 @@ builder {
 my $router = router {
 ############## FRONTEND ####################
 	connect "version_info" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "version_info"
 	};
 
 	connect "get_ns_ips" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "get_ns_ips"
 	};
 
 	connect "get_data_from_parent_zone" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "get_data_from_parent_zone"
 	};
 
 	connect "validate_syntax" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "validate_syntax"
 	};
 	
 	connect "start_domain_test" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "start_domain_test"
 	};
 	
 	connect "test_progress" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "test_progress"
 	};
 	
 	connect "get_test_params" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "get_test_params"
 	};
 
 	connect "get_test_results" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "get_test_results"
 	};
 
 	connect "get_test_history" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "get_test_history"
 	};
 
 ############ BATCH MODE ####################
 
 	connect "add_api_user" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "add_api_user"
 	};
 	
 ############################################
 	connect "api1" => {
-		handler => "+Engine",
+		handler => "+Zonemaster::WebBackend::Engine",
 		action => "api1"
 	};
 };

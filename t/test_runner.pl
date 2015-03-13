@@ -5,5 +5,5 @@ use utf8;
 use lib '/home/toma/PROD/zonemaster/zonemaster-backend/JobRunner';
 use Runner;
 
-my $r = Runner->new({ db => 'ZonemasterDB::CouchDB'});
-$r->run('648390b633d671440378100c9d00bb95');
+my $r = Runner->new( { db => 'ZonemasterDB::CouchDB' } );
+$r->run( '648390b633d671440378100c9d00bb95' );

@@ -11,7 +11,7 @@ FindBin::again();
 my $PROJECT_NAME = "zonemaster-backend";
 
 my $SCRITP_DIR = __FILE__;
-$SCRITP_DIR = $Bin unless ($SCRITP_DIR =~ /^\//);
+$SCRITP_DIR = $Bin unless ( $SCRITP_DIR =~ /^\// );
 
 #warn "SCRITP_DIR:$SCRITP_DIR\n";
 #warn "SCRITP_DIR:$SCRITP_DIR\n";
@@ -22,15 +22,17 @@ $SCRITP_DIR = $Bin unless ($SCRITP_DIR =~ /^\//);
 #warn "__PACKAGE__:".__PACKAGE__;
 #warn "__FILE__:".__FILE__;
 
-my ($PROD_DIR) = ($SCRITP_DIR =~ /(.*?\/)$PROJECT_NAME/);
+my ( $PROD_DIR ) = ( $SCRITP_DIR =~ /(.*?\/)$PROJECT_NAME/ );
+
 #warn "PROD_DIR:$PROD_DIR\n";
 
-my $PROJECT_BASE_DIR = $PROD_DIR.$PROJECT_NAME."/";
+my $PROJECT_BASE_DIR = $PROD_DIR . $PROJECT_NAME . "/";
+
 #warn "PROJECT_BASE_DIR:$PROJECT_BASE_DIR\n";
-unshift(@INC, $PROJECT_BASE_DIR);
+unshift( @INC, $PROJECT_BASE_DIR );
 ##################################################################
 
-unshift(@INC, $PROD_DIR."zonemaster-backend/JobRunner") unless $INC{$PROD_DIR."zonemaster-backend/JobRunner"};
+unshift( @INC, $PROD_DIR . "zonemaster-backend/JobRunner" ) unless $INC{ $PROD_DIR . "zonemaster-backend/JobRunner" };
 require Runner;
 
-Runner->new()->run($ARGV[0]);
+Runner->new()->run( $ARGV[0] );

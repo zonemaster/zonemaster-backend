@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use 5.10.1;
+use 5.14.2;
 
 use DBI qw(:utils);
 use IO::CaptureOutput qw/capture_exec/;

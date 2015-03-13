@@ -3,7 +3,7 @@ package Zonemaster::WebBackend::DB::MySQL;
 our $VERSION = '1.0.1';
 
 use Moose;
-use 5.14.0;
+use 5.14.2;
 
 use DBI qw(:utils);
 use JSON;

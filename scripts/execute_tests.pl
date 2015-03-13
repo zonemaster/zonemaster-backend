@@ -1,9 +1,7 @@
 use strict;
 use warnings;
-use utf8;
 use 5.10.1;
 
-use Data::Dumper;
 use DBI qw(:utils);
 use IO::CaptureOutput qw/capture_exec/;
 use POSIX;
@@ -12,37 +10,8 @@ use Proc::ProcessTable;
 
 local $| = 1;
 
-use FindBin qw($RealScript $Script $RealBin $Bin);
-FindBin::again();
-##################################################################
-my $PROJECT_NAME = "zonemaster-backend";
-
-my $SCRITP_DIR = __FILE__;
-$SCRITP_DIR = $Bin unless ( $SCRITP_DIR =~ /^\// );
-
-#warn "SCRITP_DIR:$SCRITP_DIR\n";
-#warn "SCRITP_DIR:$SCRITP_DIR\n";
-#warn "RealScript:$RealScript\n";
-#warn "Script:$Script\n";
-#warn "RealBin:$RealBin\n";
-#warn "Bin:$Bin\n";
-#warn "__PACKAGE__:".__PACKAGE__;
-#warn "__FILE__:".__FILE__;
-
-my ( $PROD_DIR ) = ( $SCRITP_DIR =~ /(.*?\/)$PROJECT_NAME/ );
-
-#warn "PROD_DIR:$PROD_DIR\n";
-
-my $PROJECT_BASE_DIR = $PROD_DIR . $PROJECT_NAME . "/";
-
-#warn "PROJECT_BASE_DIR:$PROJECT_BASE_DIR\n";
-unshift( @INC, $PROJECT_BASE_DIR );
-##################################################################
-
-unshift( @INC, $PROD_DIR . "zonemaster-backend" ) unless $INC{ $PROD_DIR . "zonemaster-backend" };
 require Zonemaster::WebBackend::Config;
 
-my $JOB_RUNNER_DIR              = $PROD_DIR . "zonemaster-backend/JobRunner";
 my $LOG_DIR                     = Zonemaster::WebBackend::Config->LogDir();
 my $perl_command                = Zonemaster::WebBackend::Config->PerlIntereter();
 my $polling_interval            = Zonemaster::WebBackend::Config->PollingInterval();
@@ -102,7 +71,7 @@ sub process_jobs {
     while ( my $h = $sth1->fetchrow_hashref ) {
         if ( can_start_new_worker( $priority, $h->{id} ) ) {
             my $command =
-"$perl_command $JOB_RUNNER_DIR/execute_zonemaster_P$priority.pl $h->{id} > $LOG_DIR/execute_zonemaster_P$priority"
+"$perl_command execute_zonemaster_P$priority.pl $h->{id} > $LOG_DIR/execute_zonemaster_P$priority"
               . "_$h->{id}_$start_time.log 2>&1 &";
             say $command;
             system( $command);

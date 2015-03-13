@@ -1,14 +1,11 @@
 use strict;
 use warnings;
-use utf8;
 use 5.14.0;
 
 use JSON::RPC::Dispatch;
 use Router::Simple::Declare;
-use Data::Dumper;
 use JSON;
 use POSIX;
-use FindBin;
 
 use Plack::Builder;
 

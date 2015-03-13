@@ -7,7 +7,6 @@ use 5.14.0;
 use Moose;
 use Locale::TextDomain 'Zonemaster';
 use Encode;
-use Data::Dumper;
 use POSIX qw[setlocale LC_ALL];
 
 use FindBin qw($RealScript $Script $RealBin $Bin);

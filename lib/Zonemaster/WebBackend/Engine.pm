@@ -4,11 +4,9 @@ our $VERSION = '1.0.1';
 
 use strict;
 use warnings;
-use utf8;
 use 5.14.0;
 
 # Public Modules
-use Data::Dumper;
 use Encode;
 use Net::DNS;
 use JSON;

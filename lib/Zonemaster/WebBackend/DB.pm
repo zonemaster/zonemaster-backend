@@ -4,7 +4,6 @@ our $VERSION = '1.0.1';
 
 use Moose::Role;
 
-use utf8;
 use 5.14.0;
 
 use Data::Dumper;

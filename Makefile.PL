@@ -1,47 +1,52 @@
-use strict;
-use warnings;
-use ExtUtils::MakeMaker;
+use inc::Module::Install;
 
-WriteMakefile(
-    NAME         => 'Zonemaster::WebBackend',
-    AUTHOR       => q{Michal TOMA <toma@nic.fr>},
-    VERSION_FROM => 'lib/Zonemaster/WebBackend/Engine.pm',
-    ABSTRACT     => 'The Zonemaster project Web Backend engine',
-    ( $ExtUtils::MakeMaker::VERSION >= 6.3002
-        ? ( 'LICENSE' => 'perl' )
-        : () ),
-    PL_FILES  => {},
-    PREREQ_PM => {
-        'Zonemaster' => 0,
-        'Config::IniFiles'         => 0,
-        'DBI'                      => 0,
-        'DBD::Pg'                  => 0,
-        'DBD::mysql'               => 0,
-        'DBD::SQLite'              => 0,
-        'File::Slurp'              => 0,
-        'HTML::Entities'           => 0,
-        'IO::CaptureOutput'        => 0,
-        'JSON'                     => 0,
-        'JSON::RPC::Dispatch'      => 0,
-        'Locale::TextDomain'       => 0,
-        'LWP::UserAgent'           => 0,
-        'Moose'                    => 0,
-        'Moose::Role'              => 0,
-        'Net::DNS'                 => 0,
-        'Net::DNS::SEC'            => 0,
-        'Net::IP'                  => 0,
-        'Net::LDNS'                => 0,
-        'Plack::Builder'           => 0,
-        'Plack::Middleware::Debug' => 0,
-        'Proc::ProcessTable'       => 0,
-        'Router::Simple::Declare'  => 0,
-        'Store::CouchDB'           => 0,
-        'String::ShellQuote'       => 0,
-        'Starman'                  => 0,
-        'File::ShareDir'           => 0,
+name 'Zonemaster-WebBackend';
+author q{Michal TOMA <toma@nic.fr>};
+version_from 'lib/Zonemaster/WebBackend/Engine.pm';
+abstract 'The Zonemaster project Web Backend engine';
+license 'perl';
+perl_version '5.014002';
 
-    },
-    dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES    => 'zonemaster-backend*' },
-    test  => { TESTS    => 't/test01.t' },
-);
+requires
+  'Zonemaster'               => 0,
+  'Config::IniFiles'         => 0,
+  'DBI'                      => 0,
+  'File::Slurp'              => 0,
+  'HTML::Entities'           => 0,
+  'IO::CaptureOutput'        => 0,
+  'JSON'                     => 0,
+  'JSON::RPC::Dispatch'      => 0,
+  'Locale::TextDomain'       => 0,
+  'LWP::UserAgent'           => 0,
+  'Moose'                    => 0,
+  'Moose::Role'              => 0,
+  'Net::DNS'                 => 0,
+  'Net::DNS::SEC'            => 0,
+  'Net::IP'                  => 0,
+  'Net::LDNS'                => 0,
+  'Plack::Builder'           => 0,
+  'Plack::Middleware::Debug' => 0,
+  'Proc::ProcessTable'       => 0,
+  'Router::Simple::Declare'  => 0,
+  'String::ShellQuote'       => 0,
+  'Starman'                  => 0,
+  'File::ShareDir'           => 0,
+  ;
+
+test_requires 'DBD::SQLite';
+
+recommends 'DBD::mysql';
+recommends 'DBD::Pg';
+recommends 'DBD::SQLite';
+
+install_share;
+
+install_script 'zonemaster_webbackend.psgi';
+install_script 'execute_tests.pl';
+install_script 'execute_zonemaster_P5.pl';
+install_script 'execute_zonemaster_P10.pl';
+
+no_index directory => 'CodeSnippets';
+no_index directory => 'Doc';
+
+WriteAll;

@@ -2,15 +2,10 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
-sub MY::install {
-    "install ::\n\t\$(info This makefile only supports the 'make dist', target)";
-}
-
 WriteMakefile(
-    NAME         => 'zonemaster-backend',
-    DISTVNAME    => 'zonemaster-backend',
+    NAME         => 'Zonemaster::WebBackend',
     AUTHOR       => q{Michal TOMA <toma@nic.fr>},
-    VERSION_FROM => 'Engine.pm',
+    VERSION_FROM => 'Zonemaster::WebBackend::Engine.pm',
     ABSTRACT     => 'The Zonemaster project Web Backend engine',
     ( $ExtUtils::MakeMaker::VERSION >= 6.3002
         ? ( 'LICENSE' => 'perl' )
@@ -18,7 +13,6 @@ WriteMakefile(
     PL_FILES  => {},
     PREREQ_PM => {
         'Zonemaster' => 0,
-
         'Config::IniFiles'         => 0,
         'DBI'                      => 0,
         'DBD::Pg'                  => 0,
@@ -44,6 +38,7 @@ WriteMakefile(
         'Store::CouchDB'           => 0,
         'String::ShellQuote'       => 0,
         'Starman'                  => 0,
+        'File::ShareDir'           => 0,
 
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

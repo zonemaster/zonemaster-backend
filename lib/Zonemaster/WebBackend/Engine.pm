@@ -18,41 +18,12 @@ use Net::LDNS;
 use Net::IP qw(:PROC);
 use HTML::Entities;
 
-use FindBin qw($RealScript $Script $RealBin $Bin);
-##################################################################
-my $PROJECT_NAME = "zonemaster-backend";
-
-my $SCRITP_DIR = __FILE__;
-$SCRITP_DIR = $Bin unless ( $SCRITP_DIR =~ /^\// );
-
-#warn "SCRITP_DIR:$SCRITP_DIR\n";
-#warn "RealScript:$RealScript\n";
-#warn "Script:$Script\n";
-#warn "RealBin:$RealBin\n";
-#warn "Bin:$Bin\n";
-#warn "__PACKAGE__:".__PACKAGE__;
-#warn "__FILE__:".__FILE__;
-
-my ( $PROD_DIR ) = ( $SCRITP_DIR =~ /(.*?\/)$PROJECT_NAME/ );
-
-#warn "PROD_DIR:$PROD_DIR\n";
-
-my $PROJECT_BASE_DIR = $PROD_DIR . $PROJECT_NAME . "/";
-
-#warn "PROJECT_BASE_DIR:$PROJECT_BASE_DIR\n";
-unshift( @INC, $PROJECT_BASE_DIR );
-##################################################################
-
-unshift( @INC, $PROD_DIR . "zonemaster-engine/lib" ) unless $INC{ $PROD_DIR . "zonemaster-engine/lib" };
-
 # Zonemaster Modules
-require Zonemaster;
-require Zonemaster::Nameserver;
-require Zonemaster::DNSName;
-
-unshift( @INC, $PROD_DIR . "zonemaster-backend" ) unless $INC{ $PROD_DIR . "zonemaster-backend" };
-require Zonemaster::WebBackend::Config;
-require Zonemaster::WebBackend::Translator;
+use Zonemaster;
+use Zonemaster::Nameserver;
+use Zonemaster::DNSName;
+use Zonemaster::WebBackend::Config;
+use Zonemaster::WebBackend::Translator;
 
 sub new {
     my ( $type, $params ) = @_;
@@ -86,10 +57,7 @@ sub new {
 sub version_info {
     my ( $self ) = @_;
 
-    warn "Engine::1\n";
-
-    #	return "Zonemaster ".$Zonemaster::VERSION.", Backend ".$Engine::VERSION;
-    return "Zonemaster Version: 1.0.0";
+    return "Zonemaster Test Engine Version: " . Zonemaster->VERSION;
 }
 
 sub get_ns_ips {

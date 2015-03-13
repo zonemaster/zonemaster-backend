@@ -6,31 +6,7 @@ use warnings;
 use 5.14.1;
 
 use Config::IniFiles;
-
-use FindBin qw($RealScript $Script $RealBin $Bin);
-##################################################################
-my $PROJECT_NAME = "zonemaster-backend";
-
-my $SCRITP_DIR = __FILE__;
-$SCRITP_DIR = $Bin unless ( $SCRITP_DIR =~ /^\// );
-
-#warn "SCRITP_DIR:$SCRITP_DIR\n";
-#warn "RealScript:$RealScript\n";
-#warn "Script:$Script\n";
-#warn "RealBin:$RealBin\n";
-#warn "Bin:$Bin\n";
-#warn "__PACKAGE__:".__PACKAGE__;
-#warn "__FILE__:".__FILE__;
-
-my ( $PROD_DIR ) = ( $SCRITP_DIR =~ /(.*?\/)$PROJECT_NAME/ );
-
-#warn "PROD_DIR:$PROD_DIR\n";
-
-my $PROJECT_BASE_DIR = $PROD_DIR . $PROJECT_NAME . "/";
-
-#warn "PROJECT_BASE_DIR:$PROJECT_BASE_DIR\n";
-unshift( @INC, $PROJECT_BASE_DIR );
-##################################################################
+use File::ShareDir qw[dist_file];
 
 sub _load_config {
     my $cfg;
@@ -39,7 +15,7 @@ sub _load_config {
         $path = '/etc/zonemaster/backend_config.ini';
     }
     else {
-        $path = $PROJECT_BASE_DIR . "backend_config.ini";
+        $path = dist_file('Zonemaster-WebBackend', "backend_config.ini");
     }
     $cfg = Config::IniFiles->new( -file => $path );
 

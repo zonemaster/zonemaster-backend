@@ -24,7 +24,7 @@ has 'dbh' => (
 
 sub DEMOLISH {
     my ( $self ) = @_;
-    $self->dbh->disconnect();
+    $self->dbh->disconnect() if $self->dbh;
 }
 
 sub create_db {

@@ -21,12 +21,12 @@ Zonemaster-engine should be installed before. Follow the instructions
 
 ```
 sudo apt-get install libintl-perl libwww-perl libmoose-perl \
-       libnet-dns-perl libnet-dns-sec-perl libnet-ip-perl libplack-perl \
+       libplack-perl libfile-sharedir-perl \
        libproc-processtable-perl librouter-simple-perl \
        libstring-shellquote-perl starman libconfig-inifiles-perl \
        libdbi-perl libdbd-sqlite3-perl libdbd-pg-perl \
        libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl \
-       libjson-perl libintl-perl libmoose-perl libnet-dns-perl \
+       libjson-perl \
        libmodule-install-perl postgresql postgresql-contrib \
 ```
 **Install CPAN dependencies**
@@ -84,7 +84,7 @@ number_of_professes_for_batch_testing     = 20
 
 **PostgreSQL Database manipulation**
 ```
-$ psql --version (Verify that PostgreSQL version is higher than 9.3)
+$ psql --version (Verify that PostgreSQL version is 9.3 or higher)
 
 **Connect to Postgres for the first time and create the database and user**
 
@@ -117,3 +117,7 @@ $ crontab -e
 PATH=/bin:/usr/bin:/usr/local/bin
 */15 * * * * execute_tests.pl >> /home/user/logs/execute_tests.log 2>&1
 ```
+
+## All done
+
+At this point, you no longer need the checked out source repository (unless you chose to put the log files there, of course).

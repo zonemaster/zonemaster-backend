@@ -8,14 +8,13 @@ use 5.14.2;
 
 # Public Modules
 use Encode;
-use Net::DNS;
 use JSON;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use String::ShellQuote;
 use File::Slurp qw(append_file);
 use Net::LDNS;
-use Net::IP qw(:PROC);
+use Net::IP::XS qw(:PROC);
 use HTML::Entities;
 
 # Zonemaster Modules
@@ -64,16 +63,16 @@ sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
     my @adresses;
-    my $res = Net::DNS::Resolver->new;
+    my $res = Net::LDNS->new;
 
-    my $query4 = $res->search( $ns_name, 'A' );
+    my $query4 = $res->query( $ns_name, 'A' );
     if ( $query4 ) {
         foreach my $rr ( $query4->answer ) {
             push( @adresses, { $ns_name => $rr->address } );
         }
     }
 
-    my $query6 = $res->search( $ns_name, 'AAAA' );
+    my $query6 = $res->query( $ns_name, 'AAAA' );
     if ( $query6 ) {
         foreach my $rr ( $query6->answer ) {
             push( @adresses, { $ns_name => $rr->address } );

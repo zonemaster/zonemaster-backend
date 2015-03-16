@@ -14,7 +14,6 @@ use Zonemaster::WebBackend::Config;
 with 'Zonemaster::WebBackend::DB';
 
 my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string( 'sqlite' );
-print STDERR "$connection_string\n";
 
 has 'dbh' => (
     is      => 'ro',

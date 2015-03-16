@@ -8,17 +8,17 @@ use 5.14.2;
 use Config::IniFiles;
 use File::ShareDir qw[dist_file];
 
-sub _load_config {
-    my $cfg;
-    my $path;
-    if ( -e '/etc/zonemaster/backend_config.ini' ) {
-        $path = '/etc/zonemaster/backend_config.ini';
-    }
-    else {
-        $path = dist_file('Zonemaster-WebBackend', "backend_config.ini");
-    }
-    $cfg = Config::IniFiles->new( -file => $path );
+our $path;
+if ( -e '/etc/zonemaster/backend_config.ini' ) {
+    $path = '/etc/zonemaster/backend_config.ini';
+}
+else {
+    $path = dist_file('Zonemaster-WebBackend', "backend_config.ini");
+}
 
+
+sub _load_config {
+    my $cfg = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path\n" unless ( $cfg );
 
     return $cfg;
@@ -34,9 +34,6 @@ sub BackendDBType {
     }
     elsif ( lc( $cfg->val( 'DB', 'engine' ) ) eq 'postgresql' ) {
         $result = 'PostgreSQL';
-    }
-    elsif ( lc( $cfg->val( 'DB', 'engine' ) ) eq 'couchdb' ) {
-        $result = 'CouchDB';
     }
     elsif ( lc( $cfg->val( 'DB', 'engine' ) ) eq 'mysql' ) {
         $result = 'MySQL';
@@ -65,17 +62,13 @@ sub DB_connection_string {
     my $result;
 
     if ( lc( $db_engine ) eq 'sqlite' ) {
-        $result = 'DBI:SQLite:dbname=/tmp/zonemaster';
+        $result = sprintf('DBI:SQLite:dbname=%s', $cfg->val( 'DB', 'database_name' ));
     }
     elsif ( lc( $db_engine ) eq 'postgresql' ) {
-        $result =
-          'DBI:Pg:database=' . $cfg->val( 'DB', 'database_name' ) . ';host=' . $cfg->val( 'DB', 'database_host' );
-    }
-    elsif ( lc( $db_engine ) eq 'couchdb' ) {
-        $result = 'CouchDB';
+        $result = sprintf('DBI:Pg:database=%s;host=%s', $cfg->val( 'DB', 'database_name' ), $cfg->val( 'DB', 'database_host' ));
     }
     elsif ( lc( $db_engine ) eq 'mysql' ) {
-        $result = 'MySQL';
+        $result = sprintf('DBI:mysql:database=%s;host=%s', $cfg->val( 'DB', 'database_name' ), $cfg->val( 'DB', 'database_host' ));
     }
 
     return $result;

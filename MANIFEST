@@ -29,7 +29,6 @@ META.yml
 MYMETA.json
 MYMETA.yml
 README
-script/create_db_couchdb.pl
 script/create_db_postgresql_9.3.pl
 script/execute_tests.pl
 script/execute_zonemaster_P10.pl
@@ -37,8 +36,7 @@ script/execute_zonemaster_P5.pl
 script/zonemaster_webbackend.psgi
 share/backend_config.ini
 t/test01.t
-t/test02.t
-t/test03.t
-t/test_mysql_backend.t
+t/test_mysql_backend.pl
+t/test_postgresql_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t

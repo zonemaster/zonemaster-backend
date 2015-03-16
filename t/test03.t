@@ -11,7 +11,7 @@ if ( not $can_use_threads ) {
 }
 else {
     # Require Zonemaster::WebBackend::Engine.pm test
-    require_ok( 'Zonemaster::WebBackend::Engine' );
+    use_ok( 'Zonemaster::WebBackend::Engine' );
 
     #require Zonemaster::WebBackend::Engine;
 

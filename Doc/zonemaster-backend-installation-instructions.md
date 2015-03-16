@@ -90,7 +90,7 @@ $ psql --version (Verify that PostgreSQL version is higher than 9.3)
 
 $ sudo su - postgres
 $ psql
-$ createuser zonemaster  WITH PASSWORD 'zonemaster';
+$ create user zonemaster  WITH PASSWORD 'zonemaster';
 $ create database zonemaster;
 $ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
 $ \q
@@ -102,7 +102,7 @@ Only do this when you first install the Zonemaster backend. _If you do this on a
 
 **Starting starman**
 ```
-$ starman --error-log=logs/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+$ starman --error-log=logs/backend_starman.log --listen=127.0.0.1:5000 /usr/local/bin/zonemaster_webbackend.psgi
 $ vi logs/backend_starman.log ## To verify starman has started
 ```
 **Add a crontab entry for the backend process launcher**

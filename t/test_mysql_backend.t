@@ -5,9 +5,13 @@ use 5.14.2;
 use Test::More;    # see done_testing()
 
 my $can_use_threads = eval 'use threads; 1';
+my $can_use_mysql = eval 'use DBD::mysql; 1';
 
 if ( not $can_use_threads ) {
     plan skip_all => 'No threads in this perl.';
+}
+elsif ( not $can_use_mysql) {
+    plan skip_all => 'Could not load DBD::mysql';
 }
 else {
     # Require Zonemaster::WebBackend::Engine.pm test

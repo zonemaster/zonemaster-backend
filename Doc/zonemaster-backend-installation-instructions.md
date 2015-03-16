@@ -27,7 +27,7 @@ sudo apt-get install libintl-perl libwww-perl libmoose-perl \
        libdbi-perl libdbd-sqlite3-perl libdbd-pg-perl \
        libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl \
        libjson-perl libintl-perl libmoose-perl libnet-dns-perl \
-       postgresql postgresql-contrib \
+       libmodule-install-perl postgresql postgresql-contrib \
 ```
 **Install CPAN dependencies**
 
@@ -35,23 +35,20 @@ sudo apt-get install libintl-perl libwww-perl libmoose-perl \
 $ sudo cpan -i JSON::RPC::Dispatch Plack::Middleware::Debug
 ```
 
-**Modifying the Makefile**
-```
-cd zonemaster-backend
-```
-Remove the following lines from the makefile "Makefile.PL"
-```
-'DBD::mysql' => 0,
-'Store::CouchDB' => 0,
-```
 **Build source code**
 ```
     $ perl Makefile.PL
-    Writing Makefile for Zonemaster-backend
-    Writing MYMETA.yml and MYMETA.json
-    $ make
     $ make test
 ```
+
+Both these steps produce quite a bit of output. As long as it ends by printing `Result: PASS`, everything is OK.
+
+```
+    $ sudo make install
+```
+
+This too produces some output. The `sudo` command may not be necessary, if you normally have write permissions to your Perl installation.
+
 **Create a log directory**
 ```
 mkdir logs ## Path to your log directory and the directory name"
@@ -66,10 +63,13 @@ $ touch execute_tests.log
 ```
 $ cd ..
 ```
-Edit the file "backend_config.ini"
+
+Edit the file `share/backend_config.ini`. Once you have finished editing it,
+either copy it manually to the directory `/etc/zonemaster`, or re-run the `make
+install` step above.
 
 ```
-engine           =PostgreSQL
+engine           = PostgreSQL
 user             = zonemaster
 password         = zonemaster
 database_name    = zonemaster
@@ -95,25 +95,25 @@ $ create database zonemaster;
 $ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
 $ \q
 $ exit
-$ perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
+$ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
 ```
-*Ignore the notice response which results as the output of the above command*
+
+Only do this when you first install the Zonemaster backend. _If you do this on an existing system, you will wipe out the data in your database_.
 
 **Starting starman**
 ```
-$ sudo starman --error-log=logs/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+$ starman --error-log=logs/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
 $ vi logs/backend_starman.log ## To verify starman has started
 ```
 **Add a crontab entry for the backend process launcher**
+
+Add the following two lines to the crontab entry. Make sure to provide the
+absolute directory path where the log file "execute_tests.log" exists. The
+`execute_tests.pl` script will be installed in `/usr/local/bin`, so we make
+sure that will be in cron's path.
+
 ```
 $ crontab -e
-## Add the following line to the crontab entry. Make sure to provide the
-## absolute directory path where the file "execute_tests.pl" and the log file
-## "execute_tests.log" exists
-
-*/15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >>
-/home/user/zonemaster-backend/logs/execute_tests.log 2>&1
+PATH=/bin:/usr/bin:/usr/local/bin
+*/15 * * * * execute_tests.pl >> /home/user/zonemaster-backend/logs/execute_tests.log 2>&1
 ```
-
-
-

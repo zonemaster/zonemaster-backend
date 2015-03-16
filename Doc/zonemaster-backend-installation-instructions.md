@@ -102,8 +102,8 @@ Only do this when you first install the Zonemaster backend. _If you do this on a
 
 **Starting starman**
 ```
-$ starman --error-log=logs/backend_starman.log --listen=127.0.0.1:5000 /usr/local/bin/zonemaster_webbackend.psgi
-$ vi logs/backend_starman.log ## To verify starman has started
+$ starman --error-log=/home/user/logs/backend_starman.log --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid --daemonize /usr/local/bin/zonemaster_webbackend.psgi
+$ cat ~/logs/backend_starman.log ## To verify starman has started
 ```
 **Add a crontab entry for the backend process launcher**
 
@@ -115,5 +115,5 @@ sure that will be in cron's path.
 ```
 $ crontab -e
 PATH=/bin:/usr/bin:/usr/local/bin
-*/15 * * * * execute_tests.pl >> /home/user/zonemaster-backend/logs/execute_tests.log 2>&1
+*/15 * * * * execute_tests.pl >> /home/user/logs/execute_tests.log 2>&1
 ```

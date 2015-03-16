@@ -47,7 +47,7 @@ ok( scalar( $engine->{db}->dbh->selectrow_array( q/SELECT id FROM test_results W
 # test test_progress API
 ok( $engine->test_progress( 1 ) == 0 );
 
-require_ok( 'Zonemaster::WebBackend::Runner' );
+use_ok( 'Zonemaster::WebBackend::Runner' );
 my $command =
 qq/perl -MZonemaster::WebBackend::Runner -E'Zonemaster::WebBackend::Runner->new\(\{ db => "Zonemaster::WebBackend::DB::SQLite"\} \)->run\(1\)'/;
 system( "$command &" );
@@ -58,7 +58,7 @@ ok( $engine->test_progress( 1 ) > 0 );
 foreach my $i ( 1 .. 12 ) {
     sleep( 5 );
     my $progress = $engine->test_progress( 1 );
-    print STDERR "pregress: $progress\n";
+    diag "pregress: $progress";
     last if ( $progress == 100 );
 }
 ok( $engine->test_progress( 1 ) == 100 );

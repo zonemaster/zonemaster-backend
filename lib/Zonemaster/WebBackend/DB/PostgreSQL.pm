@@ -11,19 +11,17 @@ use Digest::MD5 qw(md5_hex);
 use Encode;
 
 use Zonemaster::WebBackend::DB;
+use Zonemaster::WebBackend::Config;
 
 with 'Zonemaster::WebBackend::DB';
 
-#TODO read from configuration file
-my $connection_string = "DBI:Pg:database=zonemaster;host=localhost";
-
-#my $connection_string = "DBI:Pg:database=zonemaster;host=localhost;port=5433";
+my $connection_string = Zonemaster::WebBackend::Config::DB_connection_string();
 
 has 'dbh' => (
     is  => 'ro',
     isa => 'DBI::db',
     default =>
-      sub { DBI->connect( $connection_string, "zonemaster", "zonemaster", { RaiseError => 1, AutoCommit => 1 } ) },
+      sub { DBI->connect( $connection_string, Zonemaster::WebBackend::Config::DB_user(), Zonemaster::WebBackend::Config::DB_password(), { RaiseError => 1, AutoCommit => 1 } ) },
 );
 
 sub create_db {
@@ -32,6 +30,7 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
+    $self->dbh->do(q[ SET client_min_messages = warning]);
     $self->dbh->do( 'DROP TABLE IF EXISTS test_specs CASCADE' );
     $self->dbh->do( 'DROP SEQUENCE IF EXISTS test_specs_id_seq' );
 

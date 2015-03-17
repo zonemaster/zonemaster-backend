@@ -2,7 +2,7 @@
 
 The documentation covers the following operating systems:
 
- * [Ubuntu 14.0.4 LTS](#q1)
+ * [Ubuntu 14.04LTS](#q1)
 
 ## Zonemaster Backend installation
 
@@ -13,30 +13,30 @@ Zonemaster-engine should be installed before. Follow the instructions
 
 ### Instructions for Ubuntu 14.04 with PostgreSQL as the database 
 
-**To get the source code**
-
-    $ git clone https://github.com/dotse/zonemaster-backend.git
-
 **Install package dependencies**
 
 ```
-sudo apt-get install libintl-perl libwww-perl libmoose-perl \
-       libplack-perl libfile-sharedir-perl \
-       libproc-processtable-perl librouter-simple-perl \
-       libstring-shellquote-perl starman libconfig-inifiles-perl \
-       libdbi-perl libdbd-sqlite3-perl libdbd-pg-perl \
-       libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl \
-       libjson-perl \
-       libmodule-install-perl postgresql postgresql-contrib \
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
+                     libdbd-sqlite3-perl starman libio-captureoutput-perl \
+                     libproc-processtable-perl libstring-shellquote-perl \
+                     librouter-simple-perl libjson-rpc-perl \
+                     libclass-method-modifiers-perl libmodule-build-tiny-perl \
+                     libtext-microtemplate-perl libdbd-pg-perl postgresql
 ```
-**Install CPAN dependencies**
+
+**Install CPAN dependency**
 
 ```
-$ sudo cpan -i JSON::RPC::Dispatch Plack::Middleware::Debug
+$ sudo cpan -i Plack::Middleware::Debug
 ```
+
+**Get the source code**
+
+    $ git clone https://github.com/dotse/zonemaster-backend.git
 
 **Build source code**
 ```
+    $ cd zonemaster-backend
     $ perl Makefile.PL
     $ make test
 ```
@@ -51,22 +51,15 @@ This too produces some output. The `sudo` command may not be necessary, if you n
 
 **Create a log directory**
 ```
+cd ~/
 mkdir logs ## Path to your log directory and the directory name"
 ```
-**In the directory add a file**
-```
-$ cd logs
-$ touch backend_starman.log
-$ touch execute_tests.log
-```
-**Database set up**
-```
-$ cd ..
-```
 
-Edit the file `share/backend_config.ini`. Once you have finished editing it,
-either copy it manually to the directory `/etc/zonemaster`, or re-run the `make
-install` step above.
+**Database set up**
+
+Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have finished editing it,
+copy it to the directory `/etc/zonemaster`. You will probably have to create
+the directory first.
 
 ```
 engine           = PostgreSQL
@@ -101,6 +94,10 @@ $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new(
 Only do this when you first install the Zonemaster backend. _If you do this on an existing system, you will wipe out the data in your database_.
 
 **Starting starman**
+
+In all the examples below, replace `/home/user` with the path to your own home
+directory (or, of course, wherever you want).
+
 ```
 $ starman --error-log=/home/user/logs/backend_starman.log --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid --daemonize /usr/local/bin/zonemaster_webbackend.psgi
 $ cat ~/logs/backend_starman.log ## To verify starman has started

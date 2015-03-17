@@ -1,0 +1,40 @@
+Revision history for Perl module Zonemaster.
+
+v1.0.1 2015-02-24
+	Fixes #45 - Updated and moved the client.pl and Client.pm scripts to make it clear they are only ment as code snippets
+	Fixes #53 - Version change from 1.0.0 to 1.0.1 for release 2015.1
+	Fixes #48 - Disabled the "make install" target in makefiles
+	Fixes #17 - Remove get_data_from_parent_zone_1 method from Engine.pm
+	Fixes #35 - Hardcode UTF-8 as output encoding for the BackendTranslator module (disabling reading of the uncodind to use from system locale variables)
+	Fixes #33 - Remove reference to Net::DNS::Keyset
+	Fixes #27 - Solved encoding problem with #17
+	Fixes #25 - Fix for security related problem in the MySQL module
+	Fixes #20 - The Runner.pm module uses wrong version of Zonemaster to run the tests
+	Fixes #19 - Preflight check: Domian existance test does not work
+	Fixes #18 - The "Fetch data from parent zone" code does not work as it should for the NS records.
+
+v1.0.0 2014-12-30
+
+
+v1.0.0 2014-12-11 Public beta release.
+	Fixes #8   - Add README.md to the backend
+	Fixes #225 - Missing install instructions for Web UI
+	Fixes #6   - Impossible to start test for afnic.fr in the undelegated tab
+	Fixes #94  - Seperate history delegated vs undelegated
+	Fixes #197 - System output in the basic view
+	Fixes #193 - Information leakage in GUI's System-module
+	Fixes #235 - Internal server error on testing ".iis.se"
+	Fixes #193 - Information leakage in GUI's System-module
+	Fixes #203 - Interfaces does not take into account the winter timings
+	Fixes #222 - "Fetch data from Parent zone" does not work
+	Fixes #240 - No input validation on name server name
+	Fixes #245 - Zonemaster Backend doesn't handle hung processes
+	Fixes #184 - New logo fro the Web GUI
+	Fixes #170 - Translation of the results
+	Fixes #129 - History should differentiate from delegated, undelegated and batch
+	Fixes #152 - Delay in start of the test (when the same page is used for testing a second domain)
+	Fixes #121 - Does not support Swedish language
+	Fixes #132 - Does not run for all broken domains (e.g. broken.dnssec.ee) 
+	Fixes #139 - No line-feed in output from GUI
+	Fixes #127 - Does not support IDN 2.0 domains
+	Fixes #117 - Disable both IPv4 and IPv6 possible

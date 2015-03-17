@@ -8,9 +8,9 @@ license 'perl';
 perl_version '5.014002';
 
 requires
-  'Zonemaster'               => 0,
+  'Zonemaster'               => 'v1.0.2',
   'Config::IniFiles'         => 0,
-  'DBI'                      => 0,
+  'DBI'                      => 1.616,
   'File::Slurp'              => 0,
   'HTML::Entities'           => 0,
   'IO::CaptureOutput'        => 0,
@@ -18,10 +18,10 @@ requires
   'JSON::RPC::Dispatch'      => 0,
   'Locale::TextDomain'       => 0,
   'LWP::UserAgent'           => 0,
-  'Moose'                    => 0,
+  'Moose'                    => 2.04,
   'Moose::Role'              => 0,
-  'Net::IP::XS'              => 0,
-  'Net::LDNS'                => 0,
+  'Net::IP::XS'              => 0.14,
+  'Net::LDNS'                => 0.72,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0,
   'Proc::ProcessTable'       => 0,

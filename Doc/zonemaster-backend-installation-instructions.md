@@ -2,168 +2,119 @@
 
 The documentation covers the following operating systems:
 
- * [Ubuntu 14.04 (LTS)](#q1)
- * [Debian 7.8](#q2)
+ * [Ubuntu 14.04LTS](#q1)
 
 ## Zonemaster Backend installation
 
-### Instructions for Ubuntu 14.04 <a name="q1"></a>
+### Pre-Requisites
 
-**To get the source code**
+Zonemaster-engine should be installed before. Follow the instructions
+[here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
-    $ sudo apt-get install git build-essential
-    $ git clone https://github.com/dotse/zonemaster-backend.git
+### Instructions for Ubuntu 14.04 with PostgreSQL as the database 
 
 **Install package dependencies**
 
-    $ sudo apt-get install libconfig-inifiles-perl libdata-dump-perl libdbi-perl \
-      libdbd-pg-perl libdbd-mysql-perl libdigest-md5-file-perl libencode-locale-perl \
-      libdbd-sqlite3-perl libfile-slurp-perl libfindbin-libs-perl libhtml-parser-perl \
-      libio-captureoutput-perl libjson-perl libjson-rpc-perl \
-      libdist-zilla-localetextdomain-perl libtest-lwp-useragent-perl libmoose-perl \
-      libcatalystx-simplelogin-perl libnet-dns-perl libnet-ip-perl libplack-perl \
-      libproc-processtable-perl librouter-simple-perl libstring-shellquote-perl \
-      libtest-most-perl libtime-hires-perl postgresql postgresql-contrib starman \
-      couchdb dnssec-tools
+```
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
+                     libdbd-sqlite3-perl starman libio-captureoutput-perl \
+                     libproc-processtable-perl libstring-shellquote-perl \
+                     librouter-simple-perl libjson-rpc-perl \
+                     libclass-method-modifiers-perl libmodule-build-tiny-perl \
+                     libtext-microtemplate-perl libdbd-pg-perl postgresql
+```
 
-**Install CPAN dependencies**
+**Install CPAN dependency**
 
-Unfortunately `Net::LDNS` has not been packaged for Ubuntu yet. So you need to
-install this dependency from CPAN:
+```
+$ sudo cpan -i Plack::Middleware::Debug
+```
 
-    $ sudo perl -MCPAN -e 'install Net::LDNS'
-    
-    $ sudo perl -MCPAN -e 'install Plack::Middleware::Debug' 
-    $ sudo perl -MCPAN -e 'install Store::CouchDB' (this doesn't work on Ubuntu yet)
+**Get the source code**
 
-If all package dependencies are already installed from the previous section,
-this should compile and install after configuration of your CPAN module
-installer.
+    $ git clone https://github.com/dotse/zonemaster-backend.git
 
 **Build source code**
-
+```
     $ cd zonemaster-backend
     $ perl Makefile.PL
-    Warning: prerequisite Store::CouchDB 0 not found.
-    Writing Makefile for zonemaster-backend
-    Writing MYMETA.yml and MYMETA.json
     $ make test
-    $ sudo make dist (if you want to generate a .tgz file of the package)
-
-   * [Set the Database](#q11)
-   * [Run Starman](#q12)
-   * [Add crontab entry](#q13)
-
-### Instructions for Debian 7.8 <a name="q2"></a>
-
-**To get the source code**
-
-    $ sudo apt-get install git build-essential
-    $ git clone https://github.com/dotse/zonemaster-backend.git
-
-**Install package dependencies**
-
-    $ sudo apt-get install libintl-perl libwww-perl libmoose-perl \
-           libnet-dns-perl libnet-dns-sec-perl libnet-ip-perl libplack-perl \  
-           libproc-processtable-perl librouter-simple-perl \
-           libstring-shellquote-perl starman libconfig-inifiles-perl \
-           libdbi-perl libdbd-mysql-perl libdbd-sqlite3-perl \
-           libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl \
-           libjson-perl libintl-perl libmoose-perl libnet-dns-perl
-
-**Install CPAN dependencies**
-
-A few packages have not been installed:
-
-    $ sudo cpan -i Zonemaster (follow the zonemaster-engine installation
-instructions)
-    $ sudo cpan -i JSON::RPC::Dispatch
-    $ sudo cpan -i Plack::Middleware::Debug
-    $ sudo cpan -i Store::CouchDB (if you want to test the CouchDB support)
-
-If all package dependencies are already installed from the previous section,
-this should compile and install after configuration of your CPAN module
-installer.
-
-**Test the installation and create a .tgz file containing all the required files
-for this module**
-
-    $ cd zonemaster-backend
-    $ perl Makefile.PL
-    Writing Makefile for Zonemaster-backend
-    Writing MYMETA.yml and MYMETA.json
-    $ make test
-    $ sudo make dist (if you want to generate a .tgz file of the package)
-
-   * [Set the Database](#q11) 
-   * [Run Starman](#q12)
-   * [Add crontab entry](#q13)
-
-### Database set up <a name="q11"></a>
-
-The backend engine will look for the "backend.conf" file in the /etc/zonemaster/
-folder, if not found, it will look in the curent folder.
-
-  * [DB]
-  * engine=PostgreSQL (The backend database type to use. It can be either
-PostgreSQL, MySQL, SQLite or CouchDB)
-```
-    user             = zonemaster ## The database username
-    password         = zonemaster ## The database password
-    database_name    = zonemaster ## The database name
-    database_host    = localhost  ## The host where the database is accessible)
-    polling_interval = 0.5        ## The frequency at which the database will be checked 
-                                  ## by the backend process to see if any new domain test 
-                                  ## requests are availble (in seconds).
 ```
 
-  * [LOG]
-```
-    log_dir = /var/log/zonemaster/job_runner/ ## The place where the JobRunner logfiles 
-                                              ## will be written
-```
-  * [PERL]
-```
-     interpreter = perl ## The full name of the perl interpreter 
-                        ## for perlbrew based installations
-```
-  * [ZONEMASTER]
-```
-    max_zonemaster_execution_time             = 300 ## The delay after which a test process
-                                                    ## will be considered hung and hard 
-                                                    ## killed
-    number_of_professes_for_frontend_testing  = 20  ## The maximum number of processes for 
-                                                    ## frontend test requests
-    number_of_professes_for_batch_testing     = 20  ## The maximum number of processes for
-                                                    ## batch test requests
-```
-**Create the PostgreSQL Database**
+Both these steps produce quite a bit of output. As long as it ends by printing `Result: PASS`, everything is OK.
 
-    $ psql --version' (Verify that PostgreSQL version is higher than 9.3)
-
-  * A database with the name specified in the configuration file must be created and the database user must have table creation rights.
-  * From the folder containing the Engine.pm module execute the command:
 ```
-    $ perl -MEngine -e 'Engine->new({ db => "ZonemasterDB::PostgreSQL"})->{db}->create_db()'
-```	
-
-### Starting starman <a name="q12"></a>
-
-  * Start the backend using the Starman application server**
-```
-    $ sudo starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
-```
-  * Or on perlbrew based installations:*
-```
-    $ /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/starman --error-log=/var/log/zonemaster/backend_starman.log --listen=127.0.0.1:5000 backend.psgi
+    $ sudo make install
 ```
 
-### Add a crontab entry for the backend process launcher <a name="q13"></a>
-```
-    /15 * * * * perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
-```
-  *Or on perlbrew based installations:*
-```
-    /15 * * * * /home/user/perl5/perlbrew/perls/perl-5.20.0/bin/perl /home/user/zm_distrib/zonemaster-backend/JobRunner/execute_tests.pl >> /var/log/zonemaster/job_runner/execute_tests.log 2>&1
-```	
+This too produces some output. The `sudo` command may not be necessary, if you normally have write permissions to your Perl installation.
 
+**Create a log directory**
+```
+cd ~/
+mkdir logs ## Path to your log directory and the directory name"
+```
+
+**Database set up**
+
+Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have finished editing it,
+copy it to the directory `/etc/zonemaster`. You will probably have to create
+the directory first.
+
+```
+engine           = PostgreSQL
+user             = zonemaster
+password         = zonemaster
+database_name    = zonemaster
+database_host    = localhost
+polling_interval = 0.5
+log_dir          = logs/
+interpreter      = perl
+max_zonemaster_execution_time   = 300
+number_of_professes_for_frontend_testing  = 20
+number_of_professes_for_batch_testing     = 20
+```
+
+**PostgreSQL Database manipulation**
+```
+$ psql --version (Verify that PostgreSQL version is 9.3 or higher)
+
+**Connect to Postgres for the first time and create the database and user**
+
+$ sudo su - postgres
+$ psql
+$ create user zonemaster  WITH PASSWORD 'zonemaster';
+$ create database zonemaster;
+$ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
+$ \q
+$ exit
+$ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
+```
+
+Only do this when you first install the Zonemaster backend. _If you do this on an existing system, you will wipe out the data in your database_.
+
+**Starting starman**
+
+In all the examples below, replace `/home/user` with the path to your own home
+directory (or, of course, wherever you want).
+
+```
+$ starman --error-log=/home/user/logs/backend_starman.log --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid --daemonize /usr/local/bin/zonemaster_webbackend.psgi
+$ cat ~/logs/backend_starman.log ## To verify starman has started
+```
+**Add a crontab entry for the backend process launcher**
+
+Add the following two lines to the crontab entry. Make sure to provide the
+absolute directory path where the log file "execute_tests.log" exists. The
+`execute_tests.pl` script will be installed in `/usr/local/bin`, so we make
+sure that will be in cron's path.
+
+```
+$ crontab -e
+PATH=/bin:/usr/bin:/usr/local/bin
+*/15 * * * * execute_tests.pl >> /home/user/logs/execute_tests.log 2>&1
+```
+
+## All done
+
+At this point, you no longer need the checked out source repository (unless you chose to put the log files there, of course).

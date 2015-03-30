@@ -12,8 +12,7 @@ run the Zonemaster engine on many domains)
 Installation
 ============
 
-Follow the detailed
-[docs/zonemaster-backend-installation-instructions.md](installation instructions).
+Follow the detailed [docs/installation.md](installation instructions).
 
 Prerequisites
 =============
@@ -24,8 +23,8 @@ listed in Makefile.PL as usual.
 Documentation
 =============
 
-A detailed documentation of the API is in the
-[ZonemasterBackend.md file](docs/ZonemasterBackend.md).
+There is a fully documented [API](docs/API.md), which is the primay way
+to use the backend.
 
 License
 =======

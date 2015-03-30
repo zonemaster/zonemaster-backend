@@ -12,7 +12,7 @@ run the Zonemaster engine on many domains)
 Installation
 ============
 
-Follow the detailed [docs/installation.md](installation instructions).
+Follow the detailed [installation instructions](docs/installation.md).
 
 Prerequisites
 =============

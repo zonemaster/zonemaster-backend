@@ -30,7 +30,8 @@ A detailed documentation of the API is in the
 License
 =======
 
-The software is released under the 2-clause BSD license. See separate LICENSE file.
+The software is released under the 2-clause BSD license. See separate
+[LICENSE](LICENSE) file.
 
 
 2014-12-05 Michal TOMA, for the Zonemaster development team

@@ -2,11 +2,11 @@
 
 The documentation covers the following operating systems:
 
- * [Ubuntu 14.04LTS](#q1)
+ * Ubuntu 14.04LTS
 
 ## Zonemaster Backend installation
 
-### Pre-Requisites
+### Pre-Requisites
 
 Zonemaster-engine should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
@@ -26,13 +26,13 @@ sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
 
 **Install CPAN dependency**
 
-```
-$ sudo cpan -i Plack::Middleware::Debug
-```
+    $ sudo cpan -i Plack::Middleware::Debug
+
 
 **Get the source code**
 
     $ git clone https://github.com/dotse/zonemaster-backend.git
+
 
 **Build source code**
 ```
@@ -41,25 +41,26 @@ $ sudo cpan -i Plack::Middleware::Debug
     $ make test
 ```
 
-Both these steps produce quite a bit of output. As long as it ends by printing `Result: PASS`, everything is OK.
+Both these steps produce quite a bit of output. As long as it ends by
+printing `Result: PASS`, everything is OK.
 
-```
     $ sudo make install
-```
 
-This too produces some output. The `sudo` command may not be necessary, if you normally have write permissions to your Perl installation.
+This too produces some output. The `sudo` command may not be necessary,
+if you normally have write permissions to your Perl installation.
 
 **Create a log directory**
-```
-cd ~/
-mkdir logs ## Path to your log directory and the directory name"
-```
+
+Path to your log directory and the directory name:
+
+    $ cd ~/
+    $ mkdir logs
 
 **Database set up**
 
-Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have finished editing it,
-copy it to the directory `/etc/zonemaster`. You will probably have to create
-the directory first.
+Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
+finished editing it, copy it to the directory `/etc/zonemaster`. You will
+probably have to create the directory first.
 
 ```
 engine           = PostgreSQL
@@ -76,22 +77,25 @@ number_of_professes_for_batch_testing     = 20
 ```
 
 **PostgreSQL Database manipulation**
-```
-$ psql --version (Verify that PostgreSQL version is 9.3 or higher)
+
+Verify that PostgreSQL version is 9.3 or higher:
+
+    $ psql --version
 
 **Connect to Postgres for the first time and create the database and user**
 
-$ sudo su - postgres
-$ psql
-$ create user zonemaster  WITH PASSWORD 'zonemaster';
-$ create database zonemaster;
-$ GRANT ALL PRIVILEGES ON DATABASE zonemaster to zonemaster;
-$ \q
-$ exit
-$ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
-```
+    $ sudo su - postgres
+    $ psql < /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
-Only do this when you first install the Zonemaster backend. _If you do this on an existing system, you will wipe out the data in your database_.
+Then let the Backend set up your schema:
+
+    $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
+
+Only do this during an initial installation od the Zonemaster backend.
+
+_If you do this on an existing system, you will wipe out the data in your
+database_.
+
 
 **Starting starman**
 
@@ -99,9 +103,16 @@ In all the examples below, replace `/home/user` with the path to your own home
 directory (or, of course, wherever you want).
 
 ```
-$ starman --error-log=/home/user/logs/backend_starman.log --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid --daemonize /usr/local/bin/zonemaster_webbackend.psgi
-$ cat ~/logs/backend_starman.log ## To verify starman has started
+    $ starman --error-log=/home/user/logs/backend_starman.log \
+      --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid \
+      --daemonize /usr/local/bin/zonemaster_webbackend.psgi
 ```
+
+To verify starman has started:
+
+    $ cat ~/logs/backend_starman.log
+
+
 **Add a crontab entry for the backend process launcher**
 
 Add the following two lines to the crontab entry. Make sure to provide the
@@ -117,4 +128,22 @@ PATH=/bin:/usr/bin:/usr/local/bin
 
 ## All done
 
-At this point, you no longer need the checked out source repository (unless you chose to put the log files there, of course).
+At this point, you no longer need the checked out source repository (unless
+you chose to put the log files there, of course).
+
+Next step is to install the Web UI if you wish so.
+
+
+## Testing the setup
+
+You can look into the [API documentation](API.md) to see how you can use the
+API for your use. If you followed the instructions to the minute, you should
+be able to use the API och localhost port 5000, like this:
+
+    $ curl -H "Content-Type: application/json" \
+      -d '{"params":"","jsonrpc":"2.0","id":140715758026879,"method":"version_info"}' \
+     http://localhost:5000/
+
+The response should be something like this:
+
+    {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}

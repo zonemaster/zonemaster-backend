@@ -13,7 +13,7 @@ Installation
 ============
 
 Follow the detailed
-[Doc/zonemaster-backend-installation-instructions.md](installation instructions).
+[docs/zonemaster-backend-installation-instructions.md](installation instructions).
 
 Prerequisites
 =============
@@ -25,7 +25,7 @@ Documentation
 =============
 
 A detailed documentation of the API is in the
-[ZonemasterBackend.md file](Dov/ZonemasterBackend.md).
+[ZonemasterBackend.md file](docs/ZonemasterBackend.md).
 
 License
 =======

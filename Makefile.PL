@@ -8,7 +8,7 @@ license 'perl';
 perl_version '5.014002';
 
 requires
-  'Zonemaster'               => 'v1.0.2',
+  'Zonemaster'               => 0,
   'Config::IniFiles'         => 0,
   'DBI'                      => 1.616,
   'File::Slurp'              => 0,

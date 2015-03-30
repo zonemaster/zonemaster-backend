@@ -17,7 +17,7 @@ the JSON-RPC protocol.
   "params": "",
   "jsonrpc": "2.0",
   "id": 140715758026879,
-  "method": "**version_info**"
+  "method": "version_info"
 }
 ```
 

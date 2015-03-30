@@ -112,6 +112,9 @@ To verify starman has started:
 
     $ cat ~/logs/backend_starman.log
 
+If you would like to kill the starman process, you can issue this command:
+
+    $ kill `cat /home/user/logs/starman.pid`
 
 **Add a crontab entry for the backend process launcher**
 

@@ -16,12 +16,11 @@ Zonemaster-engine should be installed before. Follow the instructions
 **Install package dependencies**
 
 ```
-sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
-                     libdbd-sqlite3-perl starman libio-captureoutput-perl \
-                     libproc-processtable-perl libstring-shellquote-perl \
-                     librouter-simple-perl libjson-rpc-perl \
-                     libclass-method-modifiers-perl libmodule-build-tiny-perl \
-                     libtext-microtemplate-perl libdbd-pg-perl postgresql
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl 
+libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl 
+libstring-shellquote-perl librouter-simple-perl libjson-rpc-perl 
+libclass-method-modifiers-perl libmodule-build-tiny-perl  libtext-microtemplate-perl 
+libdbd-pg-perl postgresql
 ```
 
 **Install CPAN dependency**
@@ -58,8 +57,8 @@ Path to your log directory and the directory name:
 
 **Database set up**
 
-Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
-finished editing it, copy it to the directory `/etc/zonemaster`. You will
+Edit the file *`zonemaster-backend/share/backend_config.ini`*. Once you have
+finished editing it, copy it to the directory `*/etc/zonemaster*`. You will
 probably have to create the directory first.
 
 ```
@@ -86,12 +85,13 @@ Verify that PostgreSQL version is 9.3 or higher:
 
     $ sudo su - postgres
     $ psql < /home/<user>/zonemaster-backend/docs/initial-postgres.sql
+    $ exit
 
 Then let the Backend set up your schema:
-
+```
     $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
-
-Only do this during an initial installation od the Zonemaster backend.
+```
+Only do this during an initial installation of the Zonemaster backend.
 
 _If you do this on an existing system, you will wipe out the data in your
 database_.
@@ -99,7 +99,7 @@ database_.
 
 **Starting starman**
 
-In all the examples below, replace `/home/user` with the path to your own home
+In all the examples below, replace `*/home/user*` with the path to your own home
 directory (or, of course, wherever you want).
 
 ```
@@ -124,8 +124,8 @@ absolute directory path where the log file "execute_tests.log" exists. The
 sure that will be in cron's path.
 
 ```
+$ PATH=/bin:/usr/bin:/usr/local/bin
 $ crontab -e
-PATH=/bin:/usr/bin:/usr/local/bin
 */15 * * * * execute_tests.pl >> /home/user/logs/execute_tests.log 2>&1
 ```
 
@@ -134,7 +134,8 @@ PATH=/bin:/usr/bin:/usr/local/bin
 At this point, you no longer need the checked out source repository (unless
 you chose to put the log files there, of course).
 
-Next step is to install the Web UI if you wish so.
+Next step is to install the [Web
+UI]((https://github.com/dotse/zonemaster-gui/blob/master/Zonemaster_Dancer/Doc/zonemaster-frontend-installation-instructions.md) if you wish so.
 
 
 ## Testing the setup

@@ -16,12 +16,11 @@ Zonemaster-engine should be installed before. Follow the instructions
 **Install package dependencies**
 
 ```
-sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
-                     libdbd-sqlite3-perl starman libio-captureoutput-perl \
-                     libproc-processtable-perl libstring-shellquote-perl \
-                     librouter-simple-perl libjson-rpc-perl \
-                     libclass-method-modifiers-perl libmodule-build-tiny-perl \
-                     libtext-microtemplate-perl libdbd-pg-perl postgresql
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl 
+libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl 
+libstring-shellquote-perl librouter-simple-perl libjson-rpc-perl 
+libclass-method-modifiers-perl libmodule-build-tiny-perl libtext-microtemplate-perl 
+libdbd-pg-perl postgresql
 ```
 
 **Install CPAN dependency**
@@ -91,7 +90,7 @@ Then let the Backend set up your schema:
 
     $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
 
-Only do this during an initial installation od the Zonemaster backend.
+Only do this during an initial installation of the Zonemaster backend.
 
 _If you do this on an existing system, you will wipe out the data in your
 database_.

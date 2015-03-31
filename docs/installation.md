@@ -6,8 +6,7 @@ The documentation covers the following operating systems:
 
 ## Pre-Requisites
 
-Zonemaster-engine should be installed before. Follow the instructions
-[here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
+Zonemaster-engine should be installed before the installation of the backend. Follow the instructions [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
 ## Instructions for installing in Ubuntu 14.04
 

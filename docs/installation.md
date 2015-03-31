@@ -92,8 +92,8 @@ Then let the Backend set up your schema:
 
 Only do this during an initial installation of the Zonemaster backend.
 
-*If you do this on an existing system, you will wipe out the data in your
-database*.
+**If you do this on an existing system, you will wipe out the data in your
+database**.
 
 
 **Starting starman**

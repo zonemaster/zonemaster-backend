@@ -57,7 +57,7 @@ Path to your log directory and the directory name:
 
 **Database set up**
 
-Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
+Edit the file `*zonemaster-backend/share/backend_config.ini*`. Once you have
 finished editing it, copy it to the directory `/etc/zonemaster`. You will
 probably have to create the directory first.
 

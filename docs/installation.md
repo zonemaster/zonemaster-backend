@@ -57,7 +57,7 @@ Path to your log directory and the directory name:
 
 **Database set up**
 
-Edit the file `*zonemaster-backend/share/backend_config.ini*`. Once you have
+Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
 finished editing it, copy it to the directory `/etc/zonemaster`. You will
 probably have to create the directory first.
 
@@ -92,8 +92,8 @@ Then let the Backend set up your schema:
 
 Only do this during an initial installation of the Zonemaster backend.
 
-_If you do this on an existing system, you will wipe out the data in your
-database_.
+*If you do this on an existing system, you will wipe out the data in your
+database*.
 
 
 **Starting starman**

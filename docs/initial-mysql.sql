@@ -1,0 +1,30 @@
+-- Initial setup for MySQL database
+CREATE DATABASE zonemaster;
+CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';
+CREATE USER 'zonemaster'@'%' IDENTIFIED BY 'zonemaster';
+
+USE zonemaster;
+CREATE TABLE test_results (
+    id integer AUTO_INCREMENT PRIMARY KEY,
+	batch_id integer NULL,
+	creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	priority integer DEFAULT 10,
+	progress integer DEFAULT 0,
+	params_deterministic_hash character varying(32),
+	params blob NOT NULL,
+	results blob DEFAULT NULL
+);
+CREATE TABLE batch_jobs (
+    id integer AUTO_INCREMENT PRIMARY KEY,
+    username character varying(50) NOT NULL,
+    creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+CREATE TABLE users (
+    id integer AUTO_INCREMENT primary key,
+	user_info blob DEFAULT NULL
+);
+GRANT SELECT,UPDATE,INSERT ON zonemaster.test_results TO 'zonemaster';
+GRANT SELECT,UPDATE,INSERT ON zonemaster.batch_jobs TO 'zonemaster';
+GRANT SELECT,UPDATE,INSERT ON zonemaster.users TO 'zonemaster';

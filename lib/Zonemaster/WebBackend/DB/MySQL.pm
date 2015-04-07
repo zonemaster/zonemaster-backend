@@ -23,61 +23,6 @@ has 'dbh' => (
       sub { DBI->connect( $connection_string, "zonemaster", "zonemaster", { RaiseError => 1, AutoCommit => 1 } ) },
 );
 
-sub create_db {
-    my ( $self ) = @_;
-
-    ####################################################################
-    # TEST RESULTS
-    ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_specs' ) or die "SQLite Fatal error: " . $self->dbh->errstr();
-
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_results' ) or die "SQLite Fatal error: " . $self->dbh->errstr();
-
-    $self->dbh->do(
-        'CREATE TABLE test_results (
-					id integer AUTO_INCREMENT PRIMARY KEY,
-					batch_id integer NULL,
-					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					priority integer DEFAULT 10,
-					progress integer DEFAULT 0,
-					params_deterministic_hash character varying(32),
-					params blob NOT NULL,
-					results blob DEFAULT NULL
-			)
-	'
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr();
-
-    ####################################################################
-    # BATCH JOBS
-    ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS batch_jobs' ) or die "SQLite Fatal error: " . $self->dbh->errstr();
-
-    $self->dbh->do(
-        'CREATE TABLE batch_jobs (
-					id integer AUTO_INCREMENT PRIMARY KEY,
-					username character varying(50) NOT NULL,
-					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-			)
-	'
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr();
-
-    ####################################################################
-    # USERS
-    ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS users' );
-    $self->dbh->do(
-        'CREATE TABLE users (
-					id integer AUTO_INCREMENT primary key,
-					user_info blob DEFAULT NULL
-			)
-	'
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr();
-
-    return 1;
-}
-
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
     my $user_id;

@@ -96,7 +96,7 @@ database_.
 
 2) Using a database adminstrator user (called root in the example below), run the setup file:
     
-    `mysql --user=root --password < docs/initial-mysql.sql`
+    mysql --user=root --password < docs/initial-mysql.sql
     
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 

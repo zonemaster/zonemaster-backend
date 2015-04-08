@@ -90,6 +90,17 @@ Only do this during an **initial installation** of the Zonemaster backend.
 _If you do this on an existing system, you will wipe out the data in your
 database_.
 
+### Using MySQL as database for the backend
+
+1) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
+
+2) Using a database adminstrator user (called root in the example below), run the setup file:
+    
+    `mysql --user=root --password < docs/initial-mysql.sql`
+    
+This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
+
+If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `docs/cleanup-mysql.sql` as a database administrator. It removes the user and drops the database (obviously taking all data with it).
 
 ### Starting the backend
 

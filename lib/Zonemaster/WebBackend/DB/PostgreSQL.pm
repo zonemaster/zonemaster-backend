@@ -15,7 +15,7 @@ use Zonemaster::WebBackend::Config;
 
 with 'Zonemaster::WebBackend::DB';
 
-my $connection_string = Zonemaster::WebBackend::Config::DB_connection_string();
+my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string('postgresql');
 
 has 'dbh' => (
     is  => 'ro',

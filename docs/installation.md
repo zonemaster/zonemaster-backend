@@ -106,6 +106,8 @@ If, at some point, you want to delete all traces of Zonemaster in the database, 
 
 ### Starting the backend
 
+#### General instructions
+
 1) In all the examples below, replace `/home/user` with the path to your own home
 directory (or, of course, wherever you want).
 
@@ -120,6 +122,16 @@ directory (or, of course, wherever you want).
 3) If you would like to kill the starman process, you can issue this command:
 
     $ kill `cat /home/user/logs/starman.pid`
+
+#### Ubuntu 14.04LTS
+
+These specific instructions can be used at least for Ubuntu 14.04LTS, and probably also for other systems using `upstart`.
+
+1) Copy the file `share/starman-zonemaster.conf` to the directory `/etc/init`.
+
+2) Run `sudo service starman-zonemaster start`.
+
+This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
 
 ### Add a crontab entry for the backend process launcher
 

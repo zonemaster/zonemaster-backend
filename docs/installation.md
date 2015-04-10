@@ -94,7 +94,9 @@ database_.
 
 1) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
 
-2) Using a database adminstrator user (called root in the example below), run the setup file:
+2) Make sure the MySQL server you're connecting to is version 5.6 or newer.
+
+3) Using a database adminstrator user (called root in the example below), run the setup file:
     
     mysql --user=root --password < docs/initial-mysql.sql
     

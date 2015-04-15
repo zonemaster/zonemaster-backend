@@ -141,19 +141,13 @@ These specific instructions can be used at least for Ubuntu 14.04LTS, and probab
 
 This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
 
-### Add a crontab entry for the backend process launcher
+### Start the backend process launcher
 
-Add the following two lines to the crontab entry. Make sure to provide the
-absolute directory path where the log file "execute_tests.log" exists. The
-`execute_tests.pl` script will be installed in `/usr/local/bin`, so we make
-sure that will be in cron's path.
+To start it manually, do this:
 
-    $ crontab -e
-    PATH=/bin:/usr/bin:/usr/local/bin
-    */15 * * * * execute_tests.pl >> /home/user/logs/execute_tests.log 2>&1
+    zm_wb_daemon --pidfile=/tmp/zm_wb_daemon.pid start
 
-At this point, you no longer need the checked out source repository (unless
-you chose to put the log files there, of course).
+In order to have it done automatically, you can use the example Upstart config file in `share/zm_wb_daemon.conf` (for Ubuntu 14.04 and similar), or insert the command above into your system's startup sequence in some other appropriate way. The only permission needed is to write the PID file.
 
 ## Testing the setup
 

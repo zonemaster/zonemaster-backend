@@ -17,13 +17,11 @@ Zonemaster-engine should be installed before. Follow the instructions
     libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl \
     libstring-shellquote-perl librouter-simple-perl libjson-rpc-perl \
     libclass-method-modifiers-perl libmodule-build-tiny-perl \
-    libtext-microtemplate-perl libparallel-forkmanager-perl libdaemon-control-perl
-    
-    libdbd-pg-perl postgresql
+    libtext-microtemplate-perl libdaemon-control-perl
 
-2) Install CPAN dependency
+2) Install CPAN dependencies
 
-    $ sudo cpan -i Plack::Middleware::Debug
+    $ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager
 
 3) Get the source code
 
@@ -51,6 +49,8 @@ Path to your log directory and the directory name:
 
     $ cd ~/
     $ mkdir logs
+
+Note: The Perl module `Parallel::ForkManager` exists as a Debian package, but with a version too old to be useful for us.
 
 ## Database set up
 

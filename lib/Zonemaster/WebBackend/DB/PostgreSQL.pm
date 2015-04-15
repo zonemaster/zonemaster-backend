@@ -247,6 +247,16 @@ sub test_results {
     return $result;
 }
 
+sub get_test_request {
+    my ( $self ) = @_;
+
+    my ( $id ) = $self->dbh->selectrow_array(
+        q[ SELECT id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
+    $self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+
+    return $id;
+}
+
 sub get_test_history {
     my ( $self, $p ) = @_;
 

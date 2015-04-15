@@ -1,0 +1,120 @@
+#!/usr/bin/env perl
+
+use 5.14.2;
+use warnings;
+
+use Zonemaster::WebBackend::Runner;
+use Zonemaster::WebBackend::Config;
+
+use Parallel::ForkManager;
+use Daemon::Control;
+
+use Time::HiRes qw[time sleep];
+use Getopt::Long;
+
+###
+### Global variable.
+###
+
+our $dbclass;
+
+###
+### Compile-time stuff.
+###
+
+# Demand-load the database class specified in the configuration.
+BEGIN {
+    my $dbtype = Zonemaster::WebBackend::Config->BackendDBType();
+    $dbclass = 'Zonemaster::WebBackend::DB::' . $dbtype;
+    require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
+    $dbclass->import();
+}
+
+###
+### More global variables, and initialization.
+###
+
+my $pidfile;
+GetOptions( 'pidfile=s' => \$pidfile, );
+$pidfile //= '/tmp/zm_wc_daemon.pid';
+
+# Yes, the method names are spelled like that.
+my $maximum_processes =
+  Zonemaster::WebBackend::Config->NumberOfProfessesForFrontendTesting() +
+  Zonemaster::WebBackend::Config->NumberOfProfessesForBatchTesting();
+
+my $delay   = Zonemaster::WebBackend::Config->PollingInterval();
+my $timeout = Zonemaster::WebBackend::Config->MaxZonemasterExecutionTime();
+
+my $pm = Parallel::ForkManager->new( $maximum_processes );
+$pm->set_waitpid_blocking_sleep( 0 );
+
+my %times;
+
+###
+### Actual functionality
+###
+
+$pm->run_on_wait(
+    sub {
+        foreach my $pid ( $pm->running_procs ) {
+            my $diff = time() - $times{$pid};
+
+            if ( $diff > $timeout ) {
+                kill 9, $pid;
+            }
+        }
+    },
+    1
+);
+
+$pm->run_on_start(
+    sub {
+        my ( $pid, $id ) = @_;
+
+        $times{$pid} = time();
+    }
+);
+
+$pm->run_on_finish(
+    sub {
+        my ( $pid, $exitcode, $id ) = @_;
+
+        delete $times{$pid};
+    }
+);
+
+sub main {
+    my $db = $dbclass->new;
+
+    while ( 1 ) {
+        my $id = $db->get_test_request();
+
+        if ( $id ) {
+            $pm->wait_for_available_procs();
+            if ( $pm->start( $id ) == 0 ) {    # Child process
+                Zonemaster::WebBackend::Runner->new->run( $id );
+                $pm->finish;
+            }
+        }
+        else {
+            sleep $delay;
+        }
+    }
+}
+
+###
+### Daemon Control stuff.
+###
+
+my $daemon = Daemon::Control->new(
+    name     => 'zonemaster-webbackend-daemon',
+    program  => \&main,
+    pid_file => $pidfile,
+);
+
+if ( $ENV{PERLBREW_ROOT} ) {
+    $daemon->init_config( $ENV{PERLBREW_ROOT} . '/etc/bashrc' );
+}
+
+exit $daemon->run;

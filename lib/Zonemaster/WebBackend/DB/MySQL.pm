@@ -13,14 +13,14 @@ use Zonemaster::WebBackend::Config;
 
 with 'Zonemaster::WebBackend::DB';
 
-my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string( 'mysql' );
+my $connection_string   = Zonemaster::WebBackend::Config->DB_connection_string( 'mysql' );
+my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
+my $connection_user     = Zonemaster::WebBackend::Config->DB_user();
+my $connection_password = Zonemaster::WebBackend::Config->DB_password();
 
-has 'dbh' => (
-    is  => 'ro',
-    isa => 'DBI::db',
-    default =>
-      sub { DBI->connect( $connection_string, "zonemaster", "zonemaster", { RaiseError => 1, AutoCommit => 1 } ) },
-);
+sub dbh {
+    DBI->connect_cached( $connection_string, $connection_user, $connection_password, $connection_args );
+}
 
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
@@ -98,7 +98,7 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
         );
 
         if ( $recent_id ) {
-            $result_id = $recent_id;  # A recent entry exists, so return its id
+            $result_id = $recent_id;    # A recent entry exists, so return its id
         }
         else {
             $self->dbh->do(
@@ -154,6 +154,16 @@ sub test_results {
     $result->{results} = decode_json( $result->{results} );
 
     return $result;
+}
+
+sub get_test_request {
+    my ( $self ) = @_;
+
+    my ( $id ) = $self->dbh->selectrow_array(
+        q[ SELECT id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
+    $self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+
+    return $id;
 }
 
 sub get_test_history {

@@ -11,36 +11,25 @@ use JSON;
 
 use Net::LDNS;
 
-require Zonemaster;
-require Zonemaster::Translator;
-require Zonemaster::WebBackend::Config;
+use Zonemaster;
+use Zonemaster::Translator;
+use Zonemaster::WebBackend::Config;
 
 sub new {
     my ( $class, $params ) = @_;
     my $self = {};
 
     if ( $params && $params->{db} ) {
-        eval {
-            say "using DB:[$params->{db}]";
-            eval "require $params->{db}";
-            die $@ if $@;
-            $self->{db} = "$params->{db}"->new();
-        };
-        die $@ if $@;
+        eval "require $params->{db}";
+        $self->{db} = "$params->{db}"->new();
     }
     else {
-        eval {
-            my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
-            say "using BackendDBType:[$backend_module]";
-            eval "require $backend_module";
-            die $@ if $@;
-            $self->{db} = $backend_module->new();
-        };
-        die $@ if $@;
+        my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
+        eval "require $backend_module";
+        $self->{db} = $backend_module->new();
     }
 
     bless( $self, $class );
-    say "Runner::New OK";
     return $self;
 }
 
@@ -53,7 +42,6 @@ sub run {
     my $params;
 
     my $progress = $self->{db}->test_progress( $test_id, 1 );
-    say "test [$test_id] test_progress returned [$progress]";
 
     $params = $self->{db}->get_test_params( $test_id );
 
@@ -145,7 +133,6 @@ sub run {
     say "Runner finished OK";
 
     $progress = $self->{db}->test_progress( $test_id );
-    say "test [$test_id] test_progress returned [$progress]";
 
     return;
 } ## end sub run

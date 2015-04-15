@@ -17,7 +17,9 @@ Zonemaster-engine should be installed before. Follow the instructions
     libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl \
     libstring-shellquote-perl librouter-simple-perl libjson-rpc-perl \
     libclass-method-modifiers-perl libmodule-build-tiny-perl \
-    libtext-microtemplate-perl libdbd-pg-perl postgresql
+    libtext-microtemplate-perl libparallel-forkmanager-perl libdaemon-control-perl
+    
+    libdbd-pg-perl postgresql
 
 2) Install CPAN dependency
 
@@ -54,7 +56,11 @@ Path to your log directory and the directory name:
 
 ### Using PostgreSQL as database for the backend
 
-1) Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
+1) install PostgreSQL packages.
+
+    sudo apt-get install libdbd-pg-perl postgresql
+
+2) Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
 finished editing it, copy it to the directory `/etc/zonemaster`. You will
 probably have to create the directory first.
 
@@ -70,18 +76,18 @@ probably have to create the directory first.
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-2) PostgreSQL Database manipulation
+3) PostgreSQL Database manipulation
 
 Verify that PostgreSQL version is 9.3 or higher:
 
     $ psql --version
 
-3) Connect to Postgres for the first time and create the database and user
+4) Connect to Postgres for the first time and create the database and user
 
     $ sudo su - postgres
     $ psql < /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
-4) Then let the Backend set up your schema:
+5) Then let the Backend set up your schema:
 
     $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
 
@@ -92,9 +98,11 @@ database_.
 
 ### Using MySQL as database for the backend
 
-1) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
+1) Install MySQL packages.
 
-2) Make sure the MySQL server you're connecting to is version 5.6 or newer.
+    sudo apt-get install mysql-server-5.6 libdbd-mysql-perl
+
+2) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
 
 3) Using a database adminstrator user (called root in the example below), run the setup file:
     

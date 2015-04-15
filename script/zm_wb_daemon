@@ -35,7 +35,13 @@ BEGIN {
 ###
 
 my $pidfile;
-GetOptions( 'pidfile=s' => \$pidfile, );
+my $user;
+my $group;
+GetOptions(
+    'pidfile=s' => \$pidfile,
+    'user' => \$user,
+    'group' => \$group,
+);
 $pidfile //= '/tmp/zm_wc_daemon.pid';
 
 # Yes, the method names are spelled like that.
@@ -47,7 +53,7 @@ my $delay   = Zonemaster::WebBackend::Config->PollingInterval();
 my $timeout = Zonemaster::WebBackend::Config->MaxZonemasterExecutionTime();
 
 my $pm = Parallel::ForkManager->new( $maximum_processes );
-$pm->set_waitpid_blocking_sleep( 0 );
+$pm->set_waitpid_blocking_sleep( 0 ) if $pm->can('set_waitpid_blocking_sleep');
 
 my %times;
 
@@ -107,14 +113,14 @@ sub main {
 ### Daemon Control stuff.
 ###
 
-my $daemon = Daemon::Control->new(
+my $daemon = Daemon::Control->new({
     name     => 'zonemaster-webbackend-daemon',
     program  => \&main,
     pid_file => $pidfile,
-);
+});
 
-if ( $ENV{PERLBREW_ROOT} ) {
-    $daemon->init_config( $ENV{PERLBREW_ROOT} . '/etc/bashrc' );
-}
+$daemon->init_config( $ENV{PERLBREW_ROOT} . '/etc/bashrc' ) if ( $ENV{PERLBREW_ROOT} );
+$daemon->user($user) if $user;
+$daemon->group($group) if $group;
 
 exit $daemon->run;

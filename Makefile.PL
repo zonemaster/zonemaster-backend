@@ -29,6 +29,8 @@ requires
   'String::ShellQuote'       => 0,
   'Starman'                  => 0,
   'File::ShareDir'           => 0,
+  'Parallel::ForkManager'    => 0,
+  'Daemon::Control'          => 0,
   ;
 
 test_requires 'DBD::SQLite';

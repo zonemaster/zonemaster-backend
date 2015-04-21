@@ -76,25 +76,20 @@ probably have to create the directory first.
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-3) PostgreSQL Database manipulation
+3) PostgreSQL Database manipulation
 
 Verify that PostgreSQL version is 9.3 or higher:
 
     $ psql --version
 
-4) Connect to Postgres for the first time and create the database and user
+4) Connect to Postgres as a user with administrative privileges and set things up:
 
     $ sudo su - postgres
     $ psql < /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
-5) Then let the Backend set up your schema:
+This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
-    $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
-
-Only do this during an **initial installation** of the Zonemaster backend.
-
-_If you do this on an existing system, you will wipe out the data in your
-database_.
+If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `docs/cleanup-postgres.sql` as a database administrator. It removes the user and drops the database (obviously taking all data with it).
 
 ### Using MySQL as database for the backend
 

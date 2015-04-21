@@ -166,8 +166,6 @@ sub create_new_test {
     ( $result ) = $self->dbh->selectrow_array(
         "SELECT MAX(id) AS id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash'" );
 
-    say "create_new_test returned: [$result]";
-
     return $result;
 }
 

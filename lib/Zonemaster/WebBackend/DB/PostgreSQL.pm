@@ -278,7 +278,6 @@ sub get_test_history {
 		WHERE params->>'domain'=" . $self->dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
 		ORDER BY id DESC 
 		OFFSET $p->{offset} LIMIT $p->{limit}";
-    print "$query\n";
     my $sth1 = $self->dbh->prepare( $query );
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {

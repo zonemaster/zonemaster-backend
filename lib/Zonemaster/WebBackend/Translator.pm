@@ -35,11 +35,6 @@ sub translate_tag {
 
     my $str = decode_utf8( __x( $string, %{ $entry->{args} } ) );
 
-    #	my $str = __x( $string, %{ $entry->{args} } );
-    #	my $translated_string = __x( $string, %{ $entry->{args} } );
-    #	say STDERR Dumper($translated_string);
-    #	my $str = decode('iso-8859-1', $translated_string);
-
     return $str;
 }
 

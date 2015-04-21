@@ -32,7 +32,6 @@ sub new {
 
     if ( $params && $params->{db} ) {
         eval {
-            say "using DB:[$params->{db}]";
             eval "require $params->{db}";
             die $@ if $@;
             $self->{db} = "$params->{db}"->new();
@@ -42,7 +41,6 @@ sub new {
     else {
         eval {
             my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
-            say "using BackendDBType:[$backend_module]";
             eval "require $backend_module";
             die $@ if $@;
             $self->{db} = $backend_module->new();

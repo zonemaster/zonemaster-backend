@@ -97,7 +97,6 @@ sub run {
                             );
                             $self->{db}->test_progress( $test_id, $percent_progress );
 
-#							print STDERR "$percent_progress% / running method $module_method\n";#."\t".$translator->translate_tag( $entry )."\n";
                             $previous_method = $module_method;
                         }
                     }

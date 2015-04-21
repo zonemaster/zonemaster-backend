@@ -29,3 +29,4 @@ CREATE TABLE users (
 );
 
 GRANT SELECT,UPDATE,INSERT ON test_results, batch_jobs, users TO zonemaster;
+GRANT USAGE ON test_results_id_seq, batch_jobs_id_seq, users_id_seq TO zonemaster;

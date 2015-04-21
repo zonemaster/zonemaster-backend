@@ -85,7 +85,7 @@ Verify that PostgreSQL version is 9.3 or higher:
 4) Connect to Postgres as a user with administrative privileges and set things up:
 
     $ sudo su - postgres
-    $ psql < /home/<user>/zonemaster-backend/docs/initial-postgres.sql
+    $ psql -f /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 

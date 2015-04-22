@@ -200,26 +200,26 @@ the JSON-RPC protocol.
 ```
 {
   "params": {
-  "test_profile": "test_profile_1",
-  "ipv6": 1,
-  "ipv4": 1,
-  "client_id": "Zonemaster CGI/Dancer/node.js",
-  "nameservers": [
-    { "ns1.nic.fr": "" },
-    { "empty": "192.134.4.1" },
-    { "ns1.nic.fr": "192.134.4.1" }
-  ],
-  "domain": "afnic-3.fr",
-  "ds_digest_pairs": [
-    { "ds1": "digest1" },
-    { "ds2": "digest2" }
-  ],
-  "advanced_options": 1,
-  "client_version": "1.0"
-},
-"jsonrpc": "2.0",
-"id": 140723281305680,
-"method": "start_domain_test"
+    "test_profile": "test_profile_1",
+    "ipv6": 1,
+    "ipv4": 1,
+    "client_id": "Zonemaster CGI/Dancer/node.js",
+    "nameservers": [
+      { "ns1.nic.fr": "" },
+      { "empty": "192.134.4.1" },
+      { "ns1.nic.fr": "192.134.4.1" }
+    ],
+    "domain": "afnic-3.fr",
+    "ds_digest_pairs": [
+      { "ds1": "digest1" },
+      { "ds2": "digest2" }
+    ],
+    "advanced_options": 1,
+    "client_version": "1.0"
+  },
+  "jsonrpc": "2.0",
+  "id": 140723281305680,
+  "method": "start_domain_test"
 }
 ```
 
@@ -308,12 +308,12 @@ the JSON-RPC protocol.
 ```
 {
   "params" : {
-  "language" : "en",
-  "id" : 4
-},
-"jsonrpc" : "2.0",
-"id" : 140732400697028,
-"method" : "get_test_results"
+    "language" : "en",
+    "id" : 4
+  },
+  "jsonrpc" : "2.0",
+  "id" : 140732400697028,
+  "method" : "get_test_results"
 }
 ```
 
@@ -504,15 +504,15 @@ The **level** is the level of severity of the message
         { "ds1": "digest1" },
         { "ds2": "digest2" }
       ],
-    "advanced_options": 1,
-    "client_version": "1.0"
+      "advanced_options": 1,
+      "client_version": "1.0"
+    },
+    "limit" : 10,
+    "offset" : 0
   },
-  "limit" : 10,
-  "offset" : 0
-},
-"jsonrpc": "2.0",
-"id": 140726285079520,
-"method" : "get_test_history"
+  "jsonrpc": "2.0",
+  "id": 140726285079520,
+  "method" : "get_test_history"
 }
 ```
 

@@ -57,11 +57,11 @@ sub user_authorized {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=" . $self->dbh->quote( $test_id ) )
-      if ( $progress );
+    my $dbh = $self->dbh;
+    $dbh->do( "UPDATE test_results SET progress=$progress WHERE id=?", undef, $test_id ) if ( $progress );
 
     my ( $result ) =
-      $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=" . $self->dbh->quote( $test_id ) );
+      $dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=?", undef, $test_id );
 
     return $result;
 }
@@ -154,9 +154,10 @@ sub test_results {
 sub get_test_request {
     my ( $self ) = @_;
 
-    my ( $id ) = $self->dbh->selectrow_array(
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
         q[ SELECT id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
-    $self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+    $dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
 
     return $id;
 }

@@ -9,19 +9,18 @@ The documentation covers the following operating systems:
 Zonemaster-engine should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
-## Instructions for installing in Ubuntu 14.04
+## Instructions for installing in Ubuntu 14.04 and Debian 7
 
 1) Install package dependencies
 
     sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
     libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl \
-    libstring-shellquote-perl librouter-simple-perl libjson-rpc-perl \
-    libclass-method-modifiers-perl libmodule-build-tiny-perl \
+    libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl \
     libtext-microtemplate-perl libdaemon-control-perl
 
 2) Install CPAN dependencies
 
-    $ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager
+    $ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 
 3) Get the source code
 
@@ -50,7 +49,7 @@ Path to your log directory and the directory name:
     $ cd ~/
     $ mkdir logs
 
-Note: The Perl module `Parallel::ForkManager` exists as a Debian package, but with a version too old to be useful for us.
+Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
 
 ## Database set up
 
@@ -82,6 +81,8 @@ Verify that PostgreSQL version is 9.3 or higher:
 
     $ psql --version
 
+Note: the default Debian package repository does not have a recent enough PostgreSQL server version. If you're using Debian, you'll either have to use an external database, install from another repository or use the MySQL backend.
+
 4) Connect to Postgres as a user with administrative privileges and set things up:
 
     $ sudo su - postgres
@@ -95,7 +96,7 @@ If, at some point, you want to delete all traces of Zonemaster in the database, 
 
 1) Install MySQL packages.
 
-    sudo apt-get install mysql-server-5.6 libdbd-mysql-perl
+    sudo apt-get install mysql-server libdbd-mysql-perl
 
 2) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
 

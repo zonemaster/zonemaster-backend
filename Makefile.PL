@@ -24,7 +24,6 @@ requires
   'Net::LDNS'                => 0.72,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0,
-  'Proc::ProcessTable'       => 0,
   'Router::Simple::Declare'  => 0,
   'String::ShellQuote'       => 0,
   'Starman'                  => 0,

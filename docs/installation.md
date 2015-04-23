@@ -165,3 +165,52 @@ The response should be something like this:
 Next step is to install the [Web UI](https://github.com/dotse/zonemaster-gui/blob/master/Zonemaster_Dancer/Doc/zonemaster-frontend-installation-instructions.md) if you wish so.
 
 
+
+## Terse FreeBSD 10.1 Instructions
+
+First, make sure your operating system and package database is up to date.
+
+### Install packages
+
+    sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
+
+### Get and build the source code
+
+    git clone https://github.com/dotse/zonemaster-backend.git
+    cd zonemaster-backend
+    perl Makefile.PL
+    make
+    make test
+    sudo make install
+
+### Database installation and setup
+
+#### PostgreSQL
+
+    sudo pkg install postgresql93-server p5-DBD-Pg
+
+Start the PostgreSQL server according to its instructions.
+
+    psql -U pgsql template1 -f docs/initial-postgres.sql
+
+#### MySQL
+
+    sudo pkg install mysql56-server p5-DBD-mysql
+
+Start the MySQL server according to its instructions.
+
+    mysql -uroot < docs/initial-mysql.sql
+
+#### Configure Zonemaster-Backend to use the chosen database
+
+    sudo mkdir -p /etc/zonemaster
+    sudo cp share/backend_config.ini /etc/zonemaster/
+    sudo vi /etc/zonemaster/backend_config.ini
+
+Edit the "engine" line to match the chosen database.
+
+### Start the processes
+
+    starman --error-log=/home/calle/logs/error.log --pid-file=/home/calle/logs/starman.pid --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi
+    zm_wb_daemon start
+

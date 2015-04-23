@@ -103,7 +103,7 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
         else {
             $self->dbh->do(
                 q[
-            INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params, domain) VALUES (?,?,?,?,?)
+            INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params, domain, test_start_time) VALUES (?,?,?,?,?, NOW())
         ],
                 undef,
                 $batch_id,
@@ -123,7 +123,7 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=? WHERE id=?", undef, $progress, $test_id )
+    $self->dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE id=?", undef, $progress, $test_id )
       if ( $progress );
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=?", undef, $test_id );

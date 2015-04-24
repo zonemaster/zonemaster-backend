@@ -172,9 +172,9 @@ sub get_test_history {
 
     my @results;
     my $sth = $self->dbh->prepare(
-q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ?, undelegated = ? ORDER BY id DESC LIMIT ? OFFSET ?]
+q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ? AND undelegated = ? ORDER BY id DESC LIMIT ? OFFSET ?]
     );
-    $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset}, !!($p->{frontend_params}{nameservers}) );
+    $sth->execute( $p->{frontend_params}{domain}, ($p->{frontend_params}{nameservers})?1:0, $p->{limit}, $p->{offset} );
     while ( my $h = $sth->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
         $h->{params} = decode_json($h->{params}) if $h->{params};

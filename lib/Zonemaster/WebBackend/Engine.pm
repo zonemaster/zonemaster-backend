@@ -66,6 +66,7 @@ sub get_ns_ips {
     my $query4 = $res->query( $ns_name, 'A' );
     if ( $query4 ) {
         foreach my $rr ( $query4->answer ) {
+            next unless $rr->type eq 'A';
             push( @adresses, { $ns_name => $rr->address } );
         }
     }
@@ -73,6 +74,7 @@ sub get_ns_ips {
     my $query6 = $res->query( $ns_name, 'AAAA' );
     if ( $query6 ) {
         foreach my $rr ( $query6->answer ) {
+            next unless $rr->type eq 'AAAA';
             push( @adresses, { $ns_name => $rr->address } );
         }
     }

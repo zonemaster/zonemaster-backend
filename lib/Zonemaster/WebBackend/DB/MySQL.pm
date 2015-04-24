@@ -175,14 +175,14 @@ q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ? O
     );
     $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
     while ( my $h = $sth->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results});
-        $h->{params} = decode_json($h->{params});
+        $h->{results} = decode_json($h->{results}) if $h->{results};
+        $h->{params} = decode_json($h->{params}) if $h->{params};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
         my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
         my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
 
         # More important overwrites
-        my $overall;
+        my $overall = 'INFO';
         $overall = 'warning'  if $warning;
         $overall = 'error'    if $error;
         $overall = 'critical' if $critical;

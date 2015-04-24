@@ -15,7 +15,8 @@ CREATE TABLE test_results (
 	progress integer DEFAULT 0,
 	params_deterministic_hash character varying(32),
 	params blob NOT NULL,
-	results blob DEFAULT NULL
+	results blob DEFAULT NULL,
+    undelegated boolean NOT NULL DEFAULT false
 ) Engine=InnoDB;
 CREATE TABLE batch_jobs (
     id integer AUTO_INCREMENT PRIMARY KEY,

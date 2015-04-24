@@ -103,7 +103,7 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
         else {
             $self->dbh->do(
                 q[
-            INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params, domain, test_start_time) VALUES (?,?,?,?,?, NOW())
+            INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?,?,?,?,?, NOW(),?)
         ],
                 undef,
                 $batch_id,
@@ -111,6 +111,7 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
                 $test_params_deterministic_hash,
                 $encoded_params,
                 $test_params->{domain},
+                !!($test_params->{nameservers}),
             );
             $result_id = $self->dbh->{mysql_insertid};
         }
@@ -171,9 +172,9 @@ sub get_test_history {
 
     my @results;
     my $sth = $self->dbh->prepare(
-q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ? ORDER BY id DESC LIMIT ? OFFSET ?]
+q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ?, undelegated = ? ORDER BY id DESC LIMIT ? OFFSET ?]
     );
-    $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
+    $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset}, !!($p->{frontend_params}{nameservers}) );
     while ( my $h = $sth->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
         $h->{params} = decode_json($h->{params}) if $h->{params};

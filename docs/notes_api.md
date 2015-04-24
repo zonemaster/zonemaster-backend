@@ -38,6 +38,8 @@ In the descriptions below, only the contents of the "params" (input)
 and "result" (output) keys are discussed, since they are the only ones
 where the content differs between different methods.
 
+# API Methods
+
 ## version_info
 
 ### Input
@@ -84,8 +86,8 @@ list.
 
 ### Input
 
-The input for this method is a JSON object. The object may have one of
-the keys `domain`, `ipv4`, `ipv6`, `ds_digest_pairs`, `nameservers`,
+The input for this method is a JSON object. The object may have the
+keys `domain`, `ipv4`, `ipv6`, `ds_digest_pairs`, `nameservers`,
 `profile`, `advanced`, `client_id` and `client_version`. If any other
 key is present, an error will be returned.
 
@@ -310,3 +312,40 @@ None.
 A string with the version of the Perl interpreter running the backend
 (more specifically, the value of the `$]` variable in the Perl
 interpreter).
+
+# Examples
+
+## Minimal request to start a test
+
+```
+{
+    "domain": "example.org",
+    "ipv4": true
+}
+```
+
+## Non-minimal request to start a test
+
+```
+
+{
+    "domain": "example.org",
+    "ipv4": 1,
+    "ipv6": 1,
+    "ds_digest_pairs": [],
+    "profile": "default_profile",
+    "advanced": false,
+    "client_id": "Documentation Example",
+    "client_version": "1.0",
+    "nameservers": [
+        {
+            "ns": "ns1.example.org",
+            "ip": "192.168.0.1"
+        },
+        {
+            "ns": "ns2.example.org",
+            "ip": "2607:f0d0:1002:51::4"
+        }
+    ]
+}
+```

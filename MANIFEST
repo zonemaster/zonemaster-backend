@@ -2,12 +2,13 @@
 CHANGES
 CodeSnippets/client.pl
 CodeSnippets/Client.pm
-docs/API.md
 docs/cleanup-mysql.sql
+docs/cleanup-postgres.sql
 docs/files-description.md
 docs/initial-mysql.sql
 docs/initial-postgres.sql
 docs/installation.md
+docs/notes_api.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm

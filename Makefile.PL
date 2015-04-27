@@ -24,11 +24,12 @@ requires
   'Net::LDNS'                => 0.72,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0,
-  'Proc::ProcessTable'       => 0,
   'Router::Simple::Declare'  => 0,
   'String::ShellQuote'       => 0,
   'Starman'                  => 0,
   'File::ShareDir'           => 0,
+  'Parallel::ForkManager'    => 1.12,
+  'Daemon::Control'          => 0,
   ;
 
 test_requires 'DBD::SQLite';
@@ -40,9 +41,7 @@ recommends 'DBD::SQLite';
 install_share;
 
 install_script 'zonemaster_webbackend.psgi';
-install_script 'execute_tests.pl';
-install_script 'execute_zonemaster_P5.pl';
-install_script 'execute_zonemaster_P10.pl';
+install_script 'zm_wb_daemon';
 
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';

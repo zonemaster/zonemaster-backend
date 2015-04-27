@@ -32,7 +32,6 @@ sub new {
 
     if ( $params && $params->{db} ) {
         eval {
-            say "using DB:[$params->{db}]";
             eval "require $params->{db}";
             die $@ if $@;
             $self->{db} = "$params->{db}"->new();
@@ -42,7 +41,6 @@ sub new {
     else {
         eval {
             my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
-            say "using BackendDBType:[$backend_module]";
             eval "require $backend_module";
             die $@ if $@;
             $self->{db} = $backend_module->new();
@@ -68,6 +66,7 @@ sub get_ns_ips {
     my $query4 = $res->query( $ns_name, 'A' );
     if ( $query4 ) {
         foreach my $rr ( $query4->answer ) {
+            next unless $rr->type eq 'A';
             push( @adresses, { $ns_name => $rr->address } );
         }
     }
@@ -75,6 +74,7 @@ sub get_ns_ips {
     my $query6 = $res->query( $ns_name, 'AAAA' );
     if ( $query6 ) {
         foreach my $rr ( $query6->answer ) {
+            next unless $rr->type eq 'AAAA';
             push( @adresses, { $ns_name => $rr->address } );
         }
     }

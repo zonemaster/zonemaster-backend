@@ -15,109 +15,13 @@ use Zonemaster::WebBackend::Config;
 
 with 'Zonemaster::WebBackend::DB';
 
-my $connection_string = Zonemaster::WebBackend::Config::DB_connection_string();
+my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string('postgresql');
+my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
+my $connection_user     = Zonemaster::WebBackend::Config->DB_user();
+my $connection_password = Zonemaster::WebBackend::Config->DB_password();
 
-has 'dbh' => (
-    is  => 'ro',
-    isa => 'DBI::db',
-    default =>
-      sub { DBI->connect( $connection_string, Zonemaster::WebBackend::Config::DB_user(), Zonemaster::WebBackend::Config::DB_password(), { RaiseError => 1, AutoCommit => 1 } ) },
-);
-
-sub create_db {
-    my ( $self ) = @_;
-
-    ####################################################################
-    # TEST RESULTS
-    ####################################################################
-    $self->dbh->do(q[ SET client_min_messages = warning]);
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_specs CASCADE' );
-    $self->dbh->do( 'DROP SEQUENCE IF EXISTS test_specs_id_seq' );
-
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_results CASCADE' );
-    $self->dbh->do( 'DROP SEQUENCE IF EXISTS test_results_id_seq' );
-
-    $self->dbh->do(
-        'CREATE SEQUENCE test_results_id_seq
-									INCREMENT BY 1
-									NO MAXVALUE
-									NO MINVALUE
-									CACHE 1
-	'
-    );
-
-    $self->dbh->do( 'ALTER TABLE public.test_results_id_seq OWNER TO zonemaster' );
-
-    $self->dbh->do(
-        'CREATE TABLE test_results (
-					id integer DEFAULT nextval(\'test_results_id_seq\'::regclass) primary key,
-					batch_id integer DEFAULT NULL,
-					creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
-					test_start_time timestamp without time zone DEFAULT NULL,
-					test_end_time timestamp without time zone DEFAULT NULL,
-					priority integer DEFAULT 10,
-					progress integer DEFAULT 0,
-					params_deterministic_hash character varying(32),
-					params json NOT NULL,
-					results json DEFAULT NULL
-			)
-	'
-    );
-    $self->dbh->do( 'ALTER TABLE test_results OWNER TO zonemaster' );
-
-    ####################################################################
-    # BATCH JOBS
-    ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS batch_jobs CASCADE' );
-    $self->dbh->do( 'DROP SEQUENCE IF EXISTS batch_jobs_id_seq' );
-
-    $self->dbh->do(
-        'CREATE SEQUENCE batch_jobs_id_seq
-									INCREMENT BY 1
-									NO MAXVALUE
-									NO MINVALUE
-									CACHE 1
-	'
-    );
-
-    $self->dbh->do( 'ALTER TABLE public.batch_jobs_id_seq OWNER TO zonemaster' );
-
-    $self->dbh->do(
-        'CREATE TABLE batch_jobs (
-					id integer DEFAULT nextval(\'batch_jobs_id_seq\'::regclass) primary key,
-					username character varying(50) NOT NULL,
-					creation_time timestamp without time zone DEFAULT NOW() NOT NULL
-			)
-	'
-    );
-    $self->dbh->do( 'ALTER TABLE batch_jobs OWNER TO zonemaster' );
-
-    ####################################################################
-    # USERS
-    ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS users CASCADE' );
-    $self->dbh->do( 'DROP SEQUENCE IF EXISTS users_id_seq' );
-
-    $self->dbh->do(
-        'CREATE SEQUENCE users_id_seq
-									INCREMENT BY 1
-									NO MAXVALUE
-									NO MINVALUE
-									CACHE 1
-	'
-    );
-
-    $self->dbh->do( 'ALTER TABLE public.users_id_seq OWNER TO zonemaster' );
-
-    $self->dbh->do(
-        'CREATE TABLE users (
-					id integer DEFAULT nextval(\'users_id_seq\'::regclass) primary key,
-					user_info json DEFAULT NULL
-			)
-	'
-    );
-    $self->dbh->do( 'ALTER TABLE users OWNER TO zonemaster' );
-
+sub dbh {
+    DBI->connect_cached( $connection_string, $connection_user, $connection_password, $connection_args );
 }
 
 sub user_exists_in_db {
@@ -153,11 +57,11 @@ sub user_authorized {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=" . $self->dbh->quote( $test_id ) )
-      if ( $progress );
+    my $dbh = $self->dbh;
+    $dbh->do( "UPDATE test_results SET progress=$progress WHERE id=?", undef, $test_id ) if ( $progress );
 
     my ( $result ) =
-      $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=" . $self->dbh->quote( $test_id ) );
+      $dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=?", undef, $test_id );
 
     return $result;
 }
@@ -247,6 +151,17 @@ sub test_results {
     return $result;
 }
 
+sub get_test_request {
+    my ( $self ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        q[ SELECT id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
+    $dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+
+    return $id;
+}
+
 sub get_test_history {
     my ( $self, $p ) = @_;
 
@@ -268,7 +183,6 @@ sub get_test_history {
 		WHERE params->>'domain'=" . $self->dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
 		ORDER BY id DESC 
 		OFFSET $p->{offset} LIMIT $p->{limit}";
-    print "$query\n";
     my $sth1 = $self->dbh->prepare( $query );
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {

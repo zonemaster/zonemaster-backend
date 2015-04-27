@@ -13,8 +13,6 @@ requires 'add_api_user_to_db', 'user_exists_in_db', 'user_authorized', 'test_pro
 
 sub user_exists {
     my ( $self, $user ) = @_;
-    say __PACKAGE__. "::user_exists";
-    say Dumper( $self );
 
     die "username not provided to the method user_exists\n" unless ( $user );
 
@@ -23,7 +21,6 @@ sub user_exists {
 
 sub add_api_user {
     my ( $self, $params ) = @_;
-    say __PACKAGE__. "::add_api_user";
 
     die "username or api_key not provided to the method add_api_user\n"
       unless ( $params->{username} && $params->{api_key} );

@@ -86,11 +86,8 @@ sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
     eval {
-		say '-----------------------------------------------------------------------------------------';
 		my $json = $req->content;
 		my $content = decode_json($json);
-		say "[".strftime("%F %T", localtime())."][IP:".$env->{REMOTE_ADDR}."][id:".$content->{id}."][method:".$content->{method}."]";
-		say $json;
 	};
     
     $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );

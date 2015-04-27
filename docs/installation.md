@@ -3,31 +3,31 @@
 The documentation covers the following operating systems:
 
  * Ubuntu 14.04LTS
+ * FreeBSD 10
 
 ## Pre-Requisites
 
 Zonemaster-engine should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
-## Instructions for installing in Ubuntu 14.04
+## Instructions for installing in Ubuntu 14.04 and Debian 7
 
 1) Install package dependencies
 
     sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
     libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl \
-    libstring-shellquote-perl librouter-simple-perl libjson-rpc-perl \
-    libclass-method-modifiers-perl libmodule-build-tiny-perl \
-    libtext-microtemplate-perl libdbd-pg-perl postgresql
+    libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl \
+    libtext-microtemplate-perl libdaemon-control-perl
 
-2) Install CPAN dependency
+2) Install CPAN dependencies
 
-    $ sudo cpan -i Plack::Middleware::Debug
+    $ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 
-3) Get the source code
+3) Get the source code
 
     $ git clone https://github.com/dotse/zonemaster-backend.git
 
-4) Build source code
+4) Build source code
 
     $ cd zonemaster-backend
     $ perl Makefile.PL
@@ -43,18 +43,24 @@ printing `Result: PASS`, everything is OK.
 This too produces some output. The `sudo` command may not be necessary,
 if you normally have write permissions to your Perl installation.
 
-6) Create a log directory
+6) Create a log directory
 
 Path to your log directory and the directory name:
 
     $ cd ~/
     $ mkdir logs
 
-## Database set up
+Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
+
+## Database set up
 
 ### Using PostgreSQL as database for the backend
 
-1) Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
+1) install PostgreSQL packages.
+
+    sudo apt-get install libdbd-pg-perl postgresql
+
+2) Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
 finished editing it, copy it to the directory `/etc/zonemaster`. You will
 probably have to create the directory first.
 
@@ -70,28 +76,42 @@ probably have to create the directory first.
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-2) PostgreSQL Database manipulation
+3) PostgreSQL Database manipulation
 
 Verify that PostgreSQL version is 9.3 or higher:
 
     $ psql --version
 
-3) Connect to Postgres for the first time and create the database and user
+Note: the default Debian package repository does not have a recent enough PostgreSQL server version. If you're using Debian, you'll either have to use an external database, install from another repository or use the MySQL backend.
+
+4) Connect to Postgres as a user with administrative privileges and set things up:
 
     $ sudo su - postgres
-    $ psql < /home/<user>/zonemaster-backend/docs/initial-postgres.sql
+    $ psql -f /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
-4) Then let the Backend set up your schema:
+This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
-    $ perl -MZonemaster::WebBackend::Engine -e 'Zonemaster::WebBackend::Engine->new({ db => "Zonemaster::WebBackend::DB::PostgreSQL"})->{db}->create_db()'
+If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `docs/cleanup-postgres.sql` as a database administrator. It removes the user and drops the database (obviously taking all data with it).
 
-Only do this during an **initial installation** of the Zonemaster backend.
+### Using MySQL as database for the backend
 
-_If you do this on an existing system, you will wipe out the data in your
-database_.
+1) Install MySQL packages.
 
+    sudo apt-get install mysql-server libdbd-mysql-perl
 
-### Starting the backend
+2) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
+
+3) Using a database adminstrator user (called root in the example below), run the setup file:
+    
+    mysql --user=root --password < docs/initial-mysql.sql
+    
+This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
+
+If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `docs/cleanup-mysql.sql` as a database administrator. It removes the user and drops the database (obviously taking all data with it).
+
+### Starting the backend
+
+#### General instructions
 
 1) In all the examples below, replace `/home/user` with the path to your own home
 directory (or, of course, wherever you want).
@@ -108,19 +128,23 @@ directory (or, of course, wherever you want).
 
     $ kill `cat /home/user/logs/starman.pid`
 
-### Add a crontab entry for the backend process launcher
+#### Ubuntu 14.04LTS
 
-Add the following two lines to the crontab entry. Make sure to provide the
-absolute directory path where the log file "execute_tests.log" exists. The
-`execute_tests.pl` script will be installed in `/usr/local/bin`, so we make
-sure that will be in cron's path.
+These specific instructions can be used at least for Ubuntu 14.04LTS, and probably also for other systems using `upstart`.
 
-    $ crontab -e
-    PATH=/bin:/usr/bin:/usr/local/bin
-    */15 * * * * execute_tests.pl >> /home/user/logs/execute_tests.log 2>&1
+1) Copy the file `share/starman-zonemaster.conf` to the directory `/etc/init`.
 
-At this point, you no longer need the checked out source repository (unless
-you chose to put the log files there, of course).
+2) Run `sudo service starman-zonemaster start`.
+
+This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
+
+### Start the backend process launcher
+
+To start it manually, do this:
+
+    zm_wb_daemon --pidfile=/tmp/zm_wb_daemon.pid start
+
+In order to have it done automatically, you can use the example Upstart config file in `share/zm_wb_daemon.conf` (for Ubuntu 14.04 and similar), or insert the command above into your system's startup sequence in some other appropriate way. The only permission needed is to write the PID file.
 
 ## Testing the setup
 
@@ -142,3 +166,56 @@ The response should be something like this:
 Next step is to install the [Web UI](https://github.com/dotse/zonemaster-gui/blob/master/Zonemaster_Dancer/Doc/zonemaster-frontend-installation-instructions.md) if you wish so.
 
 
+
+## FreeBSD 10.0 & 10.1 Instructions
+
+First, make sure your operating system and package database is up to date.
+
+1) Become root
+
+    su -
+
+2) Install packages
+
+    pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
+
+3) Get and build the source code
+
+    git clone https://github.com/dotse/zonemaster-backend.git
+    cd zonemaster-backend
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+### Database installation and setup (currently PostgreSQL and MySQL supported)
+
+4.1) PostgreSQL
+
+    sudo pkg install postgresql93-server p5-DBD-Pg
+
+4.1) Start the PostgreSQL server according to its instructions then initiate the database using the following script.
+
+    psql -U pgsql template1 -f docs/initial-postgres.sql
+
+4.2) MySQL
+
+    pkg install mysql56-server p5-DBD-mysql
+
+4.2) Start the MySQL server according to its instructions then initiate the database using the following script.
+
+    mysql -uroot < docs/initial-mysql.sql
+
+5) Configure Zonemaster-Backend to use the chosen database
+
+    mkdir -p /etc/zonemaster
+    cp share/backend_config.ini /etc/zonemaster/
+
+6) Edit the "engine" line to match the chosen database, MySQL and PostgreSQL supported.
+
+   vi /etc/zonemaster/backend_config.ini
+
+7) Start the processes, point pid and log to a appropriate-for-your-OS location (first line is the API second is the test runner itself)
+
+    starman --error-log=/home/user/logs/error.log --pid-file=/home/user/logs/starman.pid --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi
+    zm_wb_daemon start

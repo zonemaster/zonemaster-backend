@@ -2,7 +2,8 @@
 
 The documentation covers the following operating systems:
 
- * Ubuntu 14.04LTS
+ * Ubuntu 14.04 (LTS)
+ * Debian Wheezy (version 7)
  * FreeBSD 10
 
 ## Pre-Requisites
@@ -10,7 +11,7 @@ The documentation covers the following operating systems:
 Zonemaster-engine should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
-## Instructions for installing in Ubuntu 14.04 and Debian 7
+## Instructions for installing in Ubuntu 14.04 and Debian wheezy (version 7)
 
 1) Install package dependencies
 
@@ -22,6 +23,8 @@ Zonemaster-engine should be installed before. Follow the instructions
 2) Install CPAN dependencies
 
     $ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
+
+Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
 
 3) Get the source code
 
@@ -43,26 +46,16 @@ printing `Result: PASS`, everything is OK.
 This too produces some output. The `sudo` command may not be necessary,
 if you normally have write permissions to your Perl installation.
 
-6) Create a log directory
-
-Path to your log directory and the directory name:
-
-    $ cd ~/
-    $ mkdir logs
-
-Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
-
 ## Database set up
 
 ### Using PostgreSQL as database for the backend
 
-1) install PostgreSQL packages.
+1) Create a directory 
 
-    sudo apt-get install libdbd-pg-perl postgresql
+   $ sudo mkdir /etc/zonemaster
 
-2) Edit the file `zonemaster-backend/share/backend_config.ini`. Once you have
-finished editing it, copy it to the directory `/etc/zonemaster`. You will
-probably have to create the directory first.
+2) Edit the file `share/backend_config.ini` in the `zonemaster-backend`
+directory
 
     engine           = PostgreSQL
     user             = zonemaster
@@ -76,32 +69,75 @@ probably have to create the directory first.
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-3) PostgreSQL Database manipulation
+3) $ sudo cp share/backend_config.ini /etc/zonemaster
+
+4) PostgreSQL Database manipulation for **Ubuntu**
 
 Verify that PostgreSQL version is 9.3 or higher:
 
     $ psql --version
 
+5) PostgreSQL Database manipulation for **Debian**
+
 Note: the default Debian package repository does not have a recent enough PostgreSQL server version. If you're using Debian, you'll either have to use an external database, install from another repository or use the MySQL backend.
 
-4) Connect to Postgres as a user with administrative privileges and set things up:
+5.1) Add the following to the source list "/etc/apt/sources.list"
+deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main
+
+5.2) $ wget https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+5.3) $ apt-key add ACCC4CF8.asc
+
+5.4) apt-get update
+
+5.5) Verify that PostgreSQL version is 9.3 or higher:
+
+    $ psql --version
+
+6) install PostgreSQL packages.
+
+    sudo apt-get install libdbd-pg-perl postgresql
+
+7) Connect to Postgres as a user with administrative privileges and set things up:
 
     $ sudo su - postgres
     $ psql -f /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
-If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `docs/cleanup-postgres.sql` as a database administrator. It removes the user and drops the database (obviously taking all data with it).
+If, at some point, you want to delete all traces of Zonemaster in the database,
+you can run the file `docs/cleanup-postgres.sql` in the `zonemaster-backend`
+directory as a database administrator. It removes the user and drops the database (obviously taking all data with it).
+
+8) Exit PostgreSQL
+
+   $exit
 
 ### Using MySQL as database for the backend
 
-1) Install MySQL packages.
+1) Create a directory "sudo mkdir /etc/zonemaster"
+
+2) Edit the file `zonemaster-backend/share/backend_config.ini`
+
+    engine           = MySQL
+    user             = zonemaster
+    password         = zonemaster
+    database_name    = zonemaster
+    database_host    = localhost
+    polling_interval = 0.5
+    log_dir          = logs/
+    interpreter      = perl
+    max_zonemaster_execution_time   = 300
+    number_of_professes_for_frontend_testing  = 20
+    number_of_professes_for_batch_testing     = 20
+
+3) $ sudo cp share/backend_config.ini /etc/zonemaster
+
+4) Install MySQL packages.
 
     sudo apt-get install mysql-server libdbd-mysql-perl
 
-2) Edit and copy the `backend_config.ini` file as for the PostgreSQL case, except on the `engine` line write `MySQL` instead.
-
-3) Using a database adminstrator user (called root in the example below), run the setup file:
+5) Using a database adminstrator user (called root in the example below), run the setup file:
     
     mysql --user=root --password < docs/initial-mysql.sql
     
@@ -113,18 +149,25 @@ If, at some point, you want to delete all traces of Zonemaster in the database, 
 
 #### General instructions
 
-1) In all the examples below, replace `/home/user` with the path to your own home
+1) Create a log directory
+
+Path to your log directory and the directory name:
+
+    $ cd ~/
+    $ mkdir logs
+
+2) In all the examples below, replace `/home/user` with the path to your own home
 directory (or, of course, wherever you want).
 
     $ starman --error-log=/home/user/logs/backend_starman.log \
       --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid \
       --daemonize /usr/local/bin/zonemaster_webbackend.psgi
 
-2) To verify starman has started:
+3) To verify starman has started:
 
     $ cat ~/logs/backend_starman.log
 
-3) If you would like to kill the starman process, you can issue this command:
+4) If you would like to kill the starman process, you can issue this command:
 
     $ kill `cat /home/user/logs/starman.pid`
 
@@ -133,6 +176,8 @@ directory (or, of course, wherever you want).
 These specific instructions can be used at least for Ubuntu 14.04LTS, and probably also for other systems using `upstart`.
 
 1) Copy the file `share/starman-zonemaster.conf` to the directory `/etc/init`.
+
+   $ sudo cp share/starman-zonemaster.conf /etc/init
 
 2) Run `sudo service starman-zonemaster start`.
 

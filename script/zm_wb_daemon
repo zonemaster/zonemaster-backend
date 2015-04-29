@@ -39,8 +39,8 @@ my $user;
 my $group;
 GetOptions(
     'pidfile=s' => \$pidfile,
-    'user' => \$user,
-    'group' => \$group,
+    'user=s' => \$user,
+    'group=s' => \$group,
 );
 $pidfile //= '/tmp/zm_wc_daemon.pid';
 

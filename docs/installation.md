@@ -18,7 +18,7 @@ Zonemaster-engine should be installed before. Follow the instructions
     sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl \
     libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl \
     libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl \
-    libtext-microtemplate-perl libdaemon-control-perl
+    libtext-microtemplate-perl libdaemon-control-perl 
 
 2) Install CPAN dependencies
 
@@ -34,6 +34,7 @@ Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian p
 
     $ cd zonemaster-backend
     $ perl Makefile.PL
+    $ make
     $ make test
 
 Both these steps produce quite a bit of output. As long as it ends by
@@ -52,7 +53,7 @@ if you normally have write permissions to your Perl installation.
 
 1) Create a directory 
 
-   $ sudo mkdir /etc/zonemaster
+    $ sudo mkdir /etc/zonemaster
 
 2) Edit the file `share/backend_config.ini` in the `zonemaster-backend`
 directory
@@ -82,7 +83,8 @@ Verify that PostgreSQL version is 9.3 or higher:
 Note: the default Debian package repository does not have a recent enough PostgreSQL server version. If you're using Debian, you'll either have to use an external database, install from another repository or use the MySQL backend.
 
 5.1) Add the following to the source list "/etc/apt/sources.list"
-deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main
+
+    deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main
 
 5.2) $ wget https://www.postgresql.org/media/keys/ACCC4CF8.asc
 
@@ -115,9 +117,11 @@ directory as a database administrator. It removes the user and drops the databas
 
 ### Using MySQL as database for the backend
 
-1) Create a directory "sudo mkdir /etc/zonemaster"
+1) Create a directory 
 
-2) Edit the file `zonemaster-backend/share/backend_config.ini`
+    $ sudo mkdir /etc/zonemaster
+
+2) Edit the file `share/backend_config.ini`
 
     engine           = MySQL
     user             = zonemaster
@@ -131,7 +135,7 @@ directory as a database administrator. It removes the user and drops the databas
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-3) $ sudo cp share/backend_config.ini /etc/zonemaster
+3)  $ sudo cp share/backend_config.ini /etc/zonemaster
 
 4) Install MySQL packages.
 
@@ -171,19 +175,37 @@ directory (or, of course, wherever you want).
 
     $ kill `cat /home/user/logs/starman.pid`
 
-#### Ubuntu 14.04LTS
+#### Starting the starman part that listens for and answers the JSON::RPC
+requests (**Ubuntu 14.04LTS**)
 
 These specific instructions can be used at least for Ubuntu 14.04LTS, and probably also for other systems using `upstart`.
 
 1) Copy the file `share/starman-zonemaster.conf` to the directory `/etc/init`.
 
-   $ sudo cp share/starman-zonemaster.conf /etc/init
+    $ sudo cp share/starman-zonemaster.conf /etc/init
 
 2) Run `sudo service starman-zonemaster start`.
 
 This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
 
-### Start the backend process launcher
+#### Starting the starman part that listens for and answers the JSON::RPC
+requests (**Debian**)
+
+
+1)  $ sudo cp share/zm-backend.sh /etc/init.d/
+
+2)  $ sudo chmod +x /etc/initd.d/zm-backend.sh
+
+3)  $ sudo update-rc.d zm-backend.sh defaults
+
+4)  $ sudo service zm-backend.sh start
+
+This only needs to be run as root in order to make sure the log file can be
+opened. The `starman` process will change to the `www-data` user as soon as it
+can, and all of the real work will be done as that user.
+
+
+### Start the backend process launcher for the database
 
 To start it manually, do this:
 

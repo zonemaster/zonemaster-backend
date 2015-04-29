@@ -293,10 +293,19 @@ sub validate_syntax {
         $r->dnssec( 0 );
         $r->recurse( 1 );
         my $p = $r->query( $dn, "NS" );
-        my @a;
-        @a = $p->answer() if ( $p );
-        unless ( @a ) {
+        
+        if ($p->rcode eq 'NXDOMAIN') {
             return { status => 'nok', message => encode_entities( 'Domain does not exist' ) };
+        }
+        elsif ($p->rcode eq 'NOERROR') {
+			my @a;
+			@a = $p->answer() if ( $p );
+			unless ( @a ) {
+				return { status => 'nok', message => encode_entities( 'Domain exists but is not a zone' ) };
+			}
+        }
+        else {
+            return { status => 'nok', message => encode_entities( 'Unknown error while checking for domain existance' ) };
         }
     }
 

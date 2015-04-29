@@ -191,6 +191,10 @@ To start it manually, do this:
 
 In order to have it done automatically, you can use the example Upstart config file in `share/zm_wb_daemon.conf` (for Ubuntu 14.04 and similar), or insert the command above into your system's startup sequence in some other appropriate way. The only permission needed is to write the PID file.
 
+There is an LSB-compatible example startup file in `share/zm-backend.sh`. As distributed, it is set up to depend on the MySQL database server being started before it. You may need to change that to PostgreSQL if that's what you're using, or remove it entirely if you're using a separate database server. There are also a user name, a group name and a couple of directories that you may need to edit. Once that is done and the script file copied to `/etc/init.d`, at least on Debian 7 it should be possible to start both the backend server processes with the single command `service zm-backend.sh start`.
+
+The script should also serve as a base for other operating systems using SysV init.d startup scripts.
+
 ## Testing the setup
 
 You can look into the [API documentation](API.md) to see how you can use the

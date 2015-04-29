@@ -70,7 +70,9 @@ directory
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-3) $ sudo cp share/backend_config.ini /etc/zonemaster
+3) Copy the `backend_config.ini` file to `/etc/zonemaster`
+
+    $ sudo cp share/backend_config.ini /etc/zonemaster
 
 4) PostgreSQL Database manipulation for **Ubuntu**
 
@@ -195,7 +197,6 @@ This only needs to be run as root in order to make sure the log file can be open
 #### Starting the starman part that listens for and answers the JSON::RPC
 requests (**Debian**)
 
-
 1)  Copy the file `share/zm-backend.sh` to the directory `/etc/init`.
 
     $ sudo cp share/zm-backend.sh /etc/init.d/
@@ -204,7 +205,7 @@ requests (**Debian**)
 
     $ sudo chmod +x /etc/initd.d/zm-backend.sh
 
-3)  Add the file to start yp script
+3)  Add the file to start up script
 
     $ sudo update-rc.d zm-backend.sh defaults
 

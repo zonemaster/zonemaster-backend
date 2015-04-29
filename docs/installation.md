@@ -113,7 +113,7 @@ directory as a database administrator. It removes the user and drops the databas
 
 8) Exit PostgreSQL
 
-   $exit
+   $ exit
 
 ### Using MySQL as database for the backend
 
@@ -135,15 +135,17 @@ directory as a database administrator. It removes the user and drops the databas
     number_of_professes_for_frontend_testing  = 20
     number_of_professes_for_batch_testing     = 20
 
-3)  $ sudo cp share/backend_config.ini /etc/zonemaster
+3)  Copy the `backend_config.ini` file to `/etc/zonemaster`
+
+    $ sudo cp share/backend_config.ini /etc/zonemaster
 
 4) Install MySQL packages.
 
-    sudo apt-get install mysql-server libdbd-mysql-perl
+    $ sudo apt-get install mysql-server libdbd-mysql-perl
 
 5) Using a database adminstrator user (called root in the example below), run the setup file:
     
-    mysql --user=root --password < docs/initial-mysql.sql
+    $ mysql --user=root --password < docs/initial-mysql.sql
     
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
@@ -184,7 +186,9 @@ These specific instructions can be used at least for Ubuntu 14.04LTS, and probab
 
     $ sudo cp share/starman-zonemaster.conf /etc/init
 
-2) Run `sudo service starman-zonemaster start`.
+2) Run `sudo service starman-zonemaster start`
+
+    $ sudo service starman-zonemaster start
 
 This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
 
@@ -192,13 +196,21 @@ This only needs to be run as root in order to make sure the log file can be open
 requests (**Debian**)
 
 
-1)  $ sudo cp share/zm-backend.sh /etc/init.d/
+1)  Copy the file `share/zm-backend.sh` to the directory `/etc/init`.
 
-2)  $ sudo chmod +x /etc/initd.d/zm-backend.sh
+    $ sudo cp share/zm-backend.sh /etc/init.d/
 
-3)  $ sudo update-rc.d zm-backend.sh defaults
+2)  Make it an executable file
 
-4)  $ sudo service zm-backend.sh start
+    $ sudo chmod +x /etc/initd.d/zm-backend.sh
+
+3)  Add the file to start yp script
+
+    $ sudo update-rc.d zm-backend.sh defaults
+
+4)  Start the process
+
+    $ sudo service zm-backend.sh start
 
 This only needs to be run as root in order to make sure the log file can be
 opened. The `starman` process will change to the `www-data` user as soon as it

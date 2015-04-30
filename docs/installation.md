@@ -316,11 +316,16 @@ First, make sure your operating system and package database is up to date.
     
     sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
 
-4) Build and install the backend modules.
+4) Fetch the source code.
+    
+    git clone https://github.com/dotse/zonemaster-backend.git
+    cd zonemaster-backend
+
+5) Build and install the backend modules.
     
     perl Makefile.PL && make test && sudo make install
 
-5) Install a database server. MySQL, in this example.
+6) Install a database server. MySQL, in this example.
     
     sudo yum install wget
     wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
@@ -328,18 +333,19 @@ First, make sure your operating system and package database is up to date.
     sudo yum install mysql-server perl-DBD-mysql
     sudo systemctl start mysqld
 
-6) Set up the database.
+7) Set up the database.
     
     mysql -uroot < docs/initial-mysql.sql
 
-7) Copy the example init file to the system directory. You may wish to edit the file in order to use a more suitable user and group. As distributed, it uses the MySQL user and group, since we can be sure that exists and it shouldn't mess up anything included with the system.
+8) Copy the example init file to the system directory. You may wish to edit the file in order to use a more suitable user and group. As distributed, it uses the MySQL user and group, since we can be sure that exists and it shouldn't mess up anything included with the system.
     
     sudo cp share/zm-centos.sh /etc/init.d/
+    sudo chmod +x /etc/init.d/zm-centos.sh
 
-8) Start the services.
+9) Start the services.
     
     sudo systemctl start zm-centos
 
-9) Test that it started OK. The command below should print a JSON string including some information on the Zonemaster engine version.
+10) Test that it started OK. The command below should print a JSON string including some information on the Zonemaster engine version.
     
     curl -X POST http://127.0.0.1:5000/ -d '{"method":"version_info"}'

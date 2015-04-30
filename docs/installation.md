@@ -303,3 +303,43 @@ First, make sure your operating system and package database is up to date.
 
     starman --error-log=/home/user/logs/error.log --pid-file=/home/user/logs/starman.pid --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi
     zm_wb_daemon start
+
+## CentOS instructions
+
+1) Install the Zonemaster test engine according to its instructions.
+
+2) Add packages.
+    
+    sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote
+
+3) Install modules from CPAN.
+    
+    sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
+
+4) Build and install the backend modules.
+    
+    perl Makefile.PL && make test && sudo make install
+
+5) Install a database server. MySQL, in this example.
+    
+    sudo yum install wget
+    wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+    sudo yum install mysql-server perl-DBD-mysql
+    sudo systemctl start mysqld
+
+6) Set up the database.
+    
+    mysql -uroot < docs/initial-mysql.sql
+
+7) Copy the example init file to the system directory. You may wish to edit the file in order to use a more suitable user and group. As distributed, it uses the MySQL user and group, since we can be sure that exists and it shouldn't mess up anything included with the system.
+    
+    sudo cp share/zm-centos.sh /etc/init.d/
+
+8) Start the services.
+    
+    sudo systemctl start zm-centos
+
+9) Test that it started OK. The command below should print a JSON string including some information on the Zonemaster engine version.
+    
+    curl -X POST http://127.0.0.1:5000/ -d '{"method":"version_info"}'

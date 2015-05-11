@@ -1,6 +1,6 @@
 package Zonemaster::WebBackend::DB::PostgreSQL;
 
-our $VERSION = '1.0.1';
+our $VERSION = '1.0.2';
 
 use Moose;
 use 5.14.2;

@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+
+our $VERSION = '1.0.2';
+
 use 5.14.2;
 
 use JSON::RPC::Dispatch;

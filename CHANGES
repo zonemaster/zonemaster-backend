@@ -1,5 +1,48 @@
 Revision history for Perl module Zonemaster.
 
+v1.0.2 2015-05-11
+	Fixes #100 - CentOS instructions
+	Fixes #99 - Fixes #59
+	Fixes #98 - Further updates for Debian instructions 2
+	Fixes #97 - Debian instructions for the backend updated
+	Fixes #96 - Debian-compatible start script 
+	Fixes #93 - Make test more robust
+	Fixes #92 - Updates backend install for Debian
+	Fixes #91 - API documentation needs to be improved
+	Fixes #90 - Cleanup of backend code
+	Fixes #89 - Changing the execution of tests for the backend
+	Fixes #88 - Installation documentation: add instructions for MySQL
+	Fixes #87 - fixed indentation
+	Fixes #86 - Mysql backend support
+	Fixes #85 - MySQL support for the backend
+	Fixes #84 - Fix install1
+	Fixes #83 - Fix ubuntu install doc1
+	Fixes #82 - Fix ubuntu install doc1
+	Fixes #81 - Fix ubuntu install doc
+	Fixes #80 - update backend install
+	Fixes #79 - reference to sqlite is wrong
+	Fixes #78 - How to stop the process, closes #70
+	Fixes #77 - Lots of documentation fixes.
+	Fixes #76 - The API examples might not be correct
+	Fixes #75 - Fixes links in the README, and cleanup of the API docs.
+	Fixes #74 - Renamed documentation files
+	Fixes #73 - Lots of small changes
+	Fixes #72 - The API documentation quotes underscores
+	Fixes #71 - Change the default backend to PostgreSQL,
+	Fixes #70 - Installation instructions: stop and restart?
+	Fixes #69 - Installation instructions: how do I verify the setup?
+	Fixes #68 - Installation instructions: errors when setting up database
+	Fixes #67 - Installation instructions: configuration file
+	Fixes #66 - Installation instructions: database setup
+	Fixes #65 - Issues while setting the database
+	Fixes #64 - make test failed for zonemaster-backend
+	Fixes #63 - Cleanup
+	Fixes #62 - Remove MySQL and CouchDB dependencies from makefile
+	Fixes #60 - Add the Changelog file describing the issues fixed in each release
+	Fixes #59 - Make the modifications described in dotse/zonemaster-gui#86
+	Fixes #57 - Some adjustments for Ubuntu installation
+	Fixes #54 - Choose which database is needed for the backend
+
 v1.0.1 2015-02-24
 	Fixes #45 - Updated and moved the client.pl and Client.pm scripts to make it clear they are only ment as code snippets
 	Fixes #53 - Version change from 1.0.0 to 1.0.1 for release 2015.1

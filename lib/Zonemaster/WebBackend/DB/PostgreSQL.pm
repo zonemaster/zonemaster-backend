@@ -42,7 +42,7 @@ sub user_exists_in_db {
     my ( $self, $user ) = @_;
 
     my ( $id ) =
-      $self->dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=" . $self->dbh->quote( $user ) );
+      $self->dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=?", undef, $user );
 
     return $id;
 }
@@ -51,7 +51,7 @@ sub add_api_user_to_db {
     my ( $self, $user_info ) = @_;
 
     my $nb_inserted =
-      $self->dbh->do( "INSERT INTO users (user_info) VALUES(" . $self->dbh->quote( encode_json( $user_info ) ) . ")" );
+      $self->dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( $user_info ) );
 
     return $nb_inserted;
 }
@@ -60,10 +60,7 @@ sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
     my $id =
-      $self->dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'="
-          . $self->dbh->quote( $user )
-          . " AND user_info->>'api_key'="
-          . $self->dbh->quote( $api_key ) );
+      $self->dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=? AND user_info->>'api_key'=?", undef, $user, $api_key );
 
     return $id;
 }
@@ -91,15 +88,15 @@ sub create_new_batch_job {
 				test_results 
 			JOIN batch_jobs 
 				ON batch_id=batch_jobs.id 
-				AND username=" . $self->dbh->quote( $username ) . " WHERE 
+				AND username=? WHERE 
 				test_results.progress<>100
 			LIMIT 1
-			" );
+			", undef, $username );
 
     die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running " if ( $batch_id );
 
     my ( $new_batch_id ) = $self->dbh->selectrow_array(
-        "INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ") RETURNING id" );
+        "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
 
     return $new_batch_id;
 }
@@ -136,7 +133,7 @@ sub get_test_params {
     my $result;
 
     my ( $params_json ) =
-      $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE id=" . $self->dbh->quote( $test_id ) );
+      $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE id=?", undef, $test_id );
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
     die $@ if $@;
 
@@ -146,16 +143,12 @@ sub get_test_params {
 sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = "
-          . $self->dbh->quote( $results )
-          . " WHERE id="
-          . $self->dbh->quote( $test_id ) )
-      if ( $results );
+    $self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE id=?", undef, $results, $test_id ) if ( $results );
 
     my $result;
     eval {
         my ( $hrefs ) =
-          $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE id=" . $self->dbh->quote( $test_id ), 'id' );
+          $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE id=?", 'id', undef, $test_id );
         $result            = $hrefs->{$test_id};
         $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
         $result->{results} = decode_json( encode_utf8( $result->{results} ) );

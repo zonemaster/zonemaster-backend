@@ -103,6 +103,7 @@ sub create_new_batch_job {
 sub create_new_test {
     my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $priority, $batch_id ) = @_;
     my $result;
+    my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
     my $js = JSON->new;
@@ -112,15 +113,15 @@ sub create_new_test {
 
     my $query =
         "INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params) SELECT "
-      . $self->dbh->quote( $batch_id ) . ", "
-      . $self->dbh->quote( 5 ) . ", "
-      . $self->dbh->quote( $test_params_deterministic_hash ) . ", "
-      . $self->dbh->quote( $encoded_params )
+      . $dbh->quote( $batch_id ) . ", "
+      . $dbh->quote( 5 ) . ", "
+      . $dbh->quote( $test_params_deterministic_hash ) . ", "
+      . $dbh->quote( $encoded_params )
       . " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > NOW()-'$minutes_between_tests_with_same_params minutes'::interval)";
 
-    my $nb_inserted = $self->dbh->do( $query );
+    my $nb_inserted = $dbh->do( $query );
 
-    ( $result ) = $self->dbh->selectrow_array(
+    ( $result ) = $dbh->selectrow_array(
         "SELECT MAX(id) AS id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash'" );
 
     return $result;

@@ -15,13 +15,27 @@ use Zonemaster::WebBackend::Config;
 
 with 'Zonemaster::WebBackend::DB';
 
+has 'dbhandle' => (
+    is => 'rw',
+    isa => 'DBI::db',
+);
+
 my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string('postgresql');
 my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
 my $connection_user     = Zonemaster::WebBackend::Config->DB_user();
 my $connection_password = Zonemaster::WebBackend::Config->DB_password();
 
 sub dbh {
-    DBI->connect_cached( $connection_string, $connection_user, $connection_password, $connection_args );
+    my ($self) = @_;
+    my $dbh = $self->dbhandle;
+
+    if ($dbh and $dbh->ping) {
+        return $dbh;
+    } else {
+        $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
+        $self->dbhandle($dbh);
+        return $dbh;
+    }
 }
 
 sub user_exists_in_db {

@@ -172,7 +172,7 @@ sub to_idn {
     }
 
     if ( Net::LDNS::has_idn() ) {
-        return Net::LDNS::to_idn( encode_utf8( $str ) );
+        return Net::LDNS::to_idn( $str );
     }
     else {
         warn __( "Warning: Net::LDNS not compiled with libidn, cannot handle non-ASCII names correctly." );

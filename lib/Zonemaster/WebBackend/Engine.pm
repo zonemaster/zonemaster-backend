@@ -139,7 +139,7 @@ sub _check_domain {
 
     if ( $dn =~ m/[^[:ascii:]]+/ ) {
         if ( Net::LDNS::has_idn() ) {
-            eval { $dn = Net::LDNS::to_idn( encode_utf8( $dn ) ); };
+            eval { $dn = Net::LDNS::to_idn( $dn ); };
             if ( $@ ) {
                 return (
                     $dn,

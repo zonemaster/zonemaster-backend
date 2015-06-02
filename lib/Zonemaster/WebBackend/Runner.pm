@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use Encode;
 use DBI qw(:utils);
 use JSON;
 

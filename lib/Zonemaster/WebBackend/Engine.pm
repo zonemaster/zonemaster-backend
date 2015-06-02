@@ -7,7 +7,6 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use Encode;
 use JSON;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);

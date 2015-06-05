@@ -162,26 +162,20 @@ sub _check_domain {
         }
     }
 
-    if ( length( $dn ) < 2 && $dn ne '.' ) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type name too short" ) } );
+    my @res;
+    @res = Zonemaster::Test::Basic->basic00($dn);
+    if (@res != 0) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type name or label outside allowed length" ) } );
     }
 
-    $dn =~ s/\.$// unless ( $dn eq '.' );
-
-    if ( length( $dn ) > 253 ) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type name too long" ) } );
+    @res = Zonemaster::Test::Syntax->syntax01($dn);
+    if (not grep {$_->tag eq 'ONLY_ALLOWED_CHARS'} @res) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type name contains non-allowed character(s)" ) } );
     }
 
-    foreach my $label ( split( /\./, $dn ) ) {
-        if ( length( $label ) > 63 ) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type name label too long" ) } );
-        }
-    }
-
-    foreach my $label ( split( /\./, $dn ) ) {
-        if ( $label =~ /[^0-9a-zA-Z\-]/ ) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type name contains invalid characters" ) } );
-        }
+    @res = Zonemaster::Test::Syntax->syntax02($dn);
+    if (not grep {$_->tag eq 'NO_ENDING_HYPHENS'} @res) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type label must not start or end with a hyphen" ) } );
     }
 
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
@@ -285,27 +279,6 @@ sub validate_syntax {
                   }
                   if ( length( $ds_digest->{digest} ) != 64 || $ds_digest->{digest} =~ /[^A-Fa-f0-9]/ );
             }
-        }
-    }
-    else {
-        my $r = Net::LDNS->new();
-        $r->cd( 1 );
-        $r->dnssec( 0 );
-        $r->recurse( 1 );
-        my $p = $r->query( $dn, "NS" );
-        
-        if ($p->rcode eq 'NXDOMAIN') {
-            return { status => 'nok', message => encode_entities( 'Domain does not exist' ) };
-        }
-        elsif ($p->rcode eq 'NOERROR') {
-			my @a;
-			@a = $p->answer() if ( $p );
-			unless ( @a ) {
-				return { status => 'nok', message => encode_entities( 'Domain exists but is not a zone' ) };
-			}
-        }
-        else {
-            return { status => 'nok', message => encode_entities( 'Unknown error while checking for domain existance' ) };
         }
     }
 

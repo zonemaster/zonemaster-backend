@@ -7,7 +7,6 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use Encode;
 use JSON;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
@@ -139,7 +138,7 @@ sub _check_domain {
 
     if ( $dn =~ m/[^[:ascii:]]+/ ) {
         if ( Net::LDNS::has_idn() ) {
-            eval { $dn = Net::LDNS::to_idn( encode_utf8( $dn ) ); };
+            eval { $dn = Net::LDNS::to_idn( $dn ); };
             if ( $@ ) {
                 return (
                     $dn,

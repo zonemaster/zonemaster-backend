@@ -37,14 +37,6 @@ else {
     $frontend_params->{domain} = 'afnic.fr';
     ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'domain present' );
 
-    # domain short
-    $frontend_params->{domain} = 'a';
-    ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', 'domain short' );
-
-    # root zone
-    $frontend_params->{domain} = '.';
-    ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'root zone' );
-
     # idn
     $frontend_params->{domain} = 'é';
     ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'idn domain=[é]' ) )
@@ -108,14 +100,6 @@ else {
     $frontend_params->{nameservers}->[0]->{ns} = 'afnic.fr';
     ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'domain present' );
 
-    # domain short
-    $frontend_params->{nameservers}->[0]->{ns} = 'a';
-    ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', 'domain short' );
-
-    # root zone
-    $frontend_params->{nameservers}->[0]->{ns} = '.';
-    ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'root zone' );
-
     # idn
     $frontend_params->{nameservers}->[0]->{ns} = 'é';
     ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'idn domain=[é]' ) )
@@ -173,12 +157,6 @@ else {
     $frontend_params->{domain} = 'afnic.fr';
     ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'delegated domain exists' ) )
       or diag( $engine->validate_syntax( $frontend_params )->{message} );
-
-    $frontend_params->{domain} = 'afnic.sdfsdfsdlfsmdlf';
-    ok(
-        $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
-        encode_utf8( 'delegated domain doesn\'t exists' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
     # IP ADDRESS FORMAT
     $frontend_params->{domain} = 'afnic.fr';

@@ -103,7 +103,13 @@ This API returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from 
    "jsonrpc" : "2.0",
    "id" : 143014391379310,
    "result" : {
-      "ds_list" : [],
+      "ds_list" : [
+         {
+            "algorithm" : "sha256",
+            "digest" : "84103c835179a682c25c9647d8c962ab183eb44c80e12e9542c4ae32a2e80b76",
+            "keytag" : 11627
+         }
+      ],
       "ns_list" : [
          {
             "ns" : "ns6.ext.nic.fr.",
@@ -156,7 +162,7 @@ This API returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from 
 
  -   jsonrpc: « 2.0 »
  -   id: any kind of unique id allowing to match requests and responses
- -   result: a list of several { nameserver =\> IP\_adress } pairs.
+ -   result: a list of several { nameserver =\> IP\_adress } pairs, and a list of DS information objects.
 
 ### *JSON-RPC Call 4*: validate\_syntax
 This API checks the "params" structure for syntax coherence. It is very strict on what is allowed and what is not to avoid any SQL injection and cross site scripting attempts. It also checks the domain name for syntax to ensure the domain name seems to be a valid domain name and a test by the Engine can be started.
@@ -495,8 +501,8 @@ This API takes the usual fronted "params" structure and uses it to return a list
  -  params: an object containing the following parameters
     -  frontend\_params: the usual structure containing all the
        parameters of the interface
-    -  offset: the start of pagination (not yet supported)
-    -  limit: number of items to return (not yet supported)
+    -  offset: the start of pagination (not yet supported) (optional, default 0)
+    -  limit: number of items to return (not yet supported) (optional, default 200)
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method

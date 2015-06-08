@@ -20,8 +20,11 @@ use HTML::Entities;
 use Zonemaster;
 use Zonemaster::Nameserver;
 use Zonemaster::DNSName;
+use Zonemaster::Recursor;
 use Zonemaster::WebBackend::Config;
 use Zonemaster::WebBackend::Translator;
+
+my $recursor = Zonemaster::Recursor->new;
 
 sub new {
     my ( $type, $params ) = @_;
@@ -59,26 +62,8 @@ sub version_info {
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
-    my @adresses;
-    my $res = Net::LDNS->new;
-
-    my $query4 = $res->query( $ns_name, 'A' );
-    if ( $query4 ) {
-        foreach my $rr ( $query4->answer ) {
-            next unless $rr->type eq 'A';
-            push( @adresses, { $ns_name => $rr->address } );
-        }
-    }
-
-    my $query6 = $res->query( $ns_name, 'AAAA' );
-    if ( $query6 ) {
-        foreach my $rr ( $query6->answer ) {
-            next unless $rr->type eq 'AAAA';
-            push( @adresses, { $ns_name => $rr->address } );
-        }
-    }
-
-    push( @adresses, { $ns_name => '0.0.0.0' } ) unless ( @adresses );
+    my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+    @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     return \@adresses;
 }
@@ -95,33 +80,23 @@ sub get_data_from_parent_zone {
     my @ns_names;
 
     my $zone = Zonemaster->zone( $domain );
-    my $ns_p = $zone->parent->query_one( $zone->name, 'NS', { dnssec => 0, cd => 1, recurse => 1 } );
-    if ( $ns_p ) {
-        my @ns = $ns_p->authority();
-
-        foreach my $ns ( @ns ) {
-            foreach my $ns_ip_pair ( @{ $self->get_ns_ips( $ns->nsdname() ) } ) {
-                push( @ns_list, { ns => ( keys %$ns_ip_pair )[0], ip => $ns_ip_pair->{ ( keys %$ns_ip_pair )[0] } } );
-            }
-        }
-    }
+    push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
     my %algorithm_ids = ( 1 => 'sha1', 2 => 'sha256', 3 => 'ghost', 4 => 'sha384' );
     my @ds_list;
 
-=coment	
     $zone = Zonemaster->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
 		my @ds = $ds_p->get_records( 'DS', 'answer' );
 
 		foreach my $ds ( @ds ) {
+            next unless $ds->type eq 'DS';
 			if ( $algorithm_ids{ $ds->digtype } ) {
-				push(@ds_list, { algorithm => $algorithm_ids{$ds->digtype}, digest => $ds->hexdigest });
+				push(@ds_list, { algorithm => $algorithm_ids{$ds->digtype}, digest => $ds->hexdigest, keytag => $ds->keytag });
 			}
 		} 
 	}
-=cut
 
     $result{ns_list} = \@ns_list;
     $result{ds_list} = \@ds_list;

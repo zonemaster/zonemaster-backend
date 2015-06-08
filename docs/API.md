@@ -495,8 +495,8 @@ This API takes the usual fronted "params" structure and uses it to return a list
  -  params: an object containing the following parameters
     -  frontend\_params: the usual structure containing all the
        parameters of the interface
-    -  offset: the start of pagination (not yet supported)
-    -  limit: number of items to return (not yet supported)
+    -  offset: the start of pagination (not yet supported) (optional, default 0)
+    -  limit: number of items to return (not yet supported) (optional, default 200)
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method

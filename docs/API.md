@@ -234,15 +234,15 @@ The testing is done by a (typically) cron job on the backend machine.
          },
          {
             "ns" : "ns3.nic.FR.",
-            "ip" : "2001:660:3006:1:0:0:1:1",
+            "ip" : "2001:660:3006:1:0:0:1:1"
          },
          {
             "ns" : "ns2.nic.FR.",
-            "ip" : "192.93.0.4",
+            "ip" : "192.93.0.4"
          },
          {
             "ns" : "ns2.nic.FR.",
-            "ip" : "2001:660:3005:1:0:0:1:2",
+            "ip" : "2001:660:3005:1:0:0:1:2"
          }
       ],
       "ds_digest_pairs" : [],
@@ -461,11 +461,11 @@ This API takes the usual fronted "params" structure and uses it to return a list
             },
             {
                "ip" : "2001:660:3003:2:0:0:4:1",
-               "ns" : "ns1.nic.FR.",
+               "ns" : "ns1.nic.FR."
             },
             {
                "ns" : "ns3.nic.FR.",
-               "ip" : "192.134.0.49",
+               "ip" : "192.134.0.49"
             },
             {
                "ns" : "ns3.nic.FR.",
@@ -473,7 +473,7 @@ This API takes the usual fronted "params" structure and uses it to return a list
             },
             {
                "ip" : "192.93.0.4",
-               "ns" : "ns2.nic.FR.",
+               "ns" : "ns2.nic.FR."
             },
             {
                "ns" : "ns2.nic.FR.",

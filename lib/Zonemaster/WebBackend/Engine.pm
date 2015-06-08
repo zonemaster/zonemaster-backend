@@ -20,8 +20,11 @@ use HTML::Entities;
 use Zonemaster;
 use Zonemaster::Nameserver;
 use Zonemaster::DNSName;
+use Zonemaster::Recursor;
 use Zonemaster::WebBackend::Config;
 use Zonemaster::WebBackend::Translator;
+
+my $recursor = Zonemaster::Recursor->new;
 
 sub new {
     my ( $type, $params ) = @_;
@@ -59,26 +62,8 @@ sub version_info {
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
-    my @adresses;
-    my $res = Net::LDNS->new;
-
-    my $query4 = $res->query( $ns_name, 'A' );
-    if ( $query4 ) {
-        foreach my $rr ( $query4->answer ) {
-            next unless $rr->type eq 'A';
-            push( @adresses, { $ns_name => $rr->address } );
-        }
-    }
-
-    my $query6 = $res->query( $ns_name, 'AAAA' );
-    if ( $query6 ) {
-        foreach my $rr ( $query6->answer ) {
-            next unless $rr->type eq 'AAAA';
-            push( @adresses, { $ns_name => $rr->address } );
-        }
-    }
-
-    push( @adresses, { $ns_name => '0.0.0.0' } ) unless ( @adresses );
+    my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+    @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     return \@adresses;
 }

@@ -103,7 +103,13 @@ This API returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from 
    "jsonrpc" : "2.0",
    "id" : 143014391379310,
    "result" : {
-      "ds_list" : [],
+      "ds_list" : [
+         {
+            "algorithm" : "sha256",
+            "digest" : "84103c835179a682c25c9647d8c962ab183eb44c80e12e9542c4ae32a2e80b76",
+            "keytag" : 11627
+         }
+      ],
       "ns_list" : [
          {
             "ns" : "ns6.ext.nic.fr.",
@@ -156,7 +162,7 @@ This API returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from 
 
  -   jsonrpc: « 2.0 »
  -   id: any kind of unique id allowing to match requests and responses
- -   result: a list of several { nameserver =\> IP\_adress } pairs.
+ -   result: a list of several { nameserver =\> IP\_adress } pairs, and a list of DS information objects.
 
 ### *JSON-RPC Call 4*: validate\_syntax
 This API checks the "params" structure for syntax coherence. It is very strict on what is allowed and what is not to avoid any SQL injection and cross site scripting attempts. It also checks the domain name for syntax to ensure the domain name seems to be a valid domain name and a test by the Engine can be started.
@@ -234,15 +240,15 @@ The testing is done by a (typically) cron job on the backend machine.
          },
          {
             "ns" : "ns3.nic.FR.",
-            "ip" : "2001:660:3006:1:0:0:1:1",
+            "ip" : "2001:660:3006:1:0:0:1:1"
          },
          {
             "ns" : "ns2.nic.FR.",
-            "ip" : "192.93.0.4",
+            "ip" : "192.93.0.4"
          },
          {
             "ns" : "ns2.nic.FR.",
-            "ip" : "2001:660:3005:1:0:0:1:2",
+            "ip" : "2001:660:3005:1:0:0:1:2"
          }
       ],
       "ds_digest_pairs" : [],
@@ -405,7 +411,7 @@ LIST OF TEST RESULTS
         5*: start\_domain\_test)
      -  results: A list of results.
 
-## Description of the results:
+#### Description of the results:
 
 The individual results are of the form
 
@@ -461,11 +467,11 @@ This API takes the usual fronted "params" structure and uses it to return a list
             },
             {
                "ip" : "2001:660:3003:2:0:0:4:1",
-               "ns" : "ns1.nic.FR.",
+               "ns" : "ns1.nic.FR."
             },
             {
                "ns" : "ns3.nic.FR.",
-               "ip" : "192.134.0.49",
+               "ip" : "192.134.0.49"
             },
             {
                "ns" : "ns3.nic.FR.",
@@ -473,7 +479,7 @@ This API takes the usual fronted "params" structure and uses it to return a list
             },
             {
                "ip" : "192.93.0.4",
-               "ns" : "ns2.nic.FR.",
+               "ns" : "ns2.nic.FR."
             },
             {
                "ns" : "ns2.nic.FR.",
@@ -495,8 +501,8 @@ This API takes the usual fronted "params" structure and uses it to return a list
  -  params: an object containing the following parameters
     -  frontend\_params: the usual structure containing all the
        parameters of the interface
-    -  offset: the start of pagination (not yet supported)
-    -  limit: number of items to return (not yet supported)
+    -  offset: the start of pagination (not yet supported) (optional, default 0)
+    -  limit: number of items to return (not yet supported) (optional, default 200)
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method
@@ -535,44 +541,24 @@ This API takes the usual fronted "params" structure and uses it to return a list
 
 ## Batch mode API (Experimental as of now)
 
-### *JSON-RPC Call*: create\_user
+### *JSON-RPC Call*: `add_api_user`
 
 **Request**:
 ```
 {
-  "params": {
-    "frontend_params": {
-      "test_profile": "test_profile_1",
-      "ipv6": 1,
-      "ipv4": 1,
-      "client_id": "Zonemaster CGI/Dancer/node.js",
-      "nameservers": [
-        { "ns1.nic.fr": "" },
-        { "empty": "192.134.4.1" },
-        { "ns1.nic.fr": "192.134.4.1" }
-      ],
-      "domain": "afnic-2.fr",
-      "ds_digest_pairs": [
-        { "ds1": "digest1" },
-        { "ds2": "digest2" }
-      ],
-      "advanced_options": 1,
-      "client_version": "1.0"
-    },
-    "limit" : 10,
-    "offset" : 0
-  },
-  "jsonrpc": "2.0",
-  "id": 140726285079520,
-  "method" : "get_test_history"
+    "jsonrpc": "2.0",
+    "id": 4711,
+    "method": "add_api_user",
+    "params": {
+        "username": "citron",
+        "api_key": "fromage"
+    }
 }
 ```
 
  -  params: an object containing the following parameters
-    -  frontend\_params: the usual structure containing all the
-       parameters of the interface
-    -  offset: the start of pagination
-    -  limit: number of items to return
+    -  username: the name of the user to add
+    -  api_key: the API key (in effect, password) for the user to add
  -   jsonrpc: « 2.0 »
  -   id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method
@@ -581,28 +567,12 @@ This API takes the usual fronted "params" structure and uses it to return a list
 ```
 {
   "jsonrpc": "2.0",
-  "id": 140743003648550,
-  "result": [
-    {
-      "advanced_options": "1",
-      "id": 3,
-      "creation_time": "2014-08-05 19:41:14.522656"
-    },
-    {
-      "advanced_options": "1",
-      "id" : 1,
-      "creation_time": "2014-08-05 11:48:18.542216"
-    }
-  ]
+  "id": 4711
+  "result": 1
 }
 ```
 
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
- -  result: an ordered (starting by the most recent test) list of tests
-    with
-    -  id: the id to use to retrieve the test result
-    -  creation\_date: the date of test
-    -  advanced\_options: if set to 1 serves to differentiate tests
-       with advanced options from those without this option.
+ -  result: The number of users created.
        

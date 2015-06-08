@@ -172,6 +172,9 @@ sub get_test_request {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
+    $p->{offset} //= 0;
+    $p->{limit} //= 200;
+
     my $undelegated =
         ( defined $p->{frontend_params}->{nameservers} )
       ? ( "AND (params->'nameservers') IS NOT NULL" )

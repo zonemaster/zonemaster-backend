@@ -7,7 +7,6 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use Encode;
 use JSON;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
@@ -22,8 +21,11 @@ use Net::IP;
 use Zonemaster;
 use Zonemaster::Nameserver;
 use Zonemaster::DNSName;
+use Zonemaster::Recursor;
 use Zonemaster::WebBackend::Config;
 use Zonemaster::WebBackend::Translator;
+
+my $recursor = Zonemaster::Recursor->new;
 
 sub new {
     my ( $type, $params ) = @_;
@@ -65,26 +67,8 @@ sub version_info {
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
-    my @adresses;
-    my $res = Net::LDNS->new;
-
-    my $query4 = $res->query( $ns_name, 'A' );
-    if ( $query4 ) {
-        foreach my $rr ( $query4->answer ) {
-            next unless $rr->type eq 'A';
-            push( @adresses, { $ns_name => $rr->address } );
-        }
-    }
-
-    my $query6 = $res->query( $ns_name, 'AAAA' );
-    if ( $query6 ) {
-        foreach my $rr ( $query6->answer ) {
-            next unless $rr->type eq 'AAAA';
-            push( @adresses, { $ns_name => $rr->address } );
-        }
-    }
-
-    push( @adresses, { $ns_name => '0.0.0.0' } ) unless ( @adresses );
+    my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+    @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     return \@adresses;
 }
@@ -101,33 +85,23 @@ sub get_data_from_parent_zone {
     my @ns_names;
 
     my $zone = Zonemaster->zone( $domain );
-    my $ns_p = $zone->parent->query_one( $zone->name, 'NS', { dnssec => 0, cd => 1, recurse => 1 } );
-    if ( $ns_p ) {
-        my @ns = $ns_p->authority();
-
-        foreach my $ns ( @ns ) {
-            foreach my $ns_ip_pair ( @{ $self->get_ns_ips( $ns->nsdname() ) } ) {
-                push( @ns_list, { ns => ( keys %$ns_ip_pair )[0], ip => $ns_ip_pair->{ ( keys %$ns_ip_pair )[0] } } );
-            }
-        }
-    }
+    push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
     my %algorithm_ids = ( 1 => 'sha1', 2 => 'sha256', 3 => 'ghost', 4 => 'sha384' );
     my @ds_list;
 
-=coment	
     $zone = Zonemaster->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
 		my @ds = $ds_p->get_records( 'DS', 'answer' );
 
 		foreach my $ds ( @ds ) {
+            next unless $ds->type eq 'DS';
 			if ( $algorithm_ids{ $ds->digtype } ) {
-				push(@ds_list, { algorithm => $algorithm_ids{$ds->digtype}, digest => $ds->hexdigest });
+				push(@ds_list, { algorithm => $algorithm_ids{$ds->digtype}, digest => $ds->hexdigest, keytag => $ds->keytag });
 			}
 		} 
 	}
-=cut
 
     $result{ns_list} = \@ns_list;
     $result{ds_list} = \@ds_list;
@@ -144,7 +118,7 @@ sub _check_domain {
 
     if ( $dn =~ m/[^[:ascii:]]+/ ) {
         if ( Net::LDNS::has_idn() ) {
-            eval { $dn = Net::LDNS::to_idn( encode_utf8( $dn ) ); };
+            eval { $dn = Net::LDNS::to_idn( $dn ); };
             if ( $@ ) {
                 return (
                     $dn,
@@ -167,26 +141,20 @@ sub _check_domain {
         }
     }
 
-    if ( length( $dn ) < 2 && $dn ne '.' ) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type name too short" ) } );
+    my @res;
+    @res = Zonemaster::Test::Basic->basic00($dn);
+    if (@res != 0) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type name or label outside allowed length" ) } );
     }
 
-    $dn =~ s/\.$// unless ( $dn eq '.' );
-
-    if ( length( $dn ) > 253 ) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type name too long" ) } );
+    @res = Zonemaster::Test::Syntax->syntax01($dn);
+    if (not grep {$_->tag eq 'ONLY_ALLOWED_CHARS'} @res) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type name contains non-allowed character(s)" ) } );
     }
 
-    foreach my $label ( split( /\./, $dn ) ) {
-        if ( length( $label ) > 63 ) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type name label too long" ) } );
-        }
-    }
-
-    foreach my $label ( split( /\./, $dn ) ) {
-        if ( $label =~ /[^0-9a-zA-Z\-]/ ) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type name contains invalid characters" ) } );
-        }
+    @res = Zonemaster::Test::Syntax->syntax02($dn);
+    if (not grep {$_->tag eq 'NO_ENDING_HYPHENS'} @res) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type label must not start or end with a hyphen" ) } );
     }
 
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
@@ -290,27 +258,6 @@ sub validate_syntax {
                   }
                   if ( length( $ds_digest->{digest} ) != 64 || $ds_digest->{digest} =~ /[^A-Fa-f0-9]/ );
             }
-        }
-    }
-    else {
-        my $r = Net::LDNS->new();
-        $r->cd( 1 );
-        $r->dnssec( 0 );
-        $r->recurse( 1 );
-        my $p = $r->query( $dn, "NS" );
-        
-        if ($p->rcode eq 'NXDOMAIN') {
-            return { status => 'nok', message => encode_entities( 'Domain does not exist' ) };
-        }
-        elsif ($p->rcode eq 'NOERROR') {
-			my @a;
-			@a = $p->answer() if ( $p );
-			unless ( @a ) {
-				return { status => 'nok', message => encode_entities( 'Domain exists but is not a zone' ) };
-			}
-        }
-        else {
-            return { status => 'nok', message => encode_entities( 'Unknown error while checking for domain existance' ) };
         }
     }
 

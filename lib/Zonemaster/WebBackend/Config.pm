@@ -9,7 +9,10 @@ use Config::IniFiles;
 use File::ShareDir qw[dist_file];
 
 our $path;
-if ( -e '/etc/zonemaster/backend_config.ini' ) {
+if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
+    $path = $ENV{ZONEMASTER_BACKEND_CONFIG_FILE};
+}
+elsif ( -e '/etc/zonemaster/backend_config.ini' ) {
     $path = '/etc/zonemaster/backend_config.ini';
 }
 else {
@@ -108,6 +111,18 @@ sub NumberOfProfessesForBatchTesting {
     my $cfg = _load_config();
 
     return $cfg->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
+}
+
+sub Maxmind_ISP_DB_File {
+    my $cfg = _load_config();
+
+    return $cfg->val( 'GEOLOCATION', 'maxmind_isp_db_file' );
+}
+
+sub Maxmind_City_DB_File {
+    my $cfg = _load_config();
+
+    return $cfg->val( 'GEOLOCATION', 'maxmind_city_db_file' );
 }
 
 1;

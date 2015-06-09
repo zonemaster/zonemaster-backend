@@ -16,6 +16,7 @@ use File::Slurp qw(append_file);
 use Net::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
+use Net::IP;
 
 # Zonemaster Modules
 use Zonemaster;
@@ -54,7 +55,11 @@ sub new {
 sub version_info {
     my ( $self ) = @_;
 
-    return "Zonemaster Test Engine Version: " . Zonemaster->VERSION;
+    my %ver;
+    $ver{zonemaster_engine} = Zonemaster->VERSION;
+    $ver{zonemaster_backend} = Zonemaster::WebBackend::Engine->VERSION;
+
+    return \%ver;
 }
 
 sub get_ns_ips {
@@ -192,7 +197,7 @@ sub validate_syntax {
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_digest_pairs', 'nameservers', 'profile',
-        'advanced', 'client_id', 'client_version'
+        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info'
     );
 
     foreach my $k ( keys %$syntax_input ) {
@@ -312,6 +317,36 @@ sub validate_syntax {
     return { status => 'ok', message => encode_entities( 'Syntax ok' ) };
 }
 
+sub add_user_ip_geolocation {
+    my ( $self, $params ) = @_;
+    
+	if ($params->{user_ip} 
+		&& Zonemaster::WebBackend::Config->Maxmind_ISP_DB_File()
+		&& Zonemaster::WebBackend::Config->Maxmind_City_DB_File()
+	) {
+		my $ip = new Net::IP($params->{user_ip});
+		if ($ip->iptype() eq 'PUBLIC') {
+			require Geo::IP;
+			my $gi = Geo::IP->new(Zonemaster::WebBackend::Config->Maxmind_ISP_DB_File());
+			my $isp = $gi->isp_by_addr($params->{user_ip});
+			
+			require GeoIP2::Database::Reader;
+			my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::WebBackend::Config->Maxmind_City_DB_File());
+	
+			my $city = $reader->city(ip => $params->{user_ip});
+
+			$params->{user_location_info}->{isp} = $isp;
+			$params->{user_location_info}->{country} = $city->country()->name();
+			$params->{user_location_info}->{city} = $city->city()->name();
+			$params->{user_location_info}->{longitude} = $city->location()->longitude();
+			$params->{user_location_info}->{latitude} = $city->location()->latitude();
+		}
+		else {
+			$params->{user_location_info}->{isp} = "Private IP address";
+		}
+	}
+}
+
 sub start_domain_test {
     my ( $self, $params ) = @_;
     my $result = 0;
@@ -321,6 +356,8 @@ sub start_domain_test {
     die $syntax_result->{message} unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
     die "No domain in parameters\n" unless ( $params->{domain} );
+    
+    $self->add_user_ip_geolocation($params);
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10, 10 );
 

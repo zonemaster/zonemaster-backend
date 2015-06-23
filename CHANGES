@@ -1,5 +1,19 @@
 Revision history for Perl module Zonemaster.
 
+v1.0.3 2015-06-26
+	Fixes #116 - Add user geolocation support
+	Fixes #115 - Pg backend cleanup
+	Fixes #114 - Misc backend fixes
+	Fixes #113 - Api doc improvements
+	Fixes #112 - Remove tests for cases that are no longer supposed to fail.
+	Fixes #111 - Change preflight test to only check that the given name is syntactica…
+	Fixes #110 - Idn problem
+	Fixes #108 - Experimental method #9 (create_user) cant be run using API.md
+	Fixes #107 - Method #8 (get_test_history) cant be run using API.md
+	Fixes #106 - Method #7 (get_test_results) cant be run using API.md
+	Fixes #105 - Method #6 (test_progress) cant be run using API.md
+	Fixes #104 - Method #5 (start_domain_test) cant be run using API.md
+	Fixes #103 - Release 1.0.2 of the backend KO
 v1.0.2 2015-05-11
 	Fixes #100 - CentOS instructions
 	Fixes #99 - Fixes #59

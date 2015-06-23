@@ -1,4 +1,4 @@
-Revision history for Perl module Zonemaster.
+Revision history for Zonemaster Backend.
 
 v1.0.3 2015-06-26
 	Fixes #116 - Add user geolocation support

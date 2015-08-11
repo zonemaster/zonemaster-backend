@@ -6,157 +6,79 @@ use Test::More;    # see done_testing()
 
 my $can_use_pg = eval 'use DBD::Pg; 1';
 
+my $frontend_params_1 = {
+	client_id      => 'PostgreSQL Unit Test',         # free string
+	client_version => '1.0',               # free version like string
+	domain         => 'afnic.fr',          # content of the domain text field
+	advanced       => 1,                   # 0 or 1, is the advanced options checkbox checked
+	ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
+	ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
+	profile        => 'test_profile_1',    # the id if the Test profile listbox
+
+	nameservers => [                       # list of the nameserves up to 32
+		{ ns => 'ns1.nic.fr', ip => '1.1.1.1' },       # key values pairs representing nameserver => namesterver_ip
+		{ ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+	],
+	ds_digest_pairs => [                               # list of DS/Digest pairs up to 32
+		{ algorithm => 'sha1', digest => '0123456789012345678901234567890123456789' }
+		,                                              # key values pairs representing ds => digest
+		{ algorithm => 'sha256', digest => '0123456789012345678901234567890123456789012345678901234567890123' }
+		,                                              # key values pairs representing ds => digest
+	],
+};
+
+use_ok( 'Zonemaster::WebBackend::Engine' );
+# Create Zonemaster::WebBackend::Engine object
+my $engine = Zonemaster::WebBackend::Engine->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } );
+isa_ok( $engine, 'Zonemaster::WebBackend::Engine' );
+
+sub run_zonemaster_test_with_backend_API {
+	my ($test_id) = @_;
+    # add a new test to the db
+    
+    ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id , 'API start_domain_test -> Call OK' );
+    ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id , 'API start_domain_test -> Test inserted in the DB' );
+
+    # test test_progress API
+    ok( $engine->test_progress( $test_id ) == 0 , 'API test_progress -> OK');
+
+    use_ok( 'Zonemaster::WebBackend::Runner' );
+	Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( $test_id );
+
+    sleep( 5 );
+    ok( $engine->test_progress( $test_id ) > 0 , 'API test_progress -> Test started');
+
+    foreach my $i ( 1 .. 12 ) {
+        sleep( 5 );
+        my $progress = $engine->test_progress( $test_id );
+        diag "pregress: $progress";
+        last if ( $progress == 100 );
+    }
+    ok( $engine->test_progress( $test_id ) == 100 , 'API test_progress -> Test finished' );
+    my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr-FR' } );
+    ok( defined $test_results->{id} , 'API get_test_results -> [id] paramater present' );
+    ok( defined $test_results->{params} , 'API get_test_results -> [params] paramater present' );
+    ok( defined $test_results->{creation_time} , 'API get_test_results -> [creation_time] paramater present' );
+    ok( defined $test_results->{results} , 'API get_test_results -> [results] paramater present' );
+    ok( scalar( @{ $test_results->{results} } ) > 1 , 'API get_test_results -> [results] paramater contains data' );
+}
+
 if ( not $can_use_pg) {
     plan skip_all => 'Could not load DBD::Pg.';
 }
 else {
-    use_ok( 'Zonemaster::WebBackend::Engine' );
-
-    # Create Zonemaster::WebBackend::Engine object
-    my $engine = Zonemaster::WebBackend::Engine->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } );
-    isa_ok( $engine, 'Zonemaster::WebBackend::Engine' );
 
     # add test user
-    ok( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ) == 1 );
+    ok( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ) == 1, 'API add_api_user OK' );
     ok(
         scalar(
             $engine->{db}
               ->dbh->selectrow_array( q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/ )
         ) == 1
-    );
+    , 'API add_api_user user created' );
 
-    # add a new test to the db
-    my $frontend_params_1 = {
-        client_id      => 'Zonemaster CGI/Dancer/node.js',    # free string
-        client_version => '1.0',                              # free version like string
-
-        domain           => 'afnic.fr',                       # content of the domain text field
-        advanced_options => 1,                                # 0 or 1, is the advanced options checkbox checked
-        ipv4             => 1,                                # 0 or 1, is the ipv4 checkbox checked
-        ipv6             => 1,                                # 0 or 1, is the ipv6 checkbox checked
-        test_profile     => 'test_profile_1',                 # the id if the Test profile listbox
-        nameservers      => [                                 # list of the namaserves up to 32
-            { ns => 'ns1.nic.fr', ip => '1.2.3.4' },       # key values pairs representing nameserver => namesterver_ip
-            { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
-        ],
-        ds_digest_pairs => [                               # list of DS/Digest pairs up to 32
-            { 'ds1' => 'ds-test1' },                       # key values pairs representing ds => digest
-            { 'ds2' => 'digest2' },
-        ],
-    };
-    ok( $engine->start_domain_test( $frontend_params_1 ) == 1 );
-    ok( scalar( $engine->{db}->dbh->selectrow_array( q/SELECT id FROM test_results WHERE id=1/ ) ) == 1 );
-
-    # test test_progress API
-    ok( $engine->test_progress( 1 ) == 0 );
-
-    use_ok( 'Zonemaster::WebBackend::Runner' );
-	Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 1 );
-
-    sleep( 5 );
-    ok( $engine->test_progress( 1 ) > 0 );
-
-    foreach my $i ( 1 .. 12 ) {
-        sleep( 5 );
-        my $progress = $engine->test_progress( 1 );
-        diag "pregress: $progress";
-        last if ( $progress == 100 );
-    }
-    ok( $engine->test_progress( 1 ) == 100 );
-    my $test_results = $engine->get_test_results( { id => 1, language => 'fr-FR' } );
-    ok( defined $test_results->{id} );
-    ok( defined $test_results->{params} );
-    ok( defined $test_results->{creation_time} );
-    ok( defined $test_results->{results} );
-    ok( scalar( @{ $test_results->{results} } ) > 1 );
-
-    my $frontend_params_2 = {
-        client_id      => 'Zonemaster CGI/Dancer/node.js',    # free string
-        client_version => '1.0',                              # free version like string
-
-        domain           => 'afnic.fr',                       # content of the domain text field
-        advanced_options => 1,                                # 0 or 1, is the advanced options checkbox checked
-        ipv4             => 1,                                # 0 or 1, is the ipv4 checkbox checked
-        ipv6             => 1,                                # 0 or 1, is the ipv6 checkbox checked
-        test_profile     => 'test_profile_1',                 # the id if the Test profile listbox
-        nameservers      => [                                 # list of the namaserves up to 32
-            { ns => 'ns1.nic.fr', ip => '1.2.3.4' },       # key values pairs representing nameserver => namesterver_ip
-            { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
-        ],
-        ds_digest_pairs => [                               # list of DS/Digest pairs up to 32
-            { 'ds1' => 'ds-test2' },                       # key values pairs representing ds => digest
-            { 'ds2' => 'digest2' },
-        ],
-    };
-    ok( $engine->start_domain_test( $frontend_params_2 ) == 2 );
-    ok( scalar( $engine->{db}->dbh->selectrow_array( q/SELECT id FROM test_results WHERE id=2/ ) ) == 2 );
-
-    # test test_progress API
-    ok( $engine->test_progress( 2 ) == 0 );
-
-    require_ok( 'Zonemaster::WebBackend::Runner' );
-    Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 2 );
-
-    sleep( 5 );
-    ok( $engine->test_progress( 2 ) > 0 );
-
-    foreach my $i ( 1 .. 12 ) {
-        sleep( 5 );
-        my $progress = $engine->test_progress( 2 );
-        diag "pregress: $progress";
-        last if ( $progress == 100 );
-    }
-    ok( $engine->test_progress( 2 ) == 100 );
-    $test_results = $engine->get_test_results( { id => 1, language => 'fr-FR' } );
-    ok( defined $test_results->{id} );
-    ok( defined $test_results->{params} );
-    ok( defined $test_results->{creation_time} );
-    ok( defined $test_results->{results} );
-    ok( scalar( @{ $test_results->{results} } ) > 1 );
-
-    my $frontend_params_3 = {
-        client_id      => 'Zonemaster CGI/Dancer/node.js',    # free string
-        client_version => '1.0',                              # free version like string
-
-        domain           => 'nic.fr',                         # content of the domain text field
-        advanced_options => 1,                                # 0 or 1, is the advanced options checkbox checked
-        ipv4             => 1,                                # 0 or 1, is the ipv4 checkbox checked
-        ipv6             => 1,                                # 0 or 1, is the ipv6 checkbox checked
-        test_profile     => 'test_profile_1',                 # the id if the Test profile listbox
-        nameservers      => [                                 # list of the namaserves up to 32
-            { ns => 'ns1.nic.fr', ip => '1.2.3.4' },       # key values pairs representing nameserver => namesterver_ip
-            { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
-        ],
-        ds_digest_pairs => [                               # list of DS/Digest pairs up to 32
-            { 'ds1' => 'ds-test1' },                       # key values pairs representing ds => digest
-            { 'ds2' => 'digest2' },
-        ],
-    };
-    ok( $engine->start_domain_test( $frontend_params_3 ) == 3 );
-    ok( scalar( $engine->{db}->dbh->selectrow_array( q/SELECT id FROM test_results WHERE id=3/ ) ) == 3 );
-
-    # test test_progress API
-    ok( $engine->test_progress( 3 ) == 0 );
-
-    require_ok( 'Zonemaster::WebBackend::Runner' );
-    Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 3 );
-
-    sleep( 5 );
-    ok( $engine->test_progress( 3 ) > 0 );
-
-    foreach my $i ( 1 .. 20 ) {
-        sleep( 5 );
-        my $progress = $engine->test_progress( 3 );
-        diag "pregress: $progress";
-        last if ( $progress == 100 );
-    }
-    ok( $engine->test_progress( 3 ) == 100 );
-    $test_results = $engine->get_test_results( { id => 1, language => 'fr-FR' } );
-    ok( defined $test_results->{id} );
-    ok( defined $test_results->{params} );
-    ok( defined $test_results->{creation_time} );
-    ok( defined $test_results->{results} );
-    ok( scalar( @{ $test_results->{results} } ) > 1 );
+	run_zonemaster_test_with_backend_API(1);
+#	run_zonemaster_test_with_backend_API(2);
 
     my $offset = 0;
     my $limit  = 10;

@@ -19,4 +19,5 @@ before_script:
     - perl -I./lib ./script/create_db_postgresql_9.3.pl
 script:
     - perl Makefile.PL && make test
+    - perl -I./lib ./t/create_db_postgresql_9.3.pl
     

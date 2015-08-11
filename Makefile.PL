@@ -30,6 +30,7 @@ requires
   'File::ShareDir'           => 0,
   'Parallel::ForkManager'    => 1.12,
   'Daemon::Control'          => 0,
+  'Net::IP'                  => 0,
   ;
 
 test_requires 'DBD::SQLite';

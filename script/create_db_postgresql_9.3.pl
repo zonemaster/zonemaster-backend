@@ -6,8 +6,14 @@ use Encode;
 
 use DBI qw(:utils);
 
-my $connection_string = "DBI:Pg:database=zonemaster;host=localhost";
-my $dbh = DBI->connect( $connection_string, "zonemaster", "zonemaster", { RaiseError => 1, AutoCommit => 1 } );
+use Zonemaster::WebBackend::Config;
+
+die "The configuration file does not contain the PostgreSQL backend" unless (lc(Zonemaster::WebBackend::Config->BackendDBType()) eq 'postgresql');
+my $db_user = Zonemaster::WebBackend::Config->DB_user();
+my $db_password = Zonemaster::WebBackend::Config->DB_password();
+my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string();
+
+my $dbh = DBI->connect( $connection_string, $db_user, $db_password, { RaiseError => 1, AutoCommit => 1 } );
 
 sub create_db {
 
@@ -29,7 +35,7 @@ sub create_db {
         '
     );
 
-    $dbh->do( 'ALTER TABLE public.test_results_id_seq OWNER TO zonemaster' );
+    $dbh->do( "ALTER TABLE public.test_results_id_seq OWNER TO $db_user" );
 
     $dbh->do(
         'CREATE TABLE test_results (
@@ -46,7 +52,7 @@ sub create_db {
                 )
         '
     );
-    $dbh->do( 'ALTER TABLE test_results OWNER TO zonemaster' );
+    $dbh->do( "ALTER TABLE test_results OWNER TO $db_user" );
 
     ####################################################################
     # BATCH JOBS
@@ -63,7 +69,7 @@ sub create_db {
         '
     );
 
-    $dbh->do( 'ALTER TABLE public.batch_jobs_id_seq OWNER TO zonemaster' );
+    $dbh->do( "ALTER TABLE public.batch_jobs_id_seq OWNER TO $db_user" );
 
     $dbh->do(
         'CREATE TABLE batch_jobs (
@@ -73,7 +79,7 @@ sub create_db {
                 )
         '
     );
-    $dbh->do( 'ALTER TABLE batch_jobs OWNER TO zonemaster' );
+    $dbh->do( "ALTER TABLE batch_jobs OWNER TO $db_user" );
 
     ####################################################################
     # USERS
@@ -90,7 +96,7 @@ sub create_db {
         '
     );
 
-    $dbh->do( 'ALTER TABLE public.users_id_seq OWNER TO zonemaster' );
+    $dbh->do( "ALTER TABLE public.users_id_seq OWNER TO $db_user" );
 
     $dbh->do(
         'CREATE TABLE users (
@@ -99,7 +105,7 @@ sub create_db {
                 )
         '
     );
-    $dbh->do( 'ALTER TABLE users OWNER TO zonemaster' );
+    $dbh->do( "ALTER TABLE users OWNER TO $db_user" );
 
 }
 

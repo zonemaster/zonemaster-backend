@@ -53,7 +53,7 @@ my $frontend_params_1 = {
 sub run_zonemaster_test_with_backend_API {
 	my ($test_id) = @_;
 	
-	ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id, 'API start_domain_test OK' );
+	ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id, "API start_domain_test OK/test_id=$test_id" );
 	ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id );
 
 	# test test_progress API

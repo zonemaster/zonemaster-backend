@@ -78,7 +78,8 @@ else {
     , 'API add_api_user user created' );
 
 	run_zonemaster_test_with_backend_API(1);
-#	run_zonemaster_test_with_backend_API(2);
+	$frontend_params_1->{ipv6} = 0;
+	run_zonemaster_test_with_backend_API(2);
 
     my $offset = 0;
     my $limit  = 10;

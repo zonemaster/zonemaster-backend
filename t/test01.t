@@ -79,11 +79,6 @@ sub run_zonemaster_test_with_backend_API {
 	if ( $ENV{ZONEMASTER_RECORD} ) {
 		Zonemaster->save_cache( $datafile );
 	}
-
-	my $dbfile = 'zonemaster';
-	if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
-		unlink $dbfile;
-	}
 }
 
 run_zonemaster_test_with_backend_API(1);
@@ -91,3 +86,8 @@ $frontend_params_1->{ipv6} = 0;
 run_zonemaster_test_with_backend_API(2);
 
 done_testing();
+
+my $dbfile = 'zonemaster';
+if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
+	unlink $dbfile;
+}

@@ -2,7 +2,8 @@ addons:
   postgresql: "9.3"
   
 env:
-    - ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - TARGET=PostreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     
 language: perl
 
@@ -13,11 +14,11 @@ perl:
     - "5.14"
 
 before_script:
-    - psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres
-    - psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres
-    - cpanm DBD::Pg
-    - perl -I./lib ./script/create_db_postgresql_9.3.pl
+    - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then cpanm DBD::Pg; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./script/create_db_postgresql_9.3.pl; fi
 script:
-    - perl Makefile.PL && make test
-    - perl -I./lib ./t/test_postgresql_backend.pl
+    - if [[ "$TARGET" == "PostreSQL" ]]; then perl Makefile.PL && make test; fi
+    - if [[ "$TARGET" == "SQLite" ]]; then perl -I./lib ./t/test_postgresql_backend.pl; fi
     

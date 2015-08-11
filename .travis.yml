@@ -1,3 +1,5 @@
+env:
+- ZONEMASTER_RECORD=1
 language: perl
 perl:
 - "5.20"

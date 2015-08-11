@@ -15,7 +15,6 @@ use File::Slurp qw(append_file);
 use Net::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
-use Net::IP;
 
 # Zonemaster Modules
 use Zonemaster;

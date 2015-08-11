@@ -13,8 +13,8 @@ perl:
     - "5.14"
 
 before_script:
-    - psql -c "create user travis WITH PASSWORD 'travis';" -U postgres
-    - psql -c 'create database travis_zonemaster OWNER travis;' -U postgres
+    - psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres
+    - psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres
     - perl -Ilib scripts/create_db_postgresql_9.3.pl
 script:
     - perl Makefile.PL && make test

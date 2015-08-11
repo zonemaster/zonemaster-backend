@@ -2,7 +2,7 @@ addons:
   postgresql: "9.3"
   
 env:
-    - ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=share/travis_postgresql_backend_config.ini
+    - ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
     
 language: perl
 
@@ -13,10 +13,9 @@ perl:
     - "5.14"
 
 before_script:
-    - pwd
     - psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres
     - psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres
-    - perl -Ilib scripts/create_db_postgresql_9.3.pl
+    - perl -I./lib ./script/create_db_postgresql_9.3.pl
 script:
     - perl Makefile.PL && make test
     

@@ -15,6 +15,7 @@ perl:
 before_script:
     - psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres
     - psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres
+    - cpanm DBD::Pg
     - perl -I./lib ./script/create_db_postgresql_9.3.pl
 script:
     - perl Makefile.PL && make test

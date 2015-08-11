@@ -18,7 +18,8 @@ before_script:
     - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi
     - if [[ "$TARGET" == "PostreSQL" ]]; then cpanm DBD::Pg; fi
     - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./script/create_db_postgresql_9.3.pl; fi
+    
 script:
-    - if [[ "$TARGET" == "PostreSQL" ]]; then perl Makefile.PL && make test; fi
-    - if [[ "$TARGET" == "SQLite" ]]; then perl -I./lib ./t/test_postgresql_backend.pl; fi
+    - if [[ "$TARGET" == "SQLite" ]]; then perl Makefile.PL && make test; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./t/test_postgresql_backend.pl; fi
     

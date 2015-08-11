@@ -4,13 +4,9 @@ use 5.14.2;
 
 use Test::More;    # see done_testing()
 
-my $can_use_threads = eval 'use threads; 1';
 my $can_use_pg = eval 'use DBD::Pg; 1';
 
-if ( not $can_use_threads ) {
-    plan skip_all => 'No threads in this perl.';
-}
-elsif ( not $can_use_pg) {
+if ( not $can_use_pg) {
     plan skip_all => 'Could not load DBD::Pg.';
 }
 else {
@@ -55,9 +51,7 @@ else {
     ok( $engine->test_progress( 1 ) == 0 );
 
     use_ok( 'Zonemaster::WebBackend::Runner' );
-    threads->create(
-        sub { Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 1 ); } )
-      ->detach();
+	Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 1 );
 
     sleep( 5 );
     ok( $engine->test_progress( 1 ) > 0 );
@@ -101,9 +95,7 @@ else {
     ok( $engine->test_progress( 2 ) == 0 );
 
     require_ok( 'Zonemaster::WebBackend::Runner' );
-    threads->create(
-        sub { Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 2 ); } )
-      ->detach();
+    Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 2 );
 
     sleep( 5 );
     ok( $engine->test_progress( 2 ) > 0 );
@@ -147,9 +139,7 @@ else {
     ok( $engine->test_progress( 3 ) == 0 );
 
     require_ok( 'Zonemaster::WebBackend::Runner' );
-    threads->create(
-        sub { Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 3 ); } )
-      ->detach();
+    Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( 3 );
 
     sleep( 5 );
     ok( $engine->test_progress( 3 ) > 0 );

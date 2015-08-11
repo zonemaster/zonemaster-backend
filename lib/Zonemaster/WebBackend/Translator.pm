@@ -34,6 +34,7 @@ sub translate_tag {
     }
 
     my $str = decode_utf8( __x( $string, %{ $entry->{args} } ) );
+    setlocale( LC_ALL, "" );
 
     return $str;
 }

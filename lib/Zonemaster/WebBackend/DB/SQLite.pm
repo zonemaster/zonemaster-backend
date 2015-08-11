@@ -6,7 +6,7 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
-use JSON;
+use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 
 use Zonemaster::WebBackend::Config;
@@ -46,8 +46,8 @@ sub create_db {
 					priority integer DEFAULT 10,
 					progress integer DEFAULT 0,
 					params_deterministic_hash character varying(32),
-					params json1 NOT NULL,
-					results json DEFAULT NULL
+					params text NOT NULL,
+					results text DEFAULT NULL
 			)
 	'
     ) or die "SQLite Fatal error: " . $self->dbh->errstr();

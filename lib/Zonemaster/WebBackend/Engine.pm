@@ -15,7 +15,6 @@ use File::Slurp qw(append_file);
 use Net::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
-use Net::IP;
 
 # Zonemaster Modules
 use Zonemaster;
@@ -271,7 +270,7 @@ sub add_user_ip_geolocation {
 		&& Zonemaster::WebBackend::Config->Maxmind_ISP_DB_File()
 		&& Zonemaster::WebBackend::Config->Maxmind_City_DB_File()
 	) {
-		my $ip = new Net::IP($params->{user_ip});
+		my $ip = new Net::IP::XS($params->{user_ip});
 		if ($ip->iptype() eq 'PUBLIC') {
 			require Geo::IP;
 			my $gi = Geo::IP->new(Zonemaster::WebBackend::Config->Maxmind_ISP_DB_File());

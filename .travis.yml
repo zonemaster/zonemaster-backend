@@ -1,0 +1,34 @@
+addons:
+  postgresql: "9.3"
+  
+env:
+    - TARGET=PostreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+    
+language: perl
+
+perl:
+    - "5.20"
+    - "5.18"
+    - "5.16"
+    - "5.14"
+
+before_script:
+    - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then cpanm DBD::Pg; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./script/create_db_postgresql_9.3.pl; fi
+    
+    - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';" -u root; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "CREATE DATABASE travis_zonemaster CHARACTER SET utf8 COLLATE utf8_bin;" -u root; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'%';" -u root; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "FLUSH PRIVILEGES;" -u root; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then cpanm DBD::mysql; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then perl -I./lib ./script/create_db_mysql.pl; fi
+    
+script:
+    - if [[ "$TARGET" == "SQLite" ]]; then perl Makefile.PL && make test; fi
+    - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./t/test_DB_backend.pl PostgreSQL; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then perl -I./lib ./t/test_DB_backend.pl MySQL; fi
+    

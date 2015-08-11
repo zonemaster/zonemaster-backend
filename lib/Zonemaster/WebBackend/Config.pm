@@ -57,6 +57,12 @@ sub DB_password {
     return $cfg->val( 'DB', 'password' );
 }
 
+sub DB_name {
+    my $cfg = _load_config();
+
+    return $cfg->val( 'DB', 'database_name' );
+}
+
 sub DB_connection_string {
     my $cfg = _load_config();
 

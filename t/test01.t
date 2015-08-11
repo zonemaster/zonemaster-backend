@@ -49,36 +49,45 @@ my $frontend_params_1 = {
         ,                                              # key values pairs representing ds => digest
     ],
 };
-ok( $engine->start_domain_test( $frontend_params_1 ) == 1 );
-ok( scalar( $engine->{db}->dbh->selectrow_array( q/SELECT id FROM test_results WHERE id=1/ ) ) == 1 );
 
-# test test_progress API
-ok( $engine->test_progress( 1 ) == 0 );
+sub run_zonemaster_test_with_backend_API {
+	my ($test_id) = @_;
+	
+	ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id, "API start_domain_test OK/test_id=$test_id" );
+	ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id );
 
-use_ok( 'Zonemaster::WebBackend::Runner' );
-Zonemaster::WebBackend::Runner->new( { db => "Zonemaster::WebBackend::DB::SQLite" } )->run( 1 );
+	# test test_progress API
+	ok( $engine->test_progress( $test_id ) == 0 );
 
-ok( $engine->test_progress( 1 ) > 0 );
+	use_ok( 'Zonemaster::WebBackend::Runner' );
+	Zonemaster::WebBackend::Runner->new( { db => "Zonemaster::WebBackend::DB::SQLite" } )->run( $test_id );
 
-foreach my $i ( 1 .. 12 ) {
-    my $progress = $engine->test_progress( 1 );
-    last if ( $progress == 100 );
+	ok( $engine->test_progress( $test_id ) > 0 );
+
+	foreach my $i ( 1 .. 12 ) {
+		my $progress = $engine->test_progress( $test_id );
+		last if ( $progress == 100 );
+	}
+	ok( $engine->test_progress( $test_id ) == 100 );
+	my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr-FR' } );
+	ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
+	ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
+	ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
+	ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
+	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
+
+	if ( $ENV{ZONEMASTER_RECORD} ) {
+		Zonemaster->save_cache( $datafile );
+	}
 }
-ok( $engine->test_progress( 1 ) == 100 );
-my $test_results = $engine->get_test_results( { id => 1, language => 'fr-FR' } );
-ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
-ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
-ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
-ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
-ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
-if ( $ENV{ZONEMASTER_RECORD} ) {
-    Zonemaster->save_cache( $datafile );
-}
+run_zonemaster_test_with_backend_API(1);
+$frontend_params_1->{ipv6} = 0;
+run_zonemaster_test_with_backend_API(2);
+
+done_testing();
 
 my $dbfile = 'zonemaster';
 if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
-    unlink $dbfile;
+	unlink $dbfile;
 }
-
-done_testing();

@@ -204,8 +204,6 @@ sub test_results {
         my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE id=$test_id", 'id' );
         $result            = $hrefs->{$test_id};
         $result->{params}  = decode_json( $result->{params} );
-use Data::Dumper;
-warn Dumper($result->{results});
         $result->{results} = decode_json( $result->{results} );
     };
     die $@ if $@;

@@ -4,10 +4,11 @@ use 5.14.2;
 
 use Test::More;    # see done_testing()
 
-my $can_use_pg = eval 'use DBD::Pg; 1';
+my $db_backend = $ARGV[0];
+ok( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' , "Testing a supported database backend: $db_backend" );
 
 my $frontend_params_1 = {
-	client_id      => 'PostgreSQL Unit Test',         # free string
+	client_id      => "$db_backend Unit Test",         # free string
 	client_version => '1.0',               # free version like string
 	domain         => 'afnic.fr',          # content of the domain text field
 	advanced       => 1,                   # 0 or 1, is the advanced options checkbox checked
@@ -29,7 +30,7 @@ my $frontend_params_1 = {
 
 use_ok( 'Zonemaster::WebBackend::Engine' );
 # Create Zonemaster::WebBackend::Engine object
-my $engine = Zonemaster::WebBackend::Engine->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } );
+my $engine = Zonemaster::WebBackend::Engine->new( { db => "Zonemaster::WebBackend::DB::$db_backend" } );
 isa_ok( $engine, 'Zonemaster::WebBackend::Engine' );
 
 sub run_zonemaster_test_with_backend_API {
@@ -43,7 +44,7 @@ sub run_zonemaster_test_with_backend_API {
     ok( $engine->test_progress( $test_id ) == 0 , 'API test_progress -> OK');
 
     use_ok( 'Zonemaster::WebBackend::Runner' );
-	Zonemaster::WebBackend::Runner->new( { db => 'Zonemaster::WebBackend::DB::PostgreSQL' } )->run( $test_id );
+	Zonemaster::WebBackend::Runner->new( { db => "Zonemaster::WebBackend::DB::$db_backend" } )->run( $test_id );
 
     sleep( 5 );
     ok( $engine->test_progress( $test_id ) > 0 , 'API test_progress -> Test started');
@@ -63,32 +64,35 @@ sub run_zonemaster_test_with_backend_API {
     ok( scalar( @{ $test_results->{results} } ) > 1 , 'API get_test_results -> [results] paramater contains data' );
 }
 
-if ( not $can_use_pg) {
-    plan skip_all => 'Could not load DBD::Pg.';
+# add test user
+ok( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ) == 1, 'API add_api_user OK' );
+
+my $user_check_query;
+if ($db_backend eq 'PostgreSQL') {
+	$user_check_query = q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/;
 }
-else {
-
-    # add test user
-    ok( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ) == 1, 'API add_api_user OK' );
-    ok(
-        scalar(
-            $engine->{db}
-              ->dbh->selectrow_array( q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/ )
-        ) == 1
-    , 'API add_api_user user created' );
-
-	run_zonemaster_test_with_backend_API(1);
-	$frontend_params_1->{ipv6} = 0;
-	run_zonemaster_test_with_backend_API(2);
-
-    my $offset = 0;
-    my $limit  = 10;
-    my $test_history =
-      $engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
-    diag explain( $test_history );
-    ok( scalar( @$test_history ) == 2 );
-    ok( $test_history->[0]->{id} == 1 || $test_history->[1]->{id} == 1 );
-    ok( $test_history->[0]->{id} == 2 || $test_history->[1]->{id} == 2 );
-
-    done_testing();
+elsif ($db_backend eq 'MySQL') {
+	$user_check_query = q/SELECT * FROM users WHERE user_info like '%zonemaster_test%'/;
 }
+
+ok(
+	scalar(
+		$engine->{db}
+			->dbh->selectrow_array( $user_check_query )
+	) == 1
+, 'API add_api_user user created' );
+
+run_zonemaster_test_with_backend_API(1);
+$frontend_params_1->{ipv6} = 0;
+run_zonemaster_test_with_backend_API(2);
+
+my $offset = 0;
+my $limit  = 10;
+my $test_history =
+	$engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
+diag explain( $test_history );
+ok( scalar( @$test_history ) == 2 );
+ok( $test_history->[0]->{id} == 1 || $test_history->[1]->{id} == 1 );
+ok( $test_history->[0]->{id} == 2 || $test_history->[1]->{id} == 2 );
+
+done_testing();

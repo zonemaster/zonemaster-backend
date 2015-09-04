@@ -1,5 +1,6 @@
 Zonemaster
 ==========
+[![Build Status](https://travis-ci.org/dotse/zonemaster-backend.svg?branch=master)](https://travis-ci.org/dotse/zonemaster-backend)
 
 Zonemaster is a cooperative project between .SE and AFNIC. It is a successor
 to both .SE's DNSCheck and AFNIC's Zonecheck.

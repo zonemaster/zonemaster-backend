@@ -140,8 +140,8 @@ sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
-warn "test_progress: $progress";
-    $self->dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE $id_field=?", undef, $progress, $test_id )
+
+	$self->dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE $id_field=?", undef, $progress, $test_id )
       if ( $progress );
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );

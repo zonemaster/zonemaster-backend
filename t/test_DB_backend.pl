@@ -95,7 +95,7 @@ my $test_history =
 	$engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
 diag explain( $test_history );
 ok( scalar( @$test_history ) == 2 );
-ok( $test_history->[0]->{id} == 1 || $test_history->[1]->{id} == 1 );
+ok( $test_history->[0]->{id} eq '1' || $test_history->[1]->{id} eq '1' );
 ok( length($test_history->[0]->{id}) == 16 || length($test_history->[1]->{id}) == 16 );
 
 done_testing();

@@ -37,29 +37,29 @@ sub run_zonemaster_test_with_backend_API {
 	my ($test_id) = @_;
     # add a new test to the db
     
-    ok( $engine->start_domain_test( $frontend_params_1 ) eq $test_id , 'API start_domain_test -> Call OK' );
+    my $api_test_id = $engine->start_domain_test( $frontend_params_1 );
+    ok( $api_test_id eq $test_id || length($api_test_id) == 16 , 'API start_domain_test -> Call OK' );
     ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) eq $test_id , 'API start_domain_test -> Test inserted in the DB' );
     my $hash_id = $engine->{db}->dbh->selectrow_array( qq/SELECT hash_id FROM test_results WHERE id=$test_id/ );
-    ok( length( $hash_id ) == 16 , "API start_domain_test -> Test has a valid hash_id: [$hash_id]" );
-    $test_id = $hash_id if ($test_id > 1);
+    ok( length( $hash_id ) == 16 && $hash_id eq $api_test_id, "API start_domain_test -> Test has a valid hash_id: [$hash_id]" );
 
     # test test_progress API
-    ok( $engine->test_progress( $test_id ) == 0 , 'API test_progress -> OK');
+    ok( $engine->test_progress( $api_test_id ) == 0 , 'API test_progress -> OK');
 
     use_ok( 'Zonemaster::WebBackend::Runner' );
-	Zonemaster::WebBackend::Runner->new( { db => "Zonemaster::WebBackend::DB::$db_backend" } )->run( $test_id );
+	Zonemaster::WebBackend::Runner->new( { db => "Zonemaster::WebBackend::DB::$db_backend" } )->run( $api_test_id );
 
     sleep( 5 );
-    ok( $engine->test_progress( $test_id ) > 0 , 'API test_progress -> Test started');
+    ok( $engine->test_progress( $api_test_id ) > 0 , 'API test_progress -> Test started');
 
     foreach my $i ( 1 .. 12 ) {
         sleep( 5 );
-        my $progress = $engine->test_progress( $test_id );
+        my $progress = $engine->test_progress( $api_test_id );
         diag "pregress: $progress";
         last if ( $progress == 100 );
     }
-    ok( $engine->test_progress( $test_id ) == 100 , 'API test_progress -> Test finished' );
-    my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr-FR' } );
+    ok( $engine->test_progress( $api_test_id ) == 100 , 'API test_progress -> Test finished' );
+    my $test_results = $engine->get_test_results( { id => $api_test_id, language => 'fr-FR' } );
     ok( defined $test_results->{id} , 'API get_test_results -> [id] paramater present' );
     ok( defined $test_results->{params} , 'API get_test_results -> [params] paramater present' );
     ok( defined $test_results->{creation_time} , 'API get_test_results -> [creation_time] paramater present' );

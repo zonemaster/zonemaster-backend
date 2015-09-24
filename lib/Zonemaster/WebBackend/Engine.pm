@@ -168,7 +168,7 @@ sub validate_syntax {
     );
 
     foreach my $k ( keys %$syntax_input ) {
-        return { status => 'nok', message => encode_entities( "Unknown option in parameters" ) }
+        return { status => 'nok', message => encode_entities( "Unknown option [$k] in parameters" ) }
           unless ( grep { $_ eq $k } @allowed_params_keys );
     }
 
@@ -436,12 +436,6 @@ sub add_batch_job {
     }
 
     return $batch_id;
-}
-
-sub api1 {
-    my ( $self, $p ) = @_;
-
-    return "$]";
 }
 
 1;

@@ -34,6 +34,46 @@ sub add_api_user {
     return $result;
 }
 
+sub _get_allowed_id_field_name {
+	my ( $self, $test_id ) = @_;
+	
+    my $id_field;
+    if (length($test_id) == 16) {
+		$id_field = 'hash_id';
+    }
+    else {
+		if ($test_id <= Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id()) {
+			$id_field = 'id';
+		}
+		else {
+			die "Querying test results with the [id] field is dissallowed by the current configuration values";
+		}
+    }
+}
+
+# Standatd SQL, can be here
+sub get_test_request {
+    my ( $self ) = @_;
+
+    my $result_id;
+    my ( $id, $hash_id ) = $self->dbh->selectrow_array(
+        q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
+        
+    if ($id) {
+		$self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+
+		if ( $id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+			$result_id = $hash_id;
+		}
+		else {
+			$result_id = $id;
+		}
+	}
+   
+	return $result_id;
+}
+
+
 no Moose::Role;
 
 1;

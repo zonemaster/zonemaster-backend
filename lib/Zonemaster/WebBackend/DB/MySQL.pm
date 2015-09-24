@@ -90,15 +90,21 @@ sub create_new_test {
 
     eval {
         $self->dbh->do( q[LOCK TABLES test_results WRITE] );
-        my ( $recent_id ) = $self->dbh->selectrow_array(
+        my ( $recent_id, $recent_hash_id ) = $self->dbh->selectrow_array(
             q[
-SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
+SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
 ],
             undef, $test_params_deterministic_hash, 60 * $minutes_between_tests_with_same_params,
         );
 
         if ( $recent_id ) {
-            $result_id = $recent_id;    # A recent entry exists, so return its id
+            # A recent entry exists, so return its id
+            if ( $recent_id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+				$result_id = $recent_hash_id;
+			}
+			else {
+				$result_id = $recent_id;
+			}
         }
         else {
             $self->dbh->do(
@@ -113,7 +119,16 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
                 $test_params->{domain},
                 !!($test_params->{nameservers}),
             );
-            $result_id = $self->dbh->{mysql_insertid};
+            
+			my ( $id, $hash_id ) = $self->dbh->selectrow_array(
+				"SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
+				
+			if ( $id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+				$result_id = $hash_id;
+			}
+			else {
+				$result_id = $id;
+			}
         }
     };
     $self->dbh->do( q[UNLOCK TABLES] );
@@ -124,10 +139,12 @@ SELECT id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE id=?", undef, $progress, $test_id )
+	my $id_field = $self->_get_allowed_id_field_name($test_id);
+
+	$self->dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE $id_field=?", undef, $progress, $test_id )
       if ( $progress );
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=?", undef, $test_id );
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
 
     return $result;
 }
@@ -135,7 +152,8 @@ sub test_progress {
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
-    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE id=?", undef, $test_id );
+	my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
 
     return decode_json( $params_json );
 }
@@ -143,13 +161,15 @@ sub get_test_params {
 sub test_results {
     my ( $self, $test_id, $new_results ) = @_;
 
+	my $id_field = $self->_get_allowed_id_field_name($test_id);
+	
     if ( $new_results ) {
-        $self->dbh->do( q[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE id=?],
+        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?],
             undef, $new_results, $test_id );
     }
 
     my $result;
-    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE id=?", 'id', undef, $test_id );
+    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
     $result            = $hrefs->{$test_id};
     $result->{params}  = decode_json( $result->{params} );
     $result->{results} = decode_json( $result->{results} );
@@ -157,22 +177,15 @@ sub test_results {
     return $result;
 }
 
-sub get_test_request {
-    my ( $self ) = @_;
-
-    my ( $id ) = $self->dbh->selectrow_array(
-        q[ SELECT id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
-    $self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
-
-    return $id;
-}
-
 sub get_test_history {
     my ( $self, $p ) = @_;
 
     my @results;
+    
+    my $use_hash_id_from_id = Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id();
+    
     my $sth = $self->dbh->prepare(
-q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ? AND undelegated = ? ORDER BY id DESC LIMIT ? OFFSET ?]
+q[SELECT id, hash_id, creation_time, params, results FROM test_results WHERE domain = ? AND undelegated = ? ORDER BY id DESC LIMIT ? OFFSET ?]
     );
     $sth->execute( $p->{frontend_params}{domain}, ($p->{frontend_params}{nameservers})?1:0, $p->{limit}, $p->{offset} );
     while ( my $h = $sth->fetchrow_hashref ) {
@@ -191,7 +204,7 @@ q[SELECT id, creation_time, params, results FROM test_results WHERE domain = ? A
         push(
             @results,
             {
-                id               => $h->{id},
+                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
                 creation_time    => $h->{creation_time},
                 advanced_options => $h->{params}{advanced_options},
                 overall_result   => $overall,

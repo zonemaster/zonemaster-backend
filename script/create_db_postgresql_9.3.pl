@@ -40,6 +40,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE test_results (
                         id integer DEFAULT nextval(\'test_results_id_seq\'::regclass) primary key,
+                        hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
                         batch_id integer DEFAULT NULL,
                         creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
                         test_start_time timestamp without time zone DEFAULT NULL,

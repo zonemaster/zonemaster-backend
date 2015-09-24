@@ -131,4 +131,12 @@ sub Maxmind_City_DB_File {
     return $cfg->val( 'GEOLOCATION', 'maxmind_city_db_file' );
 }
 
+sub force_hash_id_use_in_API_starting_from_id {
+    my $cfg = _load_config();
+
+    my $val = $cfg->val( 'ZONEMASTER', 'force_hash_id_use_in_API_starting_from_id' );
+
+    return ($val)?($val):(0);
+}
+
 1;

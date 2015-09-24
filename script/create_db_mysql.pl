@@ -28,6 +28,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE test_results (
 			id integer AUTO_INCREMENT PRIMARY KEY,
+			hash_id VARCHAR(16) NOT NULL,
 			domain varchar(255) NOT NULL,
 			batch_id integer NULL,
 			creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -41,6 +42,19 @@ sub create_db {
 			undelegated boolean NOT NULL DEFAULT false
 		) Engine=InnoDB
         '
+    );
+    
+    $dbh->do(
+		'CREATE TRIGGER before_insert_test_results
+			BEFORE INSERT ON test_results
+			FOR EACH ROW
+			BEGIN
+				IF new.hash_id IS NULL OR new.hash_id=\'\'
+				THEN
+					SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
+				END IF;
+			END;
+		'
     );
 
     ####################################################################

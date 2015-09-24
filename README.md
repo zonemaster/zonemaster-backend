@@ -2,8 +2,8 @@ Zonemaster
 ==========
 [![Build Status](https://travis-ci.org/dotse/zonemaster-backend.svg?branch=master)](https://travis-ci.org/dotse/zonemaster-backend)
 
-Zonemaster is a cooperative project between .SE and AFNIC. It is a successor
-to both .SE's DNSCheck and AFNIC's Zonecheck.
+Zonemaster is a cooperative project between IIS and AFNIC. It is a successor
+to both IIS's DNSCheck and AFNIC's Zonecheck.
 
 This module is the Backend JSON/RPC weservice for the Web Interface part of
 the Zonemaster project. It offers a JSON/RPC api to run tests one by one
@@ -34,4 +34,3 @@ The software is released under the 2-clause BSD license. See separate
 [LICENSE](LICENSE) file.
 
 
-2014-12-05 Michal TOMA, for the Zonemaster development team

@@ -39,6 +39,9 @@ sub run_zonemaster_test_with_backend_API {
     
     ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id , 'API start_domain_test -> Call OK' );
     ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id , 'API start_domain_test -> Test inserted in the DB' );
+    my $hash_id = $engine->{db}->dbh->selectrow_array( qq/SELECT hash_id FROM test_results WHERE id=$test_id/ );
+    ok( length( $hash_id ) == 16 , "API start_domain_test -> Test has a valid hash_id: [$hash_id]" );
+    $test_id = $hash_id if ($test_id > 1);
 
     # test test_progress API
     ok( $engine->test_progress( $test_id ) == 0 , 'API test_progress -> OK');
@@ -93,6 +96,6 @@ my $test_history =
 diag explain( $test_history );
 ok( scalar( @$test_history ) == 2 );
 ok( $test_history->[0]->{id} == 1 || $test_history->[1]->{id} == 1 );
-ok( $test_history->[0]->{id} == 2 || $test_history->[1]->{id} == 2 );
+ok( length($test_history->[0]->{id}) == 16 || length($test_history->[1]->{id}) == 16 );
 
 done_testing();

@@ -37,8 +37,8 @@ sub run_zonemaster_test_with_backend_API {
 	my ($test_id) = @_;
     # add a new test to the db
     
-    ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id , 'API start_domain_test -> Call OK' );
-    ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id , 'API start_domain_test -> Test inserted in the DB' );
+    ok( $engine->start_domain_test( $frontend_params_1 ) eq $test_id , 'API start_domain_test -> Call OK' );
+    ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) eq $test_id , 'API start_domain_test -> Test inserted in the DB' );
     my $hash_id = $engine->{db}->dbh->selectrow_array( qq/SELECT hash_id FROM test_results WHERE id=$test_id/ );
     ok( length( $hash_id ) == 16 , "API start_domain_test -> Test has a valid hash_id: [$hash_id]" );
     $test_id = $hash_id if ($test_id > 1);

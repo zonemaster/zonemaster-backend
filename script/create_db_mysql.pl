@@ -28,7 +28,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE test_results (
 			id integer AUTO_INCREMENT PRIMARY KEY,
-			hash_id VARCHAR(16) DEFAULT NULL NOT NULL,
+			hash_id VARCHAR(16) NOT NULL,
 			domain varchar(255) NOT NULL,
 			batch_id integer NULL,
 			creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,

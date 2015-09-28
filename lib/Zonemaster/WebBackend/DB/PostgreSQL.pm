@@ -34,6 +34,7 @@ sub dbh {
     }
     else {
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
+        $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;
     }
@@ -42,7 +43,8 @@ sub dbh {
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
 
-    my ( $id ) = $self->dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=?", undef, $user );
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=?", undef, $user );
 
     return $id;
 }
@@ -50,7 +52,8 @@ sub user_exists_in_db {
 sub add_api_user_to_db {
     my ( $self, $user_info ) = @_;
 
-    my $nb_inserted = $self->dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( $user_info ) );
+    my $dbh = $self->dbh;
+    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( $user_info ) );
 
     return $nb_inserted;
 }
@@ -58,8 +61,9 @@ sub add_api_user_to_db {
 sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
+    my $dbh = $self->dbh;
     my $id =
-      $self->dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=? AND user_info->>'api_key'=?",
+      $dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=? AND user_info->>'api_key'=?",
         undef, $user, $api_key );
 
     return $id;
@@ -80,7 +84,8 @@ sub test_progress {
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
-    my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
+    my $dbh = $self->dbh;
+    my ( $batch_id, $creaton_time ) = $dbh->selectrow_array( "
 			SELECT 
 				batch_id, 
 				batch_jobs.creation_time AS batch_creation_time 
@@ -96,7 +101,7 @@ sub create_new_batch_job {
     die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running " if ( $batch_id );
 
     my ( $new_batch_id ) =
-      $self->dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
+      $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
 
     return $new_batch_id;
 }
@@ -140,8 +145,9 @@ sub get_test_params {
 
     my $result;
 
+    my $dbh = $self->dbh;
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
-    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
     die $@ if $@;
 
@@ -151,14 +157,15 @@ sub get_test_params {
 sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
+    my $dbh = $self->dbh;
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
-    $self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?",
+    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?",
         undef, $results, $test_id )
       if ( $results );
 
     my $result;
     eval {
-        my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT * FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
         $result            = $hrefs->{$test_id};
         $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
         $result->{results} = decode_json( encode_utf8( $result->{results} ) );
@@ -171,6 +178,8 @@ sub test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
+    my $dbh = $self->dbh;
+    
     $p->{offset} //= 0;
     $p->{limit} //= 200;
 
@@ -191,10 +200,10 @@ sub get_test_history {
 			creation_time, 
 			params->>'advanced_options' AS advanced_options 
 		FROM test_results 
-		WHERE params->>'domain'=" . $self->dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
+		WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
 		ORDER BY id DESC 
 		OFFSET $p->{offset} LIMIT $p->{limit}";
-	my $sth1 = $self->dbh->prepare( $query );
+	my $sth1 = $dbh->prepare( $query );
 	$sth1->execute;
 	while ( my $h = $sth1->fetchrow_hashref ) {
 		my $overall_result = 'ok';

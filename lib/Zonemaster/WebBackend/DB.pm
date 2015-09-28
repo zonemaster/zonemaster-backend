@@ -56,11 +56,12 @@ sub get_test_request {
     my ( $self ) = @_;
 
     my $result_id;
-    my ( $id, $hash_id ) = $self->dbh->selectrow_array(
+    my $dbh = $self->dbh;
+    my ( $id, $hash_id ) = $dbh->selectrow_array(
         q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
         
     if ($id) {
-		$self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+		$dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
 
 		if ( $id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
 			$result_id = $hash_id;

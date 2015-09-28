@@ -53,6 +53,11 @@ sub create_db {
                 )
         '
     );
+
+    $dbh->do(
+		'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+    );
+    
     $dbh->do( "ALTER TABLE test_results OWNER TO $db_user" );
 
     ####################################################################

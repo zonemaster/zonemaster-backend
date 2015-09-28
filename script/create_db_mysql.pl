@@ -28,7 +28,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE test_results (
 			id integer AUTO_INCREMENT PRIMARY KEY,
-			hash_id VARCHAR(16) NOT NULL,
+			hash_id VARCHAR(16) DEFAULT NULL,
 			domain varchar(255) NOT NULL,
 			batch_id integer NULL,
 			creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -57,6 +57,10 @@ sub create_db {
 		'
     );
 
+    $dbh->do(
+		'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+    );
+    
     ####################################################################
     # BATCH JOBS
     ####################################################################

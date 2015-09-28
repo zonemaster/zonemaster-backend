@@ -13,13 +13,29 @@ use Zonemaster::WebBackend::Config;
 
 with 'Zonemaster::WebBackend::DB';
 
+has 'dbhandle' => (
+    is  => 'rw',
+    isa => 'DBI::db',
+);
+
 my $connection_string   = Zonemaster::WebBackend::Config->DB_connection_string( 'mysql' );
 my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
 my $connection_user     = Zonemaster::WebBackend::Config->DB_user();
 my $connection_password = Zonemaster::WebBackend::Config->DB_password();
 
 sub dbh {
-    DBI->connect_cached( $connection_string, $connection_user, $connection_password, $connection_args );
+    my ( $self ) = @_;
+    my $dbh = $self->dbhandle;
+
+    if ( $dbh and $dbh->ping ) {
+        return $dbh;
+    }
+    else {
+        $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
+        $dbh->{AutoInactiveDestroy} = 1;
+        $self->dbhandle( $dbh );
+        return $dbh;
+    }
 }
 
 sub user_exists_in_db {
@@ -81,6 +97,7 @@ sub create_new_batch_job {
 sub create_new_test {
     my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $priority, $batch_id ) = @_;
     my $result;
+    my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
     my $js                             = JSON->new->canonical;
@@ -89,8 +106,8 @@ sub create_new_test {
     my $result_id;
 
     eval {
-        $self->dbh->do( q[LOCK TABLES test_results WRITE] );
-        my ( $recent_id, $recent_hash_id ) = $self->dbh->selectrow_array(
+        $dbh->do( q[LOCK TABLES test_results WRITE] );
+        my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
             q[
 SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
 ],
@@ -107,7 +124,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
 			}
         }
         else {
-            $self->dbh->do(
+            $dbh->do(
                 q[
             INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?,?,?,?,?, NOW(),?)
         ],
@@ -117,10 +134,10 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
                 $test_params_deterministic_hash,
                 $encoded_params,
                 $test_params->{domain},
-                !!($test_params->{nameservers}),
+                ($test_params->{nameservers})?(1):(0),
             );
             
-			my ( $id, $hash_id ) = $self->dbh->selectrow_array(
+			my ( $id, $hash_id ) = $dbh->selectrow_array(
 				"SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
 				
 			if ( $id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
@@ -131,7 +148,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
 			}
         }
     };
-    $self->dbh->do( q[UNLOCK TABLES] );
+    $dbh->do( q[UNLOCK TABLES] );
 
     return $result_id;
 }
@@ -141,7 +158,8 @@ sub test_progress {
 
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
 
-	$self->dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE $id_field=?", undef, $progress, $test_id )
+	my $dbh = $self->dbh;
+	$dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE $id_field=?", undef, $progress, $test_id )
       if ( $progress );
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
@@ -155,6 +173,13 @@ sub get_test_params {
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
 
+    my $result;
+    eval {
+		$result = decode_json( $params_json );
+    };
+    
+    warn "decoding of params_json failed (testi_id: [$test_id]):".Dumper($params_json) if $@;
+    
     return decode_json( $params_json );
 }
 

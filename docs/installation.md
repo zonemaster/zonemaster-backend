@@ -2,16 +2,16 @@
 
 The documentation covers the following operating systems:
 
- * Ubuntu 14.04 (LTS)
- * Debian Wheezy (version 7)
- * FreeBSD 10
+ * [1] <a href="#Debian">Ubuntu 14.04 (LTS)</a>
+ * [2] <a href="#Debian">Debian Wheezy (version 7)</a>
+ * [3] <a href="#FreeBSD">FreeBSD 10</a>
 
 ## Pre-Requisites
 
 Zonemaster-engine should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster/blob/master/docs/documentation/installation.md)
 
-## Instructions for installing in Ubuntu 14.04 and Debian wheezy (version 7)
+## <a name="Debian"></a> Instructions for installing in Ubuntu 14.04 and Debian wheezy (version 7)
 
 1) Install package dependencies
 
@@ -251,7 +251,7 @@ Next step is to install the [Web UI](https://github.com/dotse/zonemaster-gui/blo
 
 
 
-## FreeBSD 10.0 & 10.1 Instructions
+## <a name="FreeBSD"></a> FreeBSD 10.0 & 10.1 Instructions
 
 First, make sure your operating system and package database is up to date.
 

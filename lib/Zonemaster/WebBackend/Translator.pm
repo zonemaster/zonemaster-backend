@@ -33,7 +33,7 @@ sub translate_tag {
         return $entry->{string};
     }
 
-    my $str = decode_utf8( __x( $string, %{ $entry->{args} } ) );
+    my $str = decode_utf8( __x( $string, %{ ($entry->{printable_args})?($entry->{printable_args}):($entry->{args}) } ) );
     setlocale( LC_ALL, "" );
 
     return $str;

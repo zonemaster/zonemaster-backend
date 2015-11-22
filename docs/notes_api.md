@@ -87,7 +87,7 @@ list.
 ### Input
 
 The input for this method is a JSON object. The object may have the
-keys `domain`, `ipv4`, `ipv6`, `ds_digest_pairs`, `nameservers`,
+keys `domain`, `ipv4`, `ipv6`, `ds_info`, `nameservers`,
 `profile`, `advanced`, `client_id` and `client_version`. If any other
 key is present, an error will be returned.
 
@@ -97,7 +97,7 @@ each of which has exactly the two keys `ip` and `ns`. The value of the
 value, and the value of the `ip` key must be a syntactically valid
 IPv4 or IPv6 address.
 
-If the key `ds_digest_pairs` exists, its value must be a list of
+If the key `ds_info` exists, its value must be a list of
 objects each of which has exactly the two keys `algorithm` and
 `digest`. The value of the `algorithm` key must be either the string
 `"sha1"`, in which case the value of the `digest` key must be 40
@@ -332,7 +332,7 @@ interpreter).
     "domain": "example.org",
     "ipv4": 1,
     "ipv6": 1,
-    "ds_digest_pairs": [],
+    "ds_info": [],
     "profile": "default_profile",
     "advanced": false,
     "client_id": "Documentation Example",

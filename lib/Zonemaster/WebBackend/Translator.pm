@@ -1,6 +1,6 @@
 package Zonemaster::WebBackend::Translator;
 
-our $VERSION = '1.0.2_01';
+our $VERSION = '1.0.4';
 
 use 5.14.2;
 
@@ -11,6 +11,7 @@ use POSIX qw[setlocale LC_ALL];
 
 # Zonemaster Modules
 require Zonemaster::Translator;
+require Zonemaster::Logger::Entry;
 
 extends 'Zonemaster::Translator';
 
@@ -33,7 +34,8 @@ sub translate_tag {
         return $entry->{string};
     }
 
-    my $str = decode_utf8( __x( $string, %{ $entry->{args} } ) );
+    my $blessed_entry = bless($entry, 'Zonemaster::Logger::Entry');
+    my $str = decode_utf8( __x( $string, %{ ($blessed_entry->can('printable_args'))?($blessed_entry->printable_args()):($entry->{args}) } ) );
     setlocale( LC_ALL, "" );
 
     return $str;

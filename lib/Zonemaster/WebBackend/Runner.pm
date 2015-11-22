@@ -1,5 +1,5 @@
 package Zonemaster::WebBackend::Runner;
-our $VERSION = '1.0.2_01';
+our $VERSION = '1.0.4';
 
 use strict;
 use warnings;

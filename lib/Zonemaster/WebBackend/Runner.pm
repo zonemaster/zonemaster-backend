@@ -110,8 +110,8 @@ sub run {
         $self->add_fake_delegation( $domain, $params->{nameservers} );
     }
 
-    if ( $params->{ds_digest_pairs} && @{ $params->{ds_digest_pairs} } > 0 ) {
-        $self->add_fake_ds( $domain, $params->{ds_digest_pairs} );
+    if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
+        $self->add_fake_ds( $domain, $params->{ds_info} );
     }
 
     # Actually run tests!
@@ -148,17 +148,14 @@ sub add_fake_delegation {
 }
 
 sub add_fake_ds {
-    my ( $self, $domain, $ds_digests ) = @_;
+    my ( $self, $domain, $ds_info ) = @_;
     my @data;
 
-=coment
-    foreach my $str ( @{ $ds_digests } ) {
-        my ( $tag, $algo, $type, $digest ) = ;
-        push @data, { keytag => $tag, algorithm => $algo, type => $type, digest => $digest };
+    foreach my $ds ( @{ $ds_info } ) {
+        push @data, { keytag => $ds->{keytag}, algorithm => $ds->{algorithm}, type => $ds->{digtype}, digest => $ds->{digest} };
     }
 
     Zonemaster->add_fake_ds( $domain => \@data );
-=cut
 
     return;
 }

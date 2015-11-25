@@ -25,11 +25,8 @@ my $frontend_params = {
         { ns => 'ns1.nic.fr', ip => '1.1.1.1' },          # key values pairs representing nameserver => namesterver_ip
         { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
     ],
-    ds_digest_pairs => [                                  # list of DS/Digest pairs up to 32
-        { algorithm => 'sha1', digest => '0123456789012345678901234567890123456789' }
-        ,                                                 # key values pairs representing ds => digest
-        { algorithm => 'sha256', digest => '0123456789012345678901234567890123456789012345678901234567890123' }
-        ,                                                 # key values pairs representing ds => digest
+    ds_info => [                                  # list of DS/Digest pairs up to 32
+        { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
     ],
 };
 
@@ -45,23 +42,21 @@ say "Client->get_data_from_parent_zone:".Dumper($c->get_data_from_parent_zone("n
 say "Client->validate_domain_syntax:".Dumper($c->validate_domain_syntax("nic.fr"));
 
 my $frontend_params = {
-	client_id => 'Zonemaster CGI/Dancer/node.js', # free string
-	client_version => '1.0',			# free version like string
-	
-	domain => 'afnic-2.fr',				# content of the domain text field
-	advanced_options => 1,				# 0 or 1, is the advanced options checkbox checked
-	ipv4 => 1,							# 0 or 1, is the ipv4 checkbox checked
-	ipv6 => 1,							# 0 or 1, is the ipv6 checkbox checked
-	test_profile => 'test_profile_2',	# the id if the Test profile listbox
-	nameservers => [					# list of the namaserves up to 32
-		{'ns1.nic.fr' => ''},			# key values pairs representing nameserver => namesterver_ip
-		{'empty' => '192.134.4.1'},
-		{'ns1.nic.fr' => '192.134.4.1'},
-	],
-	ds_digest_pairs => [				# list of DS/Digest pairs up to 32
-		{'ds1' => 'digest2'},			# key values pairs representing ds => digest
-		{'ds2' => 'digest2'},			
-	],
+    client_id      => 'Zonemaster CGI/Dancer/node.js',    # free string
+    client_version => '1.0',                              # free version like string
+
+    domain      => 'afnic-2.fr',                            # content of the domain text field
+    advanced    => 1,                                     # 0 or 1, is the advanced options checkbox checked
+    ipv4        => 1,                                     # 0 or 1, is the ipv4 checkbox checked
+    ipv6        => 1,                                     # 0 or 1, is the ipv6 checkbox checked
+    profile     => 'test_profile_1',                      # the id if the Test profile listbox
+    nameservers => [                                      # list of the namaserves up to 32
+        { ns => 'ns1.nic.fr', ip => '1.1.1.1' },          # key values pairs representing nameserver => namesterver_ip
+        { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+    ],
+    ds_info => [                                  # list of DS/Digest pairs up to 32
+        { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+    ],
 };
 
 my $id_test = $c->start_domain_test($frontend_params);
@@ -88,23 +83,21 @@ say "get_test_results: ".Dumper($c->get_test_results( { id => $id_test, language
 say "--------------------------";
 
 my $frontend_params1 = {
-	client_id => 'Zonemaster CGI/Dancer/node.js', # free string
-	client_version => '1.0',			# free version like string
-	
-	domain => 'afnic-2.fr',				# content of the domain text field
-	advanced_options => 1,				# 0 or 1, is the advanced options checkbox checked
-	ipv4 => 1,							# 0 or 1, is the ipv4 checkbox checked
-	ipv6 => 1,							# 0 or 1, is the ipv6 checkbox checked
-	test_profile => 'test_profile_1',	# the id if the Test profile listbox
-	nameservers => [					# list of the namaserves up to 32
-		{'ns1.nic.fr' => ''},			# key values pairs representing nameserver => namesterver_ip
-		{'empty' => '192.134.4.1'},
-		{'ns1.nic.fr' => '192.134.4.1'},
-	],
-	ds_digest_pairs => [				# list of DS/Digest pairs up to 32
-		{'ds1' => 'digest1'},			# key values pairs representing ds => digest
-		{'ds2' => 'digest2'},			
-	],
+    client_id      => 'Zonemaster CGI/Dancer/node.js',    # free string
+    client_version => '1.0',                              # free version like string
+
+    domain      => 'afnic-2.fr',                            # content of the domain text field
+    advanced    => 1,                                     # 0 or 1, is the advanced options checkbox checked
+    ipv4        => 1,                                     # 0 or 1, is the ipv4 checkbox checked
+    ipv6        => 1,                                     # 0 or 1, is the ipv6 checkbox checked
+    profile     => 'test_profile_1',                      # the id if the Test profile listbox
+    nameservers => [                                      # list of the namaserves up to 32
+        { ns => 'ns1.nic.fr', ip => '1.1.1.1' },          # key values pairs representing nameserver => namesterver_ip
+        { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+    ],
+    ds_info => [                                  # list of DS/Digest pairs up to 32
+        { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+    ],
 };
 
 my $offset = 0;

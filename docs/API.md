@@ -251,7 +251,7 @@ The testing is done by a (typically) cron job on the backend machine.
             "ip" : "2001:660:3005:1:0:0:1:2"
          }
       ],
-      "ds_digest_pairs" : [],
+      "ds_info" : [],
       "advanced" : true,
       "ipv6" : true,
       "ipv4" : true
@@ -491,7 +491,7 @@ This API takes the usual fronted "params" structure and uses it to return a list
          "ipv6" : true,
          "advanced" : true,
          "domain" : "afnic.FR",
-         "ds_digest_pairs" : []
+         "ds_info" : []
       }
    }
 }

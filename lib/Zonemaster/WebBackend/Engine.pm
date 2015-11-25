@@ -86,7 +86,6 @@ sub get_data_from_parent_zone {
     my $zone = Zonemaster->zone( $domain );
     push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
-    my %algorithm_ids = ( 1 => 'sha1', 2 => 'sha256', 3 => 'ghost', 4 => 'sha384' );
     my @ds_list;
 
     $zone = Zonemaster->zone($domain);
@@ -96,9 +95,7 @@ sub get_data_from_parent_zone {
 
 		foreach my $ds ( @ds ) {
             next unless $ds->type eq 'DS';
-			if ( $algorithm_ids{ $ds->digtype } ) {
-				push(@ds_list, { algorithm => $algorithm_ids{$ds->digtype}, digest => $ds->hexdigest, keytag => $ds->keytag });
-			}
+			push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
 		} 
 	}
 
@@ -163,7 +160,7 @@ sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
     my @allowed_params_keys = (
-        'domain',   'ipv4',      'ipv6', 'ds_digest_pairs', 'nameservers', 'profile',
+        'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
         'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info'
     );
 
@@ -180,10 +177,10 @@ sub validate_syntax {
         }
     }
 
-    if ( ( defined $syntax_input->{ds_digest_pairs} && @{ $syntax_input->{ds_digest_pairs} } ) ) {
-        foreach my $ds_digest ( @{ $syntax_input->{ds_digest_pairs} } ) {
+    if ( ( defined $syntax_input->{ds_info} && @{ $syntax_input->{ds_info} } ) ) {
+        foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
             foreach my $k ( keys %$ds_digest ) {
-                delete( $ds_digest->{$k} ) unless ( $k eq 'algorithm' || $k eq 'digest' );
+                delete( $ds_digest->{$k} ) unless ( $k eq 'algorithm' || $k eq 'digest' || $k eq 'digtype' || $k eq 'keytag' );
             }
         }
     }
@@ -234,29 +231,20 @@ sub validate_syntax {
               unless ( ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }
 
-        foreach my $ds_digest ( @{ $syntax_input->{ds_digest_pairs} } ) {
+        foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
             return {
                 status  => 'nok',
                 message => encode_entities( "Invalid algorithm type: [$ds_digest->{algorithm}]" )
               }
-              unless ( $ds_digest->{algorithm} eq 'sha1' || $ds_digest->{algorithm} eq 'sha256' );
+              if ( $ds_digest->{algorithm} =~ /\D/ );
         }
 
-        foreach my $ds_digest ( @{ $syntax_input->{ds_digest_pairs} } ) {
-            if ( $ds_digest->{algorithm} eq 'sha1' ) {
-                return {
-                    status  => 'nok',
-                    message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
-                  }
-                  if ( length( $ds_digest->{digest} ) != 40 || $ds_digest->{digest} =~ /[^A-Fa-f0-9]/ );
-            }
-            elsif ( $ds_digest->{algorithm} eq 'sha256' ) {
-                return {
-                    status  => 'nok',
-                    message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
-                  }
-                  if ( length( $ds_digest->{digest} ) != 64 || $ds_digest->{digest} =~ /[^A-Fa-f0-9]/ );
-            }
+        foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
+			return {
+				status  => 'nok',
+				message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
+			}
+			if ( ( length( $ds_digest->{digest} ) != 64 && length( $ds_digest->{digest} ) != 40 ) || $ds_digest->{digest} =~ /[^A-Fa-f0-9]/ );
         }
     }
 

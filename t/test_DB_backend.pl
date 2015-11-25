@@ -20,12 +20,9 @@ my $frontend_params_1 = {
 		{ ns => 'ns1.nic.fr', ip => '1.1.1.1' },       # key values pairs representing nameserver => namesterver_ip
 		{ ns => 'ns2.nic.fr', ip => '192.134.4.1' },
 	],
-	ds_digest_pairs => [                               # list of DS/Digest pairs up to 32
-		{ algorithm => 'sha1', digest => '0123456789012345678901234567890123456789' }
-		,                                              # key values pairs representing ds => digest
-		{ algorithm => 'sha256', digest => '0123456789012345678901234567890123456789012345678901234567890123' }
-		,                                              # key values pairs representing ds => digest
-	],
+    ds_info => [                                  # list of DS/Digest pairs up to 32
+        { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+    ],
 };
 
 use_ok( 'Zonemaster::WebBackend::Engine' );

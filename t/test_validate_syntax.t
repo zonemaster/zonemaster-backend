@@ -179,44 +179,24 @@ $frontend_params->{domain}                 = 'afnic.fr';
 $frontend_params->{nameservers}->[0]->{ns} = 'ns1.nic.fr';
 $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
 
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha1';
-$frontend_params->{ds_digest_pairs}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'Valid Algorithm Type [sha1]' ) )
+$frontend_params->{ds_info}->[0]->{algorithm} = 1;
+$frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
+ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha256';
-$frontend_params->{ds_digest_pairs}->[0]->{digest} =
-	'0123456789012345678901234567890123456789012345678901234567890123';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'Valid Algorithm Type [sha256]' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
-
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha2';
-$frontend_params->{ds_digest_pairs}->[0]->{digest}    = '0123456789012345678901234567890123456789';
+$frontend_params->{ds_info}->[0]->{algorithm} = 'a';
+$frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
 ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid Algorithm Type' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha1';
-$frontend_params->{ds_digest_pairs}->[0]->{digest}    = '01234567890123456789012345678901234567890';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid [sha1] digest length' ) )
+$frontend_params->{ds_info}->[0]->{algorithm} = 1;
+$frontend_params->{ds_info}->[0]->{digest}    = '01234567890123456789012345678901234567890';
+ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid digest length' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha256';
-$frontend_params->{ds_digest_pairs}->[0]->{digest} =
-	'01234567890123456789012345678901234567890123456789012345678901230';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
-	encode_utf8( 'Invalid [sha256] digest length' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
-
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha1';
-$frontend_params->{ds_digest_pairs}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid [sha1] digest format' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
-
-$frontend_params->{ds_digest_pairs}->[0]->{algorithm} = 'sha256';
-$frontend_params->{ds_digest_pairs}->[0]->{digest} =
-	'Z123456789012345678901234567890123456789012345678901234567890123';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
-	encode_utf8( 'Invalid [sha256] digest fprmat' ) )
+$frontend_params->{ds_info}->[0]->{algorithm} = 1;
+$frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
+ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid digest format' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 done_testing();

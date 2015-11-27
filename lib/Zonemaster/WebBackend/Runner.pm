@@ -113,6 +113,15 @@ sub run {
     if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
         $self->add_fake_ds( $domain, $params->{ds_info} );
     }
+    
+    if ( $params->{profile} eq 'test_profile_1' ) {
+		if (Zonemaster::WebBackend::Config->CustomProfilesPath()) {
+			Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana.json' );
+		}
+		else {
+			Zonemaster->config->load_policy_file( 'iana.json' );
+		}
+	}
 
     # Actually run tests!
     eval { Zonemaster->test_zone( $domain ); };

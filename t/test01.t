@@ -36,7 +36,7 @@ my $frontend_params_1 = {
     advanced       => 1,                   # 0 or 1, is the advanced options checkbox checked
     ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
     ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
-    profile        => 'test_profile_1',    # the id if the Test profile listbox
+    profile        => 'default_profile',    # the id if the Test profile listbox
 
     nameservers => [                       # list of the nameserves up to 32
         { ns => 'ns1.nic.fr', ip => '1.1.1.1' },       # key values pairs representing nameserver => namesterver_ip

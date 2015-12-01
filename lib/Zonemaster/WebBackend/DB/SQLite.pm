@@ -6,7 +6,7 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
-use JSON::XS;
+use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 
 use Zonemaster::WebBackend::Config;

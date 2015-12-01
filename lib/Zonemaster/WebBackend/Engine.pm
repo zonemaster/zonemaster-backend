@@ -7,7 +7,7 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use JSON;
+use JSON::PP;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use String::ShellQuote;

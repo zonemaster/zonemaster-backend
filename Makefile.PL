@@ -14,7 +14,7 @@ requires
   'File::Slurp'              => 0,
   'HTML::Entities'           => 0,
   'IO::CaptureOutput'        => 0,
-  'JSON'                     => 0,
+  'JSON::PP'                 => 0,
   'JSON::RPC::Dispatch'      => 0,
   'Locale::TextDomain'       => 0,
   'LWP::UserAgent'           => 0,

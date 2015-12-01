@@ -7,7 +7,7 @@ use 5.14.2;
 
 use JSON::RPC::Dispatch;
 use Router::Simple::Declare;
-use JSON;
+use JSON::PP;
 use POSIX;
 
 use Plack::Builder;

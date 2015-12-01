@@ -12,6 +12,8 @@ use POSIX;
 
 use Plack::Builder;
 
+BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
+
 use Zonemaster::WebBackend::Engine;
 
 local $| = 1;

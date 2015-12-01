@@ -24,6 +24,7 @@ our $dbclass;
 
 # Demand-load the database class specified in the configuration.
 BEGIN {
+	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
     my $dbtype = Zonemaster::WebBackend::Config->BackendDBType();
     $dbclass = 'Zonemaster::WebBackend::DB::' . $dbtype;
     require( join( "/", split( /::/, $dbclass ) ) . ".pm" );

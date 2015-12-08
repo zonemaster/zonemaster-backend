@@ -20,6 +20,7 @@ CREATE TABLE test_results (
     undelegated boolean NOT NULL DEFAULT false
 ) Engine=InnoDB;
 
+DELIMITER //
 CREATE TRIGGER before_insert_test_results
 	BEFORE INSERT ON test_results
 	FOR EACH ROW
@@ -28,7 +29,8 @@ CREATE TRIGGER before_insert_test_results
 		THEN
 			SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
 		END IF;
-	END;
+	END//
+DELIMITER //
 			
 CREATE TABLE batch_jobs (
     id integer AUTO_INCREMENT PRIMARY KEY,

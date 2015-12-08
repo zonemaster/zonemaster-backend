@@ -6,6 +6,7 @@ CREATE DATABASE zonemaster WITH ENCODING 'UTF8';
 
 CREATE TABLE test_results (
     id serial primary key,
+    hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
     batch_id integer,
 	creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
 	test_start_time timestamp without time zone,

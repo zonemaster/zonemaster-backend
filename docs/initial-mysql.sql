@@ -6,6 +6,7 @@ CREATE USER 'zonemaster'@'%' IDENTIFIED BY 'zonemaster';
 USE zonemaster;
 CREATE TABLE test_results (
     id integer AUTO_INCREMENT PRIMARY KEY,
+    hash_id VARCHAR(16) DEFAULT NULL,
     domain varchar(255) NOT NULL,
 	batch_id integer NULL,
 	creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,

@@ -32,7 +32,7 @@ Zonemaster-engine should be installed before. Follow the instructions
 
 2) Install CPAN dependencies
 
-    $ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
+    sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
 
@@ -173,11 +173,11 @@ These specific instructions can be used at least for Ubuntu 14.04LTS, and probab
 
 1) Copy the file `share/starman-zonemaster.conf` to the directory `/etc/init`.
 
-    $ sudo cp share/starman-zonemaster.conf /etc/init
+    sudo cp share/starman-zonemaster.conf /etc/init
 
 2) Run `sudo service starman-zonemaster start`
 
-    $ sudo service starman-zonemaster start
+    sudo service starman-zonemaster start
 
 This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
 
@@ -209,9 +209,7 @@ You can look into the [API documentation](API.md) to see how you can use the
 API for your use. If you followed the instructions to the minute, you should
 be able to use the API och localhost port 5000, like this:
 
-    $ curl -H "Content-Type: application/json" \
-      -d '{"params":"","jsonrpc":"2.0","id":140715758026879,"method":"version_info"}' \
-     http://localhost:5000/
+    curl -H "Content-Type: application/json" -d '{"params":"","jsonrpc":"2.0","id":140715758026879,"method":"version_info"}' http://localhost:5000/
 
 The response should be something like this:
 

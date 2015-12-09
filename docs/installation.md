@@ -5,6 +5,7 @@ The documentation covers the following operating systems:
  * [1] <a href="#Debian">Ubuntu 14.04 (LTS)</a>
  * [2] <a href="#Debian">Debian Wheezy (version 7)</a>
  * [3] <a href="#FreeBSD">FreeBSD 10</a>
+ * [4] <a href="#CentOS">CentOS 7.1</a>
 
 ## Pre-Requisites
 
@@ -99,7 +100,7 @@ directory
     sudo su - postgres
     psql -f /home/<user>/zonemaster-backend/docs/initial-postgres.sql
 
-    **Make sure that <user> in the above path is modified appropriately**
+    Make sure that ** <user> ** in the above path is modified appropriately
 
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
@@ -154,7 +155,7 @@ If, at some point, you want to delete all traces of Zonemaster in the database, 
     cd ~/
     mkdir logs
 
-2) **In all the examples below, replace `/home/user` with the path to your own homedirectory (or, of course, wherever you want).**
+2) In all the examples below, replace **`/home/user`** with the path to your own homedirectory (or, of course, wherever you want).
 
     starman --error-log=/home/user/logs/backend_starman.log --listen=127.0.0.1:5000 --pid=/home/user/logs/starman.pid --daemonize /usr/local/bin/zonemaster_webbackend.psgi
 
@@ -165,21 +166,6 @@ If, at some point, you want to delete all traces of Zonemaster in the database, 
 4) If you would like to kill the starman process, you can issue this command:
 
     kill `cat /home/user/logs/starman.pid`
-
-#### Starting the starman part that listens for and answers the JSON::RPC
-requests (**Ubuntu 14.04LTS**)
-
-These specific instructions can be used at least for Ubuntu 14.04LTS, and probably also for other systems using `upstart`.
-
-1) Copy the file `share/starman-zonemaster.conf` to the directory `/etc/init`.
-
-    sudo cp share/starman-zonemaster.conf /etc/init
-
-2) Run `sudo service starman-zonemaster start`
-
-    sudo service starman-zonemaster start
-
-This only needs to be run as root in order to make sure the log file can be opened. The `starman` process will change to the `www-data` user as soon as it can, and all of the real work will be done as that user.
 
 ### Starting the starman part that listens for and answers the JSON::RPC requests 
 
@@ -218,8 +204,6 @@ The response should be something like this:
 ### All done
 
 Next step is to install the [Web UI](https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md) if you wish so.
-
-
 
 ## <a name="FreeBSD"></a> FreeBSD 10.0 & 10.1 Instructions
 
@@ -269,12 +253,19 @@ First, make sure your operating system and package database is up to date.
 
    vi /etc/zonemaster/backend_config.ini
 
-7) Start the processes, point pid and log to a appropriate-for-your-OS location (first line is the API second is the test runner itself)
+7) Start the processes, point pid and log to a appropriate-for-your-OS location
+   (first line is the API, second is the test runner itself)
 
     starman --error-log=/home/user/logs/error.log --pid-file=/home/user/logs/starman.pid --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi
     zm_wb_daemon start
 
-## CentOS instructions
+### All done
+
+Next step is to install the [Web
+UI](https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md) if
+you wish so.
+
+## <a name="CentOS"></a> CentOS instructions (Version 7.1)
 
 1) Install the Zonemaster test engine according to its instructions.
 
@@ -319,3 +310,9 @@ First, make sure your operating system and package database is up to date.
 10) Test that it started OK. The command below should print a JSON string including some information on the Zonemaster engine version.
     
     curl -X POST http://127.0.0.1:5000/ -d '{"method":"version_info"}'
+
+### All done
+
+Next step is to install the [Web
+UI](https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md) if
+you wish so.

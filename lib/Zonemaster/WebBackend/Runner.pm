@@ -119,7 +119,7 @@ sub run {
 			Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana.json' );
 		}
 		else {
-			Zonemaster->config->load_policy_file( 'iana.json' );
+			Zonemaster->config->load_policy_file( 'iana_profile.json' );
 		}
 	}
 

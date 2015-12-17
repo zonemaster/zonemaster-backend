@@ -116,10 +116,10 @@ sub run {
     
     if ( $params->{profile} eq 'test_profile_1' ) {
 		if (Zonemaster::WebBackend::Config->CustomProfilesPath()) {
-			Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana.json' );
+			Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana-profile.json' );
 		}
 		else {
-			Zonemaster->config->load_policy_file( 'iana_profile.json' );
+			Zonemaster->config->load_policy_file( 'iana-profile.json' );
 		}
 	}
 

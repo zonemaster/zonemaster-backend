@@ -1,5 +1,14 @@
 Revision history for Zonemaster Backend.
-
+v1.0.5 2015-12-17
+	Fixes #148 - Use iana_profile.josn instead of iana.json as source file for IANA tests 
+	Fixes #141 - Database initialisation files (.sql) not updated with the new hash_id column
+	Fixes #138 - The Bacakend's generated JSON is locale dependant
+	Fixes #134 - Bug fix of the crontab job runner 
+	Fixes #127 - The Bakend Translator does not handle non scalar message parameters
+	Fixes #125 - Non numeric IDs for tests
+	Fixes #124 - modified all instances of .SE to IIS
+	Fixes #123 - Zonemaster crashes constantly in Free BSD on using mysql
+	Fixes #122 - Added support for testing the backend on Travis with all 3 supported database backends
 v1.0.3 2015-06-26
 	Fixes #116 - Add user geolocation support
 	Fixes #115 - Pg backend cleanup

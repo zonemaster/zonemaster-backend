@@ -75,11 +75,10 @@ my $router = router {
 		handler => "+Zonemaster::WebBackend::Engine",
 		action => "add_api_user"
 	};
-	
-############################################
-	connect "api1" => {
+
+	connect "add_batch_job" => {
 		handler => "+Zonemaster::WebBackend::Engine",
-		action => "api1"
+		action => "add_batch_job"
 	};
 };
 

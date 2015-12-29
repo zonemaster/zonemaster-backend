@@ -50,10 +50,10 @@ sub user_exists_in_db {
 }
 
 sub add_api_user_to_db {
-    my ( $self, $user_info ) = @_;
+    my ( $self, $user_name, $api_key ) = @_;
 
     my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( $user_info ) );
+    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( { username => $user_name, api_key => $api_key } ) );
 
     return $nb_inserted;
 }

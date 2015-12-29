@@ -72,7 +72,7 @@ if ($db_backend eq 'PostgreSQL') {
 	$user_check_query = q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/;
 }
 elsif ($db_backend eq 'MySQL') {
-	$user_check_query = q/SELECT * FROM users WHERE user_info like '%zonemaster_test%'/;
+	$user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
 }
 
 ok(

@@ -384,11 +384,11 @@ sub get_test_history {
 }
 
 sub add_api_user {
-    my ( $self, $params, $procedure, $remote_ip ) = @_;
+    my ( $self, $p, undef, $remote_ip ) = @_;
     my $result;
 
     my $allow = 0;
-    if ( defined $procedure && defined $remote_ip ) {
+    if ( defined $remote_ip ) {
         $allow = 1 if ( $remote_ip eq '::1' );
     }
     else {
@@ -396,7 +396,7 @@ sub add_api_user {
     }
 
     if ( $allow ) {
-        $result = $self->{db}->add_api_user( $params );
+		$result = $self->{db}->add_api_user( $p->{username}, $p->{api_key} );
     }
 }
 
@@ -405,18 +405,15 @@ sub add_batch_job {
     my $batch_id;
 
     if ( $self->{db}->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{batch_params}->{client_id}      = 'Zonemaster Batch Scheduler';
-        $params->{batch_params}->{client_version} = '1.0';
-
-        my $domains = $params->{batch_params}->{domains};
-        delete( $params->{batch_params}->{domains} );
+        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
+        $params->{test_params}->{client_version} = '1.0';
 
         $batch_id = $self->{db}->create_new_batch_job( $params->{username} );
 
         my $minutes_between_tests_with_same_params = 5;
-        foreach my $domain ( @{$domains} ) {
+        foreach my $domain ( @{$params->{domains}} ) {
             $self->{db}
-              ->create_new_test( $domain, $params->{batch_params}, $minutes_between_tests_with_same_params, $batch_id );
+              ->create_new_test( $domain, $params->{test_params}, 5, 5, $batch_id );
         }
     }
     else {
@@ -426,4 +423,8 @@ sub add_batch_job {
     return $batch_id;
 }
 
+sub get_batch_job_results {
+    my ( $self, $batch_id ) = @_;
+
+}
 1;

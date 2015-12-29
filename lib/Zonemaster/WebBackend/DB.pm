@@ -20,14 +20,14 @@ sub user_exists {
 }
 
 sub add_api_user {
-    my ( $self, $params ) = @_;
+    my ( $self, $username, $api_key ) = @_;
 
     die "username or api_key not provided to the method add_api_user\n"
-      unless ( $params->{username} && $params->{api_key} );
+      unless ( $username && $api_key );
 
-    die "User already exists\n" if ( $self->user_exists( $params->{username} ) );
+    die "User already exists\n" if ( $self->user_exists( $username ) );
 
-    my $result = $self->add_api_user_to_db( $params );
+    my $result = $self->add_api_user_to_db( $username, $api_key );
 
     die "add_api_user_to_db not successfull" unless ( $result );
 

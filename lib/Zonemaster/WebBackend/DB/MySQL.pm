@@ -47,14 +47,14 @@ sub user_exists_in_db {
 }
 
 sub add_api_user_to_db {
-    my ( $self, $user_info ) = @_;
+    my ( $self, $user_name, $api_key  ) = @_;
 
     my $nb_inserted = $self->dbh->do(
         "INSERT INTO users (user_info, username, api_key) VALUES (?,?,?)",
         undef,
-        encode_json( $user_info ),
-        $user_info->{username},
-        $user_info->{api_key},
+        'NULL',
+        $user_name,
+        $api_key,
     );
 
     return $nb_inserted;

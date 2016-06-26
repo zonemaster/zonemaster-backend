@@ -143,16 +143,6 @@ sub _check_domain {
         return ( $dn, { status => 'nok', message => encode_entities( "$type name or label outside allowed length" ) } );
     }
 
-    @res = Zonemaster::Test::Syntax->syntax01($dn);
-    if (not grep {$_->tag eq 'ONLY_ALLOWED_CHARS'} @res) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type name contains non-allowed character(s)" ) } );
-    }
-
-    @res = Zonemaster::Test::Syntax->syntax02($dn);
-    if (not grep {$_->tag eq 'NO_ENDING_HYPHENS'} @res) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type label must not start or end with a hyphen" ) } );
-    }
-
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
 }
 

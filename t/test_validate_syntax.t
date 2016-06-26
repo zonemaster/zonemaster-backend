@@ -26,10 +26,6 @@ $frontend_params->{nameservers} = [    # list of the namaserves up to 32
 ];
 
 # domain present?
-$frontend_params->{domain} = '';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', 'domain not present' );
-
-# domain present?
 $frontend_params->{domain} = 'afnic.fr';
 ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'domain present' );
 
@@ -79,18 +75,9 @@ ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
 	encode_utf8( '64 characters long domain label' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
-# invalid domain characters
-$frontend_params->{domain} = 'test1_.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'invalid domain characters' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
-
 #TEST NS
 $frontend_params->{domain} = 'afnic.fr';
 $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
-
-# ns present?
-$frontend_params->{nameservers}->[0]->{ns} = '';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', 'domain not present' );
 
 # domain present?
 $frontend_params->{nameservers}->[0]->{ns} = 'afnic.fr';
@@ -140,11 +127,6 @@ ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok',
 $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-64-.fr';
 ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
 	encode_utf8( '64 characters long domain label' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
-
-# invalid domain characters
-$frontend_params->{nameservers}->[0]->{ns} = 'test1_.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'invalid domain characters' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # DELEGATED TEST

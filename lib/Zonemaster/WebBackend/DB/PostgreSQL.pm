@@ -85,7 +85,7 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $batch_id, $creaton_time ) = $dbh->selectrow_array( "
+    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
 			SELECT 
 				batch_id, 
 				batch_jobs.creation_time AS batch_creation_time 
@@ -98,7 +98,7 @@ sub create_new_batch_job {
 			LIMIT 1
 			", undef, $username );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running " if ( $batch_id );
+    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running " if ( $batch_id );
 
     my ( $new_batch_id ) =
       $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );

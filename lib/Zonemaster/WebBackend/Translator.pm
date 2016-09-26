@@ -18,6 +18,7 @@ extends 'Zonemaster::Translator';
 sub translate_tag {
     my ( $self, $entry, $browser_lang ) = @_;
 
+    my $previous_locale = setlocale( LC_ALL );
     if ( $browser_lang eq 'fr' ) {
         setlocale( LC_ALL, "fr_FR.UTF-8" );
     }
@@ -27,7 +28,6 @@ sub translate_tag {
     else {
         setlocale( LC_ALL, "en_US.UTF-8" );
     }
-
     my $string = $self->data->{ $entry->{module} }{ $entry->{tag} };
 
     if ( not $string ) {
@@ -36,7 +36,7 @@ sub translate_tag {
 
     my $blessed_entry = bless($entry, 'Zonemaster::Logger::Entry');
     my $str = decode_utf8( __x( $string, %{ ($blessed_entry->can('printable_args'))?($blessed_entry->printable_args()):($entry->{args}) } ) );
-    setlocale( LC_ALL, "" );
+    setlocale( LC_ALL, $previous_locale );
 
     return $str;
 }

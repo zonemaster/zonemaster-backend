@@ -165,7 +165,7 @@ sub test_results {
 
     my $result;
     eval {
-        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT * FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
         $result            = $hrefs->{$test_id};
         $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
         $result->{results} = decode_json( encode_utf8( $result->{results} ) );
@@ -197,7 +197,7 @@ sub get_test_history {
 			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
 			id,
 			hash_id,
-			creation_time, 
+			creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, 
 			params->>'advanced_options' AS advanced_options 
 		FROM test_results 
 		WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 

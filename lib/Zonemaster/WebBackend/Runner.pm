@@ -123,6 +123,21 @@ sub run {
 		}
 	}
 
+	if ( $params->{config} ) {
+		my $config_file_path = Zonemaster::WebBackend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});
+		if ($config_file_path) {
+			if (-e $config_file_path) {
+				Zonemaster->config->load_config_file( $config_file_path );
+			}
+			else {
+				die "The file specified by the config parameter value: [$params->{config}] doesn't exist";
+			}
+		}
+		else {
+			die "Unknown test configuration: [$params->{config}]\n"
+		}
+	}
+
     # Actually run tests!
     eval { Zonemaster->test_zone( $domain ); };
     if ( $@ ) {

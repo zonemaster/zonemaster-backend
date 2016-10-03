@@ -151,7 +151,7 @@ sub validate_syntax {
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
-        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info'
+        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info', 'config'
     );
 
     foreach my $k ( keys %$syntax_input ) {
@@ -281,6 +281,11 @@ sub start_domain_test {
 
     die "No domain in parameters\n" unless ( $params->{domain} );
     
+    if ($params->{config}) {
+		$params->{config} =~ s/[^\w_]//isg;
+		die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::WebBackend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+	}
+    
     $self->add_user_ip_geolocation($params);
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10, 10 );
@@ -345,13 +350,13 @@ sub get_test_results {
             if ( $res->{message} =~ /policy\.json/ ) {
                 my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
                 my $policy_description = 'DEFAULT POLICY';
-                $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\path/ );
+                $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
                 $res->{message} =~ s/$policy/$policy_description/;
             }
             elsif ( $res->{message} =~ /config\.json/ ) {
                 my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
                 my $config_description = 'DEFAULT CONFIGURATION';
-                $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\path/ );
+                $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
                 $res->{message} =~ s/$config/$config_description/;
             }
         }

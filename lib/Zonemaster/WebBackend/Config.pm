@@ -145,4 +145,12 @@ sub CustomProfilesPath {
     return $cfg->val( 'ZONEMASTER', 'cutom_profiles_path' );
 }
 
+sub GetCustomConfigParameter {
+	my ($slef, $section, $param_name) = @_;
+	
+    my $cfg = _load_config();
+
+    return $cfg->val( $section, $param_name );
+}
+
 1;

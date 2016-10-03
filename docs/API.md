@@ -288,6 +288,10 @@ The testing is done by a (typically) cron job on the backend machine.
     -   ds\_digest\_pairs: []
         - disabled in the present version
 
+    -   config: "config_profile"
+        - config_profile is a user defined string that has to match a config profile name configured in the ZONEMASTER section of the zonemaster_backend.ini file
+        - If this parameter is present the backend will check if the file exists.
+        
  -   jsonrpc: « 2.0 »
  -   id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method
@@ -574,5 +578,5 @@ This API takes the usual fronted "params" structure and uses it to return a list
 
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
- -  result: The number of users created.
+<!--  -  result: The number of users created. -->
        

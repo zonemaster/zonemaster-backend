@@ -101,8 +101,8 @@ directory
     log_dir          = logs/
     interpreter      = perl
     max_zonemaster_execution_time   = 300
-    number_of_professes_for_frontend_testing  = 20
-    number_of_professes_for_batch_testing     = 20
+    number_of_processes_for_frontend_testing  = 20
+    number_of_processes_for_batch_testing     = 20
 
 3) Copy the `backend_config.ini` file to `/etc/zonemaster`
 
@@ -152,8 +152,8 @@ directory as a database administrator. It removes the user and drops the databas
     log_dir          = logs/
     interpreter      = perl
     max_zonemaster_execution_time   = 300
-    number_of_professes_for_frontend_testing  = 20
-    number_of_professes_for_batch_testing     = 20
+    number_of_processes_for_frontend_testing  = 20
+    number_of_processes_for_batch_testing     = 20
 
 3)  Copy the `backend_config.ini` file to `/etc/zonemaster`
 

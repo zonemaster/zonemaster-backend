@@ -107,16 +107,22 @@ sub MaxZonemasterExecutionTime {
     return $cfg->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
 }
 
-sub NumberOfProfessesForFrontendTesting {
+sub NumberOfProcessesForFrontendTesting {
     my $cfg = _load_config();
 
-    return $cfg->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' );
+    my $nb = $cfg->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' );
+    $nb = $cfg->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) unless ($nb);
+    
+    return $nb;
 }
 
-sub NumberOfProfessesForBatchTesting {
+sub NumberOfProcessesForBatchTesting {
     my $cfg = _load_config();
 
-    return $cfg->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
+    my $nb = $cfg->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
+    $nb = $cfg->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) unless ($nb);
+    
+    return $nb;
 }
 
 sub Maxmind_ISP_DB_File {

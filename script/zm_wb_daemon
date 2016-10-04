@@ -47,8 +47,8 @@ $pidfile //= '/tmp/zm_wc_daemon.pid';
 
 # Yes, the method names are spelled like that.
 my $maximum_processes =
-  Zonemaster::WebBackend::Config->NumberOfProfessesForFrontendTesting() +
-  Zonemaster::WebBackend::Config->NumberOfProfessesForBatchTesting();
+  Zonemaster::WebBackend::Config->NumberOfProcessesForFrontendTesting() +
+  Zonemaster::WebBackend::Config->NumberOfProcessesForBatchTesting();
 
 my $delay   = Zonemaster::WebBackend::Config->PollingInterval();
 my $timeout = Zonemaster::WebBackend::Config->MaxZonemasterExecutionTime();

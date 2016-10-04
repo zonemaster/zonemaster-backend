@@ -142,7 +142,9 @@ sub force_hash_id_use_in_API_starting_from_id {
 sub CustomProfilesPath {
     my $cfg = _load_config();
 
-    return $cfg->val( 'ZONEMASTER', 'custom_profiles_path' );
+    my $value  = $cfg->val( 'ZONEMASTER', 'cutom_profiles_path' );
+    $value  = $cfg->val( 'ZONEMASTER', 'custom_profiles_path' ) unless ($value);
+    return $value;
 }
 
 sub GetCustomConfigParameter {

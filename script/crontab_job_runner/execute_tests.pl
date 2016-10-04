@@ -44,8 +44,8 @@ my $LOG_DIR = Zonemaster::WebBackend::Config->LogDir();
 my $perl_command = Zonemaster::WebBackend::Config->PerlIntereter();
 my $polling_interval = Zonemaster::WebBackend::Config->PollingInterval();
 my $zonemaster_timeout_interval = Zonemaster::WebBackend::Config->MaxZonemasterExecutionTime();
-my $frontend_slots = Zonemaster::WebBackend::Config->NumberOfProfessesForFrontendTesting();
-my $batch_slots = Zonemaster::WebBackend::Config->NumberOfProfessesForBatchTesting();
+my $frontend_slots = Zonemaster::WebBackend::Config->NumberOfProcessesForFrontendTesting();
+my $batch_slots = Zonemaster::WebBackend::Config->NumberOfProcessesForBatchTesting();
 
 my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string();
 my $dbh = DBI->connect($connection_string, Zonemaster::WebBackend::Config->DB_user(), Zonemaster::WebBackend::Config->DB_password(), {RaiseError => 1, AutoCommit => 1});

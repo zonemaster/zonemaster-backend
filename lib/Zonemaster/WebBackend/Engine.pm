@@ -380,7 +380,7 @@ sub get_test_history {
 
 sub add_api_user {
     my ( $self, $p, undef, $remote_ip ) = @_;
-    my $result;
+    my $result = 0;
 
     my $allow = 0;
     if ( defined $remote_ip ) {
@@ -391,8 +391,10 @@ sub add_api_user {
     }
 
     if ( $allow ) {
-		$result = $self->{db}->add_api_user( $p->{username}, $p->{api_key} );
+		$result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
     }
+    
+    return $result;
 }
 
 sub add_batch_job {
@@ -418,8 +420,9 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub get_batch_job_results {
+sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
 
+    return $self->{db}->get_batch_job_result($batch_id);
 }
 1;

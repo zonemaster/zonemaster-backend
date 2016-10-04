@@ -80,6 +80,11 @@ my $router = router {
 		handler => "+Zonemaster::WebBackend::Engine",
 		action => "add_batch_job"
 	};
+
+	connect "get_batch_job_result" => {
+		handler => "+Zonemaster::WebBackend::Engine",
+		action => "get_batch_job_result"
+	};
 };
 
 my $dispatch = JSON::RPC::Dispatch->new(

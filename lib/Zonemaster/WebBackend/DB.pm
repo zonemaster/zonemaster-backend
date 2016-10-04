@@ -74,6 +74,35 @@ sub get_test_request {
 	return $result_id;
 }
 
+# Standatd SQL, can be here
+sub get_batch_job_result {
+	my ( $self, $batch_id ) = @_;
+
+	my $dbh = $self->dbh;
+
+	my %result;
+	$result{nb_running} = 0;
+	$result{nb_finished} = 0;
+
+	my $query = "
+		SELECT hash_id, progress
+		FROM test_results 
+		WHERE batch_id=?";
+		
+	my $sth1 = $dbh->prepare( $query );
+	$sth1->execute( $batch_id );
+	while ( my $h = $sth1->fetchrow_hashref ) {
+		if ( $h->{progress} eq '100' ) {
+			$result{nb_finished}++;
+			push(@{$result{finished_test_ids}}, $h->{hash_id});
+		}
+		else {
+			$result{nb_running}++;
+		}
+	}
+	
+	return \%result;
+}
 
 no Moose::Role;
 

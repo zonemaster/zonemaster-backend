@@ -567,6 +567,8 @@ This API takes the usual fronted "params" structure and uses it to return a list
  -   id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method
 
+ This method implements a very basic security mechanism for the bach API. It will accept to create a new user only if the client is calling it from a "localhost" IP.
+ 
 **Response**:
 ```
 {
@@ -578,5 +580,96 @@ This API takes the usual fronted "params" structure and uses it to return a list
 
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
-<!--  -  result: The number of users created. -->
-       
+ -  result: 1 if the user was created 0 otherwise.
+
+ 
+### *JSON-RPC Call*: `add_batch_job`
+
+**Request**:
+```
+{
+   "method" : "add_batch_job",
+   "params" : {
+      "domains" : [
+         "domain0.fr",
+         "domain1.fr",
+         "domain2.fr",
+      ],
+      "username" : "dnsdelve",
+      "test_params" : {
+         
+      },
+      "api_key" : "API_KEY_dnesdelve"
+   },
+   "jsonrpc" : "2.0",
+   "id" : 147559211348450
+}
+```
+
+ -  method: the mandatory string "add_batch_job"
+ -  params: a parameter containing a list of domains to be tested and the test parameters the zonemaster-engine will use for thesting
+    -  domains: the list of domains
+    -  username: the username of this batch (see add_api_user)
+    -  api_key: the api_key associated qith the username username of this batch (see add_api_user)
+    -  test_params: the standard set of zonemaster parameters (see start_domain_test)
+ -  jsonrpc: « 2.0 »
+ -  id: any kind of unique id allowing to match requests and responses
+ 
+
+**Response**:
+```
+{
+   "id" : 147559211348450,
+   "result" : 8,
+   "jsonrpc" : "2.0"
+}
+```
+ -  jsonrpc: « 2.0 »
+ -  id: any kind of unique id allowing to match requests and responses
+ -  result: the id of the batch_job
+ 
+ 
+### *JSON-RPC Call*: `get_batch_job_result`
+
+**Request**:
+```
+{
+   "id" : 147559211994909,
+   "method" : "get_batch_job_result",
+   "jsonrpc" : "2.0",
+   "params" : "8"
+}
+```
+
+ -  params: the id of the batch job as returned by the add_batch_job API method
+ -  jsonrpc: « 2.0 »
+ -  id: any kind of unique id allowing to match requests and responses
+ -  method: the name of the called method
+
+ This method implements a very basic security mechanism for the bach API. It will accept to create a new user only if the client is calling it from a "localhost" IP.
+ 
+**Response**:
+```
+{
+   "jsonrpc" : "2.0",
+   "id" : 147559211994909,
+   "result" : {
+      "nb_finished" : 5,
+      "finished_test_ids" : [
+         "43b408794155324b",
+         "be9cbb44fff0b2a8",
+         "62f487731116fd87",
+         "692f8ffc32d647ca",
+         "6441a83fcee8d28d"
+      ],
+      "nb_running" : 195
+   }
+}
+```
+
+ -  jsonrpc: « 2.0 »
+ -  id: any kind of unique id allowing to match requests and responses
+ -  result: a hash structure containing the list of ids of the finished tests and the number of running and finished tests of this batch job
+    -  nb_finished: the number of finished tests
+    -  nb_running: the number of running tests
+    - finished_test_ids: a list of ids of the finished tests

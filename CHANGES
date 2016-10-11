@@ -1,4 +1,15 @@
 Revision history for Zonemaster Backend.
+v1.0.6 2016-10-11
+	Fixes #189 - Fixes s/cutom/custom/ typos
+	Fixes #188 - Fixes s/professes/processes/ typos
+	Fixes #185 - Document "add_api_user" and "add_batch_job" completely
+	Fixes #183 - Banckend doesn't pass "make test" on perl 5.24
+	Fixes #174 - Filters feature (allows to use this possibility of the engine in the backend APIs)
+	Fixes #159 - "make test" of zonemaster-backend fails with non-default locale under Ubuntu 14.04
+	Fixes #158 - Dates needs to be returned in UTC from the database
+	Fixes #156 - Add Docker based installation instructions
+	Fixes #155 - Change de preflight test to block only on Basic00
+	Fixes #153 - Improve the batch API (Fixed and added bulk testing methods)
 v1.0.5 2015-12-17
 	Fixes #148 - Use iana_profile.josn instead of iana.json as source file for IANA tests 
 	Fixes #141 - Database initialisation files (.sql) not updated with the new hash_id column

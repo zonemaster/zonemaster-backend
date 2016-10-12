@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-our $VERSION = '1.0.5';
+our $VERSION = '1.0.6';
 
 use 5.14.2;
 

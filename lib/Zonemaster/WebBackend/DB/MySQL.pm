@@ -213,7 +213,7 @@ sub get_test_history {
 			q[SELECT 
 				id, 
 				hash_id, 
-				CONVERT_TZ(`creation_time`, \@\@session.time_zone, '+00:00') AS creation_time, 
+				CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time, 
 				params, 
 				results 
 			FROM 

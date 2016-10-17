@@ -194,7 +194,7 @@ sub test_results {
     }
 
     my $result;
-    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, CONVERT_TZ(`creation_time`, \@\@session.time_zone, '+00:00') AS creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
     $result            = $hrefs->{$test_id};
     $result->{params}  = decode_json( $result->{params} );
     $result->{results} = decode_json( $result->{results} );
@@ -210,7 +210,19 @@ sub get_test_history {
     my $use_hash_id_from_id = Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id();
     
     my $sth = $self->dbh->prepare(
-q[SELECT id, hash_id, creation_time, params, results FROM test_results WHERE domain = ? AND undelegated = ? ORDER BY id DESC LIMIT ? OFFSET ?]
+			q[SELECT 
+				id, 
+				hash_id, 
+				CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time, 
+				params, 
+				results 
+			FROM 
+				test_results 
+			WHERE 
+				domain = ? 
+				AND undelegated = ? 
+			ORDER BY id DESC 
+			LIMIT ? OFFSET ?]
     );
     $sth->execute( $p->{frontend_params}{domain}, ($p->{frontend_params}{nameservers})?1:0, $p->{limit}, $p->{offset} );
     while ( my $h = $sth->fetchrow_hashref ) {

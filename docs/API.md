@@ -567,7 +567,8 @@ This API takes the usual fronted "params" structure and uses it to return a list
  -   id: any kind of unique id allowing to match requests and responses
  -   method: the name of the called method
 
- This method implements a very basic security mechanism for the bach API. It will accept to create a new user only if the client is calling it from a "localhost" IP.
+ This method implements a very basic security mechanism for the batch
+ API. It will accept to create a new user only if the client is calling it from a "localhost" IP.
  
 **Response**:
 ```
@@ -607,10 +608,10 @@ This API takes the usual fronted "params" structure and uses it to return a list
 ```
 
  -  method: the mandatory string "add_batch_job"
- -  params: a parameter containing a list of domains to be tested and the test parameters the zonemaster-engine will use for thesting
+ -  params: a parameter containing a list of domains to be tested and the test parameters the zonemaster-engine will use for testing
     -  domains: the list of domains
     -  username: the username of this batch (see add_api_user)
-    -  api_key: the api_key associated qith the username username of this batch (see add_api_user)
+    -  api_key: the api_key associated with the username username of this batch (see add_api_user)
     -  test_params: the standard set of zonemaster parameters (see start_domain_test)
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
@@ -645,8 +646,6 @@ This API takes the usual fronted "params" structure and uses it to return a list
  -  jsonrpc: « 2.0 »
  -  id: any kind of unique id allowing to match requests and responses
  -  method: the name of the called method
-
- This method implements a very basic security mechanism for the bach API. It will accept to create a new user only if the client is calling it from a "localhost" IP.
  
 **Response**:
 ```

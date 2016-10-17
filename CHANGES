@@ -1,4 +1,6 @@
 Revision history for Zonemaster Backend.
+v1.0.7 2016-10-17
+	Fixes #168 - Published to CPAN
 v1.0.6 2016-10-11
 	Fixes #189 - Fixes s/cutom/custom/ typos
 	Fixes #188 - Fixes s/professes/processes/ typos

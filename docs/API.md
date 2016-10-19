@@ -276,18 +276,25 @@ The testing is done by a (typically) cron job on the backend machine.
     -   profile: 'default\_profile\_1',
         -   \# the id of the Test profile listbox
     -   nameservers: [
-        -   \# list of the namaserves up to 32
+        -   \# list of the namaservers (up to 32)
             - {
               "ns" : "ns2.nic.FR.",
-              "ip" : "192.93.0.4",
+              "ip" : "192.93.0.4"
             },
             - {
               "ns" : "ns2.nic.FR.",
-              "ip" : "2001:660:3005:1:0:0:1:2",
+              "ip" : "2001:660:3005:1:0:0:1:2"
             }
-    -   ds\_digest\_pairs: []
-        - disabled in the present version
-
+        ],
+    -   ds\_info: [
+        -   \# list of DS records
+            - {
+              "algorithm": 8,
+              "digtype": 2,
+              "digest": "c8565943d....",
+              "keytag": 1234
+              }
+        ],
     -   config: "config_profile"
         - config_profile is a user defined string that has to match a config profile name configured in the ZONEMASTER section of the zonemaster_backend.ini file
         - If this parameter is present the backend will check if the file exists.

@@ -53,6 +53,10 @@ script/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
 script/zm_wb_daemon
 script/zonemaster_webbackend.psgi
 share/backend_config.ini
+share/cleanup-mysql.sql
+share/cleanup-postgres.sql
+share/initial-mysql.sql
+share/initial-postgres.sql
 share/starman-zonemaster.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini

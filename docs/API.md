@@ -601,7 +601,7 @@ This API takes the usual fronted "params" structure and uses it to return a list
       "domains" : [
          "domain0.fr",
          "domain1.fr",
-         "domain2.fr",
+         "domain2.fr"
       ],
       "username" : "dnsdelve",
       "test_params" : {

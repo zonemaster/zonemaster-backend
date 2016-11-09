@@ -1,681 +1,1075 @@
-# Introduction
+# API
 
-This document describes the API of the Zonemaster Backend.
+## Purpose
 
-The API is available in the JSON-RPC (version 2.0) format.
+This document describes the JSON-RPC API provided by the Zonemaster *Web
+backend*. This API provides means to perform health checks of single or batched
+domains, and to query for lists and details of previous health check results of
+single domains.
 
-Many libraries in about all languages are available to communicate using
-the JSON-RPC protocol.
 
-## Backend API
+## Protocol
 
-### JSON-RPC Call 1: version\_info
-This API returns the version of the Backend+Engine software combination. It is the simplest API to use to check that the backend is running and abswering properly.
+This API is implemented using JSON-RPC 2.0.
 
-**Request**:
-```
-{
-   "params" : "version_info",
-   "jsonrpc" : "2.0",
-   "id" : 143014362197299,
-   "method" : "version_info"
-}
-```
+JSON-RPC request objects are accepted in the body of HTTP POST requests to the
+`/` path. The HTTP request must contain the header `Content-Type: application/json`.
 
- -  params: any non empty parameter (empty parameters are not supported as of now)
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
+In the method descriptions below, only the contents of the `"params"`,
+`"result"` and `"error"` JSON-RPC keys are discussed. For details on the
+general structure of the JSON-RPC protocol, see the JSON-RPC 2.0
+specification.
 
-**Response**:
-```
-{
-   "jsonrpc" : "2.0",
-   "id" : 143014362197299,
-   "result" : "Zonemaster Test Engine Version: v1.0.3"
-}
-```
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: the version string
+## Request handling
 
-### JSON-RPC Call 2: get\_ns\_ips
-This API id used by the NS/IP input forms of the "Undelegated domain test tab". Given a nameserver it returns all of its IP addresses.
+>
+> TODO: Describe how JSON-RPC request batches are handled with regard to concurrency and parallelism.
+>
+> TODO: Describe how unrecognized elements in `"params"` structures are handled.
+>
 
-**Request**:
-```
-{
-   "params" : "ns1.nic.fr",
-   "jsonrpc" : "2.0",
-   "id" : 143014382480608,
-   "method" : "get_ns_ips"
-}
-```
 
- -  params: the name of the server whose IPs need to be resolved
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
+## Error handling
 
-**Response**:
-```
-{
-   "jsonrpc" : "2.0",
-   "id" : 143014382480608,
-   "result" : [
-      {
-         "ns1.nic.fr" : "192.134.4.1"
-      },
-      {
-         "ns1.nic.fr" : "2001:660:3003:2::4:1"
-      }
-   ]
-}
-```
+>
+> TODO: List and describe application defined errors.
+>
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: a list of one or two IP addresses (if 2 one is for IPv4 the
-    other for IPv6)
 
-### *JSON-RPC Call 3*: get\_data\_from\_parent\_zone
-This API returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from the parent zone. It is used by the "Fetch data from parent zone" button of the "Undelegated domain test" tab of the web interface.
+## Privilege levels
 
-**Request**:
-```
-{
-   "params" : "nic.fr",
-   "jsonrpc" : "2.0",
-   "id" : 143014391379310,
-   "method" : "get_data_from_parent_zone"
-}
-```
+This API provides three classes of methods:
 
- -  params: the domain name currently being tested
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
+* *Unrestricted* methods are available to anyone with access to the API.
+* *Authenticated* methods have parameters for username and API key credentials.
+* *Administrative* methods require that the connection to the API is opened from a "localhost" IP.
 
-**Response**:
-```
-{
-   "jsonrpc" : "2.0",
-   "id" : 143014391379310,
-   "result" : {
-      "ds_list" : [
-         {
-            "algorithm" : "sha256",
-            "digest" : "84103c835179a682c25c9647d8c962ab183eb44c80e12e9542c4ae32a2e80b76",
-            "keytag" : 11627
-         }
-      ],
-      "ns_list" : [
-         {
-            "ns" : "ns6.ext.nic.fr.",
-            "ip" : "130.59.138.49"
-         },
-         {
-            "ns" : "ns6.ext.nic.fr.",
-            "ip" : "2001:620:0:1b:5054:ff:fe74:8780"
-         },
-         {
-            "ns" : "ns3.nic.fr.",
-            "ip" : "192.134.0.49"
-         },
-         {
-            "ns" : "ns3.nic.fr.",
-            "ip" : "2001:660:3006:1::1:1"
-         },
-         {
-            "ns" : "ns2.nic.fr.",
-            "ip" : "192.93.0.4"
-         },
-         {
-            "ns" : "ns2.nic.fr.",
-            "ip" : "2001:660:3005:1::1:2"
-         },
-         {
-            "ns" : "ns1.ext.nic.fr.",
-            "ip" : "193.51.208.13"
-         },
-         {
-            "ns" : "ns4.ext.nic.fr.",
-            "ip" : "193.0.9.4"
-         },
-         {
-            "ns" : "ns4.ext.nic.fr.",
-            "ip" : "2001:67c:e0::4"
-         },
-         {
-            "ns" : "ns1.nic.fr.",
-            "ip" : "192.134.4.1"
-         },
-         {
-            "ns" : "ns1.nic.fr.",
-            "ip" : "2001:660:3003:2::4:1"
-         }
-      ]
-   }
-}
-```
 
- -   jsonrpc: « 2.0 »
- -   id: any kind of unique id allowing to match requests and responses
- -   result: a list of several { nameserver =\> IP\_adress } pairs, and a list of DS information objects.
+## Data types
 
-### *JSON-RPC Call 4*: validate\_syntax
-This API checks the "params" structure for syntax coherence. It is very strict on what is allowed and what is not to avoid any SQL injection and cross site scripting attempts. It also checks the domain name for syntax to ensure the domain name seems to be a valid domain name and a test by the Engine can be started.
+This sections describes a number of data types used in this API. Each data type
+is based on a JSON data type, but additionally imposes its own restrictions.
 
-**Request**:
-```
-{
-   "params" : {
-      "domain" : "afnic.fr",
-      "ipv6" : 1,
-      "ipv4" : 1,
-      "nameservers" : [
-         {
-            "ns" : "ns1.nic.fr",
-            "ip" : "1.2.3.4"
-         },
-         {
-            "ns" : "ns2.nic.fr",
-            "ip" : "192.134.4.1"
-         }
-      ]
-   },
-   "jsonrpc" : "2.0",
-   "id" : 143014426992009,
-   "method" : "validate_syntax"
-}
-```
- -  params: the structure representing the frontend parameters structure (see the start_domain_test API for a detailed description)
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
 
-**Response**:
-```
-{
-   "jsonrpc" : "2.0",
-   "id" : 143014426992009,
-   "result" : {
-      "status" : "ok",
-      "message" : "Syntax ok"
-   }
-}
-```
+### Batch id
 
- -   jsonrpc: « 2.0 »
- -   id : any kind of unique id allowing to match requests and responses
- -   result: either “syntax\_ok” or “syntax\_not\_ok”.
+Each *batch* has a unique *batch id*.
 
-### *JSON-RPC Call 5*: start\_domain\_test
-This API inserts a new test request into the database. The test request is inserted with a "progress" (one of the database fields) value of 0 meaning the Engine can start testing this domain.
-The testing is done by a (typically) cron job on the backend machine.
+>
+> TODO: What basic data type is it?
+>
 
-**Request**:
-```
-{
-   "jsonrpc" : "2.0",
-   "method" : "start_domain_test",
-   "params" : {
-      "client_id" : "Zonemaster Dancer Frontend",
-      "domain" : "afnic.FR",
-      "profile" : "default_profile",
-      "client_version" : "1.0.1",
-      "nameservers" : [
-         {
-            "ip" : "192.134.4.1",
-            "ns" : "ns1.nic.FR."
-         },
-         {
-            "ip" : "2001:660:3003:2:0:0:4:1",
-            "ns" : "ns1.nic.FR."
-         },
-         {
-            "ip" : "192.134.0.49",
-            "ns" : "ns3.nic.FR."
-         },
-         {
-            "ns" : "ns3.nic.FR.",
-            "ip" : "2001:660:3006:1:0:0:1:1"
-         },
-         {
-            "ns" : "ns2.nic.FR.",
-            "ip" : "192.93.0.4"
-         },
-         {
-            "ns" : "ns2.nic.FR.",
-            "ip" : "2001:660:3005:1:0:0:1:2"
-         }
-      ],
-      "ds_info" : [],
-      "advanced" : true,
-      "ipv6" : true,
-      "ipv4" : true
-   },
-   "id" : 143014514892268
-}
-```
 
--   params:
-    -   client\_id: "Zonemaster CGI/Dancer/node.js",
-        -   \# free string
-    -   client\_version: "1.0",
-        -   \# free version like string
-    -   domain: "afnic.FR",
-        -   \# content of the domain text field
-    -   advanced: true,
-        -   \# true or false, if the advanced options checkbox checked
-    -   ipv4: true,
-        -   \# true or false, is the ipv4 checkbox checked
-    -   ipv6: true,
-        -   \# true or false, is the ipv6 checkbox checked
-    -   profile: 'default\_profile\_1',
-        -   \# the id of the Test profile listbox
-    -   nameservers: [
-        -   \# list of the namaservers (up to 32)
-            - {
-              "ns" : "ns2.nic.FR.",
-              "ip" : "192.93.0.4"
-            },
-            - {
-              "ns" : "ns2.nic.FR.",
-              "ip" : "2001:660:3005:1:0:0:1:2"
-            }
-        ],
-    -   ds\_info: [
-        -   \# list of DS records
-            - {
-              "algorithm": 8,
-              "digtype": 2,
-              "digest": "c8565943d....",
-              "keytag": 1234
-              }
-        ],
-    -   config: "config_profile"
-        - config_profile is a user defined string that has to match a config profile name configured in the ZONEMASTER section of the zonemaster_backend.ini file
-        - If this parameter is present the backend will check if the file exists.
-        
- -   jsonrpc: « 2.0 »
- -   id: any kind of unique id allowing to match requests and responses
- -   method: the name of the called method
+### Domain name
 
-**Response**:
-```
-{
-   "id" : 143014514892268,
-   "jsonrpc" : "2.0",
-   "result" : 8881
-}
-```
+Basic data type: string
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: the id of the test\_result (this id will be used in the
-    other APIs related to the same test result).
+1. If the string contains characters outside the ASCII character set,
+   the entire string must be possible to convert to IDNA format.
 
-### *JSON-RPC Call 6*: test\_progress
-This API returns the value of the "progress" parameter from the database. Once the progress reaches 100 the test is finished and the results may be retrieved for display.
+2. If the string is a single character, that character must be `.`.
 
-**Request**:
-```
-{
-   "method" : "test_progress",
-   "jsonrpc" : "2.0",
-   "id" : 143014514915128,
-   "params" : "8881"
-}
-```
+3. The length of the string must not be greater than 254 characters.
 
- -  params: the id of the test whose progress indicator has to be
-    determined.
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
+4. When the string is split at `.` characters (after IDNA conversion,
+   if needed), each component part must be at most 63 characters long.
 
-**Response**:
-```
-{
-   "jsonrpc" : "2.0",
-   "result" : 0,
-   "id" : 143014514915128
-}
-```
+5. Each such component part must also consist only of the characters
+   `0` to `9`, `a` to `z`, `A` to `Z` and `-`.
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: the % of completion of the test from 0% to 100%
 
-### *JSON-RPC Call 7*: get\_test\_results
-This API returns the test result JSON structure from the database. The test results are stored in a language independent format in the database. They are translated into the language given in the "language" parameter and returned to the caller of this API.
+### DS info
 
-**Request**:
-```
-{
-   "id" : 143014516614517,
-   "params" : {
-      "language" : "en",
-      "id" : "8881"
-   },
-   "jsonrpc" : "2.0",
-   "method" : "get_test_results"
-}
-```
+Basic data type: object
 
- -  params:
-     -  id: the id of the test whose results we want to get.
-     -  language: the language of the user interface
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
+The object must have exactly the two keys `"algorithm"` and `"digest"`. The value of
+the `"algorithm"` key must be either the string `"sha1"`, in which case the value
+of the `"digest"` key must be 40 hexadecimal characters, or the value `"sha256"`,
+in which case the value of the `"digest"` key must be 64 hexadecimal characters.
 
-**Response**:
-```
-{
-  "jsonrpc" : "2.0",
-  "id" : 140723510525000,
-  "result" : {
-    "params" : {
-.
-.
-TEST PARAMS (See *JSON-RPC Call 5*: start_domain_test)
-.
-.
-  },
-  "id": 8881,
-  "creation_time": "2014-08-05 12:00:13.401442",
-  "results": [
-    {
-      "module": 'DELEGATION',
-      "message": 'Messsage for DELEGATION/NAMES_MATCH in the language:fr'
-      "level": 'NOTICE',
-    },
-.
-.
-LIST OF TEST RESULTS
-.
-{
-  "ns": "ns1.nic.fr",
-  "module": "NAMESERVER",
-  "message": "Messsage for NAMESERVER/AXFR_FAILURE in the language:fr"
-  "level": "NOTICE",
-},
-.
-.
-LIST OF TEST RESULTS
-.
-.
-]
-}
-}
-```
+>
+> TODO: How about the keys `"digtype"` and `"keytag"`?
+>
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: Contains:
-     -  id: The id of the test whose results are returnes
-     -  creation\_time: The exact time the test was created
-     -  params: The parameters used to run this test (See *JSON-RPC Call
-        5*: start\_domain\_test)
-     -  results: A list of results.
 
-#### Description of the results:
+### Name server
 
-The individual results are of the form
+Basic data type: object
 
-```
-{
-  "module": "DELEGATION",
-  "message": "Messsage for DELEGATION/NAMES_MATCH in the language:fr"
-  "level": "NOTICE",
-}
-```
+The object must have the following properties:
 
-Or
+* `"ns"`: a *domain name*.
+* `"ip"`: a syntactically valid IPv4 or IPv6 address.
 
-```
-{
-  "ns": "ns1.nic.fr",
-  "module": "NAMESERVER",
-  "message": "Messsage for NAMESERVER/AXFR_FAILURE in the language:fr",
-  "level": "NOTICE",
-}
-```
 
-The **module** serves to group the tests by categories.
+### Priority
 
-The **ns** attribute serves to show the name servers for the category
-NAMESERVER.
+Basic data type: number
 
-The **message** is the message to show.
+A higher number means higher priority.
 
-The **level** is the level of severity of the message
 
- -  NOTICE, INFO are considered OK: green
- -  WARNING as warning: orange
- -  ERROR as error: red
+### Profile name
 
-### *JSON-RPC Call 8*: get\_test\_history
-This API takes the usual fronted "params" structure and uses it to return a list of results for the same domain in the same frontend tab. Currently the presence of the "nameservers" parameter is used to differentiate tests run through the "simple domain test tab" from the "undelegated domain test tab".
+Basic data type: string
 
-**Request**:
-```
-{
-   "jsonrpc" : "2.0",
-   "method" : "get_test_history",
-   "id" : 143014516615786,
-   "params" : {
-      "offset" : 0,
-      "limit" : 200,
-      "frontend_params" : {
-         "nameservers" : [
-            {
-               "ip" : "192.134.4.1",
-               "ns" : "ns1.nic.FR."
-            },
-            {
-               "ip" : "2001:660:3003:2:0:0:4:1",
-               "ns" : "ns1.nic.FR."
-            },
-            {
-               "ns" : "ns3.nic.FR.",
-               "ip" : "192.134.0.49"
-            },
-            {
-               "ns" : "ns3.nic.FR.",
-               "ip" : "2001:660:3006:1:0:0:1:1"
-            },
-            {
-               "ip" : "192.93.0.4",
-               "ns" : "ns2.nic.FR."
-            },
-            {
-               "ns" : "ns2.nic.FR.",
-               "ip" : "2001:660:3005:1:0:0:1:2"
-            }
-         ],
-         "ipv4" : true,
-         "profile" : "default_profile",
-         "ipv6" : true,
-         "advanced" : true,
-         "domain" : "afnic.FR",
-         "ds_info" : []
-      }
-   }
-}
+The name of a *profile*.
 
-```
+One of the strings:
 
- -  params: an object containing the following parameters
-    -  frontend\_params: the usual structure containing all the
-       parameters of the interface
-    -  offset: the start of pagination (not yet supported) (optional, default 0)
-    -  limit: number of items to return (not yet supported) (optional, default 200)
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -   method: the name of the called method
+* `"default_profile"`
+* `"test_profile_1"`
+* `"test_profile_2"`
 
-**Response**:
-```
+
+### Progress percentage
+
+Basic data type: number
+
+An integer ranging from 0 (not started) to 100 (finished).
+
+>
+> TODO: Is it possible the string might be encoded in a string?
+>
+
+
+### Severity level
+
+Basic data type: string
+
+One of the strings (in order from least to most severe):
+
+* `"DEBUG"`
+* `"INFO"`
+* `"NOTICE"`
+* `"WARNING"`
+* `"ERROR"`
+* `"CRITICAL"`
+
+
+### Test id
+
+Basic data type: string
+
+Each *test* has a unique *test id*.
+
+
+### Test result
+
+Basic data type: object
+
+The object has three keys, `"module"`, `"message"` and `"level"`.
+
+* `"module"`: a string. The *test module* that produced the result.
+* `"message"`: a string. A human-readable *message* describing that particular result.
+* `"level"`: a *severity level*. The severity of the message.
+
+Sometimes additional keys are present.
+
+* `"ns"`: a *domain name*. The name server used by the *test module*.
+
+>
+> TODO: Can other extra keys in addition to `"ns"` occur here? Can something be said
+> about when each extra key is present?
+>
+
+
+### Test result JSON structure
+
+Basic data type: object
+
+>
+> TODO: Describe structure
+>
+> TODO: Is this related to *test results*?
+>
+
+### Timestamp
+
+Basic data type: string
+
+>
+> TODO: Specify date format
+>
+
+
+## API method: `version_info`
+
+Returns the version of the *Backend*+*Engine* software combination.
+
+Example request:
+```json
 {
   "jsonrpc": "2.0",
-  "id": 140743003648550,
+  "id": 1,
+  "method": "version_info"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "zonemaster_backend": "1.0.7",
+    "zonemaster_engine": "v1.0.14"
+  }
+}
+```
+
+
+#### `"params"`
+
+Omitted.
+
+
+#### `"result"`
+
+An object with the following properties:
+
+* `"zonemaster_backend"`: A string. The version number of the running *Web backend*.
+* `"zonemaster_engine"`: A string. The version number of the *Engine* used by the *Web backend*.
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `get_ns_ips`
+
+Given a *domain name* it returns all of its IP addresses.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "get_ns_ips",
+  "params": "zonemaster.net"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
   "result": [
     {
-      "advanced_options": "1",
-      "id": 3,
-      "creation_time": "2014-08-05 19:41:14.522656",
-      "overall_result" : "error"
+      "zonemaster.net": "192.134.4.83"
     },
     {
-      "advanced_options": "1",
-      "id": 1,
-      "creation_time": "2014-08-05 11:48:18.542216",
-      "overall_result" : "warning"
+      "zonemaster.net": "2001:67c:2218:3::1:83"
     }
   ]
 }
 ```
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: an ordered (starting by the most recent test) list of tests
-    with
-    -  id: the id to use to retrieve the test result
-    -  creation\_date: the date of test
-    -  advanced\_options: if set to 1 serves to differentiate tests
-       with advanced options from those without this option.
-    - overall\_result: shows if there were any errors or warnings in the result (for color differentiation in the test results history)
 
-## Batch mode API (Experimental as of now)
+#### `"params"`
 
-### *JSON-RPC Call*: `add_api_user`
+A *domain name*. The *domain name* whose IP addresses are to be resolved.
 
-**Request**:
-```
-{
-    "jsonrpc": "2.0",
-    "id": 4711,
-    "method": "add_api_user",
-    "params": {
-        "username": "citron",
-        "api_key": "fromage"
-    }
-}
-```
 
- -  params: an object containing the following parameters
-    -  username: the name of the user to add
-    -  api_key: the API key (in effect, password) for the user to add
- -   jsonrpc: « 2.0 »
- -   id: any kind of unique id allowing to match requests and responses
- -   method: the name of the called method
+#### `"result"`
 
- This method implements a very basic security mechanism for the batch
- API. It will accept to create a new user only if the client is calling it from a "localhost" IP.
- 
-**Response**:
-```
+A list of one or two objects representing IP addresses (if 2 one is for IPv4 the
+other for IPv6). The objects each have a single key and value. The key is the
+*domain name* given as input. The value is an IP address for the name, or the
+value `0.0.0.0` if the lookup returned no A or AAAA records.
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `get_data_from_parent_zone`
+
+Returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from the
+parent zone.
+
+Example request:
+```json
 {
   "jsonrpc": "2.0",
-  "id": 4711
-  "result": 1
+  "id": 3,
+  "method": "get_data_from_parent_zone",
+  "params": "zonemaster.net"
 }
 ```
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: 1 if the user was created 0 otherwise.
-
- 
-### *JSON-RPC Call*: `add_batch_job`
-
-**Request**:
-```
+Example response:
+```json
 {
-   "method" : "add_batch_job",
-   "params" : {
-      "domains" : [
-         "domain0.fr",
-         "domain1.fr",
-         "domain2.fr"
-      ],
-      "username" : "dnsdelve",
-      "test_params" : {
-         
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "ns_list": [
+      {
+        "ns": "ns.nic.se",
+        "ip": "2001:67c:124c:100a::45"
       },
-      "api_key" : "API_KEY_dnesdelve"
-   },
-   "jsonrpc" : "2.0",
-   "id" : 147559211348450
+      {
+        "ns": "ns.nic.se",
+        "ip": "91.226.36.45"
+      },
+      ...
+    ],
+    "ds_list": [
+      {
+        "algorithm": 5,
+        "digtype": 2,
+        "keytag": 54636,
+        "digest": "cb496a0dcc2dff88c6445b9aafae2c6b46037d6d144e43def9e68ab429c01ac6"
+      },
+      {
+        "keytag": 54636,
+        "digest": "fd15b55e0d8ee2b5a8d510ab2b0a95e68a78bd4a",
+        "algorithm": 5,
+        "digtype": 1
+      }
+    ]
+  }
 }
 ```
 
- -  method: the mandatory string "add_batch_job"
- -  params: a parameter containing a list of domains to be tested and the test parameters the zonemaster-engine will use for testing
-    -  domains: the list of domains
-    -  username: the username of this batch (see add_api_user)
-    -  api_key: the api_key associated with the username username of this batch (see add_api_user)
-    -  test_params: the standard set of zonemaster parameters (see start_domain_test)
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- 
+>
+> Note: The above example response was abbreviated for brevity to only include
+> the first two elments in each list. Omitted elements are denoted by a `...`
+> symbol.
+>
 
-**Response**:
-```
+
+#### `"params"`
+
+A *domain name*. The name of the domain whose *name servers* and *DS infos* are
+to be returned.
+
+
+#### `"result"`
+
+An object with the following properties:
+
+* `"ns_list"`: A list of *name server* objects representing the nameservers of the given *domain name*.
+* `"ds_list"`: A list of *DS info* objects.
+
+
+>
+> TODO: Add wording about what the `"ds_list"` objects represent.
+>
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `start_domain_test`
+
+Enqueues a new *test*.
+
+If an identical *test* was already enqueued and hasn't been started, or was
+enqueued less than 10 minutes earlier, no new *test* is enqueued.
+
+*Tests* enqueud using this method are assigned a *priority* of 10.
+
+Example request:
+```json
 {
-   "id" : 147559211348450,
-   "result" : 8,
-   "jsonrpc" : "2.0"
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "start_domain_test",
+  "params": {
+    "client_id": "Zonemaster Dancer Frontend",
+    "domain": "zonemaster.net",
+    "profile": "default_profile",
+    "client_version": "1.0.1",
+    "nameservers": [
+      {
+        "ip": "2001:67c:124c:2007::45",
+        "ns": "ns3.nic.se"
+      },
+      {
+        "ip": "192.93.0.4",
+        "ns": "ns2.nic.fr"
+      }
+    ],
+    "ds_info": [],
+    "advanced": true,
+    "ipv6": true,
+    "ipv4": true
+  }
 }
 ```
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: the id of the batch_job
- 
- 
-### *JSON-RPC Call*: `get_batch_job_result`
 
-**Request**:
-```
+Example response:
+```json
 {
-   "id" : 147559211994909,
-   "method" : "get_batch_job_result",
-   "jsonrpc" : "2.0",
-   "params" : "8"
+  "jsonrpc": "2.0",
+  "id": 4,
+  "result": "c45a3f8256c4a155"
 }
 ```
 
- -  params: the id of the batch job as returned by the add_batch_job API method
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  method: the name of the called method
- 
-**Response**:
-```
+
+#### `"params"`
+
+An object with the following properties:
+
+* `"client_id"`: A free-form string, optional.
+* `"domain"`: A *domain name*, required.
+* `"profile"`: A *profile name*, optional.
+* `"client_version"`: A free-form string, optional.
+* `"nameservers"`: A list of *name server* objects, optional.
+* `"ds_info"`: A list of *DS info* objects, optional.
+* `"advanced"`: A boolean, optional.
+* `"ipv6"`: A boolean, optional.
+* `"ipv4"`: A boolean, optional.
+* `"config"`: A string, optional. The name of a *config profile*.
+* `"user_ip"`: A ..., optional.
+* `"user_location_info"`: A ..., optional.
+
+>
+> TODO: Clarify the data type of the following `"params"` properties:
+> `"user_ip"` and `"user_location_info"`.
+>
+> TODO: Clarify the purpose of each `"params"` property.
+>
+> TODO: Clarify the default value of each optional `"params"` property.
+>
+
+
+#### `"result"`
+
+A *test id*. The newly started *test*, or a recently run *test* with the same
+parameters.
+started within the recent configurable short time.
+
+>
+> TODO: Specify which configuration option controls the duration of the window
+> of *test* reuse.
+>
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `test_progress`
+
+Reports on the progress of a *test*.
+
+Example request:
+```json
 {
-   "jsonrpc" : "2.0",
-   "id" : 147559211994909,
-   "result" : {
-      "nb_finished" : 5,
-      "finished_test_ids" : [
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "test_progress",
+  "params": "c45a3f8256c4a155"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "result": 100
+}
+```
+
+
+#### `"params"`
+
+An integer. The *test id* of the *test* to report on.
+
+
+#### `"result"`
+
+A *progress percentage*.
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `get_test_results`
+
+Returns the *test result JSON structure* for a *test*, with *messages* in the requested *translation language*.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "get_test_results",
+  "params": {
+    "id": "c45a3f8256c4a155",
+    "language": "en"
+  }
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "result": {
+    "creation_time": "2016-11-15 11:53:13.965982",
+    "id": 25,
+    "hash_id": "c45a3f8256c4a155",
+    "params": {
+      "ds_info": [],
+      "client_version": "1.0.1",
+      "domain": "zonemaster.net",
+      "profile": "default_profile",
+      "ipv6": true,
+      "advanced": true,
+      "nameservers": [
+        {
+          "ns": "ns3.nic.se",
+          "ip": "2001:67c:124c:2007::45"
+        },
+        {
+          "ip": "192.93.0.4",
+          "ns": "ns2.nic.fr"
+        }
+      ],
+      "ipv4": true,
+      "client_id": "Zonemaster Dancer Frontend"
+    },
+    "results": [
+      {
+        "module": "SYSTEM",
+        "message": "Using version v1.0.14 of the Zonemaster engine.\n",
+        "level": "INFO"
+      },
+      {
+        "message": "Configuration was read from DEFAULT CONFIGURATION\n",
+        "level": "INFO",
+        "module": "SYSTEM"
+      },
+      ...
+    ]
+  }
+}
+```
+
+>
+> Note: The above example response was abbreviated for brevity to only include
+> the first two elments in each list. Omitted elements are denoted by a `...`
+> symbol.
+>
+
+
+#### `"params"`
+
+An object with the following properties:
+
+* `"id"`: A *test id*, required.
+* `"language"`: A string, required. Must be at least two characters long. The
+  two first characters are used to look up the *translation language* to be
+  used. If the lookup fails, the choice defaults to English.
+
+
+#### `"result"`
+
+An object with a the following properties:
+
+* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
+* `"id"`: An integer.
+* `"hash_id"`: A string.
+* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
+  was started.
+* `"results"`: A list of *test result* objects.
+
+>
+> TODO: Specify the MD5 hash format.
+>
+> TODO: What about if the Test was created with `add_batch_job` or something
+> else?
+>
+> TODO: It's confusing that the method is named `"start_domain_test"`, when
+> it doesn't actually start the *test*.
+>
+
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `get_test_history`
+
+Returns a list of completed *tests* for a domain.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "get_test_history",
+  "params": {
+    "offset": 0,
+    "limit": 200,
+    "frontend_params": {
+      "client_id": "Zonemaster Dancer Frontend",
+      "domain": "zonemaster.net",
+      "profile": "default_profile",
+      "client_version": "1.0.1",
+      "nameservers": [
+        {
+          "ns": "ns3.nic.se",
+          "ip": "2001:67c:124c:2007::45"
+        },
+        {
+          "ns": "ns2.nic.fr",
+          "ip": "192.93.0.4"
+        }
+      ],
+      "ds_info": [],
+      "advanced": true,
+      "ipv6": true,
+      "ipv4": true
+    }
+  }
+}
+```
+
+Example response:
+```json
+{
+  "id": 7,
+  "jsonrpc": "2.0",
+  "result": [
+    {
+      "id": "c45a3f8256c4a155",
+      "creation_time": "2016-11-15 11:53:13.965982",
+      "overall_result": "error",
+      "advanced_options": null
+    },
+    {
+      "id": "32dd4bc0582b6bf9",
+      "creation_time": "2016-11-14 08:46:41.532047",
+      "overall_result": "error",
+      "advanced_options": null
+    },
+    ...
+  ]
+}
+```
+
+>
+> Note: The above example response was abbreviated for brevity to only include
+> the first two elments in each list. Omitted elements are denoted by a `...`
+> symbol.
+>
+
+
+#### `"params"`
+
+An object with the following properties:
+
+* `"offset"`: An integer, optional. (default: 0).
+* `"limit"`: An integer, optional. (default: 200).
+* `"frontend_params"`: As described below.
+
+The value of `"frontend_params"` is an object in turn, with the
+keys `"domain"` and `"nameservers"`. `"domain"` and `"nameservers"`
+will be used to look up all tests for the given domain, separated
+according to if they were started with a `"nameservers"` parameter or
+not.
+
+>
+> TODO: Do we have an SQL injection opportunity here?
+>
+> TODO: Describe the remaining keys in the example
+>
+> TODO: Describe the purpose of `"offset"` and `"limit"`
+>
+> TODO: Is the `"nameservers"` value a boolean in disguise?
+>
+> TODO: The description of `"frontend_params"` is clearly not up to date. Can it
+> be described in a better way?
+>
+
+
+#### `"result"`
+
+An object with the following properties:
+
+* `"id"` A *test id*.
+* `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
+* `"advanced_options"`: A string or `null`. `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
+* `"overall_result"`: A string. The most severe problem level logged in the test results.
+
+>
+> TODO: Describe the format of `"overall_result"`.
+>
+> TODO: What about if the *test* was created with `add_batch_job` or something else?
+>
+> TODO: What about if the *test* was created with `"advanced"` set to `false` in `start_domain_test`?
+>
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `add_api_user`
+
+>
+> TODO: Method description.
+>
+
+This method requires the *administrative* *privilege level*.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "add_api_user",
+  "id": 4711,
+  "params": {
+    "username": "citron",
+    "api_key": "fromage"
+  }
+}
+```
+
+Example response:
+```json
+{
+  "id": 4711,
+  "jsonrpc": "2.0",
+  "result": 0
+}
+```
+
+
+#### `"params"`
+
+An object with the following properties:
+
+* `"username"`: A string, optional. The name of the user to add.
+* `"api_key"`: A string, optional. The API key (in effect, password) for the user to add.
+
+>
+> TODO: Are `"username"` and `"api_key"` really supposed to be optional? Because
+> they are now, is that a bug? I get `"result": 0` when I omit them. I would
+> have expected parameter validation errors.
+>
+
+
+#### `"result"`
+
+An integer.
+
+>
+> TODO: Describe the possible values of the result and what they mean.
+>
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `add_batch_job`
+
+>
+> TODO: Method description.
+>
+
+All the domains will be tested using identical parameters.
+
+If an identical *test* for a domain was already enqueued and hasn't been
+started, or was enqueued less than 10 minutes earlier, no new *test* is
+enqueued for this domain.
+
+*Tests* enqueud using this method are assigned a *priority* of 5.
+
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 147559211348450,
+  "method": "add_batch_job",
+  "params" : {
+    "api_key": "fromage",
+    "username": "citron",
+    "test_params": {},
+    "domains": [
+      "zonemaster.net",
+      "domain1.se",
+      "domain2.fr"
+    ]
+  }
+}
+```
+
+Example response:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 147559211348450,
+    "result": 8
+}
+```
+
+
+#### `"params"`
+
+An object with the following properties:
+
+* `"username"`: A string. The username of this batch.
+* `"api_key"`: A string. The api_key associated with the username username of this *batch*.
+* `"domains"`: A list of *domain names*. The domains to be tested.
+* `"test_params"`: As described below.
+
+The value of `"test_params"` is an object with the following properties:
+
+* `"client_id"`: A free-form string, optional.
+* `"profile"`: A *profile name*, optional.
+* `"client_version"`: A free-form string, optional.
+* `"nameservers"`: A list of *name server* objects, optional.
+* `"ds_info"`: A list of *DS info* objects, optional.
+* `"advanced"`: A boolean, optional.
+* `"ipv6"`: A boolean, optional.
+* `"ipv4"`: A boolean, optional.
+* `"config"`: A string, optional. The name of a *config profile*.
+* `"user_ip"`: A ..., optional.
+* `"user_location_info"`: A ..., optional.
+
+>
+> TODO: Clarify the data type of the following `"frontend_params"` properties:
+> `"user_ip"` and `"user_location_info"`.
+>
+> TODO: Clarify which `"params"` and `"frontend_params"` properties are optional
+> and which are required.
+>
+> TODO: Clarify the default value of each optional `"params"` and
+> `"frontend_params"` property.
+>
+> TODO: Clarify the purpose of each `"params"` and `"frontend_params"` property.
+>
+> TODO: Are domain names actually validated in practice?
+>
+
+
+#### `"result"`
+
+A *batch id*.
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `get_batch_job_result`
+
+>
+> TODO: Method description.
+>
+
+Example request:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 147559211994909,
+    "method": "get_batch_job_result",
+    "params": "8"
+}
+```
+
+Example response:
+```json
+{
+   "jsonrpc": "2.0",
+   "id": 147559211994909,
+   "result": {
+      "nb_finished": 5,
+      "finished_test_ids": [
          "43b408794155324b",
          "be9cbb44fff0b2a8",
          "62f487731116fd87",
          "692f8ffc32d647ca",
          "6441a83fcee8d28d"
       ],
-      "nb_running" : 195
+      "nb_running": 195
    }
 }
 ```
 
- -  jsonrpc: « 2.0 »
- -  id: any kind of unique id allowing to match requests and responses
- -  result: a hash structure containing the list of ids of the finished tests and the number of running and finished tests of this batch job
-    -  nb_finished: the number of finished tests
-    -  nb_running: the number of running tests
-    - finished_test_ids: a list of ids of the finished tests
+
+#### `"params"`
+
+A *batch id*.
+
+
+#### `"result"`
+
+An object with the following properties:
+
+* `"nb_finished"`: an integer. The number of finished tests.
+* `"nb_running"`: an integer. The number of running tests.
+* `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
+
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `validate_syntax`
+
+Checks the `"params"` structure for syntax coherence. It is very strict on what
+is allowed and what is not to avoid any SQL injection and cross site scripting
+attempts. It also checks the domain name for syntax to ensure the domain name
+seems to be a valid domain name and a test by the *Engine* can be started.
+
+Example request:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "method": "validate_syntax",
+    "params": {
+        "domain": "zonemaster.net",
+        "ipv6": 1,
+        "ipv4": 1,
+        "nameservers": [
+            {
+                "ns": "ns1.nic.fr",
+                "ip": "1.2.3.4"
+            },
+            {
+                "ns": "ns2.nic.fr",
+                "ip": "192.134.4.1"
+            }
+        ]
+    }
+}
+```
+
+Example response:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "result": {
+        "status": "ok",
+        "message": "Syntax ok"
+    }
+}
+```
+
+
+#### `"params"`
+
+An object with the following properties:
+
+* `"domain"`: a *domain name*.
+* `"ipv4"`: an optional `1`, `0`, `true` or `false`.
+* `"ipv6"`: an optional `1`, `0`, `true` or `false`.
+* `"ds_info"`: an optional list of *DS info* objects.
+* `"nameservers"`: an optional list of objects each of *name server* objects.
+* `"profile"`: an optional *profile name*.
+* `"advanced"`: an optional `true` or `false`.
+* `"client_id"`: ...
+* `"client_version"`: ...
+* `"user_ip"`: ...
+* `"user_location_info"`: ...
+* `"config"`: ...
+
+If the `"nameservers"` key is _not_ set, a recursive query made by the
+server to its locally configured resolver for NS records for the
+value of the `"domain"` key must return a reply with at least one
+resource record in the Answer Section.
+
+At least one of `"ipv4"` and `"ipv6"` must be present and either `1` or `true`.
+
+>
+> TODO: Clarify the data type of the following `"params"` properties:
+> `"client_id"`, `"client_version"`, `"user_ip"`, `"user_location_info"` and
+> `"config"`.
+>
+> TODO: Clarify the purpose of each `"params"` property.
+>
+
+
+#### `"result"`
+
+An object with the following properties:
+
+* `"status"`: either `"ok"` or `"nok"`.
+* `"message"`: a string. Human-readable details about the status.
+
+#### `"error"`
+
+>
+> TODO
+>
+
+
+## API method: `get_test_params`
+
+>
+> TODO: Method description
+>
+> TODO: Example request
+>
+> TODO: Example response
+>
+
+
+#### `"params"`
+
+A *test id*.
+
+
+#### `"result"`
+
+The `"params"` object sent to `start_domain_test` when the *test* was started.
+
+>
+> TODO: What about if the *test* was created with `add_batch_job` or something else?
+>
+
+
+#### `"error"`
+
+>
+> TODO
+>

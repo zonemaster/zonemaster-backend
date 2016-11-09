@@ -35,14 +35,26 @@ instructions](docs/installation.md).
 
 ### Documentation
 
-There is a fully documented [API](docs/API.md), which is the primay way
-to use the backend. The [docs](docs/) directory also contains the SQL commands
-for manipulating the database. 
+The Zonemaster Backend documentation is split up into several documents:
+
+* A number of [Typographic Conventions](docs/TypographicConventions.md) are used
+  throughout this documentation.
+* The [Architecture](docs/Architecture.md) document describes each of the
+  Zonemaster Backend components and how they operate. It also discusses all
+  central concepts needed to understand the Zonemaster backend, and contains a
+  glossary over domain specific technical terms.
+* The [Getting Started](docs/GettingStarted.md) guide walks you through creating
+  a *test* and following it through its life cycle, all using JSON-RPC calls to
+  the *Web backend*.
+* The [API](docs/API.md) documentation describes the *Web backend* inteface in
+  detail.
+
+The [docs](docs/) directory also contains the SQL commands for manipulating the
+database. 
+
 
 License
 =======
 
 The software is released under the 2-clause BSD license. See separate
 [LICENSE](LICENSE) file.
-
-

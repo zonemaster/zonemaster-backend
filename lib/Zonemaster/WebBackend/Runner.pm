@@ -58,8 +58,14 @@ sub run {
     }
     $domain = $self->to_idn( $domain );
 
-    Zonemaster->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
-    Zonemaster->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
+    if (defined $params->{ipv4} || defined $params->{ipv4}) {
+		Zonemaster->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
+		Zonemaster->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
+	}
+	else {
+		Zonemaster->config->get->{net}{ipv4} = 1;
+		Zonemaster->config->get->{net}{ipv6} = 1;
+	}
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );

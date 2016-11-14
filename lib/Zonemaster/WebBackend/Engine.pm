@@ -175,9 +175,6 @@ sub validate_syntax {
         }
     }
 
-    return { status => 'nok', message => encode_entities( "At least one transport protocol required (IPv4 or IPv6)" ) }
-      unless ( $syntax_input->{ipv4} || $syntax_input->{ipv6} );
-
     if ( defined $syntax_input->{advanced} ) {
         return { status => 'nok', message => encode_entities( "Invalid 'advanced' option format" ) }
           unless ( $syntax_input->{advanced} ne JSON::false || $syntax_input->{advanced} ne JSON::true );

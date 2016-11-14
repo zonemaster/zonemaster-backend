@@ -151,7 +151,7 @@ sub validate_syntax {
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
-        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info', 'config'
+        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info', 'config', 'priority', 'queue'
     );
 
     foreach my $k ( keys %$syntax_input ) {
@@ -285,7 +285,7 @@ sub start_domain_test {
     
     $self->add_user_ip_geolocation($params);
 
-    $result = $self->{db}->create_new_test( $params->{domain}, $params, 10, 10 );
+    $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
 
     return $result;
 }
@@ -401,13 +401,14 @@ sub add_batch_job {
     if ( $self->{db}->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
         $params->{test_params}->{client_version} = '1.0';
+        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
 
         $batch_id = $self->{db}->create_new_batch_job( $params->{username} );
 
         my $minutes_between_tests_with_same_params = 5;
         foreach my $domain ( @{$params->{domains}} ) {
             $self->{db}
-              ->create_new_test( $domain, $params->{test_params}, 5, 5, $batch_id );
+              ->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
         }
     }
     else {

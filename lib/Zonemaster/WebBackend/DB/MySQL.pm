@@ -95,9 +95,15 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $priority, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
     my $result;
     my $dbh = $self->dbh;
+
+    my $priority = 10;
+    $priority = $test_params->{priority} if (defined $test_params->{priority});
+    
+    my $queue = 0;
+    $queue = $test_params->{queue} if (defined $test_params->{queue});
 
     $test_params->{domain} = $domain;
     my $js                             = JSON->new->canonical;
@@ -126,11 +132,12 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
         else {
             $dbh->do(
                 q[
-            INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?,?,?,?,?, NOW(),?)
+            INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?,?,?,?,?, NOW(),?)
         ],
                 undef,
                 $batch_id,
                 $priority,
+                $queue,
                 $test_params_deterministic_hash,
                 $encoded_params,
                 $test_params->{domain},

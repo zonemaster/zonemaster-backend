@@ -107,10 +107,16 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $priority, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
     my $result;
     my $dbh = $self->dbh;
 
+    my $priority = 10;
+    $priority = $test_params->{priority} if (defined $test_params->{priority});
+    
+    my $queue = 0;
+    $queue = $test_params->{queue} if (defined $test_params->{queue});
+    
     $test_params->{domain} = $domain;
     my $js = JSON->new;
     $js->canonical( 1 );
@@ -118,9 +124,10 @@ sub create_new_test {
     my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
     my $query =
-        "INSERT INTO test_results (batch_id, priority, params_deterministic_hash, params) SELECT "
+        "INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
       . $dbh->quote( $batch_id ) . ", "
-      . $dbh->quote( 5 ) . ", "
+      . $dbh->quote( $priority ) . ", "
+      . $dbh->quote( $queue ) . ", "
       . $dbh->quote( $test_params_deterministic_hash ) . ", "
       . $dbh->quote( $encoded_params )
       . " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > NOW()-'$minutes_between_tests_with_same_params minutes'::interval)";

@@ -162,8 +162,16 @@ sub add_fake_delegation {
     my %data;
 
     foreach my $ns_ip_pair ( @$nameservers ) {
-        push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} )
-          if ( $ns_ip_pair->{ns} && $ns_ip_pair->{ip} );
+		if ( $ns_ip_pair->{ns} && $ns_ip_pair->{ip} ) {
+			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} );
+		}
+		elsif ($ns_ip_pair->{ns}) {
+			my @ips = Net::LDNS->new->name2addr($ns_ip_pair->{ns});
+			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $_) for @ips;
+		}
+		else {
+			die "Invalid ns_ip_pair";
+		}
     }
 
     Zonemaster->add_fake_delegation( $domain => \%data );

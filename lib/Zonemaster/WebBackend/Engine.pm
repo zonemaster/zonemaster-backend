@@ -218,7 +218,7 @@ sub validate_syntax {
 
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-              unless ( ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
+              unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }
 
         foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {

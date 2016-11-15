@@ -12,6 +12,7 @@ CREATE TABLE test_results (
 	test_start_time timestamp without time zone,
 	test_end_time timestamp without time zone,
 	priority integer DEFAULT 10,
+	queue integer DEFAULT 0,
 	progress integer DEFAULT 0,
 	params_deterministic_hash varchar(32),
 	params json NOT NULL,

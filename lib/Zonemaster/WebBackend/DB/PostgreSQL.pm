@@ -238,6 +238,60 @@ sub get_test_history {
 	return \@results;
 }
 
+sub add_batch_job {
+    my ( $self, $params ) = @_;
+    my $batch_id;
+
+	my $dbh = $self->dbh;
+    		
+    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
+        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
+        $params->{test_params}->{client_version} = '1.0';
+        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
+
+        $batch_id = $self->create_new_batch_job( $params->{username} );
+
+        my $minutes_between_tests_with_same_params = 5;
+		my $test_params = $params->{test_params};
+		my $priority = 10;
+		$priority = $test_params->{priority} if (defined $test_params->{priority});
+		my $queue = 0;
+		$queue = $test_params->{queue} if (defined $test_params->{queue});
+		$dbh->begin_work();
+		$dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+        foreach my $domain ( @{$params->{domains}} ) {
+#            $self->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
+
+			$test_params->{domain} = $domain;
+			my $js = JSON->new;
+			$js->canonical( 1 );
+			my $encoded_params                 = $js->encode( $test_params );
+			my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+
+			my $query =
+				"INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
+			. $dbh->quote( $batch_id ) . ", "
+			. $dbh->quote( $priority ) . ", "
+			. $dbh->quote( $queue ) . ", "
+			. $dbh->quote( $test_params_deterministic_hash ) . ", "
+			. $dbh->quote( $encoded_params )
+			. " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > NOW()-'$minutes_between_tests_with_same_params minutes'::interval)";
+
+			my $nb_inserted = $dbh->do( $query );
+
+        }
+        $dbh->commit();
+    }
+    else {
+        die "User $params->{username} not authorized to use batch mode\n";
+    }
+
+    return $batch_id;
+}
+
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

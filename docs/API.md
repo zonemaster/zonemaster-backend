@@ -2,10 +2,9 @@
 
 ## Purpose
 
-This document describes the JSON-RPC API provided by the Zonemaster *Web
-backend*. This API provides means to perform health checks of single or batched
-domains, and to query for lists and details of previous health check results of
-single domains.
+This document describes the JSON-RPC API provided by the Zonemaster *Web backend*.
+This API provides means to check the health of domains and to fetch domain health reports.
+Health checks are called *tests* in Zonemaster lingo.
 
 
 ## Protocol
@@ -19,20 +18,44 @@ All JSON-RPC request and response objects have the keys `"jsonrpc"`, `"id"` and 
 For details on these, refer to the JSON-RPC 2.0 specification.
 
 
+### Deviations from JSON-RPC 2.0
+
+* The `"jsonrpc"` property is not checked.
+* The error code -32603 is used for invalid arguments, as opposed to -32602.
+* When standard error codes are used, the accompanying messages are not the standard ones.
+
+
+### Notes on the JSON-RPC 2.0 implementation
+
+* Extra top-level properties in request objects are allowed but ignored.
+* Extra properties in the `"params"` object are allowed for some methods but ignored for others.
+* Error messages from the API should be considered sensitive sas they leak details about the internals of the application and the system.
+* The error code -32601 is used when the `"method"` property is missing, as opposed to -32600.
+
+
 ## Request handling
 
->
-> TODO: Describe how JSON-RPC request batches are handled with regard to concurrency and parallelism.
->
-> TODO: Describe how unrecognized elements in `"params"` structures are handled.
->
+When a method expects a string argument but receives an array or an object,
+the value may be interpreted as something like `"ARRAY(0x1a2d1d0)"` or `"HASH(0x1a2d2c8)"`.
+
+When a method expects a boolean argument, any kind of value is accepted.
+A number of values are interpreted as false: `false`, `null`, `""`, `"0"` and any number equal to zero.
+Everything else is interpreted as true.
+
+When a method expects an integer arguments, numbers encoded in strings are also accepted and used transparently,
+and numbers with fractions are rounded to the nearest integer.
+
+For details on when a *test* are performed after it's been requested,
+see the [architecture documentation](Architecture.md).
 
 
-## Error handling
+## Error reporting
 
->
-> TODO: List and describe application defined errors.
->
+If the request object is invalid JSON, an error with code `-32700` is reported.
+
+If no method is specified or an invalid method is specified, an error with code `-32601` is reported.
+
+All error states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
 
 
 ## Privilege levels
@@ -52,11 +75,11 @@ is based on a JSON data type, but additionally imposes its own restrictions.
 
 ### Batch id
 
-Each *batch* has a unique *batch id*.
+Basic data type: number
 
->
-> TODO: What basic data type is it?
->
+An positive integer.
+
+The unique id of a *batch*.
 
 
 ### Domain name
@@ -81,24 +104,24 @@ Basic data type: string
 
 Basic data type: object
 
-The object must have exactly the two keys `"algorithm"` and `"digest"`. The value of
-the `"algorithm"` key must be either the string `"sha1"`, in which case the value
-of the `"digest"` key must be 40 hexadecimal characters, or the value `"sha256"`,
-in which case the value of the `"digest"` key must be 64 hexadecimal characters.
+Properties:
 
->
-> TODO: How about the keys `"digtype"` and `"keytag"`?
->
+* `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
+* `"algorithm"`: An integer, optional.
+* `"digtype"`: An integer, optional.
+* `"keytag"`: An integer, optional.
+
+Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
 
 ### Name server
 
 Basic data type: object
 
-The object must have the following properties:
+Properties:
 
-* `"ns"`: a *domain name*.
-* `"ip"`: a syntactically valid IPv4 or IPv6 address.
+* `"ns"`: A *domain name*, required.
+* `"ip"`: An IPv4 or IPv6 address, required.
 
 
 ### Priority
@@ -112,7 +135,7 @@ A higher number means higher priority.
 
 Basic data type: string
 
-The name of a [*profile*](Architecture.md#Profile).
+The name of a [*profile*](Architecture.md#profile).
 
 One of the strings:
 
@@ -122,16 +145,16 @@ One of the strings:
 
 The `"test_profile_2"` *profile* is identical to `"default_profile"`.
 
+>
+> TODO: What is the expected behavior when a *profile* other than the ones listed above is requested?
+>
+
 
 ### Progress percentage
 
 Basic data type: number
 
 An integer ranging from 0 (not started) to 100 (finished).
-
->
-> TODO: Is it possible the string might be encoded in a string?
->
 
 
 ### Severity level
@@ -174,16 +197,6 @@ Sometimes additional keys are present.
 > about when each extra key is present?
 >
 
-
-### Test result JSON structure
-
-Basic data type: object
-
->
-> TODO: Describe structure
->
-> TODO: Is this related to *test results*?
->
 
 ### Timestamp
 
@@ -231,13 +244,13 @@ An object with the following properties:
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
 ## API method: `get_ns_ips`
 
-Looks up the A and AAAA records for the *domain name* on the public Internet.
+Looks up the A and AAAA records for a *domain name* on the public Internet.
 
 Example request:
 ```json
@@ -285,7 +298,7 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -348,8 +361,7 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The name of the domain whose *name servers* and *DS infos* are
-to be returned.
+A *domain name*. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -368,7 +380,7 @@ An object with the following properties:
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -463,7 +475,7 @@ started within the recent configurable short time.
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -493,7 +505,7 @@ Example response:
 
 #### `"params"`
 
-An integer. The *test id* of the *test* to report on.
+A *test id*. The *test* to report on.
 
 
 #### `"result"`
@@ -504,13 +516,13 @@ A *progress percentage*.
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
 ## API method: `get_test_results`
 
-Returns the *test result JSON structure* for a *test*, with *messages* in the requested *translation language*.
+Return all *test result* objects of a *test*, with *messages* in the requested *translation language*.
 
 Example request:
 ```json
@@ -614,7 +626,7 @@ An object with a the following properties:
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -734,7 +746,7 @@ An object with the following properties:
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -795,7 +807,7 @@ An integer.
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -889,7 +901,7 @@ A *batch id*.
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -946,7 +958,7 @@ An object with the following properties:
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -1037,7 +1049,7 @@ An object with the following properties:
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
 
@@ -1069,5 +1081,5 @@ The `"params"` object sent to `start_domain_test` when the *test* was started.
 #### `"error"`
 
 >
-> TODO
+> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >

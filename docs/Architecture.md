@@ -20,13 +20,19 @@ architecture is oriented around a single central *Database*.
 A Zonemaster *Worker* is a daemon that picks up *test* requests from the
 *Database*, runs them using the *Engine* library, and records the results back
 to the *Database*. A single *Worker* may handle several requests concurrently.
-The *Backend* architecture suppors multiple *Workers* interacting with the same
+The *Backend* architecture supports a single *Workers* interacting with a single
 *Database*.
 
 >
 > TODO: List all files these processes read and write.
 >
 > TODO: List everything these processes open network connections to.
+>
+> TODO: Describe in which order *test* are processed.
+>
+> TODO: Describe how concurrency, parallelism and synchronization works within a single *Worker*.
+>
+> TODO: Describe how synchronization works among parallel *Workers*.
 >
 
 

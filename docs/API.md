@@ -10,15 +10,13 @@ single domains.
 
 ## Protocol
 
-This API is implemented using JSON-RPC 2.0.
+This API is implemented using [JSON-RPC 2.0](http://www.jsonrpc.org/specification).
 
-JSON-RPC request objects are accepted in the body of HTTP POST requests to the
-`/` path. The HTTP request must contain the header `Content-Type: application/json`.
+JSON-RPC request objects are accepted in the body of HTTP POST requests to any path.
+The HTTP request must contain the header `Content-Type: application/json`.
 
-In the method descriptions below, only the contents of the `"params"`,
-`"result"` and `"error"` JSON-RPC keys are discussed. For details on the
-general structure of the JSON-RPC protocol, see the JSON-RPC 2.0
-specification.
+All JSON-RPC request and response objects have the keys `"jsonrpc"`, `"id"` and `"method"`.
+For details on these, refer to the JSON-RPC 2.0 specification.
 
 
 ## Request handling
@@ -43,7 +41,7 @@ This API provides three classes of methods:
 
 * *Unrestricted* methods are available to anyone with access to the API.
 * *Authenticated* methods have parameters for username and API key credentials.
-* *Administrative* methods require that the connection to the API is opened from a "localhost" IP.
+* *Administrative* methods require that the connection to the API is opened from localhost (`127.0.0.1` or `::1`).
 
 
 ## Data types
@@ -66,7 +64,7 @@ Each *batch* has a unique *batch id*.
 Basic data type: string
 
 1. If the string contains characters outside the ASCII character set,
-   the entire string must be possible to convert to IDNA format.
+   it must be possible to convert the entire string to the equivalent IDN A-label.
 
 2. If the string is a single character, that character must be `.`.
 
@@ -114,13 +112,15 @@ A higher number means higher priority.
 
 Basic data type: string
 
-The name of a *profile*.
+The name of a [*profile*](Architecture.md#Profile).
 
 One of the strings:
 
 * `"default_profile"`
 * `"test_profile_1"`
 * `"test_profile_2"`
+
+The `"test_profile_2"` *profile* is identical to `"default_profile"`.
 
 
 ### Progress percentage
@@ -220,11 +220,6 @@ Example response:
 ```
 
 
-#### `"params"`
-
-Omitted.
-
-
 #### `"result"`
 
 An object with the following properties:
@@ -242,7 +237,7 @@ An object with the following properties:
 
 ## API method: `get_ns_ips`
 
-Given a *domain name* it returns all of its IP addresses.
+Looks up the A and AAAA records for the *domain name* on the public Internet.
 
 Example request:
 ```json
@@ -283,6 +278,9 @@ other for IPv6). The objects each have a single key and value. The key is the
 *domain name* given as input. The value is an IP address for the name, or the
 value `0.0.0.0` if the lookup returned no A or AAAA records.
 
+>
+> TODO: If the name resolves to two or more IPv4 address, how is that represented?
+>
 
 #### `"error"`
 
@@ -378,8 +376,9 @@ An object with the following properties:
 
 Enqueues a new *test*.
 
-If an identical *test* was already enqueued and hasn't been started, or was
-enqueued less than 10 minutes earlier, no new *test* is enqueued.
+If an identical *test* was already enqueued and hasn't been started or was enqueued less than 10 minutes earlier,
+no new *test* is enqueued.
+Instead the id for the already enqueued or run test is returned.
 
 *Tests* enqueud using this method are assigned a *priority* of 10.
 
@@ -808,9 +807,8 @@ An integer.
 
 All the domains will be tested using identical parameters.
 
-If an identical *test* for a domain was already enqueued and hasn't been
-started, or was enqueued less than 10 minutes earlier, no new *test* is
-enqueued for this domain.
+If an identical *test* for a domain was already enqueued and hasn't been started or was enqueued less than 10 minutes earlier,
+no new *test* is enqueued for this domain.
 
 *Tests* enqueud using this method are assigned a *priority* of 5.
 

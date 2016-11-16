@@ -18,9 +18,9 @@ architecture is oriented around a single central *Database*.
 ### Worker
 
 A Zonemaster *Worker* is a daemon that picks up *test* requests from the
-*Database*, runs them using the *Engine*, and records the results back to the
-*Database*. A single *Worker* may handle several requests concurrently. The
-*Backend* architecture suppors multiple *Workers* interacting with the same
+*Database*, runs them using the *Engine* library, and records the results back
+to the *Database*. A single *Worker* may handle several requests concurrently.
+The *Backend* architecture suppors multiple *Workers* interacting with the same
 *Database*.
 
 >
@@ -28,11 +28,6 @@ A Zonemaster *Worker* is a daemon that picks up *test* requests from the
 >
 > TODO: List everything these processes open network connections to.
 >
-
-
-### Engine
-
-The Zonemaster *Engine* is a library for performing *tests*.
 
 
 ### Web backend
@@ -74,3 +69,13 @@ interacting with the same *Database*.
 ### Config profile
 
 *Config profiles* are configured under the the `ZONEMASTER` section of `zonemaster_backend.ini`.
+
+>
+> TODO: Describe this in greater detail.
+>
+
+
+### Engine
+
+The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
+own repository](https://github.com/dotse/zonemaster-engine/).

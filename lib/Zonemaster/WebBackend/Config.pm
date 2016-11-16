@@ -161,4 +161,14 @@ sub GetCustomConfigParameter {
     return $cfg->val( $section, $param_name );
 }
 
+sub lock_on_queue {
+    my $cfg = _load_config();
+
+    my $val = $cfg->val( 'ZONEMASTER', 'lock_on_queue' );
+
+    return $val;
+}
+
+
+
 1;

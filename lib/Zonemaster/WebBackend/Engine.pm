@@ -151,7 +151,7 @@ sub validate_syntax {
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
-        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info', 'config'
+        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info', 'config', 'priority', 'queue'
     );
 
     foreach my $k ( keys %$syntax_input ) {
@@ -174,9 +174,6 @@ sub validate_syntax {
             }
         }
     }
-
-    return { status => 'nok', message => encode_entities( "At least one transport protocol required (IPv4 or IPv6)" ) }
-      unless ( $syntax_input->{ipv4} || $syntax_input->{ipv6} );
 
     if ( defined $syntax_input->{advanced} ) {
         return { status => 'nok', message => encode_entities( "Invalid 'advanced' option format" ) }
@@ -218,7 +215,7 @@ sub validate_syntax {
 
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-              unless ( ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
+              unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }
 
         foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
@@ -288,7 +285,7 @@ sub start_domain_test {
     
     $self->add_user_ip_geolocation($params);
 
-    $result = $self->{db}->create_new_test( $params->{domain}, $params, 10, 10 );
+    $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
 
     return $result;
 }
@@ -384,7 +381,7 @@ sub add_api_user {
 
     my $allow = 0;
     if ( defined $remote_ip ) {
-        $allow = 1 if ( $remote_ip eq '::1' );
+        $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' );
     }
     else {
         $allow = 1;
@@ -397,6 +394,7 @@ sub add_api_user {
     return $result;
 }
 
+=coment
 sub add_batch_job {
     my ( $self, $params ) = @_;
     my $batch_id;
@@ -404,14 +402,17 @@ sub add_batch_job {
     if ( $self->{db}->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
         $params->{test_params}->{client_version} = '1.0';
+        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
 
         $batch_id = $self->{db}->create_new_batch_job( $params->{username} );
 
         my $minutes_between_tests_with_same_params = 5;
+#        $self->{db}->dbhandle->begin_work();
         foreach my $domain ( @{$params->{domains}} ) {
             $self->{db}
-              ->create_new_test( $domain, $params->{test_params}, 5, 5, $batch_id );
+              ->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
         }
+#        $self->{db}->dbhandle->commit();
     }
     else {
         die "User $params->{username} not authorized to use batch mode\n";
@@ -419,6 +420,16 @@ sub add_batch_job {
 
     return $batch_id;
 }
+=cut
+
+sub add_batch_job {
+    my ( $self, $params ) = @_;
+
+    my $results = $self->{db}->add_batch_job( $params );
+
+    return $results;
+}
+
 
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;

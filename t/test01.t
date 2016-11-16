@@ -39,7 +39,7 @@ my $frontend_params_1 = {
     profile        => 'default_profile',    # the id if the Test profile listbox
 
     nameservers => [                       # list of the nameserves up to 32
-        { ns => 'ns1.nic.fr', ip => '1.1.1.1' },       # key values pairs representing nameserver => namesterver_ip
+        { ns => 'ns1.nic.fr' },       # key values pairs representing nameserver => namesterver_ip
         { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
     ],
     ds_info => [                                  # list of DS/Digest pairs up to 32

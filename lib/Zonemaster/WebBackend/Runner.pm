@@ -58,8 +58,14 @@ sub run {
     }
     $domain = $self->to_idn( $domain );
 
-    Zonemaster->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
-    Zonemaster->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
+    if (defined $params->{ipv4} || defined $params->{ipv4}) {
+		Zonemaster->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
+		Zonemaster->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
+	}
+	else {
+		Zonemaster->config->get->{net}{ipv4} = 1;
+		Zonemaster->config->get->{net}{ipv6} = 1;
+	}
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
@@ -162,8 +168,16 @@ sub add_fake_delegation {
     my %data;
 
     foreach my $ns_ip_pair ( @$nameservers ) {
-        push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} )
-          if ( $ns_ip_pair->{ns} && $ns_ip_pair->{ip} );
+		if ( $ns_ip_pair->{ns} && $ns_ip_pair->{ip} ) {
+			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} );
+		}
+		elsif ($ns_ip_pair->{ns}) {
+			my @ips = Net::LDNS->new->name2addr($ns_ip_pair->{ns});
+			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $_) for @ips;
+		}
+		else {
+			die "Invalid ns_ip_pair";
+		}
     }
 
     Zonemaster->add_fake_delegation( $domain => \%data );

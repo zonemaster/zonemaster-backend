@@ -35,6 +35,7 @@ sub create_db {
 			test_start_time TIMESTAMP,
 			test_end_time TIMESTAMP,
 			priority integer DEFAULT 10,
+			queue integer DEFAULT 0,
 			progress integer DEFAULT 0,
 			params_deterministic_hash character varying(32),
 			params blob NOT NULL,
@@ -59,6 +60,14 @@ sub create_db {
 
     $dbh->do(
 		'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+    );
+    
+    $dbh->do(
+		'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+    );
+
+    $dbh->do(
+		'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
     );
     
     ####################################################################

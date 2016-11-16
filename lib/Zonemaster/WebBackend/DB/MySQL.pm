@@ -167,8 +167,14 @@ sub test_progress {
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
 
 	my $dbh = $self->dbh;
-	$dbh->do( "UPDATE test_results SET progress=?,test_end_time=NOW() WHERE $id_field=?", undef, $progress, $test_id )
-      if ( $progress );
+    if ( $progress ) {
+		if ($progress == 1) {
+			$dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+		}
+		else {
+			$dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+		}
+	}
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
 

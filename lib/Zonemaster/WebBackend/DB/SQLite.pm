@@ -248,6 +248,10 @@ sub get_test_history {
     return \@results;
 }
 
+sub add_batch_job {
+    my ( $self, $params ) = @_;
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

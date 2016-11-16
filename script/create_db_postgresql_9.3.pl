@@ -59,6 +59,14 @@ sub create_db {
 		'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
     );
     
+    $dbh->do(
+		'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+    );
+
+    $dbh->do(
+		'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+    );
+    
     $dbh->do( "ALTER TABLE test_results OWNER TO $db_user" );
 
     ####################################################################

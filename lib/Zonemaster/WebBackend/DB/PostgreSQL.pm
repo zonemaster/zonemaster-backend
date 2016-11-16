@@ -243,6 +243,8 @@ sub add_batch_job {
     my $batch_id;
 
 	my $dbh = $self->dbh;
+	my $js = JSON->new;
+	$js->canonical( 1 );
     		
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
@@ -253,35 +255,33 @@ sub add_batch_job {
 
         my $minutes_between_tests_with_same_params = 5;
 		my $test_params = $params->{test_params};
+		
 		my $priority = 10;
 		$priority = $test_params->{priority} if (defined $test_params->{priority});
+		
 		my $queue = 0;
 		$queue = $test_params->{queue} if (defined $test_params->{queue});
+		
 		$dbh->begin_work();
 		$dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
 		$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
 		$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
+		
+		$dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
-#            $self->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
-
 			$test_params->{domain} = $domain;
-			my $js = JSON->new;
-			$js->canonical( 1 );
 			my $encoded_params                 = $js->encode( $test_params );
 			my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-			my $query =
-				"INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
-			. $dbh->quote( $batch_id ) . ", "
-			. $dbh->quote( $priority ) . ", "
-			. $dbh->quote( $queue ) . ", "
-			. $dbh->quote( $test_params_deterministic_hash ) . ", "
-			. $dbh->quote( $encoded_params )
-			. " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > NOW()-'$minutes_between_tests_with_same_params minutes'::interval)";
-
-			my $nb_inserted = $dbh->do( $query );
-
+			$dbh->pg_putcopydata("$batch_id\t$priority\t$queue\t$test_params_deterministic_hash\t$encoded_params\n");
         }
+        $dbh->pg_putcopyend();
+		$dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
+		$dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+		$dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+        
         $dbh->commit();
     }
     else {

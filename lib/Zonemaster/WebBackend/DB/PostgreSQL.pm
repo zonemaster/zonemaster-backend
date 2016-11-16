@@ -74,7 +74,14 @@ sub test_progress {
 
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
     my $dbh = $self->dbh;
-    $dbh->do( "UPDATE test_results SET progress=$progress WHERE $id_field=?", undef, $test_id ) if ( $progress );
+    if ( $progress ) {
+		if ($progress == 1) {
+			$dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+		}
+		else {
+			$dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+		}
+	}
 	
     my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
 
@@ -237,6 +244,60 @@ sub get_test_history {
 
 	return \@results;
 }
+
+sub add_batch_job {
+    my ( $self, $params ) = @_;
+    my $batch_id;
+
+	my $dbh = $self->dbh;
+	my $js = JSON->new;
+	$js->canonical( 1 );
+    		
+    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
+        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
+        $params->{test_params}->{client_version} = '1.0';
+        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
+
+        $batch_id = $self->create_new_batch_job( $params->{username} );
+
+        my $minutes_between_tests_with_same_params = 5;
+		my $test_params = $params->{test_params};
+		
+		my $priority = 10;
+		$priority = $test_params->{priority} if (defined $test_params->{priority});
+		
+		my $queue = 0;
+		$queue = $test_params->{queue} if (defined $test_params->{queue});
+		
+		$dbh->begin_work();
+		$dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
+		
+		$dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
+        foreach my $domain ( @{$params->{domains}} ) {
+			$test_params->{domain} = $domain;
+			my $encoded_params                 = $js->encode( $test_params );
+			my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+
+			$dbh->pg_putcopydata("$batch_id\t$priority\t$queue\t$test_params_deterministic_hash\t$encoded_params\n");
+        }
+        $dbh->pg_putcopyend();
+		$dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
+		$dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+		$dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+        
+        $dbh->commit();
+    }
+    else {
+        die "User $params->{username} not authorized to use batch mode\n";
+    }
+
+    return $batch_id;
+}
+
 
 no Moose;
 __PACKAGE__->meta()->make_immutable();

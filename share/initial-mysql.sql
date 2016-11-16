@@ -21,6 +21,10 @@ CREATE TABLE test_results (
     undelegated boolean NOT NULL DEFAULT false
 ) Engine=InnoDB;
 
+CREATE INDEX test_results__hash_id ON test_results (hash_id);
+CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash);
+CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress);
+
 DELIMITER //
 CREATE TRIGGER before_insert_test_results
 	BEFORE INSERT ON test_results
@@ -44,7 +48,7 @@ CREATE TABLE users (
     api_key varchar(512),
 	user_info blob DEFAULT NULL
 ) Engine=InnoDB;
-GRANT SELECT,UPDATE,INSERT ON zonemaster.test_results TO 'zonemaster';
+GRANT ALL ON zonemaster.test_results TO 'zonemaster';
 GRANT LOCK TABLES          ON zonemaster.* TO 'zonemaster';
 GRANT SELECT,UPDATE,INSERT ON zonemaster.batch_jobs TO 'zonemaster';
 GRANT SELECT,UPDATE,INSERT ON zonemaster.users TO 'zonemaster';

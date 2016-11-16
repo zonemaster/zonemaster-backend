@@ -133,7 +133,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
         else {
             $dbh->do(
                 q[
-            INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?,?,?,?,?, NOW(),?)
+            INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?, ?,?,?,?,?, NOW(),?)
         ],
                 undef,
                 $batch_id,

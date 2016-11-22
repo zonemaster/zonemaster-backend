@@ -196,7 +196,7 @@ number_of_processes_for_batch_testing     = 20
 Using a database adminstrator user (called root in the example below), run the setup file:
 
 ```sh
-mysql --user=root --password < docs/initial-mysql.sql
+mysql --user=root --password < share/initial-mysql.sql
 ```
 
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
@@ -231,7 +231,7 @@ Setting up Zonemaster Backend with PostgreSQL on CentOS is not supported at this
 Connect to Postgres as a user with administrative privileges and set things up:
 
 ```sh
-sudo -u postgres psql -f "$HOME/zonemaster-backend/docs/initial-postgres.sql"
+sudo -u postgres psql -f share/initial-postgres.sql
 ```
 
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
@@ -242,7 +242,7 @@ This creates a database called `zonemaster`, as well as a user called "zonemaste
 Start the PostgreSQL server according to its instructions then initiate the database using the following script.
 
 ```sh
-psql -U pgsql template1 -f docs/initial-postgres.sql
+psql -U pgsql template1 share/initial-postgres.sql
 ```
 
 
@@ -341,7 +341,7 @@ docker run -t -i afniclabs/zonemaster-gui bash
 
 ### Performing administrative tasks for MySQL
 
-If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `docs/cleanup-mysql.sql` as a database administrator.
+If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `share/cleanup-mysql.sql` as a database administrator.
 It removes the user and drops the database (obviously taking all data with it).
 
 

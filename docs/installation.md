@@ -21,31 +21,10 @@ This document ends with these appendices:
 This installation guide assumes that the following softwares are already installed on the target system:
 
 * one of CentOS, Debian, FreeBSD or Ubuntu
-* one of MySQL or PostgreSQL
 * sudo
 * curl (only for post-installation sanity check)
 
 
-### Installing MySQL on CentOS
-
-```sh
-sudo yum install wget
-wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
-sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
-sudo yum install mysql-server
-sudo systemctl start mysqld
-```
-
-
-### Version requirements for PostgreSQL
-
-Make sure that the PostgreSQL version is 9.3 or higher.
-
-```sh
-psql --version
-```
-
- 
 ## Dependencies
 
 *Zonemaster Engine* should be installed before. Follow the instructions
@@ -63,7 +42,11 @@ sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::Fork
 #### Installing dependencies for MySQL on CentOS
 
 ```sh
-sudo yum install perl-DBD-mysql
+sudo yum install wget
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+sudo yum install mysql-server perl-DBD-mysql
+sudo systemctl start mysqld
 ```
 
 

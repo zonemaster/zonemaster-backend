@@ -139,7 +139,13 @@ Create directories for configuration and log files.
 
 ```sh
 sudo mkdir /etc/zonemaster
-mkdir ~/logs
+mkdir "$HOME/logs"
+```
+
+Copy the `backend_config.ini` file to `/etc/zonemaster`.
+
+```sh
+sudo cp share/backend_config.ini /etc/zonemaster/
 ```
 
 
@@ -171,7 +177,7 @@ Running Zonemaster Backend as a service on FreeBSD is not supported at this time
 
 ### Configuring and creating a database in MySQL
 
-Edit the file `share/backend_config.ini`
+Edit the file `/etc/zonemaster/backend_config.ini`.
 
 ```
 engine           = MySQL
@@ -187,13 +193,6 @@ number_of_processes_for_frontend_testing  = 20
 number_of_processes_for_batch_testing     = 20
 ```
 
-Copy the `backend_config.ini` file to `/etc/zonemaster`
-
-```sh
-sudo cp share/backend_config.ini /etc/zonemaster
-```
-
-
 Using a database adminstrator user (called root in the example below), run the setup file:
 
 ```sh
@@ -205,8 +204,7 @@ This creates a database called `zonemaster`, as well as a user called "zonemaste
 
 ### Configuring and creating a database in PostgreSQL
 
-Edit the file `share/backend_config.ini` in the `zonemaster-backend`
-directory
+Edit the file `/etc/zonemaster/backend_config.ini`.
 
 ```
 engine           = PostgreSQL
@@ -220,12 +218,6 @@ interpreter      = perl
 max_zonemaster_execution_time   = 300
 number_of_processes_for_frontend_testing  = 20
 number_of_processes_for_batch_testing     = 20
-```
-
-Copy the `backend_config.ini` file to `/etc/zonemaster`
-
-```sh
-sudo cp share/backend_config.ini /etc/zonemaster
 ```
 
 

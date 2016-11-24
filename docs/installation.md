@@ -38,30 +38,29 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
 ```
 
+Install dependencies for the relevant database engine:
 
-#### Installing dependencies for MySQL on CentOS
+* MySQL
 
-```sh
-sudo yum install wget
-wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
-sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
-sudo yum install mysql-server perl-DBD-mysql
-sudo systemctl start mysqld
-```
+  ```sh
+  sudo yum install wget
+  wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+  sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+  sudo yum install mysql-server perl-DBD-mysql
+  sudo systemctl start mysqld
+  ```
 
+* PostgreSQL
 
-#### Installing dependencies for PostgreSQL on CentOS
+  >
+  > At this time there is no instruction for installing dependencies for PostgreSQL on CentOS.
+  >
 
->
-> At this time there is no instruction for installing dependencies for PostgreSQL on CentOS.
->
+* SQLite
 
-
-#### Installing dependencies for SQLite on CentOS
-
->
-> At this time there is no instruction for installing dependencies for SQLite on CentOS.
->
+  >
+  > At this time there is no instruction for installing dependencies for SQLite on CentOS.
+  >
 
 
 ### Installing dependencies on Debian and Ubuntu
@@ -74,26 +73,25 @@ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
 
+Install dependencies for the relevant database engine:
 
-#### Installing dependencies for MySQL on Debian and Ubuntu
+* MySQL
 
-```sh
-sudo apt-get install mysql-server libdbd-mysql-perl
-```
+  ```sh
+  sudo apt-get install mysql-server libdbd-mysql-perl
+  ```
 
+* PostgreSQL
 
-#### Installing dependencies for PostgreSQL on Debian and Ubuntu
+  ```sh
+  sudo apt-get install libdbd-pg-perl postgresql
+  ```
 
-```sh
-sudo apt-get install libdbd-pg-perl postgresql
-```
+* SQLite
 
-
-#### Installing dependencies for SQLite on Debian and Ubuntu
-
->
-> At this time there is no instruction for installing dependencies for SQLite on Debian and Ubuntu.
->
+  >
+  > At this time there is no instruction for installing dependencies for SQLite on Debian and Ubuntu.
+  >
 
 
 ### Installing dependencies on FreeBSD
@@ -102,26 +100,25 @@ sudo apt-get install libdbd-pg-perl postgresql
 sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
 ```
 
+Install dependencies for the relevant database engine:
 
-#### Installing dependencies for MySQL on FreeBSD
+* MySQL
 
-```sh
-sudo pkg install mysql56-server p5-DBD-mysql
-```
+  ```sh
+  sudo pkg install mysql56-server p5-DBD-mysql
+  ```
 
+* PostgreSQL
 
-#### Installing dependencies for PostgreSQL on FreeBSD
+  ```sh
+  sudo pkg install postgresql93-server p5-DBD-Pg
+  ```
 
-```sh
-sudo pkg install postgresql93-server p5-DBD-Pg
-```
+* SQLite
 
-
-#### Installing dependencies for SQLite on FreeBSD
-
->
-> At this time there is no instruction for installing dependencies for SQLite on FreeBSD.
->
+  >
+  > At this time there is no instruction for installing dependencies for SQLite on FreeBSD.
+  >
 
 
 ## Installation
@@ -171,37 +168,38 @@ Copy the `backend_config.ini` file to `/etc/zonemaster`.
 sudo cp share/backend_config.ini /etc/zonemaster/
 ```
 
+Install service scripts for the relevant operating system:
 
-#### Installing service scripts on CentOS
+* CentOS
 
-Copy the example init file to the system directory. You may wish to edit the file in order to use a more suitable user and group. As distributed, it uses the MySQL user and group, since we can be sure that exists and it shouldn't mess up anything included with the system.
+  Copy the example init file to the system directory.
+  You may wish to edit the file in order to use a more suitable user and group.
+  As distributed, it uses the MySQL user and group, since we can be sure that exists and it shouldn't mess up anything included with the system.
 
-```sh
-sudo cp share/zm-centos.sh /etc/init.d/
-sudo chmod +x /etc/init.d/zm-centos.sh
-```
+  ```sh
+  sudo cp share/zm-centos.sh /etc/init.d/
+  sudo chmod +x /etc/init.d/zm-centos.sh
+  ```
 
+* Debian and Ubuntu
 
-#### Installing service scripts on Debian and Ubuntu
+  Copy the file `share/zm-backend.sh` to the directory `/etc/init`, make it an executable file, and add the file to start up script.
 
-Copy the file `share/zm-backend.sh` to the directory `/etc/init`, make it an executable file, and add the file to start up script.
+  ```sh
+  sudo cp share/zm-backend.sh /etc/init.d/
+  sudo chmod +x /etc/init.d/zm-backend.sh
+  sudo update-rc.d zm-backend.sh defaults
+  ```
 
-```sh
-sudo cp share/zm-backend.sh /etc/init.d/
-sudo chmod +x /etc/init.d/zm-backend.sh
-sudo update-rc.d zm-backend.sh defaults
-```
+  >
+  > At this time there is no instruction for running Zonemaster *Workers* as services on Debian and Ubuntu.
+  >
 
->
-> At this time there is no instruction for running Zonemaster *Workers* as services on Debian and Ubuntu.
->
+* FreeBSD
 
-
-#### Installing service scripts on FreeBSD
-
->
-> At this time there is no instruction for running Zonemaster *Web backends* nor *Workers* as services on FreeBSD.
->
+  >
+  > At this time there is no instruction for running Zonemaster *Web backends* nor *Workers* as services on FreeBSD.
+  >
 
 
 ### Configuring and creating a database in MySQL
@@ -249,32 +247,31 @@ number_of_processes_for_frontend_testing  = 20
 number_of_processes_for_batch_testing     = 20
 ```
 
+Create a database on the relevant operating system:
 
-#### Configuring PostgreSQL on CentOS
+* CentOS
 
->
-> At this time there is no instruction for configuring and creating a database in PostgreSQL on CentOS.
->
+  >
+  > At this time there is no instruction for configuring and creating a database in PostgreSQL on CentOS.
+  >
 
+* Debian and Ubuntu
 
-#### Configuring PostgreSQL on Debian and Ubuntu
+  Connect to Postgres as a user with administrative privileges and set things up:
 
-Connect to Postgres as a user with administrative privileges and set things up:
+  ```sh
+  sudo -u postgres psql -f share/initial-postgres.sql
+  ```
 
-```sh
-sudo -u postgres psql -f share/initial-postgres.sql
-```
+  This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
-This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
+* FreeBSD
 
+  Start the PostgreSQL server according to its instructions then initiate the database using the following script.
 
-#### Configuring PostgreSQL on FreeBSD
-
-Start the PostgreSQL server according to its instructions then initiate the database using the following script.
-
-```sh
-psql -U pgsql template1 share/initial-postgres.sql
-```
+  ```sh
+  psql -U pgsql template1 share/initial-postgres.sql
+  ```
 
 
 ### Configuring and creating a database in SQLite

@@ -8,7 +8,6 @@ This document begins with a number of sections concerning native installation:
 * [Configuration](#configuration)
 * [Startup](#startup)
 * [Post-installation sanity check](#post-installation-sanity-check)
-* [What's next](#whats-next)
 
 This document ends with these appendices:
 
@@ -345,12 +344,6 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 ```
 
 The command is expected to give an immediate JSON response.
-
-
-## What's next
-
-Next step is to install the [Web UI](https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md) if you wish so.
-You can also look into the [API documentation](API.md) to see how you can use the API for your use.
 
 
 # Appendices

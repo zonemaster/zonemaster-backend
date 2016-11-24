@@ -21,7 +21,7 @@ This document ends with these appendices:
 This installation guide assumes that the following softwares are already installed on the target system:
 
 * one of CentOS, Debian, FreeBSD or Ubuntu
-* sudo
+* sudo (only for installation and other administrative tasks)
 * curl (only for post-installation sanity check)
 
 

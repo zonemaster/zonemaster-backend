@@ -52,7 +52,16 @@ sudo systemctl start mysqld
 
 #### Installing dependencies for PostgreSQL on CentOS
 
-Setting up Zonemaster Backend with PostgreSQL on CentOS is not supported at this time.
+>
+> At this time there is no instruction for installing dependencies for PostgreSQL on CentOS.
+>
+
+
+#### Installing dependencies for SQLite on CentOS
+
+>
+> At this time there is no instruction for installing dependencies for SQLite on CentOS.
+>
 
 
 ### Installing dependencies on Debian and Ubuntu
@@ -80,6 +89,13 @@ sudo apt-get install libdbd-pg-perl postgresql
 ```
 
 
+#### Installing dependencies for SQLite on Debian and Ubuntu
+
+>
+> At this time there is no instruction for installing dependencies for SQLite on Debian and Ubuntu.
+>
+
+
 ### Installing dependencies on FreeBSD
 
 ```sh
@@ -99,6 +115,13 @@ sudo pkg install mysql56-server p5-DBD-mysql
 ```sh
 sudo pkg install postgresql93-server p5-DBD-Pg
 ```
+
+
+#### Installing dependencies for SQLite on FreeBSD
+
+>
+> At this time there is no instruction for installing dependencies for SQLite on FreeBSD.
+>
 
 
 ## Installation
@@ -169,10 +192,16 @@ sudo chmod +x /etc/init.d/zm-backend.sh
 sudo update-rc.d zm-backend.sh defaults
 ```
 
+>
+> At this time there is no instruction for running Zonemaster *Workers* as services on Debian and Ubuntu.
+>
+
 
 #### Installing service scripts on FreeBSD
 
-Running Zonemaster Backend as a service on FreeBSD is not supported at this time.
+>
+> At this time there is no instruction for running Zonemaster *Web backends* nor *Workers* as services on FreeBSD.
+>
 
 
 ### Configuring and creating a database in MySQL
@@ -223,7 +252,9 @@ number_of_processes_for_batch_testing     = 20
 
 #### Configuring PostgreSQL on CentOS
 
-Setting up Zonemaster Backend with PostgreSQL on CentOS is not supported at this time.
+>
+> At this time there is no instruction for configuring and creating a database in PostgreSQL on CentOS.
+>
 
 
 #### Configuring PostgreSQL on Debian and Ubuntu
@@ -244,6 +275,13 @@ Start the PostgreSQL server according to its instructions then initiate the data
 ```sh
 psql -U pgsql template1 share/initial-postgres.sql
 ```
+
+
+### Configuring and creating a database in SQLite
+
+>
+> At this time there is no instruction for configuring and creating a database in SQLite on FreeBSD.
+>
 
 
 ## Startup
@@ -274,6 +312,10 @@ This only needs to be run as root in order to make sure the log file can be
 opened. The `starman` process will change to the `www-data` user as soon as it
 can, and all of the real work will be done as that user.
 
+>
+> At this time there is no instruction for running Zonemaster *Workers* as services on Debian and Ubuntu.
+>
+
 
 ### Starting services on FreeBSD
 
@@ -284,6 +326,10 @@ Start the processes, point pid and log to a appropriate-for-your-OS location
 starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi
 zm_wb_daemon start
 ```
+
+>
+> At this time there is no instruction for running Zonemaster *Web backends* nor *Workers* as services on FreeBSD.
+>
 
 
 ## Post-installation sanity check

@@ -24,6 +24,12 @@ This installation guide assumes that the following softwares are already install
 * sudo (only for installation and other administrative tasks)
 * curl (only for post-installation sanity check)
 
+It also assumes that you've chosen (though not necessarily installed) one of the following database engines:
+
+* MySQL
+* PostgreSQL
+* SQLite
+
 
 ## Dependencies
 
@@ -38,7 +44,7 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
 ```
 
-Install dependencies for the relevant database engine:
+Install the chosen database engine and related dependencies:
 
 * MySQL
 
@@ -73,7 +79,7 @@ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
 
-Install dependencies for the relevant database engine:
+Install the chosen database engine and related dependencies:
 
 * MySQL
 
@@ -100,7 +106,7 @@ Install dependencies for the relevant database engine:
 sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
 ```
 
-Install dependencies for the relevant database engine:
+Install the chosen database engine and related dependencies:
 
 * MySQL
 

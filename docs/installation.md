@@ -380,7 +380,7 @@ It removes the user and drops the database (obviously taking all data with it).
 Locate `cleanup-mysql.sql` using this command:
 
 ```sh
-perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend', 'cleanup-mysql.sql")'
+perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")'
 ```
 
 

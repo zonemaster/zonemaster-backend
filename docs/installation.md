@@ -21,6 +21,7 @@ This installation guide assumes that the following softwares are already install
 
 * one of CentOS, Debian, FreeBSD or Ubuntu
 * sudo (only for installation and other administrative tasks)
+* cpanm (only for installation)
 * curl (only for post-installation sanity check)
 
 It also assumes that you've chosen (though not necessarily installed) one of the following database engines:
@@ -40,7 +41,7 @@ It also assumes that you've chosen (though not necessarily installed) one of the
 
 ```sh
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote
-sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
+sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
 ```
 
 Install the chosen database engine and related dependencies:
@@ -73,7 +74,7 @@ Install the chosen database engine and related dependencies:
 ```sh
 sudo apt-get update
 sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl 
-sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
+sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 ```
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
@@ -128,37 +129,19 @@ Install the chosen database engine and related dependencies:
 
 ## Installation
 
-### Fetch the source code
-
 ```sh
-git clone https://github.com/dotse/zonemaster-backend.git
-cd zonemaster-backend
+sudo cpanm Zonemaster::WebBackend
 ```
-
-
-### Build source code
-
-```sh
-perl Makefile.PL
-make
-make test
-```
-
-These steps produce quite a bit of output. As long as it ends by
-printing `Result: PASS`, everything is OK.
-
-
-### Install 
-
-```sh
-sudo make install
-```
-
-This too produces some output. The `sudo` command may not be necessary,
-if you normally have write permissions to your Perl installation.
 
 
 ## Configuration
+
+The Zonemaster::WebBackend module installs a number of configuration files in a shared data directory.
+This section refers to the shared data directory as the current directory, so locate it and go there:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+```
 
 Create directories for configuration and log files.
 
@@ -170,7 +153,7 @@ mkdir "$HOME/logs"
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
 
 ```sh
-sudo cp share/backend_config.ini /etc/zonemaster/
+sudo cp ./backend_config.ini /etc/zonemaster/
 ```
 
 Install service scripts for the relevant operating system:
@@ -182,16 +165,16 @@ Install service scripts for the relevant operating system:
   As distributed, it uses the MySQL user and group, since we can be sure that exists and it shouldn't mess up anything included with the system.
 
   ```sh
-  sudo cp share/zm-centos.sh /etc/init.d/
+  sudo cp ./zm-centos.sh /etc/init.d/
   sudo chmod +x /etc/init.d/zm-centos.sh
   ```
 
 * Debian and Ubuntu
 
-  Copy the file `share/zm-backend.sh` to the directory `/etc/init`, make it an executable file, and add the file to start up script.
+  Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an executable file, and add the file to start up script.
 
   ```sh
-  sudo cp share/zm-backend.sh /etc/init.d/
+  sudo cp ./zm-backend.sh /etc/init.d/
   sudo chmod +x /etc/init.d/zm-backend.sh
   sudo update-rc.d zm-backend.sh defaults
   ```
@@ -228,7 +211,7 @@ number_of_processes_for_batch_testing     = 20
 Using a database adminstrator user (called root in the example below), run the setup file:
 
 ```sh
-mysql --user=root --password < share/initial-mysql.sql
+mysql --user=root --password < ./initial-mysql.sql
 ```
 
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
@@ -265,7 +248,7 @@ Create a database on the relevant operating system:
   Connect to Postgres as a user with administrative privileges and set things up:
 
   ```sh
-  sudo -u postgres psql -f share/initial-postgres.sql
+  sudo -u postgres psql -f ./initial-postgres.sql
   ```
 
   This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
@@ -275,7 +258,7 @@ Create a database on the relevant operating system:
   Start the PostgreSQL server according to its instructions then initiate the database using the following script.
 
   ```sh
-  psql -U pgsql template1 share/initial-postgres.sql
+  psql -U pgsql template1 ./initial-postgres.sql
   ```
 
 
@@ -383,8 +366,14 @@ docker run -t -i afniclabs/zonemaster-gui bash
 
 ### Performing administrative tasks for MySQL
 
-If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `share/cleanup-mysql.sql` as a database administrator.
+If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `cleanup-mysql.sql` as a database administrator.
 It removes the user and drops the database (obviously taking all data with it).
+
+Locate `cleanup-mysql.sql` using this command:
+
+```sh
+perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend', 'cleanup-mysql.sql")'
+```
 
 
 ### Performing administrative tasks on Debian and Ubuntu

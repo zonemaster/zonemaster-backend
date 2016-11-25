@@ -30,8 +30,12 @@ Follow the detailed [installation instructions](docs/installation.md).
 
 ### Configuration 
 
-Text for configuring the backend are found in the [installation
-instructions](docs/installation.md).
+Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`.
+
+>
+> At this time there is no documentation for `backend_config.ini`.
+>
+
 
 ### Documentation
 

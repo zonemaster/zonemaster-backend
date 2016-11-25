@@ -44,7 +44,7 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman
 ```
 
-Install the chosen database engine and related dependencies:
+Install the chosen database engine and related dependencies, and start the database engine:
 
 * MySQL
 
@@ -59,13 +59,13 @@ Install the chosen database engine and related dependencies:
 * PostgreSQL
 
   >
-  > At this time there is no instruction for installing dependencies for PostgreSQL on CentOS.
+  > At this time there is no instruction for using PostgreSQL on CentOS.
   >
 
 * SQLite
 
   >
-  > At this time there is no instruction for installing dependencies for SQLite on CentOS.
+  > At this time there is no instruction for using SQLite on CentOS.
   >
 
 
@@ -79,7 +79,7 @@ sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian packages, but with versions too old to be useful for us.
 
-Install the chosen database engine and related dependencies:
+Install the chosen database engine and related dependencies, and start the database engine:
 
 * MySQL
 
@@ -96,7 +96,7 @@ Install the chosen database engine and related dependencies:
 * SQLite
 
   >
-  > At this time there is no instruction for installing dependencies for SQLite on Debian and Ubuntu.
+  > At this time there is no instruction for using SQLite on Debian and Ubuntu.
   >
 
 
@@ -106,7 +106,7 @@ Install the chosen database engine and related dependencies:
 sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
 ```
 
-Install the chosen database engine and related dependencies:
+Install the chosen database engine and related dependencies, and start the database engine:
 
 * MySQL
 
@@ -114,16 +114,24 @@ Install the chosen database engine and related dependencies:
   sudo pkg install mysql56-server p5-DBD-mysql
   ```
 
+  >
+  > At this time there is no instruction for configuring and starting MySQL on FreeBSD.
+  >
+
+
 * PostgreSQL
 
   ```sh
   sudo pkg install postgresql93-server p5-DBD-Pg
+  echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
+  sudo service postgresql initdb
+  sudo service postgresql start
   ```
 
 * SQLite
 
   >
-  > At this time there is no instruction for installing dependencies for SQLite on FreeBSD.
+  > At this time there is no instruction for using SQLite on FreeBSD.
   >
 
 

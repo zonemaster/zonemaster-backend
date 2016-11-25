@@ -871,8 +871,8 @@ The value of `"test_params"` is an object with the following properties:
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: A boolean, optional.
-* `"ipv6"`: A boolean, optional.
-* `"ipv4"`: A boolean, optional.
+* `"ipv6"`: A boolean, optional. (default: `false`)
+* `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.

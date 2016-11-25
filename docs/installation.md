@@ -266,7 +266,7 @@ Create a database on the relevant operating system:
   Start the PostgreSQL server according to its instructions then initiate the database using the following script.
 
   ```sh
-  psql -U pgsql template1 ./initial-postgres.sql
+  psql -U pgsql -f ./initial-postgres.sql template1
   ```
 
 

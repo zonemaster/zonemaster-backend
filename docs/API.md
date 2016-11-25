@@ -21,7 +21,7 @@ For details on these, refer to the JSON-RPC 2.0 specification.
 ### Deviations from JSON-RPC 2.0
 
 * The `"jsonrpc"` property is not checked.
-* The error code -32603 is used for invalid arguments, as opposed to -32602.
+* The error code -32603 is used for invalid arguments, as opposed to the dedicated error code -32602.
 * When standard error codes are used, the accompanying messages are not the standard ones.
 
 
@@ -29,8 +29,8 @@ For details on these, refer to the JSON-RPC 2.0 specification.
 
 * Extra top-level properties in request objects are allowed but ignored.
 * Extra properties in the `"params"` object are allowed for some methods but ignored for others.
-* Error messages from the API should be considered sensitive sas they leak details about the internals of the application and the system.
-* The error code -32601 is used when the `"method"` property is missing, as opposed to -32600.
+* Error messages from the API should be considered sensitive as they sometimes leak details about the internals of the application and the system.
+* The error code -32601 is used when the `"method"` property is missing, rather than the perhaps expected error code -32600.
 
 
 ## Request handling
@@ -444,8 +444,8 @@ An object with the following properties:
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: A boolean, optional.
-* `"ipv6"`: A boolean, optional.
-* `"ipv4"`: A boolean, optional.
+* `"ipv6"`: A boolean, optional. (default `false`)
+* `"ipv4"`: A boolean, optional. (default `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.

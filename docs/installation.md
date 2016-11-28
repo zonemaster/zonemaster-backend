@@ -1,37 +1,63 @@
 # Zonemaster Backend installation guide
 
-This document begins with a number of sections concerning native installation:
+## Overview
 
-* [Prerequisites](#prerequisites)
-* [Dependencies](#dependencies)
-* [Installation](#installation)
-* [Configuration](#configuration)
-* [Startup](#startup)
-* [Post-installation sanity check](#post-installation-sanity-check)
+This document walks you through the installation of the Zonemaster *Backend* in the following sections:
 
-This document ends with these appendices:
+1. [Choices](#choices) lets you make all choices up front that this guide presumes you've made.
+2. [Prerequisites](#prerequisites) lets you check all assumptions made by this guide about pre-installed software.
+3. [Dependencies](#dependencies) shows you how to install all software that your Zonemaster *Backend* will depend on.
+4. [Installation](#installation) shows you how to install the *Backend* itself.
+5. [Configuration](#configuration) shows you how to configure the *Backend*.
+6. [Startup](#startup) shows you how to start the *Backend*.
+7. [Post-installation sanity check](#post-installation-sanity-check) lets you verify that your *Backend* has started correctly.
+
+This document ends with appendices:
 
 * [Quick installation using a Docker container](#quick-installation-using-a-docker-container)
 * [Administrative tasks](#administrative-tasks)
 
 
+## Choices
+
+In various places throughout this guide you will be assumed to have made various choises.
+This section lists all those choices so you can make them up front.
+
+
+### Operating system
+
+Zonemaster *Backend* needs to run on an operating system.
+This guide provides instructions for the following ones:
+
+* CentOS
+* Debian
+* FreeBSD
+* Ubuntu
+
+
+### Database engine
+
+Zonemaster *Backend* needs a database engine.
+This guide provides instructions for the following ones:
+
+* MySQL
+* PostgreSQL (currently no instructions for CentOS)
+* SQLite (currently no instructions for any OS)
+
+
 ## Prerequisites
 
-This installation guide assumes that the following softwares are already installed on the target system:
+This guide assumes that the following softwares are already installed on the target system:
 
-* one of CentOS, Debian, FreeBSD or Ubuntu
+* the chosen operating system
 * sudo (only for installation and other administrative tasks)
 * cpanm (only for installation)
 * curl (only for post-installation sanity check)
 
-It also assumes that you've chosen (though not necessarily installed) one of the following database engines:
-
-* MySQL
-* PostgreSQL
-* SQLite
-
 
 ## Dependencies
+
+### Installing Zonemaster Engine
 
 *Zonemaster Engine* should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).

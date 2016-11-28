@@ -822,6 +822,8 @@ An integer.
 
 All the domains will be tested using identical parameters.
 
+An *api user* can only have one un-finished *batch* at a time.
+
 If an identical *test* for a domain was already enqueued and hasn't been started or was enqueued less than 10 minutes earlier,
 no new *test* is enqueued for this domain.
 
@@ -902,6 +904,9 @@ A *batch id*.
 
 
 #### `"error"`
+
+* You can't create a new batch job.
+  A *batch* with unfinished *tests* already exists for this *api user*.
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.

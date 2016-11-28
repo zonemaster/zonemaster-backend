@@ -86,18 +86,14 @@ The unique id of a *batch*.
 
 Basic data type: string
 
-1. If the string contains characters outside the ASCII character set,
-   it must be possible to convert the entire string to the equivalent IDN A-label.
+1. If the string is a single character, that character must be `.`.
 
-2. If the string is a single character, that character must be `.`.
+2. The length of the string must not be greater than 254 characters.
 
-3. The length of the string must not be greater than 254 characters.
-
-4. When the string is split at `.` characters (after IDNA conversion,
+3. When the string is split at `.` characters (after IDNA conversion,
    if needed), each component part must be at most 63 characters long.
 
-5. Each such component part must also consist only of the characters
-   `0` to `9`, `a` to `z`, `A` to `Z` and `-`.
+> Note: Currently there are no restrictions on what characters that are allowed.
 
 
 ### DS info

@@ -207,6 +207,15 @@ Basic data type: string
 >
 
 
+### Translation language
+
+Basic data type: string
+
+* Any string starting with `"fr"` is interpreted as French.
+* Any string starting with `"sv"` is interpreted as Swedish.
+* Any other string is interpreted as English.
+
+
 ## API method: `version_info`
 
 Returns the version of the *Backend*+*Engine* software combination.
@@ -595,9 +604,7 @@ Example response:
 An object with the following properties:
 
 * `"id"`: A *test id*, required.
-* `"language"`: A string, required. Must be at least two characters long. The
-  two first characters are used to look up the *translation language* to be
-  used. If the lookup fails, the choice defaults to English.
+* `"language"`: A *translation language*, required.
 
 
 #### `"result"`

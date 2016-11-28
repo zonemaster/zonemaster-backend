@@ -18,7 +18,7 @@ This document ends with appendices:
 * [Administrative tasks](#administrative-tasks)
 
 
-## Choices
+## 1. Choices
 
 In various places throughout this guide you will be assumed to have made various choises.
 This section lists all those choices so you can make them up front.
@@ -45,7 +45,7 @@ This guide provides instructions for the following ones:
 * SQLite (currently no instructions for any OS)
 
 
-## Prerequisites
+## 2. Prerequisites
 
 This guide assumes that the following softwares are already installed on the target system:
 
@@ -55,7 +55,7 @@ This guide assumes that the following softwares are already installed on the tar
 * curl (only for post-installation sanity check)
 
 
-## Dependencies
+## 3. Dependencies
 
 ### Installing Zonemaster Engine
 
@@ -161,14 +161,14 @@ Install the chosen database engine and related dependencies, and start the datab
   >
 
 
-## Installation
+## 4. Installation
 
 ```sh
 sudo cpanm Zonemaster::WebBackend
 ```
 
 
-## Configuration
+## 5. Configuration
 
 The Zonemaster::WebBackend module installs a number of configuration files in a shared data directory.
 This section refers to the shared data directory as the current directory, so locate it and go there:
@@ -303,7 +303,7 @@ Create a database on the relevant operating system:
 >
 
 
-## Startup
+## 6. Startup
 
 ### Starting services on CentOS
 
@@ -351,7 +351,7 @@ zm_wb_daemon start
 >
 
 
-## Post-installation sanity check
+## 7. Post-installation sanity check
 
 If you followed this instructions to the letter, you should
 be able to use the API on localhost port 5000, like this:

@@ -167,10 +167,10 @@ sudo cpanm Zonemaster::WebBackend
 
 ## 5. Configuration 
 
-There are three steps in this section: 
+There are three steps in this section:
 1. Create a placeholder for logs and copy the config file to the respective
 directory.  
-2. Set up service scripts for the relevant operating system.
+2. Set up service scripts for the relevant operating system. 
 3. Database configuration and creation
 
 
@@ -283,11 +283,10 @@ For PostgreSQL, commands for creating the database vary with respect to the OS
 #### 5.3.2.1 CentOS
 
 >
-> At this time there is no instruction for configuring and creating a database
-> in PostgreSQL on CentOS.
+> At this time there is no instruction for creating a database in PostgreSQL.
 >
 
-### 5.3.2.2 Debian and Ubuntu
+#### 5.3.2.2 Debian and Ubuntu
 
 Connect to Postgres as a user with administrative privileges and set things up:
 
@@ -299,7 +298,7 @@ This creates a database called `zonemaster`, as well as a user called
 "zonemaster" with the password "zonemaster" (as stated in the config file). This
 user has just enough permissions to run the backend software.
 
-### 5.3.3 FreeBSD
+#### 5.3.2.3 FreeBSD
 
 Start the PostgreSQL server according to its instructions then initiate the
 database using the following script.

@@ -59,8 +59,7 @@ target system:
   administrative tasks) 
 * cpanm (only for installation) 
 * curl (only for post-installation sanity check)
-* Zonemaster *Engine* is installed in your respective OS 
-  [installtion instruction](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
+* [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
 
 ## 3. Dependencies
 
@@ -72,20 +71,18 @@ chosen operating system below.
 ### 3.1 Installing dependencies on CentOS
 
 ```sh 
-sudo yum install perl-Module-Install perl-IO-CaptureOutput
-perl-String-ShellQuote sudo cpanm -i Config::IniFiles Daemon::Control
-JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder
-Plack::Middleware::Debug Router::Simple::Declare Starman 
+sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
 Install the chosen database engine and related dependencies.
 
 #### 3.1.1 MySQL
 
-```sh sudo yum install wget wget
-http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm sudo rpm -ivh
-mysql-community-release-el7-5.noarch.rpm sudo yum install mysql-server
-perl-DBD-mysql sudo systemctl start mysqld 
+```sh 
+sudo yum install wget wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
+sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm 
+sudo yum install mysql-server perl-DBD-mysql 
+sudo systemctl start mysqld 
 ```
 
 #### 3.1.2 PostgreSQL
@@ -104,11 +101,8 @@ perl-DBD-mysql sudo systemctl start mysqld
 ### 3.2 Installing dependencies on Debian and Ubuntu
 
 ```sh 
-sudo apt-get update sudo apt-get install git libmodule-install-perl
-libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl
-libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl
-libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl
-sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
+sudo apt-get update 
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
 ```
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian
@@ -137,11 +131,7 @@ sudo apt-get install libdbd-pg-perl postgresql
 ### 3.3 Installing dependencies on FreeBSD
 
 ```sh 
-sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser
-p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose
-p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir
-p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite
-p5-Plack-Middleware-Debug 
+sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug 
 ```
 
 Install the chosen database engine and related dependencies.
@@ -152,17 +142,13 @@ Install the chosen database engine and related dependencies.
 sudo pkg install mysql56-server p5-DBD-mysql 
 ```
 
->
-> At this time there is no instruction for configuring and starting MySQL on
-> FreeBSD.
->
-
 #### 3.3.2 PostgreSQL
 
 ```sh 
-sudo pkg install postgresql93-server p5-DBD-Pg echo
-'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf sudo service postgresql
-initdb sudo service postgresql start 
+sudo pkg install postgresql93-server p5-DBD-Pg 
+echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf 
+sudo service postgresql initdb 
+sudo service postgresql start 
 ```
 
 #### 3.3.3 SQLite
@@ -182,8 +168,9 @@ sudo cpanm Zonemaster::WebBackend
 ## 5. Configuration 
 
 There are three steps in this section: 
-1. Create a placeholder for logs and copy the config file to the respective directory.  
-2. Set up service scripts for the relevant operating system 
+1. Create a placeholder for logs and copy the config file to the respective
+directory.  
+2. Set up service scripts for the relevant operating system.
 3. Database configuration and creation
 
 
@@ -199,8 +186,7 @@ shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh 
-cd `perl -MFile::ShareDir -le 'print
-File::ShareDir::dist_dir("Zonemaster-WebBackend")'` 
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'` 
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -344,9 +330,7 @@ Start the processes, point pid and log to a appropriate-for-your-OS location
 (first line is the API, second is the test runner itself)
 
 ```sh 
-starman --error-log="$HOME/logs/backend_starman.log"
---listen=127.0.0.1:5000 --pid="$HOME/logs/starman.pid" --daemonize
-/usr/local/bin/zonemaster_webbackend.psgi 
+starman --error-log="$HOME/logs/backend_starman.log" --listen=127.0.0.1:5000 --pid="$HOME/logs/starman.pid" --daemonize /usr/local/bin/zonemaster_webbackend.psgi 
 ```
 
 Starting the starman part that listens for and answers the JSON::RPC requests 
@@ -371,9 +355,8 @@ Start the processes, point pid and log to a appropriate-for-your-OS location
 (first line is the API, second is the test runner itself)
 
 ```sh 
-starman --error-log="$HOME/logs/error.log"
---pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize
-/usr/local/bin/zonemaster_webbackend.psgi zm_wb_daemon start 
+starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi 
+zm_wb_daemon start 
 ```
 
 >
@@ -388,16 +371,13 @@ If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
 
 ```sh 
-curl -s -H "Content-Type: application/json" -d
-'{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ &&
-echo 
+curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo 
 ```
 
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version:
-v1.0.2"}
+{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
 # Appendices
@@ -446,8 +426,7 @@ removes the user and drops the database (obviously taking all data with it).
 Locate `cleanup-mysql.sql` using this command:
 
 ```sh 
-perl -MFile::ShareDir -le 'print
-File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")' 
+perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")' 
 ```
 
 

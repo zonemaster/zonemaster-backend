@@ -24,7 +24,7 @@ In various places throughout this guide you will be assumed to have made various
 This section lists all those choices so you can make them up front.
 
 
-### Operating system
+### *Operating system*
 
 Zonemaster *Backend* needs to run on an operating system.
 This guide provides instructions for the following ones:
@@ -35,7 +35,7 @@ This guide provides instructions for the following ones:
 * Ubuntu
 
 
-### Database engine
+### *Database engine*
 
 Zonemaster *Backend* needs a database engine.
 This guide provides instructions for the following ones:
@@ -57,13 +57,13 @@ This guide assumes that the following softwares are already installed on the tar
 
 ## Dependencies
 
-### Installing Zonemaster Engine
+### *Installing Zonemaster Engine*
 
 *Zonemaster Engine* should be installed before. Follow the instructions
 [here](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
 
 
-### Installing dependencies on CentOS
+### *Installing dependencies on CentOS*
 
 ```sh
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote
@@ -95,7 +95,7 @@ Install the chosen database engine and related dependencies, and start the datab
   >
 
 
-### Installing dependencies on Debian and Ubuntu
+### *Installing dependencies on Debian and Ubuntu*
 
 ```sh
 sudo apt-get update
@@ -126,7 +126,7 @@ Install the chosen database engine and related dependencies, and start the datab
   >
 
 
-### Installing dependencies on FreeBSD
+### *Installing dependencies on FreeBSD*
 
 ```sh
 sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
@@ -224,7 +224,7 @@ Install service scripts for the relevant operating system:
   >
 
 
-### Configuring and creating a database in MySQL
+### *Configuring and creating a database in MySQL*
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -251,7 +251,7 @@ mysql --user=root --password < ./initial-mysql.sql
 This creates a database called `zonemaster`, as well as a user called "zonemaster" with the password "zonemaster" (as stated in the config file). This user has just enough permissions to run the backend software.
 
 
-### Configuring and creating a database in PostgreSQL
+### *Configuring and creating a database in PostgreSQL*
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -296,7 +296,7 @@ Create a database on the relevant operating system:
   ```
 
 
-### Configuring and creating a database in SQLite
+### *Configuring and creating a database in SQLite*
 
 >
 > At this time there is no instruction for configuring and creating a database in SQLite on FreeBSD.
@@ -305,14 +305,14 @@ Create a database on the relevant operating system:
 
 ## Startup
 
-### Starting services on CentOS
+### *Starting services on CentOS*
 
 ```sh
 sudo systemctl start zm-centos
 ```
 
 
-### Starting services on Debian and Ubuntu
+### *Starting services on Debian and Ubuntu*
 
 Start the processes, point pid and log to a appropriate-for-your-OS location
 (first line is the API, second is the test runner itself)
@@ -336,7 +336,7 @@ can, and all of the real work will be done as that user.
 >
 
 
-### Starting services on FreeBSD
+### *Starting services on FreeBSD*
 
 Start the processes, point pid and log to a appropriate-for-your-OS location
 (first line is the API, second is the test runner itself)
@@ -398,7 +398,7 @@ docker run -t -i afniclabs/zonemaster-gui bash
 
 ## Administrative tasks
 
-### Performing administrative tasks for MySQL
+### *Performing administrative tasks for MySQL*
 
 If, at some point, you want to delete all traces of Zonemaster in the database, you can run the file `cleanup-mysql.sql` as a database administrator.
 It removes the user and drops the database (obviously taking all data with it).
@@ -410,7 +410,7 @@ perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBacken
 ```
 
 
-### Performing administrative tasks on Debian and Ubuntu
+### *Performing administrative tasks on Debian and Ubuntu*
 
 If you would like to kill the starman process, you can issue this command:
 

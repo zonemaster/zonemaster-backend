@@ -175,7 +175,7 @@ sudo cpanm Zonemaster::WebBackend
 ## Configuration
 
 The Zonemaster::WebBackend module installs a number of configuration files in a shared data directory.
-This section refers to the shared data directory as the current directory, so locate it and go there:
+This section refers to the shared data directory as the current directory, so locate it and go there like this:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`

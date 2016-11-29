@@ -57,13 +57,13 @@ This guide assumes that the following softwares are already installed on the tar
 
 ## Dependencies
 
-### *Installing Zonemaster Engine*
-
-*Zonemaster Engine* should be installed before. Follow the instructions
-[here](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
+This section shows you how to install all software that your Zonemaster *Backend* will depend on.
+Find and follow the subsection relevant for your chosen operating system below.
 
 
 ### *Installing dependencies on CentOS*
+
+Unless you've already done so, install Zonemaster *Engine* according to its own [installtion instruction](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
 
 ```sh
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote
@@ -97,6 +97,8 @@ Install the chosen database engine and related dependencies, and start the datab
 
 ### *Installing dependencies on Debian and Ubuntu*
 
+Unless you've already done so, install Zonemaster *Engine* according to its own [installtion instruction](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
+
 ```sh
 sudo apt-get update
 sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl 
@@ -127,6 +129,8 @@ Install the chosen database engine and related dependencies, and start the datab
 
 
 ### *Installing dependencies on FreeBSD*
+
+Unless you've already done so, install Zonemaster *Engine* according to its own [installtion instruction](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
 
 ```sh
 sudo pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug

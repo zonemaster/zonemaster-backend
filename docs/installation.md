@@ -168,10 +168,10 @@ sudo cpanm Zonemaster::WebBackend
 ## 5. Configuration 
 
 There are three steps in this section:
-1. Create a placeholder for logs and copy the config file to the respective
-directory.
-2. Set up service scripts for the relevant operating system. 
-3. Database configuration and creation
+
+1. Directory and file manipulation
+2. Set up service scripts for the relevant OS
+3. Dattabase configuration and creation
 
 
 ### 5.1 Directory and file manipulation

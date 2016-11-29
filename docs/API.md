@@ -448,7 +448,7 @@ An object with the following properties:
 * `"client_version"`: A free-form string, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
-* `"advanced"`: A boolean, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default `false`)
 * `"ipv4"`: A boolean, optional. (default `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
@@ -734,7 +734,9 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
-* `"advanced_options"`: A string or `null`. `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
+* `"advanced_options"`: **Deprecated**. A string or `null`.
+  `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
+  In some future release this property will no longer be included in the result.
 * `"overall_result"`: A string. The most severe problem level logged in the test results.
 
 >
@@ -875,7 +877,7 @@ The value of `"test_params"` is an object with the following properties:
 * `"client_version"`: A free-form string, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
-* `"advanced"`: A boolean, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.

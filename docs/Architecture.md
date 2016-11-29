@@ -4,7 +4,7 @@ The Zonemaster *Backend* is a system for performing domain health checks and
 keeping records of performed domain health checks.
 
 A Zonemaster *Backend* system consists of at least three components: a
-single *Database*, one or more *Workers* and one or more *Web backends*.
+single *Database*, a single *Worker* and one or more *Web backends*.
 
 
 ## Components

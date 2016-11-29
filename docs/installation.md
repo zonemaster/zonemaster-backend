@@ -171,7 +171,7 @@ There are three steps in this section:
 
 1. Directory and file manipulation
 2. Set up service scripts for the relevant OS
-3. Dattabase configuration and creation
+3. Database configuration and creation
 
 
 ### 5.1 Directory and file manipulation

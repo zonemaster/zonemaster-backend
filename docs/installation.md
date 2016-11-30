@@ -7,15 +7,15 @@ the following OS to install the *Backend* after having the required
 [Prerequisites](#prerequisites).
 
 * [CentOS](#centos) 7 - 64 bits 
-* [Debian](#Debian) 8 (Jessie) - 64 bits 
-* [Ubuntu](#Debian)
-* [FreeBSD](#FreeBSD) 
+* [Debian](#debian) 8 (Jessie) - 64 bits 
+* [Ubuntu](#debian)
+* [FreeBSD](#freebsd) 
 
-```
-Note: We assume the installation instructions will work for earlier OS
-versions too. If you have any issue in installing the Zonemaster engine with
-earlier versions, please send a mail with details to contact@zonemaster.net 
-```
+>
+> Note: We assume the installation instructions will work for earlier OS
+> versions too. If you have any issue in installing the Zonemaster engine with
+> earlier versions, please send a mail with details to contact@zonemaster.net 
+>
 
 In addition, Zonemaster *Backend* needs a database engine. The choice for the database are
 as follows :
@@ -137,15 +137,18 @@ This creates a database called `zonemaster`, as well as a user called
 "zonemaster" with the password "zonemaster" (as stated in the config file). This
 user has just enough permissions to run the backend software.
 
-```
-Note : Only run the above command during an initial installation of the
-Zonemaster backend. If you do this on an existing system, you will wipe out the
-data in your database.
+>
+> Note : Only run the above command during an initial installation of the
+> Zonemaster backend. If you do this on an existing system, you will wipe out the
+> data in your database.
+>
 
+ 
 If, at some point, you want to delete all traces of Zonemaster in the database,
-you can run the file `cleanup-mysql.sql` as a database administrator.  It
-removes the user and drops the database (obviously taking all data with it).
-```
+you can run the file `cleanup-mysql.sql` as a database administrator. Commands
+for locating and running the file are below. It removes the user and drops the
+database (obviously taking all data with it).
+ 
 
 ```sh
 perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")'

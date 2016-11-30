@@ -38,7 +38,7 @@ target system :
 
 ## CentOS 
 
-### 3.1 Installing dependencies on CentOS
+### 3.1 Installing dependencies 
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
@@ -206,6 +206,178 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 ## Debian & Ubuntu
+
+### Installing dependencies
+
+```sh
+sudo apt-get update
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl
+sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
+```
+>
+> Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian
+> packages, but with versions too old to be useful for us.
+>
+
+### Install the chosen database engine and related dependencies
+
+#### MySQL
+
+```sh
+sudo apt-get install mysql-server libdbd-mysql-perl
+```
+
+#### PostgreSQL
+
+```sh
+sudo apt-get install libdbd-pg-perl postgresql
+```
+
+#### SQLite
+
+>
+> At this time there is no instruction for using SQLite on Debian and Ubuntu.
+>
+
+### Installation of the backend
+
+```sh
+sudo cpanm Zonemaster::WebBackend
+```
+### Directory and file manipulation
+
+```sh
+sudo mkdir /etc/zonemaster
+mkdir "$HOME/logs"
+```
+
+The Zonemaster::WebBackend module installs a number of configuration files in a
+shared data directory.  This section refers to the shared data directory as the
+current directory, so locate it and go there like this:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+```
+
+Copy the `backend_config.ini` file to `/etc/zonemaster`.
+
+```sh
+sudo cp ./backend_config.ini /etc/zonemaster/
+```
+### Service script set up
+
+Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an
+executable file, and add the file to start up script.
+
+```sh
+sudo cp ./zm-backend.sh /etc/init.d/
+sudo chmod +x /etc/init.d/zm-backend.sh
+sudo update-rc.d zm-backend.sh defaults
+```
+
+>
+> At this time there is no instruction for running Zonemaster *Workers* as
+> services on Debian and Ubuntu.
+>
+
+### Chosen database configuration
+
+#### MySQL
+Edit the file `/etc/zonemaster/backend_config.ini`.
+
+```
+engine           = MySQL
+user             = zonemaster
+password         = zonemaster
+database_name    = zonemaster
+database_host    = localhost
+polling_interval = 0.5
+log_dir          = logs/
+interpreter      = perl
+max_zonemaster_execution_time   = 300
+number_of_processes_for_frontend_testing = 20
+number_of_processes_for_batch_testing    = 20
+```
+
+Using a database adminstrator user (called root in the example below), run the
+setup file:
+
+```sh
+mysql --user=root --password < ./initial-mysql.sql
+```
+
+This creates a database called `zonemaster`, as well as a user called
+"zonemaster" with the password "zonemaster" (as stated in the config file). This
+user has just enough permissions to run the backend software.
+
+>
+> Note : Only run the above command during an initial installation of the
+> Zonemaster backend. If you do this on an existing system, you will wipe out
+> the
+> data in your database.
+>
+
+If, at some point, you want to delete all traces of Zonemaster in the database,
+you can run the file `cleanup-mysql.sql` as a database administrator. Commands
+for locating and running the file are below. It removes the user and drops the
+database (obviously taking all data with it).
+
+
+```sh
+perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")'
+./cleanup-mysql.sql
+```
+
+#### PostgreSQL
+Connect to Postgres as a user with administrative privileges and set things up:
+
+```sh
+sudo -u postgres psql -f ./initial-postgres.sql
+```
+
+This creates a database called `zonemaster`, as well as a user called
+"zonemaster" with the password "zonemaster" (as stated in the config file). This
+user has just enough permissions to run the backend software.
+
+#### SQLite
+
+>
+> At this time there is no instruction for configuring and creating a database
+> in SQLite.
+>
+
+### Service startup
+Start the processes, point pid and log to a appropriate-for-your-OS location
+(first line is the API, second is the test runner itself)
+
+```sh
+starman --error-log="$HOME/logs/backend_starman.log" --listen=127.0.0.1:5000 --pid="$HOME/logs/starman.pid" --daemonize /usr/local/bin/zonemaster_webbackend.psgi
+```
+
+Starting the starman part that listens for and answers the JSON::RPC requests
+
+```sh
+sudo service zm-backend.sh start
+```
+
+This only needs to be run as root in order to make sure the log file can be
+opened. The `starman` process will change to the `www-data` user as soon as it
+can, and all of the real work will be done as that user.
+
+### Post-installation sanity check
+
+If you followed this instructions to the letter, you should be able to use the
+API on localhost port 5000, like this:
+
+```sh
+curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+```
+
+The command is expected to give an immediate JSON response similiar to :
+
+```sh
+{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
+```
 
 ## FreeBSD
 

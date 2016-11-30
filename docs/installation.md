@@ -40,7 +40,7 @@ the following OS to install the *Backend*.
 * Ubuntu
 
 
-### 1.2 *Database engine*
+### 1.2 Database engine
 
 Zonemaster *Backend* needs a database engine.  The choice for the database are
 as follows :
@@ -55,8 +55,8 @@ as follows :
 This guide assumes that the following softwares are already installed on the
 target system:
 
-* the chosen operating system sudo (only for installation and other
-  administrative tasks) 
+* the chosen operating system 
+* sudo (only for installation and other administrative tasks) 
 * cpanm (only for installation) 
 * curl (only for post-installation sanity check)
 * [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
@@ -79,7 +79,8 @@ Install the chosen database engine and related dependencies.
 #### 3.1.1 MySQL
 
 ```sh 
-sudo yum install wget wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
+sudo yum install wget 
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
 sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm 
 sudo yum install mysql-server perl-DBD-mysql 
 sudo systemctl start mysqld 
@@ -102,7 +103,8 @@ sudo systemctl start mysqld
 
 ```sh 
 sudo apt-get update 
-sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
+sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl 
+sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
 ```
 
 Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian

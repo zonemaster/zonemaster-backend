@@ -211,7 +211,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```sh
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
-## Debian 
+## Debian & Ubuntu 
 
 ### Installing dependencies
 

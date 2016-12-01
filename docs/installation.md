@@ -8,7 +8,7 @@ the following OS to install the *Backend* after having the required
 
 * [CentOS](#centos) 7 - 64 bits 
 * [Debian](#debian) 8 (Jessie) - 64 bits 
-* [Ubuntu](#debian)
+* [Ubuntu](#ubuntu) 
 * [FreeBSD](#freebsd) 
 
 >

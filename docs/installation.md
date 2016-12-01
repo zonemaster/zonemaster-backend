@@ -41,7 +41,8 @@ target system :
 ### 3.1 Installing dependencies 
 
 ```sh 
-sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
+sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
+sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
 ### 3.2 Install the chosen database engine and related dependencies.
@@ -55,6 +56,12 @@ sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
 sudo yum install mysql-server perl-DBD-mysql 
 sudo systemctl start mysqld 
 ```
+
+Verify that MySQL has started 
+```sh
+service mysqld status
+```
+
 
 #### 3.2.2 PostgreSQL
 
@@ -86,8 +93,7 @@ shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print
-File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -205,14 +211,14 @@ The command is expected to give an immediate JSON response similiar to :
 ```sh
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
-## Debian & Ubuntu
+## Debian 
 
 ### Installing dependencies
 
 ```sh
 sudo apt-get update
 sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl
-sudo cpanm -i Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
+sudo cpanm -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 ```
 >
 > Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian

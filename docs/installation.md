@@ -6,9 +6,9 @@ Zonemaster *Backend* needs to run on an operating system. One can choose any of
 the following OS to install the *Backend* after having the required
 [Prerequisites](#prerequisites).
 
-* [CentOS](#centos) 7  
-* [Debian](#debian) 8 (Jessie)
-* [Ubuntu](#ubuntu) 16.04
+* [CentOS](#centos 7)  
+* [Debian](#debian 8 (Jessie))
+* [Ubuntu](#ubuntu 16.04)
 * [FreeBSD](#freebsd) 
 
 >
@@ -32,7 +32,6 @@ target system :
 
 * the chosen operating system 
 * sudo (only for installation and other administrative tasks) 
-* cpanm (only for installation) 
 * curl (only for post-installation sanity check)
 * [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
 
@@ -42,7 +41,7 @@ target system :
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
-sudo cpanm -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
+sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
 ### 3.2 Install the chosen database engine and related dependencies.

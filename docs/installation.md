@@ -6,9 +6,9 @@ Zonemaster *Backend* needs to run on an operating system. One can choose any of
 the following OS to install the *Backend* after having the required
 [Prerequisites](#prerequisites).
 
-* [CentOS](#centos) 7 - 64 bits 
-* [Debian](#debian) 8 (Jessie) - 64 bits 
-* [Ubuntu](#ubuntu) 
+* [CentOS](#centos) 7  
+* [Debian](#debian) 8 (Jessie)
+* [Ubuntu](#ubuntu) 16.04
 * [FreeBSD](#freebsd) 
 
 >
@@ -211,21 +211,23 @@ The command is expected to give an immediate JSON response similiar to :
 ```sh
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
-## Ubuntu 
+## Ubuntu & Debian 
 
-### Installing dependencies
+### 1) Installing dependencies
 
 ```sh
 sudo apt-get update
+
 sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl
-sudo cpanm -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
+
+sudo cpan -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
 ```
 >
 > Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian
 > packages, but with versions too old to be useful for us.
 >
 
-### Install the chosen database engine and related dependencies
+### 2) Install the chosen database engine and related dependencies
 
 #### MySQL
 
@@ -245,12 +247,12 @@ sudo apt-get install libdbd-pg-perl postgresql
 > At this time there is no instruction for using SQLite on Debian and Ubuntu.
 >
 
-### Installation of the backend
+### 3) Installation of the backend
 
 ```sh
-sudo cpanm Zonemaster::WebBackend
+sudo cpan -i Zonemaster::WebBackend
 ```
-### Directory and file manipulation
+### 4) Directory and file manipulation
 
 ```sh
 sudo mkdir /etc/zonemaster
@@ -270,7 +272,7 @@ Copy the `backend_config.ini` file to `/etc/zonemaster`.
 ```sh
 sudo cp ./backend_config.ini /etc/zonemaster/
 ```
-### Service script set up
+### 5) Service script set up
 
 Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an
 executable file, and add the file to start up script.
@@ -286,7 +288,7 @@ sudo update-rc.d zm-backend.sh defaults
 > services on Debian and Ubuntu.
 >
 
-### Chosen database configuration
+### 6) Chosen database configuration
 
 #### MySQL
 Edit the file `/etc/zonemaster/backend_config.ini`.
@@ -352,7 +354,7 @@ user has just enough permissions to run the backend software.
 > in SQLite.
 >
 
-### Service startup
+### 7) Service startup
 Start the processes, point pid and log to a appropriate-for-your-OS location
 (first line is the API, second is the test runner itself)
 
@@ -370,7 +372,7 @@ This only needs to be run as root in order to make sure the log file can be
 opened. The `starman` process will change to the `www-data` user as soon as it
 can, and all of the real work will be done as that user.
 
-### Post-installation sanity check
+### 8) Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:

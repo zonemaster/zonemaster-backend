@@ -77,7 +77,7 @@ service mysqld status
 ### 3.3 Installation of the backend
 
 ```sh
-sudo cpanm Zonemaster::WebBackend
+sudo cpan -i Zonemaster::WebBackend
 ```
 
 ### 3.4 Directory and file manipulation

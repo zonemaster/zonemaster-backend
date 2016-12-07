@@ -37,16 +37,16 @@ target system :
 
 ## CentOS 
 
-### 3.1 Installing dependencies 
+### 1) Installing dependencies 
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
-### 3.2 Install the chosen database engine and related dependencies.
+### 2) Install the chosen database engine and related dependencies.
 
-#### 3.2.1 MySQL
+#### 2.1) MySQL
 
 ```sh 
 sudo yum install wget 
@@ -62,25 +62,25 @@ service mysqld status
 ```
 
 
-#### 3.2.2 PostgreSQL
+#### 2.2) PostgreSQL
 
 >
 > At this time there is no instruction for using PostgreSQL on CentOS.
 >
 
-#### 3.2.3 SQLite
+#### 2.3) SQLite
 
 >
 > At this time there is no instruction for using SQLite on CentOS.
 >
 
-### 3.3 Installation of the backend
+### 3) Installation of the backend
 
 ```sh
 sudo cpan -i Zonemaster::WebBackend
 ```
 
-### 3.4 Directory and file manipulation
+### 4) Directory and file manipulation
 
 ```sh
 sudo mkdir /etc/zonemaster
@@ -101,7 +101,7 @@ Copy the `backend_config.ini` file to `/etc/zonemaster`.
 sudo cp ./backend_config.ini /etc/zonemaster/
 ```
 
-### 3.5 Service script set up
+### 5) Service script set up
 Copy the example init file to the system directory.  You may wish to edit the
 file in order to use a more suitable user and group.  As distributed, it uses
 the MySQL user and group, since we can be sure that exists and it shouldn't mess
@@ -111,9 +111,9 @@ up anything included with the system.
 sudo cp ./zm-centos.sh /etc/init.d/
 sudo chmod +x /etc/init.d/zm-centos.sh
 ```
-### 3.6 Chosen database configuration
+### 6) Chosen database configuration
 
-#### 3.6.1 MySQL
+#### 6.1) MySQL
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -161,7 +161,7 @@ perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBacken
 ```
 
 
-#### 3.6.2 PostgreSQL
+#### 6.2) PostgreSQL
 
 >
 > At this time there is no instruction for creating a database in PostgreSQL.
@@ -184,19 +184,19 @@ number_of_processes_for_batch_testing    = 20
 ```
 
 
-#### 3.6.3 SQLite
+#### 6.3) SQLite
 
 >
 > At this time there is no instruction for configuring/creating a database in PostgreSQL.
 >
 
-### 3.7 Service startup
+### 7) Service startup
 
 ```sh
 sudo systemctl start zm-centos
 ```
 
-### 3.8 Post-installation sanity check
+### 8) Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -210,6 +210,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```sh
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
+
 ## Ubuntu & Debian 
 
 ### 1) Installing dependencies
@@ -228,19 +229,19 @@ sudo cpan -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON
 
 ### 2) Install the chosen database engine and related dependencies
 
-#### MySQL
+#### 2.1) MySQL
 
 ```sh
 sudo apt-get install mysql-server libdbd-mysql-perl
 ```
 
-#### PostgreSQL
+#### 2.2) PostgreSQL
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
 ```
 
-#### SQLite
+#### 2.3) SQLite
 
 >
 > At this time there is no instruction for using SQLite on Debian and Ubuntu.
@@ -289,7 +290,8 @@ sudo update-rc.d zm-backend.sh defaults
 
 ### 6) Chosen database configuration
 
-#### MySQL
+#### 6.1) MySQL
+
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
 ```
@@ -335,7 +337,7 @@ perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBacken
 ./cleanup-mysql.sql
 ```
 
-#### PostgreSQL
+#### 6.2) PostgreSQL
 Connect to Postgres as a user with administrative privileges and set things up:
 
 ```sh
@@ -346,7 +348,7 @@ This creates a database called `zonemaster`, as well as a user called
 "zonemaster" with the password "zonemaster" (as stated in the config file). This
 user has just enough permissions to run the backend software.
 
-#### SQLite
+#### 6.3) SQLite
 
 >
 > At this time there is no instruction for configuring and creating a database
@@ -370,6 +372,12 @@ sudo service zm-backend.sh start
 This only needs to be run as root in order to make sure the log file can be
 opened. The `starman` process will change to the `www-data` user as soon as it
 can, and all of the real work will be done as that user.
+
+Check that the service has started 
+
+```sh
+sudo service zm-backend.sh status
+```
 
 ### 8) Post-installation sanity check
 

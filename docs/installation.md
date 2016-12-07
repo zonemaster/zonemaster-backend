@@ -7,9 +7,9 @@ the following OS to install the *Backend* after having the required
 [Prerequisites](#prerequisites).
 
 * [CentOS 7](#centos)  
-* [Debian 8(Jessie)](#debian--ubuntu)
-* [Ubuntu 16.04](#debian--ubuntu)
-* [FreeBSD](#freebsd) 
+* [Debian 8 (Jessie)](#ubuntu--debian)
+* [Ubuntu 16.04](#ubuntu--debian)
+* [FreeBSD 10.3](#freebsd) 
 
 >
 > Note: We assume the installation instructions will work for earlier OS
@@ -24,7 +24,6 @@ as follows :
 * PostgreSQL 9.3 or higher 
 * SQLite 
 
-
 ## Prerequisites
 
 This guide assumes that the following softwares are already installed on the
@@ -34,18 +33,18 @@ target system :
 * curl (only for post-installation sanity check)
 * [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
 
-## CentOS 
+## 1. CentOS 
 
-### 1) Installing dependencies 
+### 1.1 Installing dependencies 
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
-### 2) Install the chosen database engine and related dependencies.
+### 1.2 Install the chosen database engine and related dependencies.
 
-#### 2.1) MySQL
+#### 1.2.1 MySQL
 
 ```sh 
 sudo yum install wget 
@@ -61,25 +60,25 @@ Verify that MySQL has started
 service mysqld status
 ```
 
-#### 2.2) PostgreSQL
+#### 1.2.2 PostgreSQL
 
 >
 > At this time there is no instruction for using PostgreSQL on CentOS.
 >
 
-#### 2.3) SQLite
+#### 1.2.3 SQLite
 
 >
 > At this time there is no instruction for using SQLite on CentOS.
 >
 
-### 3) Installation of the backend
+### 1.3 Installation of the backend
 
 ```sh
 sudo cpan -i Zonemaster::WebBackend
 ```
 
-### 4) Directory and file manipulation
+### 1.4 Directory and file manipulation
 
 ```sh
 sudo mkdir /etc/zonemaster
@@ -100,7 +99,7 @@ Copy the `backend_config.ini` file to `/etc/zonemaster`.
 sudo cp ./backend_config.ini /etc/zonemaster/
 ```
 
-### 5) Service script set up
+### 1.5 Service script set up
 Copy the example init file to the system directory.  You may wish to edit the
 file in order to use a more suitable user and group.  As distributed, it uses
 the MySQL user and group, since we can be sure that exists and it shouldn't mess
@@ -110,9 +109,9 @@ up anything included with the system.
 sudo cp ./zm-centos.sh /etc/init.d/
 sudo chmod +x /etc/init.d/zm-centos.sh
 ```
-### 6) Chosen database configuration
+### 1.6 Chosen database configuration
 
-#### 6.1) MySQL
+#### 1.6.1 MySQL
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -159,7 +158,7 @@ perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBacken
 ```
 
 
-#### 6.2) PostgreSQL
+#### 1.6.2 PostgreSQL
 
 >
 > At this time there is no instruction for creating a database in PostgreSQL.
@@ -182,19 +181,19 @@ number_of_processes_for_batch_testing    = 20
 ```
 
 
-#### 6.3) SQLite
+#### 1.6.3 SQLite
 
 >
 > At this time there is no instruction for configuring/creating a database in PostgreSQL.
 >
 
-### 7) Service startup
+### 1.7 Service startup
 
 ```sh
 sudo systemctl start zm-centos
 ```
 
-### 8) Post-installation sanity check
+### 1.8 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -209,9 +208,9 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
-## Ubuntu & Debian 
+## 2. Ubuntu & Debian 
 
-### 1) Installing dependencies
+### 2.1 Installing dependencies
 
 ```sh
 sudo apt-get update
@@ -223,32 +222,32 @@ sudo cpan -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON
 > packages, but with versions too old to be useful for us.
 >
 
-### 2) Install the chosen database engine and related dependencies
+### 2.2 Install the chosen database engine and related dependencies
 
-#### 2.1) MySQL
+#### 2.2.1 MySQL
 
 ```sh
 sudo apt-get install mysql-server libdbd-mysql-perl
 ```
 
-#### 2.2) PostgreSQL
+#### 2.2.2 PostgreSQL
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
 ```
 
-#### 2.3) SQLite
+#### 2.2.3 SQLite
 
 >
 > At this time there is no instruction for using SQLite on Debian and Ubuntu.
 >
 
-### 3) Installation of the backend
+### 2.3 Installation of the backend
 
 ```sh
 sudo cpan -i Zonemaster::WebBackend
 ```
-### 4) Directory and file manipulation
+### 2.4 Directory and file manipulation
 
 ```sh
 sudo mkdir /etc/zonemaster
@@ -268,7 +267,7 @@ Copy the `backend_config.ini` file to `/etc/zonemaster`.
 ```sh
 sudo cp ./backend_config.ini /etc/zonemaster/
 ```
-### 5) Service script set up
+### 2.5 Service script set up
 
 Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an
 executable file, and add the file to start up script.
@@ -279,9 +278,9 @@ sudo chmod +x /etc/init.d/zm-backend.sh
 sudo update-rc.d zm-backend.sh defaults
 ```
 
-### 6) Chosen database configuration
+### 2.6 Chosen database configuration
 
-#### 6.1) MySQL
+#### 2.6.1 MySQL
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -327,7 +326,7 @@ database (obviously taking all data with it).
 perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")' ./cleanup-mysql.sql
 ```
 
-#### 6.2) PostgreSQL
+#### 2.6.2 PostgreSQL
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -355,20 +354,14 @@ This creates a database called `zonemaster`, as well as a user called
 "zonemaster" with the password "zonemaster" (as stated in the config file). This
 user has just enough permissions to run the backend software.
 
-#### 6.3) SQLite
+#### 2.6.3 SQLite
 
 >
 > At this time there is no instruction for configuring and creating a database
 > in SQLite.
 >
 
-### 7) Service startup
-Start the processes, point pid and log to a appropriate-for-your-OS location
-(first line is the API, second is the test runner itself)
-
-```sh
-starman --error-log="$HOME/logs/backend_starman.log" --listen=127.0.0.1:5000 --pid="$HOME/logs/starman.pid" --daemonize /usr/local/bin/zonemaster_webbackend.psgi
-```
+### 2.7 Service startup
 
 Starting the starman part that listens for and answers the JSON::RPC requests
 
@@ -386,7 +379,7 @@ Check that the service has started
 sudo service zm-backend.sh status
 ```
 
-### 8) Post-installation sanity check
+### 2.8 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -401,23 +394,23 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
-## FreeBSD
+## 3. FreeBSD
 
-### 1) Become superuser
+### 3.1 Become superuser
 To do most of the following steps you have to be superuser (root). Change to
 root and then execute the steps for FreeBSD.
 
 su
 
-### 2) Installing dependencies
+### 3.2 Installing dependencies
 
 ```sh
 pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parse p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
 ``` 
 
-### 3) Install the chosen database engine and related dependencies
+### 3.3 Install the chosen database engine and related dependencies
 
-#### 3.1) MySQL
+#### 3.3.1 MySQL
 
 ```sh
 pkg install mysql56-server p5-DBD-mysql
@@ -426,7 +419,7 @@ pkg install mysql56-server p5-DBD-mysql
 > At this time there is no instruction for configuring/starting MySQL on FreeBSD.
 >
 
-#### 3.2) PostgreSQL
+#### 3.3.2 PostgreSQL
 
 ```sh
 pkg install postgresql93-server p5-DBD-Pg
@@ -435,19 +428,19 @@ service postgresql initdb
 service postgresql start
 ```
 
-#### 3.3) SQLite
+#### 3.3.3 SQLite
 
 >
 > At this time there is no instruction for using SQLite on FreeBSD.
 >
 
-### 4) Installation of the backend
+### 3.4 Installation of the backend
 
 ```sh
 cpan -i Zonemaster::WebBackend
 ```
 
-### 5) Directory and file manipulation
+### 3.5 Directory and file manipulation
 
 ```sh
 mkdir /etc/zonemaster
@@ -468,23 +461,23 @@ Copy the `backend_config.ini` file to `/etc/zonemaster`.
 cp ./backend_config.ini /etc/zonemaster/
 ```
 
-### 6) Service script set up
+### 3.6 Service script set up
 
 >
 > At this time there is no instruction for running Zonemaster Web backends
 > nor Workers as services on FreeBSD.
 >
 
-### 7) Chosen database configuration
+### 3.7 Chosen database configuration
 
-#### 7.1) MySQL
+#### 3.7.1 MySQL
 
 >
 > At this time there is no instruction for configuring and creating a database
 > in SQLite.
 >
 
-#### 7.2) PostgreSQL
+#### 3.7.2 PostgreSQL
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -509,21 +502,21 @@ database using the following script.
 psql -U pgsql -f ./initial-postgres.sql template1
 ```
 
-#### 7.3) SQLite
+#### 3.7.3 SQLite
 
 >
 > At this time there is no instruction for configuring and creating a database
 > in SQLite.
 >
 
-### 8) Service startup
+### 3.8 Service startup
 
 ```sh
 starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi 
 zm_wb_daemon start
 ```
 
-### 9) Post-installation sanity check
+### 3.9 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -539,3 +532,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 ## What to do next?
+>
+> You will have to install the GUI or look at the API documentation. We will be
+> updating this document with links on how to do that? 
+>

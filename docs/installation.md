@@ -6,10 +6,10 @@ Zonemaster *Backend* needs to run on an operating system. One can choose any of
 the following OS to install the *Backend* after having the required
 [Prerequisites](#prerequisites).
 
-* [CentOS 7](#centos)  
-* [Debian 8 (Jessie)](#ubuntu--debian)
-* [Ubuntu 16.04](#ubuntu--debian)
-* [FreeBSD 10.3](#freebsd) 
+* <a href="#centos">CentOS 7</a>  
+* <a href="#debian">Debian 8 (Jessie)</a>  
+* <a href="#debian">Ubuntu 16.04</a>  
+* <a href="#freebsd">FreeBSD 10.3</a>  
 
 >
 > Note: We assume the installation instructions will work for earlier OS
@@ -33,7 +33,7 @@ target system :
 * curl (only for post-installation sanity check)
 * [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
 
-## 1. CentOS 
+## <a name="centos"></a>1. CentOS 
 
 ### 1.1 Installing dependencies 
 

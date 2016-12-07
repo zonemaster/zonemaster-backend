@@ -208,7 +208,7 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
-## 2. Ubuntu & Debian 
+## <a name="debian"></a>2. Ubuntu & Debian 
 
 ### 2.1 Installing dependencies
 
@@ -394,7 +394,7 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
-## 3. FreeBSD
+## <a name="freebsd"></a>3. FreeBSD
 
 ### 3.1 Become superuser
 To do most of the following steps you have to be superuser (root). Change to

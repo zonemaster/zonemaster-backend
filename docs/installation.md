@@ -41,7 +41,6 @@ target system :
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
-
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
@@ -51,13 +50,9 @@ sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::Fork
 
 ```sh 
 sudo yum install wget 
-
 wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
-
 sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm 
-
 sudo yum install mysql-server perl-DBD-mysql 
-
 sudo systemctl start mysqld 
 ```
 
@@ -114,7 +109,6 @@ up anything included with the system.
 
 ```sh
 sudo cp ./zm-centos.sh /etc/init.d/
-
 sudo chmod +x /etc/init.d/zm-centos.sh
 ```
 ### 6) Chosen database configuration
@@ -222,9 +216,7 @@ The command is expected to give an immediate JSON response similiar to :
 
 ```sh
 sudo apt-get update
-
 sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl
-
 sudo cpan -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
 ```
 >
@@ -261,7 +253,6 @@ sudo cpan -i Zonemaster::WebBackend
 
 ```sh
 sudo mkdir /etc/zonemaster
-
 mkdir "$HOME/logs"
 ```
 
@@ -285,9 +276,7 @@ executable file, and add the file to start up script.
 
 ```sh
 sudo cp ./zm-backend.sh /etc/init.d/
-
 sudo chmod +x /etc/init.d/zm-backend.sh
-
 sudo update-rc.d zm-backend.sh defaults
 ```
 
@@ -336,8 +325,7 @@ database (obviously taking all data with it).
 
 
 ```sh
-perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")'
-./cleanup-mysql.sql
+perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")' ./cleanup-mysql.sql
 ```
 
 #### 6.2) PostgreSQL

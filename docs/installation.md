@@ -534,5 +534,14 @@ The command is expected to give an immediate JSON response similiar to :
 ## What to do next?
 >
 > You will have to install the GUI or look at the API documentation. We will be
-> updating this document with links on how to do that? 
+> updating this document with links on how to do that. 
 >
+
+-------
+
+Copyright (c) 2013 - 2016, IIS (The Internet Foundation in Sweden)  
+Copyright (c) 2013 - 2016, AFNIC  
+Creative Commons Attribution 4.0 International License
+
+You should have received a copy of the license along with this
+work.  If not, see <http://creativecommons.org/licenses/by/4.0/>.

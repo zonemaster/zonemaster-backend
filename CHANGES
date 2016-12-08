@@ -1,4 +1,22 @@
 Revision history for Zonemaster Backend.
+v1.0.8 2016-12-08
+	Fixes #237 - Update installation instructions
+	Fixes #236 - Key/parameter "advanced" should be deprecated in the backend
+	Fixes #233 - API documentatuion improvments
+	Fixes #232 - Various improvements to the installation guide
+	Fixes #230 - Add lots of structure to the installation guide
+	Fixes #219 - Make IPv4 or IPv6 optionnal. If none are provided the engine will run with both enabled
+	Fixes #211 - Create a config_file parameter allowing a backend to execute only tests of a certain priority
+	Fixes #210 - Make IP adresses for nameservers optional
+	Fixes #207 - Batch never completes
+	Fixes #201 - Add IP '127.0.0.1' to the list of accepted IP addresses to the add_api_user API method
+	Fixes #200 - Syntac errors in the API.md documentation
+	Fixes #197 - Addeed an Empty WebBackend.pm module to the distribution
+	Fixes #196 - Fixes errors in marameters retruned by the backend with MySQL DB
+	Fixes #191 - The add_batch_job API takes hours to schedule several hundread thousand domains for thesting
+	Fixes #186 - Why is "ip" required in "start_domain_test" ?
+	Fixes #165 - .sql files belong in "share", not doc
+	Fixes #161 - Bug in Zonemaster/WebBackend/Engine.pm when validating parameters
 v1.0.7 2016-10-17
 	Fixes #168 - Published to CPAN
 v1.0.6 2016-10-11

@@ -8,13 +8,11 @@ CodeSnippets/sample_api_call__get_ns_ips.pl
 CodeSnippets/sample_api_call__validate_syntax.pl
 CodeSnippets/sample_api_call__version_info.pl
 docs/API.md
-docs/cleanup-mysql.sql
-docs/cleanup-postgres.sql
+docs/Architecture.md
 docs/files-description.md
-docs/initial-mysql.sql
-docs/initial-postgres.sql
+docs/GettingStarted.md
 docs/installation.md
-docs/notes_api.md
+docs/TypographicConventions.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -67,7 +65,5 @@ share/zm_wb_daemon.conf
 t/test01.data
 t/test01.t
 t/test_DB_backend.pl
-t/test_mysql_backend.pl
-t/test_postgresql_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t

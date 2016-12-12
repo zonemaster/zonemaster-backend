@@ -13,6 +13,7 @@ docs/files-description.md
 docs/GettingStarted.md
 docs/installation.md
 docs/TypographicConventions.md
+docs/upgrade-from-1.0.x-to-1.1.x.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -67,3 +68,4 @@ t/test01.t
 t/test_DB_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t
+zonemaster

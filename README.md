@@ -1,5 +1,5 @@
-Zonemaster
-==========
+Zonemaster Backend
+==================
 [![Build Status](https://travis-ci.org/dotse/zonemaster-backend.svg?branch=master)](https://travis-ci.org/dotse/zonemaster-backend)
 
 ### Purpose
@@ -19,10 +19,19 @@ analysing.
 
 ### Prerequisites
 
-Before you install the Zonemaster CLI utility, you need the
-Zonemaster Engine test framework installed. Please see the
+Before you install the Zonemaster Backend, you need the
+Zonemaster Engine installed. Please see the
 [Zonemaster Engine installation
-instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md)
+instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
+
+### Upgrade 
+
+If you are upgrading Zonemaster Backend from 1.0.X to 1.1.X please follow the
+[upgrade instructions from 1.0.X to 1.1.X](docs/upgrade-from-1.0.x-to-1.1.x.md) and then follow the
+relevant parts of the installation instructions below.
+
+For all other upgrades follow the relevant parts of the installation
+instructions below.
 
 ### Installation
 

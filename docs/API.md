@@ -124,8 +124,6 @@ Properties:
 
 Basic data type: number
 
-A higher number means higher priority.
-
 This parameter is any integer that will be used by The Zonemaster Backend Worker daemon to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the Backend API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
@@ -465,8 +463,8 @@ An object with the following properties:
 * `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.
-* `"priority"`: An integer, optional
-* `"queue"`: An integer, optional
+* `"priority"`: A *priority*, optional
+* `"queue"`: A *queue*, optional
 
 >
 > TODO: Clarify the data type of the following `"params"` properties:
@@ -477,13 +475,6 @@ An object with the following properties:
 > TODO: Clarify the default value of each optional `"params"` property.
 >
 
-priority parameter
-
-see the *priority* section
-
-queue parameter
-
-see the *queue* section
 
 #### `"result"`
 
@@ -904,15 +895,8 @@ The value of `"test_params"` is an object with the following properties:
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.
 * `"priority"`: A *priorty*, optional
-* `"queue"`: An *queue*, optional
+* `"queue"`: A *queue*, optional
 
-priority parameter
-
-see the *priority* section
-
-queue parameter
-
-see the *queue* section
 
 >
 > TODO: Clarify the data type of the following `"frontend_params"` properties:

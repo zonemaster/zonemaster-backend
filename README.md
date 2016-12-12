@@ -27,7 +27,11 @@ instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/instal
 ### Upgrade 
 
 If you are upgrading Zonemaster Backend from 1.0.X to 1.1.X please follow the
-[upgrade instructions](docs/upgrade-from-1.0.x-to-1.1.x.md).
+[upgrade instructions from 1.0.X to 1.1.X](docs/upgrade-from-1.0.x-to-1.1.x.md) and then follow the
+relevant parts of the installation instructions below.
+
+For all other upgrades follow the relevant parts of the installation
+instructions below.
 
 ### Installation
 

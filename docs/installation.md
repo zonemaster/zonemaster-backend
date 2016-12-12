@@ -154,7 +154,8 @@ database (obviously taking all data with it).
  
 
 ```sh
-perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")' ./cleanup-mysql.sql
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
 
@@ -323,7 +324,8 @@ database (obviously taking all data with it).
 
 
 ```sh
-perl -MFile::ShareDir -le 'print File::ShareDir::dist_file("Zonemaster-WebBackend", "cleanup-mysql.sql")' ./cleanup-mysql.sql
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
 #### 2.6.2 PostgreSQL

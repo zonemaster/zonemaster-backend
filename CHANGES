@@ -1,6 +1,6 @@
 Revision history for Zonemaster Backend.
-v1.0.8 2016-12-08
-	Fixes #261 - Change from 1.0.8 release version to 1.1 release version
+v1.1.0 2016-12-08
+	Fixes #261 - Change from 1.0.8 release version to 1.1.0 release version
 v1.0.8 2016-12-08
 	Fixes #247 - Error while creating database in Ubuntu 16.0.4
 	Fixes #237 - Update installation instructions

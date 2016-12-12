@@ -24,6 +24,11 @@ Zonemaster Engine test framework installed. Please see the
 [Zonemaster Engine installation
 instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md)
 
+### Upgrade 
+
+If you are upgrading from 1.0.X to 1.1.X please follow the [installation
+instructions](docs/upgrade-from-1.0.x-to-1.1.x.md)
+
 ### Installation
 
 Follow the detailed [installation instructions](docs/installation.md).

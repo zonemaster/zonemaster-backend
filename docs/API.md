@@ -126,6 +126,17 @@ Basic data type: number
 
 A higher number means higher priority.
 
+This parameter is any integer that will be used by The Zonemaster Backend Worker daemon to sort the test requests from highest to lowest priority.
+This parameter will typically be used in a setup where a GUI will send requests to the Backend API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
+The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
+
+### Queue
+
+Basic data type: number
+
+This parameter allows an optional separation of testing in the same database. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
+The typical use case for this parameter would be a setup with several separate Backends Worker daemons running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Backend Worker daemons on the same machine is currently not supported.
+
 
 ### Profile name
 
@@ -466,16 +477,13 @@ An object with the following properties:
 > TODO: Clarify the default value of each optional `"params"` property.
 >
 
-*priotity*
+priority parameter
 
-This parameter is a free integer that will be used by the zonemaster testing backend daemon to sort the test requests from highest to lowest priority.
-This parameter will typically be used in a setup where a GUI will send requests to the bachend and would like to get response as soon as possible while at the same time using the idle time for background bach testing.
-The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
+see the *priority* section
 
-*queue*
+queue parameter
 
-This parameter allows an optional separation of testing in the same database. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
-The typical use case for this parameter would be a setup with several separate backends daemons running on separate physical or virtual machines (or on the same machine in future releases) each one dedicated to a specific task, for example queue 0 for frontend tests and some other queue dedicated to batch testing.
+see the *queue* section
 
 #### `"result"`
 
@@ -895,19 +903,16 @@ The value of `"test_params"` is an object with the following properties:
 * `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.
-* `"priority"`: An integer, optional
-* `"queue"`: An integer, optional
+* `"priority"`: A *priorty*, optional
+* `"queue"`: An *queue*, optional
 
-*priotity*
+priority parameter
 
-This parameter is a free integer that will be used by the zonemaster testing backend daemon to sort the test requests from highest to lowest priority.
-This parameter will typically be used in a setup where a GUI will send requests to the bachend and would like to get response as soon as possible while at the same time using the idle time for background bach testing.
-The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
+see the *priority* section
 
-*queue*
+queue parameter
 
-This parameter allows an optional separation of testing in the same database. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
-The typical use case for this parameter would be a setup with several separate backends daemons running on separate physical or virtual machines (or on the same machine in future releases) each one dedicated to a specific task, for example queue 0 for frontend tests and some other queue dedicated to batch testing.
+see the *queue* section
 
 >
 > TODO: Clarify the data type of the following `"frontend_params"` properties:

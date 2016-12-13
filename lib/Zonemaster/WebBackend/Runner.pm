@@ -6,7 +6,7 @@ use warnings;
 use 5.14.2;
 
 use DBI qw(:utils);
-use JSON;
+use JSON::PP;
 
 use Net::LDNS;
 

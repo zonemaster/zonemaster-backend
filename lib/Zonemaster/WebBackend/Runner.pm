@@ -120,14 +120,18 @@ sub run {
         $self->add_fake_ds( $domain, $params->{ds_info} );
     }
     
-    if ( $params->{profile} eq 'test_profile_1' ) {
-		if (Zonemaster::WebBackend::Config->CustomProfilesPath()) {
-			Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana-profile.json' );
-		}
-		else {
-			Zonemaster->config->load_policy_file( 'iana-profile.json' );
-		}
+
+    # If the profile parameter has been set in the API, then load a profile, else Engine configuration will decide what profile (policy) to load.
+    if ( $params->{profile} ) {
+	if ( $params->{profile} eq 'test_profile_1' and Zonemaster::WebBackend::Config->CustomProfilesPath()) {
+	    # If the config has defined an alternative profile and it has been selected, load it.
+	    Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana-profile.json' );
 	}
+	else { # I.e. the profile parameter has been set to "default_profile" or alternative is not defined
+	    Zonemaster->config->load_policy_file( 'iana-profile.json' );
+	}
+    }
+
 
 	if ( $params->{config} ) {
 		my $config_file_path = Zonemaster::WebBackend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});

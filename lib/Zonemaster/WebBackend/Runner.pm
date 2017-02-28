@@ -121,15 +121,16 @@ sub run {
     }
     
 
-    # If the profile parameter has been set in the API, then load a profile, else Engine configuration will decide what profile (policy) to load.
+    # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
 	if ( $params->{profile} eq 'test_profile_1' and Zonemaster::WebBackend::Config->CustomProfilesPath()) {
-	    # If the config has defined an alternative profile and it has been selected, load it.
+	    # The config has defined an alternative profile and "test_profile_1" has been set.
 	    Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana-profile.json' );
 	}
-	else { # I.e. the profile parameter has been set to "default_profile" or alternative is not defined
+	else { # The profile parameter has been set to something else or alternative profile is not defined
 	    Zonemaster->config->load_policy_file( 'iana-profile.json' );
 	}
+	# It will be silently ignored if the file does not exist.
     }
 
 

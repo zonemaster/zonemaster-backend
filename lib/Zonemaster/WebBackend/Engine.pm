@@ -231,7 +231,12 @@ sub validate_syntax {
 				status  => 'nok',
 				message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
 			}
-			if ( ( length( $ds_digest->{digest} ) != 64 && length( $ds_digest->{digest} ) != 40 ) || $ds_digest->{digest} =~ /[^A-Fa-f0-9]/ );
+			if (
+				( length( $ds_digest->{digest} ) != 96 &&
+			          length( $ds_digest->{digest} ) != 64 &&
+			          length( $ds_digest->{digest} ) != 40 ) ||
+			          $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
+			);
         }
     }
 

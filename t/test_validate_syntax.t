@@ -5,6 +5,7 @@ use utf8;
 
 use Encode;
 use Test::More;    # see done_testing()
+use JSON;
 
 my $can_use_threads = eval 'use threads; 1';
 
@@ -16,8 +17,8 @@ my $engine = Zonemaster::WebBackend::Engine->new( { db => 'Zonemaster::WebBacken
 isa_ok( $engine, 'Zonemaster::WebBackend::Engine' );
 
 my $frontend_params = {
-	ipv4 => 1,
-	ipv6 => 1,
+	ipv4 => JSON::true,
+	ipv6 => JSON::true,
 };
 
 $frontend_params->{nameservers} = [    # list of the namaserves up to 32

@@ -1,3 +1,6 @@
+services: 
+  - mysql
+
 addons:
   postgresql: "9.3"
   

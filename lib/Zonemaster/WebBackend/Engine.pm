@@ -177,21 +177,21 @@ sub validate_syntax {
 
     if ( defined $syntax_input->{advanced} ) {
         return { status => 'nok', message => encode_entities( "Invalid 'advanced' option format" ) }
-          unless ( $syntax_input->{advanced} eq JSON::false || $syntax_input->{advanced} eq JSON::true );
+          unless ( $syntax_input->{advanced} eq JSON::PP::false || $syntax_input->{advanced} eq JSON::PP::true );
     }
 
     if ( defined $syntax_input->{ipv4} ) {
         return { status => 'nok', message => encode_entities( "Invalid IPv4 transport option format" ) }
-          unless ( $syntax_input->{ipv4} eq JSON::false
-            || $syntax_input->{ipv4} eq JSON::true
+          unless ( $syntax_input->{ipv4} eq JSON::PP::false
+            || $syntax_input->{ipv4} eq JSON::PP::true
             || $syntax_input->{ipv4} eq '1'
             || $syntax_input->{ipv4} eq '0' );
     }
 
     if ( defined $syntax_input->{ipv6} ) {
         return { status => 'nok', message => encode_entities( "Invalid IPv6 transport option format" ) }
-          unless ( $syntax_input->{ipv6} eq JSON::false
-            || $syntax_input->{ipv6} eq JSON::true
+          unless ( $syntax_input->{ipv6} eq JSON::PP::false
+            || $syntax_input->{ipv6} eq JSON::PP::true
             || $syntax_input->{ipv6} eq '1'
             || $syntax_input->{ipv6} eq '0' );
     }

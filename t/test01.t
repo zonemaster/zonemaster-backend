@@ -4,6 +4,7 @@ use 5.14.2;
 
 use Test::More;    # see done_testing()
 use Zonemaster;
+use JSON;
 
 my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
@@ -33,9 +34,9 @@ my $frontend_params_1 = {
     client_id      => 'Unit Test',         # free string
     client_version => '1.0',               # free version like string
     domain         => 'afnic.fr',          # content of the domain text field
-    advanced       => 1,                   # 0 or 1, is the advanced options checkbox checked
-    ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
-    ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
+    advanced       => JSON::true,                   # 0 or 1, is the advanced options checkbox checked
+    ipv4           => JSON::true,                   # 0 or 1, is the ipv4 checkbox checked
+    ipv6           => JSON::true,                   # 0 or 1, is the ipv6 checkbox checked
     profile        => 'default_profile',    # the id if the Test profile listbox
 
     nameservers => [                       # list of the nameserves up to 32

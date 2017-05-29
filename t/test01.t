@@ -12,12 +12,12 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster->config->no_network( 1 );
 }
 
-# Require Zonemaster::Backend::Engine.pm test
-use_ok( 'Zonemaster::Backend::Engine' );
+# Require Zonemaster::Backend::RPCAPI.pm test
+use_ok( 'Zonemaster::Backend::RPCAPI' );
 
-# Create Zonemaster::Backend::Engine object
-my $engine = Zonemaster::Backend::Engine->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
-isa_ok( $engine, 'Zonemaster::Backend::Engine' );
+# Create Zonemaster::Backend::RPCAPI object
+my $engine = Zonemaster::Backend::RPCAPI->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
+isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 # create a new memory SQLite database
 ok( $engine->{db}->create_db() );

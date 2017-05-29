@@ -25,10 +25,10 @@ my $frontend_params_1 = {
     ],
 };
 
-use_ok( 'Zonemaster::Backend::Engine' );
-# Create Zonemaster::Backend::Engine object
-my $engine = Zonemaster::Backend::Engine->new( { db => "Zonemaster::Backend::DB::$db_backend" } );
-isa_ok( $engine, 'Zonemaster::Backend::Engine' );
+use_ok( 'Zonemaster::Backend::RPCAPI' );
+# Create Zonemaster::Backend::RPCAPI object
+my $engine = Zonemaster::Backend::RPCAPI->new( { db => "Zonemaster::Backend::DB::$db_backend" } );
+isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 sub run_zonemaster_test_with_backend_API {
 	my ($test_id) = @_;

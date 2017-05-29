@@ -14,7 +14,7 @@ use Plack::Builder;
 
 BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
-use Zonemaster::Backend::Engine;
+use Zonemaster::Backend::RPCAPI;
 
 local $| = 1;
 
@@ -25,64 +25,64 @@ builder {
 my $router = router {
 ############## FRONTEND ####################
 	connect "version_info" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "version_info"
 	};
 
 	connect "get_ns_ips" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_ns_ips"
 	};
 
 	connect "get_data_from_parent_zone" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_data_from_parent_zone"
 	};
 
 	connect "validate_syntax" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "validate_syntax"
 	};
 	
 	connect "start_domain_test" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "start_domain_test"
 	};
 	
 	connect "test_progress" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "test_progress"
 	};
 	
 	connect "get_test_params" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_test_params"
 	};
 
 	connect "get_test_results" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_test_results"
 	};
 
 	connect "get_test_history" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_test_history"
 	};
 
 ############ BATCH MODE ####################
 
 	connect "add_api_user" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "add_api_user"
 	};
 
 	connect "add_batch_job" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "add_batch_job"
 	};
 
 	connect "get_batch_job_result" => {
-		handler => "+Zonemaster::Backend::Engine",
+		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_batch_job_result"
 	};
 };

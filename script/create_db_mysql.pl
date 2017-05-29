@@ -41,7 +41,7 @@ sub create_db {
 			params blob NOT NULL,
 			results blob DEFAULT NULL,
 			undelegated boolean NOT NULL DEFAULT false
-		) Engine=InnoDB
+		) RPCAPI=InnoDB
         '
     );
     
@@ -80,7 +80,7 @@ sub create_db {
 			id integer AUTO_INCREMENT PRIMARY KEY,
 			username character varying(50) NOT NULL,
 			creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-		) Engine=InnoDB;
+		) RPCAPI=InnoDB;
         '
     );
 
@@ -95,7 +95,7 @@ sub create_db {
 			username varchar(128),
 			api_key varchar(512),
 			user_info blob DEFAULT NULL
-		) Engine=InnoDB;
+		) RPCAPI=InnoDB;
         '
     );
 }

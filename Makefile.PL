@@ -2,7 +2,7 @@ use inc::Module::Install;
 
 name 'Zonemaster-Backend';
 author q{Michal TOMA <toma@nic.fr>};
-version_from 'lib/Zonemaster/Backend/Engine.pm';
+version_from 'lib/Zonemaster/Backend/RPCAPI.pm';
 abstract 'The Zonemaster project Web Backend engine';
 license 'perl';
 perl_version '5.014002';
@@ -40,8 +40,8 @@ recommends 'DBD::SQLite';
 
 install_share;
 
-install_script 'zonemaster_webbackend.psgi';
-install_script 'zm_wb_daemon';
+install_script 'zonemaster_backend.psgi';
+install_script 'zonemaster_testagent';
 
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';

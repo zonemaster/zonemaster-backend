@@ -4,7 +4,7 @@ use 5.14.2;
 use warnings;
 
 use Encode qw[decode_utf8];
-use Zonemaster::Backend::Engine;
+use Zonemaster::Backend::RPCAPI;
 
 binmode STDOUT, ':utf8';
 
@@ -13,7 +13,7 @@ if ( @ARGV == 0 ) {
     exit;
 }
 
-my $e = Zonemaster::Backend::Engine->new;
+my $e = Zonemaster::Backend::RPCAPI->new;
 
 foreach my $domain ( @ARGV ) {
     $domain = decode_utf8($domain);

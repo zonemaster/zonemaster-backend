@@ -1,9 +1,9 @@
 # Files Description
 
-./lib/Zonemaster/Backend/Engine.pm
+./lib/Zonemaster/Backend/RPCAPI.pm
     The main module
 
-./script/zonemaster_webbackend.psgi
+./script/zonemaster_backend.psgi
     The Plack/PSGI module. The main entry module for a Plack/PSGI server (like Starman)
 
 ./lib/Zonemaster/Backend/Config.pm

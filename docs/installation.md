@@ -393,7 +393,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
+{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test RPCAPI Version: v1.0.2"}
 ```
 
 ## <a name="freebsd"></a>3. FreeBSD
@@ -514,8 +514,8 @@ psql -U pgsql -f ./initial-postgres.sql template1
 ### 3.8 Service startup
 
 ```sh
-starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi 
-zm_wb_daemon start
+starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_backend.psgi 
+zonemaster_testagent start
 ```
 
 ### 3.9 Post-installation sanity check
@@ -530,7 +530,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
+{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test RPCAPI Version: v1.0.2"}
 ```
 
 ## What to do next?

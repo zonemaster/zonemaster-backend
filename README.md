@@ -20,8 +20,8 @@ analysing.
 ### Prerequisites
 
 Before you install the Zonemaster Backend, you need the
-Zonemaster Engine installed. Please see the
-[Zonemaster Engine installation
+Zonemaster RPCAPI installed. Please see the
+[Zonemaster RPCAPI installation
 instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
 
 ### Upgrade 

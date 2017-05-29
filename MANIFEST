@@ -50,7 +50,7 @@ script/crontab_job_runner/execute_zonemaster_P5.pl
 script/patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl
 script/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
 script/zonemaster_testagent
-script/zonemaster_backend.psgi
+script/zonemaster_rpcapi.psgi
 share/backend_config.ini
 share/cleanup-mysql.sql
 share/cleanup-postgres.sql

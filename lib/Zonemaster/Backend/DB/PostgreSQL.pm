@@ -274,6 +274,7 @@ sub add_batch_job {
 		$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
 		$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
 		$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
+		$dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
 		
 		$dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
@@ -288,6 +289,7 @@ sub add_batch_job {
 		$dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
 		$dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+        $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         
         $dbh->commit();
     }

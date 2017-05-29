@@ -1,4 +1,14 @@
 Revision history for Zonemaster Backend.
+v1.2.0 2017-04-11 Public Pre-Release
+        Fixes #182 - Tests fail with `unexpected end of string while parsing JSON string
+	Fixes #206 - Perl warning when creating a batch
+	Fixes #270 - "default_profile" would not be loaded
+	Fixes #276 - Accept SHA-384 digests in DS records.
+	Fixes #277 - Modified instances of JSON to JSON::PP in Engine.pm and DB/SQlite.pm
+	Fixes #279 - Add mysql (no more available by default in travisci)
+	Fixes #266 - Undelegated test (Backend) ignores name that does not resolve to address
+	Fixes #267 - Undelegated test (Backend) does lookup on in-zone names
+
 v1.1.0 2016-12-08
 	Fixes #247 - Error while creating database in Ubuntu 16.0.4
 	Fixes #237 - Update installation instructions

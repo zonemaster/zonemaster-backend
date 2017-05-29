@@ -170,6 +170,7 @@ sub run {
 
 sub add_fake_delegation {
     my ( $self, $domain, $nameservers ) = @_;
+    my @ns_with_no_ip;
     my %data;
 
     foreach my $ns_ip_pair ( @$nameservers ) {
@@ -177,15 +178,20 @@ sub add_fake_delegation {
 			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} );
 		}
 		elsif ($ns_ip_pair->{ns}) {
-			my @ips = Net::LDNS->new->name2addr($ns_ip_pair->{ns});
-			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $_) for @ips;
+            push(@ns_with_no_ip, $self->to_idn( $ns_ip_pair->{ns} ) );
 		}
 		else {
 			die "Invalid ns_ip_pair";
 		}
     }
 
-    Zonemaster->add_fake_delegation( $domain => \%data );
+	foreach my $ns ( @ns_with_no_ip ) {
+		if ( not exists $data{ $ns } ) {
+			$data{ $self->to_idn( $ns ) } = undef;
+		}
+	}
+	
+	Zonemaster->add_fake_delegation( $domain => \%data );
 
     return;
 }

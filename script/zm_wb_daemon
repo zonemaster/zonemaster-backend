@@ -3,8 +3,8 @@
 use 5.14.2;
 use warnings;
 
-use Zonemaster::WebBackend::Runner;
-use Zonemaster::WebBackend::Config;
+use Zonemaster::Backend::Runner;
+use Zonemaster::Backend::Config;
 
 use Parallel::ForkManager;
 use Daemon::Control;
@@ -25,8 +25,8 @@ our $dbclass;
 # Demand-load the database class specified in the configuration.
 BEGIN {
 	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
-    my $dbtype = Zonemaster::WebBackend::Config->BackendDBType();
-    $dbclass = 'Zonemaster::WebBackend::DB::' . $dbtype;
+    my $dbtype = Zonemaster::Backend::Config->BackendDBType();
+    $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
     require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
     $dbclass->import();
 }
@@ -47,11 +47,11 @@ $pidfile //= '/tmp/zm_wc_daemon.pid';
 
 # Yes, the method names are spelled like that.
 my $maximum_processes =
-  Zonemaster::WebBackend::Config->NumberOfProcessesForFrontendTesting() +
-  Zonemaster::WebBackend::Config->NumberOfProcessesForBatchTesting();
+  Zonemaster::Backend::Config->NumberOfProcessesForFrontendTesting() +
+  Zonemaster::Backend::Config->NumberOfProcessesForBatchTesting();
 
-my $delay   = Zonemaster::WebBackend::Config->PollingInterval();
-my $timeout = Zonemaster::WebBackend::Config->MaxZonemasterExecutionTime();
+my $delay   = Zonemaster::Backend::Config->PollingInterval();
+my $timeout = Zonemaster::Backend::Config->MaxZonemasterExecutionTime();
 
 my $pm = Parallel::ForkManager->new( $maximum_processes );
 $pm->set_waitpid_blocking_sleep( 0 ) if $pm->can('set_waitpid_blocking_sleep');
@@ -100,7 +100,7 @@ sub main {
         if ( $id ) {
             $pm->wait_for_available_procs();
             if ( $pm->start( $id ) == 0 ) {    # Child process
-                Zonemaster::WebBackend::Runner->new->run( $id );
+                Zonemaster::Backend::Runner->new->run( $id );
                 $pm->finish;
             }
         }

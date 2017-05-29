@@ -75,7 +75,7 @@ service mysqld status
 ### 1.3 Installation of the backend
 
 ```sh
-sudo cpan -i Zonemaster::WebBackend
+sudo cpan -i Zonemaster::Backend
 ```
 
 ### 1.4 Directory and file manipulation
@@ -85,12 +85,12 @@ sudo mkdir /etc/zonemaster
 mkdir "$HOME/logs"
 ```
 
-The Zonemaster::WebBackend module installs a number of configuration files in a
+The Zonemaster::Backend module installs a number of configuration files in a
 shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -154,7 +154,7 @@ database (obviously taking all data with it).
  
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
@@ -246,7 +246,7 @@ sudo apt-get install libdbd-pg-perl postgresql
 ### 2.3 Installation of the backend
 
 ```sh
-sudo cpan -i Zonemaster::WebBackend
+sudo cpan -i Zonemaster::Backend
 ```
 ### 2.4 Directory and file manipulation
 
@@ -255,12 +255,12 @@ sudo mkdir /etc/zonemaster
 mkdir "$HOME/logs"
 ```
 
-The Zonemaster::WebBackend module installs a number of configuration files in a
+The Zonemaster::Backend module installs a number of configuration files in a
 shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -324,7 +324,7 @@ database (obviously taking all data with it).
 
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
@@ -439,7 +439,7 @@ service postgresql start
 ### 3.4 Installation of the backend
 
 ```sh
-cpan -i Zonemaster::WebBackend
+cpan -i Zonemaster::Backend
 ```
 
 ### 3.5 Directory and file manipulation
@@ -449,12 +449,12 @@ mkdir /etc/zonemaster
 mkdir "$HOME/logs"
 ```
 
-The Zonemaster::WebBackend module installs a number of configuration files in a
+The Zonemaster::Backend module installs a number of configuration files in a
 shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.

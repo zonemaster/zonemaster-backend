@@ -8,12 +8,12 @@ use Test::More;    # see done_testing()
 
 my $can_use_threads = eval 'use threads; 1';
 
-# Require Zonemaster::WebBackend::Engine.pm test
-use_ok( 'Zonemaster::WebBackend::Engine' );
+# Require Zonemaster::Backend::Engine.pm test
+use_ok( 'Zonemaster::Backend::Engine' );
 
-# Create Zonemaster::WebBackend::Engine object
-my $engine = Zonemaster::WebBackend::Engine->new( { db => 'Zonemaster::WebBackend::DB::SQLite' } );
-isa_ok( $engine, 'Zonemaster::WebBackend::Engine' );
+# Create Zonemaster::Backend::Engine object
+my $engine = Zonemaster::Backend::Engine->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
+isa_ok( $engine, 'Zonemaster::Backend::Engine' );
 
 my $frontend_params = {
 	ipv4 => 1,

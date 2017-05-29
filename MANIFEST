@@ -24,15 +24,15 @@ inc/Module/Install/Scripts.pm
 inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
-lib/Zonemaster/WebBackend.pm
-lib/Zonemaster/WebBackend/Config.pm
-lib/Zonemaster/WebBackend/DB.pm
-lib/Zonemaster/WebBackend/DB/MySQL.pm
-lib/Zonemaster/WebBackend/DB/PostgreSQL.pm
-lib/Zonemaster/WebBackend/DB/SQLite.pm
-lib/Zonemaster/WebBackend/Engine.pm
-lib/Zonemaster/WebBackend/Runner.pm
-lib/Zonemaster/WebBackend/Translator.pm
+lib/Zonemaster/Backend.pm
+lib/Zonemaster/Backend/Config.pm
+lib/Zonemaster/Backend/DB.pm
+lib/Zonemaster/Backend/DB/MySQL.pm
+lib/Zonemaster/Backend/DB/PostgreSQL.pm
+lib/Zonemaster/Backend/DB/SQLite.pm
+lib/Zonemaster/Backend/Engine.pm
+lib/Zonemaster/Backend/Runner.pm
+lib/Zonemaster/Backend/Translator.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files

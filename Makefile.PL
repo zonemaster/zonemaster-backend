@@ -1,8 +1,8 @@
 use inc::Module::Install;
 
-name 'Zonemaster-WebBackend';
+name 'Zonemaster-Backend';
 author q{Michal TOMA <toma@nic.fr>};
-version_from 'lib/Zonemaster/WebBackend/Engine.pm';
+version_from 'lib/Zonemaster/Backend/Engine.pm';
 abstract 'The Zonemaster project Web Backend engine';
 license 'perl';
 perl_version '5.014002';

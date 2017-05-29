@@ -40,7 +40,7 @@ recommends 'DBD::SQLite';
 
 install_share;
 
-install_script 'zonemaster_backend.psgi';
+install_script 'zonemaster_rpcapi.psgi';
 install_script 'zonemaster_testagent';
 
 no_index directory => 'CodeSnippets';

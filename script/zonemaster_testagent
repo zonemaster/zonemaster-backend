@@ -43,7 +43,7 @@ GetOptions(
     'user=s' => \$user,
     'group=s' => \$group,
 );
-$pidfile //= '/tmp/zm_wc_daemon.pid';
+$pidfile //= '/tmp/zonemaster_testagent.pid';
 
 # Yes, the method names are spelled like that.
 my $maximum_processes =
@@ -115,7 +115,7 @@ sub main {
 ###
 
 my $daemon = Daemon::Control->new({
-    name     => 'zonemaster-webbackend-daemon',
+    name     => 'zonemaster-testagent',
     program  => \&main,
     pid_file => $pidfile,
 });

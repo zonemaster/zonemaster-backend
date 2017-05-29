@@ -3,7 +3,7 @@
 use 5.14.2;
 use warnings;
 
-use Zonemaster::Backend::Runner;
+use Zonemaster::Backend::TestAgent;
 use Zonemaster::Backend::Config;
 
 use Parallel::ForkManager;
@@ -100,7 +100,7 @@ sub main {
         if ( $id ) {
             $pm->wait_for_available_procs();
             if ( $pm->start( $id ) == 0 ) {    # Child process
-                Zonemaster::Backend::Runner->new->run( $id );
+                Zonemaster::Backend::TestAgent->new->run( $id );
                 $pm->finish;
             }
         }

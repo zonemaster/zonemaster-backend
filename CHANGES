@@ -107,7 +107,7 @@ v1.0.1 2015-02-24
 	Fixes #33 - Remove reference to Net::DNS::Keyset
 	Fixes #27 - Solved encoding problem with #17
 	Fixes #25 - Fix for security related problem in the MySQL module
-	Fixes #20 - The Runner.pm module uses wrong version of Zonemaster to run the tests
+	Fixes #20 - The TestAgent.pm module uses wrong version of Zonemaster to run the tests
 	Fixes #19 - Preflight check: Domian existance test does not work
 	Fixes #18 - The "Fetch data from parent zone" code does not work as it should for the NS records.
 

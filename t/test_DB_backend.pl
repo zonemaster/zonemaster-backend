@@ -43,8 +43,8 @@ sub run_zonemaster_test_with_backend_API {
     # test test_progress API
     ok( $engine->test_progress( $api_test_id ) == 0 , 'API test_progress -> OK');
 
-    use_ok( 'Zonemaster::Backend::Runner' );
-	Zonemaster::Backend::Runner->new( { db => "Zonemaster::Backend::DB::$db_backend" } )->run( $api_test_id );
+    use_ok( 'Zonemaster::Backend::TestAgent' );
+	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::$db_backend" } )->run( $api_test_id );
 
     sleep( 5 );
     ok( $engine->test_progress( $api_test_id ) > 0 , 'API test_progress -> Test started');

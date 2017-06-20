@@ -3,7 +3,7 @@
 ./lib/Zonemaster/Backend/RPCAPI.pm
     The main module
 
-./script/zonemaster_rpcapi.psgi
+./script/zonemaster_backend_rpcapi.psgi
     The Plack/PSGI module. The main entry module for a Plack/PSGI server (like Starman)
 
 ./lib/Zonemaster/Backend/Config.pm

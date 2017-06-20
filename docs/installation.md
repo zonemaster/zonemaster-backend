@@ -514,8 +514,8 @@ psql -U pgsql -f ./initial-postgres.sql template1
 ### 3.8 Service startup
 
 ```sh
-starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_rpcapi.psgi 
-zonemaster_testagent start
+starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi 
+zonemaster_backend_testagent start
 ```
 
 ### 3.9 Post-installation sanity check

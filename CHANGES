@@ -22,12 +22,12 @@ v1.1.0 2016-12-08
 	Fixes #207 - Batch never completes
 	Fixes #201 - Add IP '127.0.0.1' to the list of accepted IP addresses to the add_api_user API method
 	Fixes #200 - Syntac errors in the API.md documentation
-	Fixes #197 - Addeed an Empty Backend.pm module to the distribution
+	Fixes #197 - Addeed an Empty WebBackend.pm module to the distribution
 	Fixes #196 - Fixes errors in marameters retruned by the backend with MySQL DB
 	Fixes #191 - The add_batch_job API takes hours to schedule several hundread thousand domains for thesting
 	Fixes #186 - Why is "ip" required in "start_domain_test" ?
 	Fixes #165 - .sql files belong in "share", not doc
-	Fixes #161 - Bug in Zonemaster/Backend/RPCAPI.pm when validating parameters
+	Fixes #161 - Bug in Zonemaster/WebBackend/Engine.pm when validating parameters
 v1.0.7 2016-10-17
 	Fixes #168 - Published to CPAN
 v1.0.6 2016-10-11
@@ -112,12 +112,12 @@ v1.0.1 2015-02-24
 	Fixes #45 - Updated and moved the client.pl and Client.pm scripts to make it clear they are only ment as code snippets
 	Fixes #53 - Version change from 1.0.0 to 1.0.1 for release 2015.1
 	Fixes #48 - Disabled the "make install" target in makefiles
-	Fixes #17 - Remove get_data_from_parent_zone_1 method from RPCAPI.pm
+	Fixes #17 - Remove get_data_from_parent_zone_1 method from Engine.pm
 	Fixes #35 - Hardcode UTF-8 as output encoding for the BackendTranslator module (disabling reading of the uncodind to use from system locale variables)
 	Fixes #33 - Remove reference to Net::DNS::Keyset
 	Fixes #27 - Solved encoding problem with #17
 	Fixes #25 - Fix for security related problem in the MySQL module
-	Fixes #20 - The TestAgent.pm module uses wrong version of Zonemaster to run the tests
+	Fixes #20 - The Runner.pm module uses wrong version of Zonemaster to run the tests
 	Fixes #19 - Preflight check: Domian existance test does not work
 	Fixes #18 - The "Fetch data from parent zone" code does not work as it should for the NS records.
 

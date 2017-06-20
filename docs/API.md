@@ -223,7 +223,7 @@ Basic data type: string
 
 ## API method: `version_info`
 
-Returns the version of the *Backend*+*Zonemaster::Engine* software combination.
+the *Zonemaster::Backend* + *Zonemaster::Engine* software software combination.
 
 Example request:
 ```json
@@ -991,7 +991,7 @@ An object with the following properties:
 Checks the `"params"` structure for syntax coherence. It is very strict on what
 is allowed and what is not to avoid any SQL injection and cross site scripting
 attempts. It also checks the domain name for syntax to ensure the domain name
-seems to be a valid domain name and a test by the *ZOnemaster Engine* can be started.
+seems to be a valid domain name and a test by the *Zonemaster Engine* can be started.
 
 Example request:
 ```json

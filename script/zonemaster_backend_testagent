@@ -43,7 +43,7 @@ GetOptions(
     'user=s' => \$user,
     'group=s' => \$group,
 );
-$pidfile //= '/tmp/zonemaster_testagent.pid';
+$pidfile //= '/tmp/zonemaster_backend_testagent.pid';
 
 # Yes, the method names are spelled like that.
 my $maximum_processes =

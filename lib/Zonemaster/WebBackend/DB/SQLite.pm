@@ -233,6 +233,8 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my @results;
+	return \@results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+	
     my $quoted_domain = $self->dbh->quote( $p->{frontend_params}->{domain} );
     $quoted_domain =~ s/'/"/g;
     my $query =

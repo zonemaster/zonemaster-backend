@@ -204,7 +204,10 @@ sub get_test_history {
       : ( "AND (params->'nameservers') IS NULL" );
 
     my @results;
-    my $query = "
+	
+	return \@results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+	
+   my $query = "
 		SELECT 
 			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
 			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,

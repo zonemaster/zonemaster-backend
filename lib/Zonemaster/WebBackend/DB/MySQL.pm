@@ -221,6 +221,8 @@ sub get_test_history {
 
     my @results;
     
+    return \@results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+    
     my $use_hash_id_from_id = Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id();
     
     my $sth = $self->dbh->prepare(

@@ -6,13 +6,13 @@ use Encode;
 
 use DBI qw(:utils);
 
-use Zonemaster::WebBackend::Config;
+use Zonemaster::Backend::Config;
 
-die "The configuration file does not contain the MySQL backend" unless (lc(Zonemaster::WebBackend::Config->BackendDBType()) eq 'mysql');
-my $db_user = Zonemaster::WebBackend::Config->DB_user();
-my $db_password = Zonemaster::WebBackend::Config->DB_password();
-my $db_name = Zonemaster::WebBackend::Config->DB_name();
-my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string();
+die "The configuration file does not contain the MySQL backend" unless (lc(Zonemaster::Backend::Config->BackendDBType()) eq 'mysql');
+my $db_user = Zonemaster::Backend::Config->DB_user();
+my $db_password = Zonemaster::Backend::Config->DB_password();
+my $db_name = Zonemaster::Backend::Config->DB_name();
+my $connection_string = Zonemaster::Backend::Config->DB_connection_string();
 
 my $dbh = DBI->connect( $connection_string, $db_user, $db_password, { RaiseError => 1, AutoCommit => 1 } );
 
@@ -41,7 +41,7 @@ sub create_db {
 			params blob NOT NULL,
 			results blob DEFAULT NULL,
 			undelegated boolean NOT NULL DEFAULT false
-		) Engine=InnoDB
+		) ENGINE=InnoDB
         '
     );
     
@@ -80,7 +80,7 @@ sub create_db {
 			id integer AUTO_INCREMENT PRIMARY KEY,
 			username character varying(50) NOT NULL,
 			creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-		) Engine=InnoDB;
+		) ENGINE=InnoDB;
         '
     );
 
@@ -95,7 +95,7 @@ sub create_db {
 			username varchar(128),
 			api_key varchar(512),
 			user_info blob DEFAULT NULL
-		) Engine=InnoDB;
+		) ENGINE=InnoDB;
         '
     );
 }

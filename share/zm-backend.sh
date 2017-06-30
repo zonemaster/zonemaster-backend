@@ -37,14 +37,14 @@ setup() {
 start() {
     setup
 
-    starman --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi
-    /usr/local/bin/zm_wb_daemon --user=$USER --group=$GROUP --pidfile=$PIDDIR/zm_wb_daemon.pid start
+    starman --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
+    /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
 }
 
 stop() {
-    if [ -f $PIDDIR/zm_wb_daemon.pid ]
+    if [ -f $PIDDIR/zonemaster_backend_testagent.pid ]
     then
-        /usr/local/bin/zm_wb_daemon --user=$USER --group=$GROUP --pidfile=$PIDDIR/zm_wb_daemon.pid stop
+        /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid stop
     fi
 
     if [ -f $PIDDIR/zm-starman.pid ]

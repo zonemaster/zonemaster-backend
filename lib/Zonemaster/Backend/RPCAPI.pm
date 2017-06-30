@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::Engine;
+package Zonemaster::Backend::RPCAPI;
 
 our $VERSION = '1.1.0';
 
@@ -21,8 +21,8 @@ use Zonemaster;
 use Zonemaster::Nameserver;
 use Zonemaster::DNSName;
 use Zonemaster::Recursor;
-use Zonemaster::WebBackend::Config;
-use Zonemaster::WebBackend::Translator;
+use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Translator;
 
 my $recursor = Zonemaster::Recursor->new;
 
@@ -42,7 +42,7 @@ sub new {
     }
     else {
         eval {
-            my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
+            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
             eval "require $backend_module";
             die $@ if $@;
             $self->{db} = $backend_module->new();
@@ -58,7 +58,7 @@ sub version_info {
 
     my %ver;
     $ver{zonemaster_engine} = Zonemaster->VERSION;
-    $ver{zonemaster_backend} = Zonemaster::WebBackend::Engine->VERSION;
+    $ver{zonemaster_backend} = Zonemaster::Backend::RPCAPI->VERSION;
 
     return \%ver;
 }
@@ -247,17 +247,17 @@ sub add_user_ip_geolocation {
     my ( $self, $params ) = @_;
     
 	if ($params->{user_ip} 
-		&& Zonemaster::WebBackend::Config->Maxmind_ISP_DB_File()
-		&& Zonemaster::WebBackend::Config->Maxmind_City_DB_File()
+		&& Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
+		&& Zonemaster::Backend::Config->Maxmind_City_DB_File()
 	) {
 		my $ip = new Net::IP::XS($params->{user_ip});
 		if ($ip->iptype() eq 'PUBLIC') {
 			require Geo::IP;
-			my $gi = Geo::IP->new(Zonemaster::WebBackend::Config->Maxmind_ISP_DB_File());
+			my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
 			my $isp = $gi->isp_by_addr($params->{user_ip});
 			
 			require GeoIP2::Database::Reader;
-			my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::WebBackend::Config->Maxmind_City_DB_File());
+			my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
 	
 			my $city = $reader->city(ip => $params->{user_ip});
 
@@ -285,7 +285,7 @@ sub start_domain_test {
     
     if ($params->{config}) {
 		$params->{config} =~ s/[^\w_]//isg;
-		die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::WebBackend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+		die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
 	}
     
     $self->add_user_ip_geolocation($params);
@@ -323,7 +323,7 @@ sub get_test_results {
     #	die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
 
     my $translator;
-    $translator = Zonemaster::WebBackend::Translator->new;
+    $translator = Zonemaster::Backend::Translator->new;
     my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data

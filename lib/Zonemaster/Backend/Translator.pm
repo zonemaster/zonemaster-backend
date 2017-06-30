@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::Translator;
+package Zonemaster::Backend::Translator;
 
 our $VERSION = '1.1.0';
 

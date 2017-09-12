@@ -223,7 +223,7 @@ Basic data type: string
 
 ## API method: `version_info`
 
-the *Zonemaster::Backend* + *Zonemaster::Engine* software software combination.
+Returns the version of the Zonemaster Backend and Zonemaster Engine software combination
 
 Example request:
 ```json
@@ -251,8 +251,8 @@ Example response:
 
 An object with the following properties:
 
-* `"zonemaster_backend"`: A string. The version number of the running *Backend*.
-* `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *Backend*.
+* `"zonemaster_backend"`: A string. The version number of the running *Zonemaster Backend*.
+* `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *Zonemaster Backend*.
 
 
 #### `"error"`

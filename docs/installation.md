@@ -393,7 +393,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test RPCAPI Version: v1.0.2"}
+{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
 ## <a name="freebsd"></a>3. FreeBSD
@@ -530,7 +530,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test RPCAPI Version: v1.0.2"}
+{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
 ## What to do next?

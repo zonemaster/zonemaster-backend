@@ -4,7 +4,7 @@ The Zonemaster *Backend* is a system for performing domain health checks and
 keeping records of performed domain health checks.
 
 A Zonemaster *Backend* system consists of at least three components: a
-single *Database*, a single *Worker* and one or more *Web backends*.
+single *Database*, a single *Test Agent* and one or more *Web backends*.
 
 
 ## Components
@@ -15,12 +15,12 @@ The *Database* stores health check requests and results. The *Backend*
 architecture is oriented around a single central *Database*.
 
 
-### Worker
+### Test Agent
 
-A Zonemaster *Worker* is a daemon that picks up *test* requests from the
+A Zonemaster *Test Agent* is a daemon that picks up *test* requests from the
 *Database*, runs them using the *Zonemaster Engine* library, and records the results back
-to the *Database*. A single *Worker* may handle several requests concurrently.
-The *Backend* architecture supports a single *Worker* interacting with a single *Database*.
+to the *Database*. A single *Test Agent* may handle several requests concurrently.
+The *Backend* architecture supports a single *Test Agent* daemon interacting with a single *Database*.
 
 >
 > TODO: List all files these processes read and write.
@@ -29,9 +29,9 @@ The *Backend* architecture supports a single *Worker* interacting with a single 
 >
 > TODO: Describe in which order *test* are processed.
 >
-> TODO: Describe how concurrency, parallelism and synchronization works within a single *Worker*.
+> TODO: Describe how concurrency, parallelism and synchronization works within a single *Test Agent*.
 >
-> TODO: Describe how synchronization works among parallel *Workers*.
+> TODO: Describe how synchronization works among parallel *Test Agents*.
 >
 
 

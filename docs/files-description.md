@@ -32,14 +32,14 @@
     The translation module.
 
 ./lib/Zonemaster/Backend/TestAgent.pm
-    The JobTestAgent main module.
+    The TestAgent main module.
 
 ./script/execute_zonemaster_P10.pl
 ./script/execute_zonemaster_P5.pl
     The scripts to execute tests with differents priorities (application level priorities).
 
 ./script/execute_tests.pl
-    The main JobTestAgent entry point to execute from crontab.
+    The main TestAgent entry point to execute from crontab.
 
 ./t/test01.t
 ./t/test_mysql_backend.pl

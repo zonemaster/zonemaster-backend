@@ -3,7 +3,7 @@ use inc::Module::Install;
 name 'Zonemaster-Backend';
 author q{Michal TOMA <toma@nic.fr>};
 version_from 'lib/Zonemaster/Backend/RPCAPI.pm';
-abstract 'The Zonemaster project RPCAPI and TestEngine';
+abstract 'The Zonemaster Backend project with RPC API and Test Agents';
 license 'perl';
 perl_version '5.014002';
 

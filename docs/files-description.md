@@ -39,7 +39,7 @@
     The scripts to execute tests with differents priorities (application level priorities).
 
 ./script/execute_tests.pl
-    The main TestAgent entry point to execute from crontab.
+    The main Test Agent entry point to execute from crontab.
 
 ./t/test01.t
 ./t/test_mysql_backend.pl

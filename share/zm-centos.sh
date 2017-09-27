@@ -8,9 +8,9 @@
 # Should-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start and stop the Zonemaster Web Backend demons
+# Short-Description: Start and stop the Zonemaster RPC API demons
 # Description:       Control script for the two demon processes that
-#                    make up the Zonemaster Web Backend.
+#                    make up the Zonemaster RPC API.
 ### END INIT INFO
 
 LOGDIR=/var/log/zonemaster

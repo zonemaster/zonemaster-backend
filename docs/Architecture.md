@@ -4,7 +4,7 @@ The Zonemaster *Backend* is a system for performing domain health checks and
 keeping records of performed domain health checks.
 
 A Zonemaster *Backend* system consists of at least three components: a
-single *Database*, a single *Test Agent* and one or more *Web backends*.
+single *Database*, a single *Test Agent* and one or more *RPC API daemons*.
 
 
 ## Components
@@ -39,7 +39,7 @@ The *Backend* architecture supports a single *Test Agent* daemon interacting wit
 
 A Zonemaster *Web backend* is a daemon providing a JSON-RPC interface for
 recording *test* requests in the *Database* and fetching *test* results from the
-*Database*. The *Backend* architecture supports multiple *Web backends*
+*Database*. The *Backend* architecture supports multiple *RPC API daemons*
 interacting with the same *Database*.
 
 >

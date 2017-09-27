@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes the JSON-RPC API provided by the Zonemaster *Web backend*.
+This document describes the JSON-RPC API provided by the Zonemaster *RPC API daemon*.
 This API provides means to check the health of domains and to fetch domain health reports.
 Health checks are called *tests* in Zonemaster lingo.
 
@@ -124,8 +124,8 @@ Properties:
 
 Basic data type: number
 
-This parameter is any integer that will be used by The Zonemaster Backend Worker daemon to sort the test requests from highest to lowest priority.
-This parameter will typically be used in a setup where a GUI will send requests to the Backend API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
+This parameter is any integer that will be used by The Zonemaster RPC API daemon daemon to sort the test requests from highest to lowest priority.
+This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
 
 ### Queue
@@ -133,7 +133,7 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 Basic data type: number
 
 This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
-The typical use case for this parameter would be a setup with several separate Backends Worker daemons running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Backend Worker daemons on the same machine is currently not supported.
+The typical use case for this parameter would be a setup with several separate RPC API daemons running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several RPC API daemons daemons on the same machine is currently not supported.
 
 
 ### Profile name
@@ -223,7 +223,7 @@ Basic data type: string
 
 ## API method: `version_info`
 
-Returns the version of the Zonemaster Backend and Zonemaster Engine software combination
+Returns the version of the Zonemaster RPC API daemon and Zonemaster Engine software combination
 
 Example request:
 ```json
@@ -251,8 +251,8 @@ Example response:
 
 An object with the following properties:
 
-* `"zonemaster_backend"`: A string. The version number of the running *Zonemaster Backend*.
-* `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *Zonemaster Backend*.
+* `"zonemaster_backend"`: A string. The version number of the running *RPC API daemon*.
+* `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *RPC API daemon*.
 
 
 #### `"error"`

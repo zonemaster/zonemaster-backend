@@ -72,7 +72,7 @@ service mysqld status
 > At this time there is no instruction for using SQLite on CentOS.
 >
 
-### 1.3 Installation of the backend
+### 1.3 Installation of the RPC API daemon
 
 ```sh
 sudo cpan -i Zonemaster::Backend
@@ -142,7 +142,7 @@ user has just enough permissions to run the backend software.
 
 >
 > Note : Only run the above command during an initial installation of the
-> Zonemaster backend. If you do this on an existing system, you will wipe out the
+> Zonemaster RPC API daemon. If you do this on an existing system, you will wipe out the
 > data in your database.
 >
 
@@ -243,7 +243,7 @@ sudo apt-get install libdbd-pg-perl postgresql
 > At this time there is no instruction for using SQLite on Debian and Ubuntu.
 >
 
-### 2.3 Installation of the backend
+### 2.3 Installation of the RPC API daemon
 
 ```sh
 sudo cpan -i Zonemaster::Backend

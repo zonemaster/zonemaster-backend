@@ -8,9 +8,9 @@
 # Should-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start and stop the Zonemaster RPC API demons
+# Short-Description: Start and stop the Zonemaster Backend (RPC API daemon and Test Agent daemon)
 # Description:       Control script for the two demon processes that
-#                    make up the Zonemaster RPC API.
+#                    make up the Zonemaster Backend.
 ### END INIT INFO
 
 LOGDIR=/var/log/zonemaster

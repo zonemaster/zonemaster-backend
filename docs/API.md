@@ -223,7 +223,7 @@ Basic data type: string
 
 ## API method: `version_info`
 
-Returns the version of the Zonemaster RPC API daemon and Zonemaster Engine software combination
+Returns the version of the Zonemaster Backend and Zonemaster Engine software combination
 
 Example request:
 ```json
@@ -251,7 +251,7 @@ Example response:
 
 An object with the following properties:
 
-* `"zonemaster_backend"`: A string. The version number of the running *RPC API daemon*.
+* `"zonemaster_backend"`: A string. The version number of the running *Zonemaster Backend*.
 * `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *RPC API daemon*.
 
 

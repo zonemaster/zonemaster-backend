@@ -17,7 +17,7 @@ need of logging the Zonemaster test runs in one's own respective database for
 analysing.  
 
 
-### Prerequisites
+### Prerequisites
 
 Before you install the Zonemaster Backend, you need the
 Zonemaster Engine installed. Please see the
@@ -46,7 +46,7 @@ Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_conf
 >
 
 
-### Documentation
+### Documentation
 
 The Zonemaster Backend documentation is split up into several documents:
 

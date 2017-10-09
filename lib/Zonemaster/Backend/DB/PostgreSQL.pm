@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::DB::PostgreSQL;
+package Zonemaster::Backend::DB::PostgreSQL;
 
 our $VERSION = '1.1.0';
 
@@ -10,20 +10,20 @@ use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Encode;
 
-use Zonemaster::WebBackend::DB;
-use Zonemaster::WebBackend::Config;
+use Zonemaster::Backend::DB;
+use Zonemaster::Backend::Config;
 
-with 'Zonemaster::WebBackend::DB';
+with 'Zonemaster::Backend::DB';
 
 has 'dbhandle' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
 
-my $connection_string   = Zonemaster::WebBackend::Config->DB_connection_string( 'postgresql' );
+my $connection_string   = Zonemaster::Backend::Config->DB_connection_string( 'postgresql' );
 my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-my $connection_user     = Zonemaster::WebBackend::Config->DB_user();
-my $connection_password = Zonemaster::WebBackend::Config->DB_password();
+my $connection_user     = Zonemaster::Backend::Config->DB_user();
+my $connection_password = Zonemaster::Backend::Config->DB_password();
 
 sub dbh {
     my ( $self ) = @_;
@@ -144,7 +144,7 @@ sub create_new_test {
     my ( $id, $hash_id ) = $dbh->selectrow_array(
         "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
         
-    if ( $id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+    if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
 		$result = $hash_id;
     }
     else {
@@ -197,7 +197,7 @@ sub get_test_history {
     $p->{offset} //= 0;
     $p->{limit} //= 200;
 
-    my $use_hash_id_from_id = Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id();
+    my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
     my $undelegated =
         ( defined $p->{frontend_params}->{nameservers} )
       ? ( "AND (params->'nameservers') IS NOT NULL" )

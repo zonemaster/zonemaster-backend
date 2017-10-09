@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::Runner;
+package Zonemaster::Backend::TestAgent;
 our $VERSION = '1.1.0';
 
 use strict;
@@ -12,7 +12,7 @@ use Net::LDNS;
 
 use Zonemaster;
 use Zonemaster::Translator;
-use Zonemaster::WebBackend::Config;
+use Zonemaster::Backend::Config;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -23,7 +23,7 @@ sub new {
         $self->{db} = "$params->{db}"->new();
     }
     else {
-        my $backend_module = "Zonemaster::WebBackend::DB::" . Zonemaster::WebBackend::Config->BackendDBType();
+        my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
         eval "require $backend_module";
         $self->{db} = $backend_module->new();
     }
@@ -123,9 +123,9 @@ sub run {
 
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
-	if ( $params->{profile} eq 'test_profile_1' and Zonemaster::WebBackend::Config->CustomProfilesPath()) {
+	if ( $params->{profile} eq 'test_profile_1' and Zonemaster::Backend::Config->CustomProfilesPath()) {
 	    # The config has defined an alternative profile and "test_profile_1" has been set.
-	    Zonemaster->config->load_policy_file( Zonemaster::WebBackend::Config->CustomProfilesPath() . '/iana-profile.json' );
+	    Zonemaster->config->load_policy_file( Zonemaster::Backend::Config->CustomProfilesPath() . '/iana-profile.json' );
 	}
 	else { # The profile parameter has been set to something else or alternative profile is not defined
 	    Zonemaster->config->load_policy_file( 'iana-profile.json' );
@@ -135,7 +135,7 @@ sub run {
 
 
 	if ( $params->{config} ) {
-		my $config_file_path = Zonemaster::WebBackend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});
+		my $config_file_path = Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});
 		if ($config_file_path) {
 			if (-e $config_file_path) {
 				Zonemaster->config->load_config_file( $config_file_path );

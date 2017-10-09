@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::Config;
+package Zonemaster::Backend::Config;
 our $VERSION = '1.1.0';
 
 use strict;
@@ -16,7 +16,7 @@ elsif ( -e '/etc/zonemaster/backend_config.ini' ) {
     $path = '/etc/zonemaster/backend_config.ini';
 }
 else {
-    $path = dist_file('Zonemaster-WebBackend', "backend_config.ini");
+    $path = dist_file('Zonemaster-Backend', "backend_config.ini");
 }
 
 

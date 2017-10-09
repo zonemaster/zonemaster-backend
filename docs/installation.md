@@ -72,10 +72,10 @@ service mysqld status
 > At this time there is no instruction for using SQLite on CentOS.
 >
 
-### 1.3 Installation of the backend
+### 1.3 Installation of Zonemaster Backend
 
 ```sh
-sudo cpan -i Zonemaster::WebBackend
+sudo cpan -i Zonemaster::Backend
 ```
 
 ### 1.4 Directory and file manipulation
@@ -85,12 +85,12 @@ sudo mkdir /etc/zonemaster
 mkdir "$HOME/logs"
 ```
 
-The Zonemaster::WebBackend module installs a number of configuration files in a
+The Zonemaster::Backend module installs a number of configuration files in a
 shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -141,8 +141,8 @@ This creates a database called `zonemaster`, as well as a user called
 user has just enough permissions to run the backend software.
 
 >
-> Note : Only run the above command during an initial installation of the
-> Zonemaster backend. If you do this on an existing system, you will wipe out the
+> Note : Only run the above command during an initial installation of
+> Zonemaster Backend. If you do this on an existing system, you will wipe out the
 > data in your database.
 >
 
@@ -154,7 +154,7 @@ database (obviously taking all data with it).
  
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
@@ -243,10 +243,10 @@ sudo apt-get install libdbd-pg-perl postgresql
 > At this time there is no instruction for using SQLite on Debian and Ubuntu.
 >
 
-### 2.3 Installation of the backend
+### 2.3 Installation of Zonemaster Backend
 
 ```sh
-sudo cpan -i Zonemaster::WebBackend
+sudo cpan -i Zonemaster::Backend
 ```
 ### 2.4 Directory and file manipulation
 
@@ -255,12 +255,12 @@ sudo mkdir /etc/zonemaster
 mkdir "$HOME/logs"
 ```
 
-The Zonemaster::WebBackend module installs a number of configuration files in a
+The Zonemaster::Backend module installs a number of configuration files in a
 shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -324,7 +324,7 @@ database (obviously taking all data with it).
 
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
@@ -393,7 +393,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
+{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
 ## <a name="freebsd"></a>3. FreeBSD
@@ -439,7 +439,7 @@ service postgresql start
 ### 3.4 Installation of the backend
 
 ```sh
-cpan -i Zonemaster::WebBackend
+cpan -i Zonemaster::Backend
 ```
 
 ### 3.5 Directory and file manipulation
@@ -449,12 +449,12 @@ mkdir /etc/zonemaster
 mkdir "$HOME/logs"
 ```
 
-The Zonemaster::WebBackend module installs a number of configuration files in a
+The Zonemaster::Backend module installs a number of configuration files in a
 shared data directory.  This section refers to the shared data directory as the
 current directory, so locate it and go there like this:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-WebBackend")'`
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
 Copy the `backend_config.ini` file to `/etc/zonemaster`.
@@ -514,8 +514,8 @@ psql -U pgsql -f ./initial-postgres.sql template1
 ### 3.8 Service startup
 
 ```sh
-starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_webbackend.psgi 
-zm_wb_daemon start
+starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi 
+zonemaster_backend_testagent start
 ```
 
 ### 3.9 Post-installation sanity check
@@ -530,7 +530,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to :
 
 ```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
+{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
 ## What to do next?

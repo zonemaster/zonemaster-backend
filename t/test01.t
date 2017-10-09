@@ -12,12 +12,12 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster->config->no_network( 1 );
 }
 
-# Require Zonemaster::WebBackend::Engine.pm test
-use_ok( 'Zonemaster::WebBackend::Engine' );
+# Require Zonemaster::Backend::RPCAPI.pm test
+use_ok( 'Zonemaster::Backend::RPCAPI' );
 
-# Create Zonemaster::WebBackend::Engine object
-my $engine = Zonemaster::WebBackend::Engine->new( { db => 'Zonemaster::WebBackend::DB::SQLite' } );
-isa_ok( $engine, 'Zonemaster::WebBackend::Engine' );
+# Create Zonemaster::Backend::RPCAPI object
+my $engine = Zonemaster::Backend::RPCAPI->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
+isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 # create a new memory SQLite database
 ok( $engine->{db}->create_db() );
@@ -56,8 +56,8 @@ sub run_zonemaster_test_with_backend_API {
 	# test test_progress API
 	ok( $engine->test_progress( $test_id ) == 0 );
 
-	use_ok( 'Zonemaster::WebBackend::Runner' );
-	Zonemaster::WebBackend::Runner->new( { db => "Zonemaster::WebBackend::DB::SQLite" } )->run( $test_id );
+	use_ok( 'Zonemaster::Backend::TestAgent' );
+	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite" } )->run( $test_id );
 
 	ok( $engine->test_progress( $test_id ) > 0 );
 

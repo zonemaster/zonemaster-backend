@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend;
+package Zonemaster::Backend;
 
 our $VERSION = '1.2.0';
 

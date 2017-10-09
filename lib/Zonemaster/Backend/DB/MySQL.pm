@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::DB::MySQL;
+package Zonemaster::Backend::DB::MySQL;
 
 our $VERSION = '1.1.0';
 
@@ -10,19 +10,19 @@ use DBI qw(:utils);
 use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 
-use Zonemaster::WebBackend::Config;
+use Zonemaster::Backend::Config;
 
-with 'Zonemaster::WebBackend::DB';
+with 'Zonemaster::Backend::DB';
 
 has 'dbhandle' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
 
-my $connection_string   = Zonemaster::WebBackend::Config->DB_connection_string( 'mysql' );
+my $connection_string   = Zonemaster::Backend::Config->DB_connection_string( 'mysql' );
 my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-my $connection_user     = Zonemaster::WebBackend::Config->DB_user();
-my $connection_password = Zonemaster::WebBackend::Config->DB_password();
+my $connection_user     = Zonemaster::Backend::Config->DB_user();
+my $connection_password = Zonemaster::Backend::Config->DB_password();
 
 sub dbh {
     my ( $self ) = @_;
@@ -123,7 +123,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
 
         if ( $recent_id ) {
             # A recent entry exists, so return its id
-            if ( $recent_id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+            if ( $recent_id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
 				$result_id = $recent_hash_id;
 			}
 			else {
@@ -148,7 +148,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
 			my ( $id, $hash_id ) = $dbh->selectrow_array(
 				"SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
 				
-			if ( $id > Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+			if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
 				$result_id = $hash_id;
 			}
 			else {
@@ -221,7 +221,7 @@ sub get_test_history {
 
     my @results;
     
-    my $use_hash_id_from_id = Zonemaster::WebBackend::Config->force_hash_id_use_in_API_starting_from_id();
+    my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
     
     my $sth = $self->dbh->prepare(
 			q[SELECT 

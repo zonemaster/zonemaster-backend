@@ -12,19 +12,19 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use String::ShellQuote;
 use File::Slurp qw(append_file);
-use Net::LDNS;
+use Zonemaster::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
 
 # Zonemaster Modules
-use Zonemaster;
-use Zonemaster::Nameserver;
-use Zonemaster::DNSName;
-use Zonemaster::Recursor;
+use Zonemaster::Engine;
+use Zonemaster::Engine::Nameserver;
+use Zonemaster::Engine::DNSName;
+use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 
-my $recursor = Zonemaster::Recursor->new;
+my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub new {
     my ( $type, $params ) = @_;
@@ -57,7 +57,7 @@ sub version_info {
     my ( $self ) = @_;
 
     my %ver;
-    $ver{zonemaster_engine} = Zonemaster->VERSION;
+    $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
     $ver{zonemaster_backend} = Zonemaster::Backend::RPCAPI->VERSION;
 
     return \%ver;
@@ -83,12 +83,12 @@ sub get_data_from_parent_zone {
     my @ns_list;
     my @ns_names;
 
-    my $zone = Zonemaster->zone( $domain );
+    my $zone = Zonemaster::Engine->zone( $domain );
     push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
     my @ds_list;
 
-    $zone = Zonemaster->zone($domain);
+    $zone = Zonemaster::Engine->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
 		my @ds = $ds_p->get_records( 'DS', 'answer' );
@@ -113,8 +113,8 @@ sub _check_domain {
     }
 
     if ( $dn =~ m/[^[:ascii:]]+/ ) {
-        if ( Net::LDNS::has_idn() ) {
-            eval { $dn = Net::LDNS::to_idn( $dn ); };
+        if ( Zonemaster::LDNS::has_idn() ) {
+            eval { $dn = Zonemaster::LDNS::to_idn( $dn ); };
             if ( $@ ) {
                 return (
                     $dn,
@@ -138,7 +138,7 @@ sub _check_domain {
     }
 
     my @res;
-    @res = Zonemaster::Test::Basic->basic00($dn);
+    @res = Zonemaster::Engine::Test::Basic->basic00($dn);
     if (@res != 0) {
         return ( $dn, { status => 'nok', message => encode_entities( "$type name or label outside allowed length" ) } );
     }

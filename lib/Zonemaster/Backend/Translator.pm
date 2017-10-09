@@ -5,15 +5,15 @@ our $VERSION = '1.1.0';
 use 5.14.2;
 
 use Moose;
-use Locale::TextDomain 'Zonemaster';
+use Locale::TextDomain 'Zonemaster-Engine';
 use Encode;
 use POSIX qw[setlocale LC_ALL];
 
 # Zonemaster Modules
-require Zonemaster::Translator;
-require Zonemaster::Logger::Entry;
+require Zonemaster::Engine::Translator;
+require Zonemaster::Engine::Logger::Entry;
 
-extends 'Zonemaster::Translator';
+extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
     my ( $self, $entry, $browser_lang ) = @_;
@@ -34,7 +34,7 @@ sub translate_tag {
         return $entry->{string};
     }
 
-    my $blessed_entry = bless($entry, 'Zonemaster::Logger::Entry');
+    my $blessed_entry = bless($entry, 'Zonemaster::Engine::Logger::Entry');
     my $str = decode_utf8( __x( $string, %{ ($blessed_entry->can('printable_args'))?($blessed_entry->printable_args()):($entry->{args}) } ) );
     setlocale( LC_ALL, $previous_locale );
 

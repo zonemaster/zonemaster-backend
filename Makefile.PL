@@ -21,7 +21,7 @@ requires
   'Moose'                    => 2.04,
   'Moose::Role'              => 0,
   'Net::IP::XS'              => 0.14,
-  'Net::LDNS'                => 0.72,
+  'Zonemaster::LDNS'         => 1.0.0,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0,
   'Router::Simple::Declare'  => 0,

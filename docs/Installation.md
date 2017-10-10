@@ -469,67 +469,67 @@ cp ./backend_config.ini /etc/zonemaster/
 Zonemaster::Backend supports MySQL and PostgreSQL on FreeBSD. See [declaration
 of prerequisites] for details on specific versions.
 
-#### 3.4.1 MySQL
+ * Instructions for **MySQL**:
 
-Install the database engine and its dependencies:
+   Install the database engine and its dependencies:
 
-```sh
-pkg install mysql56-server p5-DBD-mysql
-```
+   ```sh
+   pkg install mysql56-server p5-DBD-mysql
+   ```
 
->
-> At this time there is no instruction for configuring/starting MySQL on FreeBSD.
->
+   >
+   > At this time there is no instruction for configuring/starting MySQL on FreeBSD.
+   >
 
-Configure the database engine:
+   Configure the database engine:
 
->
-> At this time there is no instruction for configuring and creating a database
-> in MySQL.
->
+   >
+   > At this time there is no instruction for configuring and creating a database
+   > in MySQL.
+   >
 
-#### 3.4.2 PostgreSQL
+ * Instructions for **PostgreSQL**:
 
-Install the database engine and its dependencies:
+   Install the database engine and its dependencies:
 
-```sh
-pkg install postgresql93-server p5-DBD-Pg
-echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
-service postgresql initdb
-service postgresql start
-```
+   ```sh
+   pkg install postgresql93-server p5-DBD-Pg
+   echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
+   service postgresql initdb
+   service postgresql start
+   ```
 
-Configure the database engine:
+   Configure the database engine:
 
-Edit the file `/etc/zonemaster/backend_config.ini`.
+   Edit the file `/etc/zonemaster/backend_config.ini`.
 
-```
-engine           = PostgreSQL
-user             = zonemaster
-password         = zonemaster
-database_name    = zonemaster
-database_host    = localhost
-polling_interval = 0.5
-log_dir          = logs/
-interpreter      = perl
-max_zonemaster_execution_time   = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
-```
+   ```
+   engine           = PostgreSQL
+   user             = zonemaster
+   password         = zonemaster
+   database_name    = zonemaster
+   database_host    = localhost
+   polling_interval = 0.5
+   log_dir          = logs/
+   interpreter      = perl
+   max_zonemaster_execution_time   = 300
+   number_of_processes_for_frontend_testing = 20
+   number_of_processes_for_batch_testing    = 20
+   ```
 
-Start the PostgreSQL server according to its instructions then initiate the
-database using the following script:
+   Start the PostgreSQL server according to its instructions then initiate the
+   database using the following script:
 
-```sh
-psql -U pgsql -f ./initial-postgres.sql template1
-```
+   ```sh
+   psql -U pgsql -f ./initial-postgres.sql template1
+   ```
 
-#### 3.4.3 SQLite
+ * Instructions for **SQLite**:
 
->
-> At this time there is no instruction for configuring and creating a database
-> in SQLite.
->
+   >
+   > At this time there is no instruction for configuring and creating a database
+   > in SQLite.
+   >
 
 ### 3.5 Service startup
 

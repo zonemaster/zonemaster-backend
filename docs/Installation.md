@@ -494,7 +494,7 @@ of prerequisites] for details on specific versions.
 
    ```sh
    pkg install postgresql93-server p5-DBD-Pg
-   echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
+   echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
    service postgresql initdb
    service postgresql start
    ```

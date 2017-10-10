@@ -404,51 +404,40 @@ The command is expected to give an immediate JSON response similiar to :
 
 ## 3. FreeBSD
 
-### 3.1 Become superuser
-To do most of the following steps you have to be superuser (root). Change to
-root and then execute the steps for FreeBSD.
+### 3.1 Acquire privileges
 
+Become root:
+
+```sh
 su
-
-### 3.2 Installing dependencies
-
-```sh
-pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
-``` 
-
-### 3.3 Install the chosen database engine and related dependencies
-
-#### 3.3.1 MySQL
-
-```sh
-pkg install mysql56-server p5-DBD-mysql
-```
->
-> At this time there is no instruction for configuring/starting MySQL on FreeBSD.
->
-
-#### 3.3.2 PostgreSQL
-
-```sh
-pkg install postgresql93-server p5-DBD-Pg
-echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
-service postgresql initdb
-service postgresql start
 ```
 
-#### 3.3.3 SQLite
 
->
-> At this time there is no instruction for using SQLite on FreeBSD.
->
+### 3.2 Install Zonemaster::Backend and related dependencies
 
-### 3.4 Installation of the backend
+Install dependencies available from binary packages:
+
+```sh
+pkg install p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Router-Simple p5-Starman p5-String-ShellQuote
+```
+
+Install dependencies not available from binary packages:
+
+```sh
+cpan -i Net::IP::XS
+```
+
+> **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
+> are dealt with in the [prerequisites](#prerequisites) section.
+
+Install Zonemaster::Backend:
 
 ```sh
 cpan -i Zonemaster::Backend
 ```
 
-### 3.5 Directory and file manipulation
+
+### 3.3 Service configuration
 
 ```sh
 mkdir /etc/zonemaster
@@ -463,29 +452,54 @@ current directory, so locate it and go there like this:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
-Copy the `backend_config.ini` file to `/etc/zonemaster`.
+Copy the `backend_config.ini` file to `/etc/zonemaster`:
 
 ```sh
 cp ./backend_config.ini /etc/zonemaster/
 ```
-
-### 3.6 Service script set up
 
 >
 > At this time there is no instruction for running Zonemaster Web backends
 > nor Workers as services on FreeBSD.
 >
 
-### 3.7 Chosen database configuration
 
-#### 3.7.1 MySQL
+### 3.4 Database engine installation and configuratoin
+
+Zonemaster::Backend supports MySQL and PostgreSQL on FreeBSD. See [declaration
+of prerequisites] for details on specific versions.
+
+#### 3.4.1 MySQL
+
+Install the database engine and its dependencies:
+
+```sh
+pkg install mysql56-server p5-DBD-mysql
+```
+
+>
+> At this time there is no instruction for configuring/starting MySQL on FreeBSD.
+>
+
+Configure the database engine:
 
 >
 > At this time there is no instruction for configuring and creating a database
-> in SQLite.
+> in MySQL.
 >
 
-#### 3.7.2 PostgreSQL
+#### 3.4.2 PostgreSQL
+
+Install the database engine and its dependencies:
+
+```sh
+pkg install postgresql93-server p5-DBD-Pg
+echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
+service postgresql initdb
+service postgresql start
+```
+
+Configure the database engine:
 
 Edit the file `/etc/zonemaster/backend_config.ini`.
 
@@ -504,27 +518,27 @@ number_of_processes_for_batch_testing    = 20
 ```
 
 Start the PostgreSQL server according to its instructions then initiate the
-database using the following script.
+database using the following script:
 
 ```sh
 psql -U pgsql -f ./initial-postgres.sql template1
 ```
 
-#### 3.7.3 SQLite
+#### 3.4.3 SQLite
 
 >
 > At this time there is no instruction for configuring and creating a database
 > in SQLite.
 >
 
-### 3.8 Service startup
+### 3.5 Service startup
 
 ```sh
 starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi 
 zonemaster_backend_testagent start
 ```
 
-### 3.9 Post-installation sanity check
+### 3.6 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:

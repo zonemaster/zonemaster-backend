@@ -490,7 +490,7 @@ of prerequisites] for details on specific versions.
 
  * Instructions for **PostgreSQL**:
 
-   Install the database engine and its dependencies:
+   Install, configure and start database engine (and Perl bindings):
 
    ```sh
    pkg install postgresql93-server p5-DBD-Pg
@@ -499,29 +499,47 @@ of prerequisites] for details on specific versions.
    service postgresql start
    ```
 
-   Configure the database engine:
+   Configure Zonemaster::Backend:
 
    Edit the file `/etc/zonemaster/backend_config.ini`.
 
-   ```
+   ```ini
+   [DB]
    engine           = PostgreSQL
    user             = zonemaster
    password         = zonemaster
-   database_name    = zonemaster
    database_host    = localhost
+   database_name    = zonemaster
    polling_interval = 0.5
+
+   [LOG]
    log_dir          = logs/
+
+   [PERL]
    interpreter      = perl
-   max_zonemaster_execution_time   = 300
+
+   [ZONEMASTER]
+   max_zonemaster_execution_time            = 300
    number_of_processes_for_frontend_testing = 20
    number_of_processes_for_batch_testing    = 20
    ```
 
-   Start the PostgreSQL server according to its instructions then initiate the
-   database using the following script:
+   > **ToDo:** Add instruction about the
+   > `config_logfilter_1=/full/path/to/a/config_file.json` line.
+
+   The command to initialize the database has changed in newer versions of
+   PostgreSQL.
+
+   For PostgreSQL < 9.6:
 
    ```sh
    psql -U pgsql -f ./initial-postgres.sql template1
+   ```
+
+   For PostgreSQL >= 9.6:
+
+   ```sh
+   psql -U postgres -f ./initial-postgres.sql template1
    ```
 
  * Instructions for **SQLite**:

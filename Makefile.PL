@@ -8,7 +8,7 @@ license 'perl';
 perl_version '5.014002';
 
 requires
-  'Zonemaster::Engine'       => 0,
+  'Zonemaster::Engine'       => 2.0,
   'Config::IniFiles'         => 0,
   'DBI'                      => 1.616,
   'File::Slurp'              => 0,
@@ -21,7 +21,7 @@ requires
   'Moose'                    => 2.04,
   'Moose::Role'              => 0,
   'Net::IP::XS'              => 0.14,
-  'Zonemaster::LDNS'         => 1.0.0,
+  'Zonemaster::LDNS'         => 1.0,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0,
   'Router::Simple::Declare'  => 0,

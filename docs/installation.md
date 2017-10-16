@@ -1,39 +1,43 @@
-# Zonemaster Backend installation guide
+# Installation
 
 ## Overview
 
-Zonemaster *Backend* needs to run on an operating system. One can choose any of
-the following OS to install the *Backend* after having the required
-[Prerequisites](#prerequisites).
+This document describes prerequisites, installation, configuration, startup and
+post-install sanity checking for Zonemaster::Backend. The final section wraps up
+with a few pointer to interfaces for Zonemaster::Backend. For an overview of the
+Zonemaster product, please see the [main Zonemaster Repository].
 
-* <a href="#centos">CentOS 7</a>  
-* <a href="#debian">Debian 8 (Jessie)</a>  
-* <a href="#debian">Ubuntu 16.04</a>  
-* <a href="#freebsd">FreeBSD 10.3</a>  
-
->
-> Note: We assume the installation instructions will work for earlier OS
-> versions too. If you have any issue in installing the Zonemaster engine with
-> earlier versions, please send a mail with details to contact@zonemaster.net 
->
-
-In addition, Zonemaster *Backend* needs a database engine. The choice for the database are
-as follows :
-
-* MySQL 
-* PostgreSQL 9.3 or higher 
-* SQLite 
 
 ## Prerequisites
 
-This guide assumes that the following softwares are already installed on the
-target system :
+Before installing Zonemaster::Backend, you should [install Zonemaster::Engine][
+Zonemaster::Engine installation].
 
-* the chosen operating system 
-* curl (only for post-installation sanity check)
-* [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
+> **Note:** [Zonemaster::Engine] and [Zonemaster::LDNS] are dependencies of
+> Zonemaster::Backend. Zonemaster::LDNS has a special installation requirement,
+> and Zonemaster::Engine has a list of dependencies that you may not want to
+> install from CPAN. Therefore we recommend that you follow the
+> Zonemaster::Engine installation instruction to get them both and their
+> dependencies properly installed.
 
-## <a name="centos"></a>1. CentOS 
+For details on supported versions of Perl, database engine and operating system
+for Zonemaster::Backend, see the [declaration of prerequisites].
+
+> **Note:** In addition to the normal dependencies, the post-installation sanity
+> check instruction assumes that you have curl installed.
+
+
+## Installation
+
+This instruction covers the following operating systems:
+
+ * [CentOS](#1-centos)
+ * [Debian](#2-debian)
+ * [FreeBSD](#3-freebsd)
+ * [Ubuntu](#4-ubuntu)
+
+
+## 1. CentOS
 
 ### 1.1 Installing dependencies 
 
@@ -54,7 +58,7 @@ sudo yum install mysql-server perl-DBD-mysql
 sudo systemctl start mysqld 
 ```
 
-Verify that MySQL has started 
+Verify that MySQL has started:
 
 ```sh
 service mysqld status
@@ -209,7 +213,8 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
-## <a name="debian"></a>2. Ubuntu & Debian 
+
+## 2. Debian
 
 ### 2.1 Installing dependencies
 
@@ -396,7 +401,8 @@ The command is expected to give an immediate JSON response similiar to :
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
-## <a name="freebsd"></a>3. FreeBSD
+
+## 3. FreeBSD
 
 ### 3.1 Become superuser
 To do most of the following steps you have to be superuser (root). Change to
@@ -529,20 +535,34 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 
 The command is expected to give an immediate JSON response similiar to :
 
-```sh
+```json
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
+
+## 4. Ubuntu
+
+Use the procedure for installation on [Debian](#2-debian).
+
+
 ## What to do next?
->
-> You will have to install the GUI or look at the API documentation. We will be
-> updating this document with links on how to do that. 
->
+
+ * For a web interface, follow the [Zonemaster::GUI installation] instructions.
+ * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
+
 
 -------
 
-Copyright (c) 2013 - 2016, IIS (The Internet Foundation in Sweden)  
-Copyright (c) 2013 - 2016, AFNIC  
+[Declaration of prerequisites]: https://github.com/dotse/zonemaster#prerequisites
+[JSON-RPC API]: API.md
+[Main Zonemaster repository]: https://github.com/dotse/zonemaster
+[Zonemaster::Engine installation]: https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md
+[Zonemaster::Engine]: https://github.com/dotse/zonemaster-engine
+[Zonemaster::GUI installation]: https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md
+[Zonemaster::LDNS]: https://github.com/dotse/zonemaster-ldns
+
+Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
+Copyright (c) 2013 - 2017, AFNIC \
 Creative Commons Attribution 4.0 International License
 
 You should have received a copy of the license along with this

@@ -526,8 +526,7 @@ of prerequisites] for details on specific versions.
    > **ToDo:** Add instruction about the
    > `config_logfilter_1=/full/path/to/a/config_file.json` line.
 
-   The command to initialize the database has changed in newer versions of
-   PostgreSQL.
+   Initialize the database:
 
    ```sh
    psql -U pgsql -f ./initial-postgres.sql template1

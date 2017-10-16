@@ -492,7 +492,7 @@ of prerequisites] for details on specific versions.
    Install, configure and start database engine (and Perl bindings):
 
    ```sh
-   pkg install postgresql93-server p5-DBD-Pg
+   pkg install postgresql95-server p5-DBD-Pg
    echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
    service postgresql initdb
    service postgresql start
@@ -529,16 +529,8 @@ of prerequisites] for details on specific versions.
    The command to initialize the database has changed in newer versions of
    PostgreSQL.
 
-   For PostgreSQL < 9.6:
-
    ```sh
    psql -U pgsql -f ./initial-postgres.sql template1
-   ```
-
-   For PostgreSQL >= 9.6:
-
-   ```sh
-   psql -U postgres -f ./initial-postgres.sql template1
    ```
 
  * Instructions for **SQLite**:

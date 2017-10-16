@@ -15,10 +15,9 @@ Zonemaster::Engine installation].
 
 > **Note:** [Zonemaster::Engine] and [Zonemaster::LDNS] are dependencies of
 > Zonemaster::Backend. Zonemaster::LDNS has a special installation requirement,
-> and Zonemaster::Engine has a list of dependencies that you may not want to
-> install from CPAN. Therefore we recommend that you follow the
-> Zonemaster::Engine installation instruction to get them both and their
-> dependencies properly installed.
+> and Zonemaster::Engine has a list of dependencies that you may prefer to
+> install from your operating system distribution (rather than CPAN).
+> We recommend following the Zonemaster::Engine installation instruction.
 
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].

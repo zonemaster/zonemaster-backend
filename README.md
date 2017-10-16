@@ -35,7 +35,7 @@ instructions below.
 
 ### Installation
 
-Follow the detailed [installation instructions](docs/installation.md).
+Follow the detailed [installation instructions](docs/Installation.md).
 
 ### Configuration 
 

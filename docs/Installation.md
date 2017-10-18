@@ -1,39 +1,42 @@
-# Zonemaster Backend installation guide
+# Installation
 
 ## Overview
 
-Zonemaster *Backend* needs to run on an operating system. One can choose any of
-the following OS to install the *Backend* after having the required
-[Prerequisites](#prerequisites).
+This document describes prerequisites, installation, configuration, startup and
+post-install sanity checking for Zonemaster::Backend. The final section wraps up
+with a few pointer to interfaces for Zonemaster::Backend. For an overview of the
+Zonemaster product, please see the [main Zonemaster Repository].
 
-* <a href="#centos">CentOS 7</a>  
-* <a href="#debian">Debian 8 (Jessie)</a>  
-* <a href="#debian">Ubuntu 16.04</a>  
-* <a href="#freebsd">FreeBSD 10.3</a>  
-
->
-> Note: We assume the installation instructions will work for earlier OS
-> versions too. If you have any issue in installing the Zonemaster engine with
-> earlier versions, please send a mail with details to contact@zonemaster.net 
->
-
-In addition, Zonemaster *Backend* needs a database engine. The choice for the database are
-as follows :
-
-* MySQL 
-* PostgreSQL 9.3 or higher 
-* SQLite 
 
 ## Prerequisites
 
-This guide assumes that the following softwares are already installed on the
-target system :
+Before installing Zonemaster::Backend, you should [install Zonemaster::Engine][
+Zonemaster::Engine installation].
 
-* the chosen operating system 
-* curl (only for post-installation sanity check)
-* [Zonemaster Engine](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md) is installed 
+> **Note:** [Zonemaster::Engine] and [Zonemaster::LDNS] are dependencies of
+> Zonemaster::Backend. Zonemaster::LDNS has a special installation requirement,
+> and Zonemaster::Engine has a list of dependencies that you may prefer to
+> install from your operating system distribution (rather than CPAN).
+> We recommend following the Zonemaster::Engine installation instruction.
 
-## <a name="centos"></a>1. CentOS 
+For details on supported versions of Perl, database engine and operating system
+for Zonemaster::Backend, see the [declaration of prerequisites].
+
+> **Note:** In addition to the normal dependencies, the post-installation sanity
+> check instruction assumes that you have curl installed.
+
+
+## Installation
+
+This instruction covers the following operating systems:
+
+ * [CentOS](#1-centos)
+ * [Debian](#2-debian)
+ * [FreeBSD](#3-freebsd)
+ * [Ubuntu](#4-ubuntu)
+
+
+## 1. CentOS
 
 ### 1.1 Installing dependencies 
 
@@ -54,7 +57,7 @@ sudo yum install mysql-server perl-DBD-mysql
 sudo systemctl start mysqld 
 ```
 
-Verify that MySQL has started 
+Verify that MySQL has started:
 
 ```sh
 service mysqld status
@@ -209,7 +212,8 @@ The command is expected to give an immediate JSON response similiar to :
 {"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
 ```
 
-## <a name="debian"></a>2. Ubuntu & Debian 
+
+## 2. Debian
 
 ### 2.1 Installing dependencies
 
@@ -396,53 +400,43 @@ The command is expected to give an immediate JSON response similiar to :
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
-## <a name="freebsd"></a>3. FreeBSD
 
-### 3.1 Become superuser
-To do most of the following steps you have to be superuser (root). Change to
-root and then execute the steps for FreeBSD.
+## 3. FreeBSD
 
+### 3.1 Acquire privileges
+
+Become root:
+
+```sh
 su
-
-### 3.2 Installing dependencies
-
-```sh
-pkg install p5-Config-IniFiles p5-DBI p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON p5-JSON-RPC p5-Locale-libintl p5-libwww p5-Moose p5-Plack p5-Router-Simple p5-String-ShellQuote p5-Starman p5-File-ShareDir p5-Parallel-ForkManager p5-Daemon-Control p5-Module-Install p5-DBD-SQLite p5-Plack-Middleware-Debug
-``` 
-
-### 3.3 Install the chosen database engine and related dependencies
-
-#### 3.3.1 MySQL
-
-```sh
-pkg install mysql56-server p5-DBD-mysql
-```
->
-> At this time there is no instruction for configuring/starting MySQL on FreeBSD.
->
-
-#### 3.3.2 PostgreSQL
-
-```sh
-pkg install postgresql93-server p5-DBD-Pg
-echo 'postgresql_enable="YES"' | sudo tee -a /etc/rc.conf
-service postgresql initdb
-service postgresql start
 ```
 
-#### 3.3.3 SQLite
 
->
-> At this time there is no instruction for using SQLite on FreeBSD.
->
+### 3.2 Install Zonemaster::Backend and related dependencies
 
-### 3.4 Installation of the backend
+Install dependencies available from binary packages:
+
+```sh
+pkg install p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Router-Simple p5-Starman p5-String-ShellQuote
+```
+
+Install dependencies not available from binary packages:
+
+```sh
+cpan -i Net::IP::XS
+```
+
+> **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
+> are dealt with in the [prerequisites](#prerequisites) section.
+
+Install Zonemaster::Backend:
 
 ```sh
 cpan -i Zonemaster::Backend
 ```
 
-### 3.5 Directory and file manipulation
+
+### 3.3 Service configuration
 
 ```sh
 mkdir /etc/zonemaster
@@ -457,68 +451,102 @@ current directory, so locate it and go there like this:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
-Copy the `backend_config.ini` file to `/etc/zonemaster`.
+Copy the `backend_config.ini` file to `/etc/zonemaster`:
 
 ```sh
 cp ./backend_config.ini /etc/zonemaster/
 ```
-
-### 3.6 Service script set up
 
 >
 > At this time there is no instruction for running Zonemaster Web backends
 > nor Workers as services on FreeBSD.
 >
 
-### 3.7 Chosen database configuration
 
-#### 3.7.1 MySQL
+### 3.4 Database engine installation and configuratoin
 
->
-> At this time there is no instruction for configuring and creating a database
-> in SQLite.
->
+Zonemaster::Backend supports MySQL and PostgreSQL on FreeBSD. See [declaration
+of prerequisites] for details on specific versions.
 
-#### 3.7.2 PostgreSQL
+ * Instructions for **MySQL**:
 
-Edit the file `/etc/zonemaster/backend_config.ini`.
+   Install the database engine and its dependencies:
 
-```
-engine           = PostgreSQL
-user             = zonemaster
-password         = zonemaster
-database_name    = zonemaster
-database_host    = localhost
-polling_interval = 0.5
-log_dir          = logs/
-interpreter      = perl
-max_zonemaster_execution_time   = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
-```
+   ```sh
+   pkg install mysql56-server p5-DBD-mysql
+   ```
 
-Start the PostgreSQL server according to its instructions then initiate the
-database using the following script.
+   >
+   > At this time there is no instruction for configuring/starting MySQL on FreeBSD.
+   >
 
-```sh
-psql -U pgsql -f ./initial-postgres.sql template1
-```
+   Configure the database engine:
 
-#### 3.7.3 SQLite
+   >
+   > At this time there is no instruction for configuring and creating a database
+   > in MySQL.
+   >
 
->
-> At this time there is no instruction for configuring and creating a database
-> in SQLite.
->
+ * Instructions for **PostgreSQL**:
 
-### 3.8 Service startup
+   Install, configure and start database engine (and Perl bindings):
+
+   ```sh
+   pkg install postgresql95-server p5-DBD-Pg
+   echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
+   service postgresql initdb
+   service postgresql start
+   ```
+
+   Configure Zonemaster::Backend:
+
+   Edit the file `/etc/zonemaster/backend_config.ini`.
+
+   ```ini
+   [DB]
+   engine           = PostgreSQL
+   user             = zonemaster
+   password         = zonemaster
+   database_host    = localhost
+   database_name    = zonemaster
+   polling_interval = 0.5
+
+   [LOG]
+   log_dir          = logs/
+
+   [PERL]
+   interpreter      = perl
+
+   [ZONEMASTER]
+   max_zonemaster_execution_time            = 300
+   number_of_processes_for_frontend_testing = 20
+   number_of_processes_for_batch_testing    = 20
+   ```
+
+   > **ToDo:** Add instruction about the
+   > `config_logfilter_1=/full/path/to/a/config_file.json` line.
+
+   Initialize the database:
+
+   ```sh
+   psql -U pgsql -f ./initial-postgres.sql template1
+   ```
+
+ * Instructions for **SQLite**:
+
+   >
+   > At this time there is no instruction for configuring and creating a database
+   > in SQLite.
+   >
+
+### 3.5 Service startup
 
 ```sh
 starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi 
 zonemaster_backend_testagent start
 ```
 
-### 3.9 Post-installation sanity check
+### 3.6 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -529,20 +557,34 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 
 The command is expected to give an immediate JSON response similiar to :
 
-```sh
+```json
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
+
+## 4. Ubuntu
+
+Use the procedure for installation on [Debian](#2-debian).
+
+
 ## What to do next?
->
-> You will have to install the GUI or look at the API documentation. We will be
-> updating this document with links on how to do that. 
->
+
+ * For a web interface, follow the [Zonemaster::GUI installation] instructions.
+ * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
+
 
 -------
 
-Copyright (c) 2013 - 2016, IIS (The Internet Foundation in Sweden)  
-Copyright (c) 2013 - 2016, AFNIC  
+[Declaration of prerequisites]: https://github.com/dotse/zonemaster#prerequisites
+[JSON-RPC API]: API.md
+[Main Zonemaster repository]: https://github.com/dotse/zonemaster
+[Zonemaster::Engine installation]: https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md
+[Zonemaster::Engine]: https://github.com/dotse/zonemaster-engine
+[Zonemaster::GUI installation]: https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md
+[Zonemaster::LDNS]: https://github.com/dotse/zonemaster-ldns
+
+Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
+Copyright (c) 2013 - 2017, AFNIC \
 Creative Commons Attribution 4.0 International License
 
 You should have received a copy of the license along with this

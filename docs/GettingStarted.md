@@ -6,7 +6,7 @@ This is a guide for getting started with the Zonemaster RPC API daemon.
 > Note: This guide makes a number of assumptions about you setup:
 >
 > * that it's a Unix-like environment
-> * that you have Zonemaster *backend* installed according to the [installation guide](installation.md)
+> * that you have Zonemaster *backend* installed according to the [installation guide](Installation.md)
 > * that you have the tools `curl` and `jq` installed
 >
 

@@ -22,7 +22,7 @@ analysing.
 Before you install the Zonemaster Backend, you need the
 Zonemaster Engine installed. Please see the
 [Zonemaster Engine installation
-instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
+instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md).
 
 ### Upgrade 
 
@@ -35,7 +35,7 @@ instructions below.
 
 ### Installation
 
-Follow the detailed [installation instructions](docs/installation.md).
+Follow the detailed [installation instructions](docs/Installation.md).
 
 ### Configuration 
 

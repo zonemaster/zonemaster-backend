@@ -10,7 +10,7 @@ docs/API.md
 docs/Architecture.md
 docs/files-description.md
 docs/GettingStarted.md
-docs/installation.md
+docs/Installation.md
 docs/TypographicConventions.md
 docs/upgrade-from-1.0.x-to-1.1.x.md
 inc/Module/Install.pm

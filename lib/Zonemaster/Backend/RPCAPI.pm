@@ -1,7 +1,5 @@
 package Zonemaster::Backend::RPCAPI;
 
-our $VERSION = '1.1.0';
-
 use strict;
 use warnings;
 use 5.14.2;
@@ -21,6 +19,7 @@ use Zonemaster::Engine;
 use Zonemaster::Engine::Nameserver;
 use Zonemaster::Engine::DNSName;
 use Zonemaster::Engine::Recursor;
+use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 
@@ -58,7 +57,7 @@ sub version_info {
 
     my %ver;
     $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
-    $ver{zonemaster_backend} = Zonemaster::Backend::RPCAPI->VERSION;
+    $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
 
     return \%ver;
 }

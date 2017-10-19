@@ -8,10 +8,10 @@ use 5.14.2;
 use DBI qw(:utils);
 use JSON::PP;
 
-use Net::LDNS;
+use Zonemaster::LDNS;
 
-use Zonemaster;
-use Zonemaster::Translator;
+use Zonemaster::Engine;
+use Zonemaster::Engine::Translator;
 use Zonemaster::Backend::Config;
 
 sub new {
@@ -44,7 +44,7 @@ sub run {
 
     $params = $self->{db}->get_test_params( $test_id );
 
-    my %methods = Zonemaster->all_methods;
+    my %methods = Zonemaster::Engine->all_methods;
 
     foreach my $module ( keys %methods ) {
         foreach my $method ( @{ $methods{$module} } ) {
@@ -59,19 +59,19 @@ sub run {
     $domain = $self->to_idn( $domain );
 
     if (defined $params->{ipv4} || defined $params->{ipv4}) {
-		Zonemaster->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
-		Zonemaster->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
+		Zonemaster::Engine->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
+		Zonemaster::Engine->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
 	}
 	else {
-		Zonemaster->config->get->{net}{ipv4} = 1;
-		Zonemaster->config->get->{net}{ipv6} = 1;
+		Zonemaster::Engine->config->get->{net}{ipv4} = 1;
+		Zonemaster::Engine->config->get->{net}{ipv6} = 1;
 	}
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
 
     # Callback defined here so it closes over the setup above.
-    Zonemaster->logger->callback(
+    Zonemaster::Engine->logger->callback(
         sub {
             my ( $entry ) = @_;
 
@@ -125,10 +125,10 @@ sub run {
     if ( $params->{profile} ) {
 	if ( $params->{profile} eq 'test_profile_1' and Zonemaster::Backend::Config->CustomProfilesPath()) {
 	    # The config has defined an alternative profile and "test_profile_1" has been set.
-	    Zonemaster->config->load_policy_file( Zonemaster::Backend::Config->CustomProfilesPath() . '/iana-profile.json' );
+	    Zonemaster::Engine->config->load_policy_file( Zonemaster::Backend::Config->CustomProfilesPath() . '/iana-profile.json' );
 	}
 	else { # The profile parameter has been set to something else or alternative profile is not defined
-	    Zonemaster->config->load_policy_file( 'iana-profile.json' );
+	    Zonemaster::Engine->config->load_policy_file( 'iana-profile.json' );
 	}
 	# It will be silently ignored if the file does not exist.
     }
@@ -138,7 +138,7 @@ sub run {
 		my $config_file_path = Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});
 		if ($config_file_path) {
 			if (-e $config_file_path) {
-				Zonemaster->config->load_config_file( $config_file_path );
+				Zonemaster::Engine->config->load_config_file( $config_file_path );
 			}
 			else {
 				die "The file specified by the config parameter value: [$params->{config}] doesn't exist";
@@ -150,7 +150,7 @@ sub run {
 	}
 
     # Actually run tests!
-    eval { Zonemaster->test_zone( $domain ); };
+    eval { Zonemaster::Engine->test_zone( $domain ); };
     if ( $@ ) {
         my $err = $@;
         if ( blessed $err and $err->isa( "NormalExit" ) ) {
@@ -161,7 +161,7 @@ sub run {
         }
     }
 
-    $self->{db}->test_results( $test_id, Zonemaster->logger->json( 'INFO' ) );
+    $self->{db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
 
     $progress = $self->{db}->test_progress( $test_id );
 
@@ -191,7 +191,7 @@ sub add_fake_delegation {
 		}
 	}
 	
-	Zonemaster->add_fake_delegation( $domain => \%data );
+	Zonemaster::Engine->add_fake_delegation( $domain => \%data );
 
     return;
 }
@@ -204,7 +204,7 @@ sub add_fake_ds {
         push @data, { keytag => $ds->{keytag}, algorithm => $ds->{algorithm}, type => $ds->{digtype}, digest => $ds->{digest} };
     }
 
-    Zonemaster->add_fake_ds( $domain => \@data );
+    Zonemaster::Engine->add_fake_ds( $domain => \@data );
 
     return;
 }
@@ -216,11 +216,11 @@ sub to_idn {
         return $str;
     }
 
-    if ( Net::LDNS::has_idn() ) {
-        return Net::LDNS::to_idn( $str );
+    if ( Zonemaster::LDNS::has_idn() ) {
+        return Zonemaster::LDNS::to_idn( $str );
     }
     else {
-        warn __( "Warning: Net::LDNS not compiled with libidn, cannot handle non-ASCII names correctly." );
+        warn __( "Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII names correctly." );
         return $str;
     }
 }

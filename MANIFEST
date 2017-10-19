@@ -52,7 +52,7 @@ share/cleanup-mysql.sql
 share/cleanup-postgres.sql
 share/initial-mysql.sql
 share/initial-postgres.sql
-share/starman-zonemaster.conf
+share/starman-zm-backend-RPC-API.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini
@@ -64,4 +64,4 @@ t/test01.t
 t/test_DB_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t
-zonemaster
+

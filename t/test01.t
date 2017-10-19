@@ -3,13 +3,13 @@ use warnings;
 use 5.14.2;
 
 use Test::More;    # see done_testing()
-use Zonemaster;
+use Zonemaster::Engine;
 
 my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
     die q{Stored data file missing} if not -r $datafile;
-    Zonemaster->preload_cache( $datafile );
-    Zonemaster->config->no_network( 1 );
+    Zonemaster::Engine->preload_cache( $datafile );
+    Zonemaster::Engine->config->no_network( 1 );
 }
 
 # Require Zonemaster::Backend::RPCAPI.pm test
@@ -74,7 +74,7 @@ sub run_zonemaster_test_with_backend_API {
 	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
 	if ( $ENV{ZONEMASTER_RECORD} ) {
-		Zonemaster->save_cache( $datafile );
+		Zonemaster::Engine->save_cache( $datafile );
 	}
 }
 

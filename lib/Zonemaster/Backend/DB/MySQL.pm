@@ -107,7 +107,7 @@ sub create_new_test {
     $queue = $test_params->{queue} if (defined $test_params->{queue});
 
     $test_params->{domain} = $domain;
-    my $js                             = JSON->new->canonical;
+    my $js                             = JSON::PP->new->canonical;
     my $encoded_params                 = $js->encode( $test_params );
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
     my $result_id;
@@ -271,7 +271,7 @@ sub add_batch_job {
     my $batch_id;
 
 	my $dbh = $self->dbh;
-	my $js = JSON->new;
+	my $js = JSON::PP->new;
 	$js->canonical( 1 );
     		
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {

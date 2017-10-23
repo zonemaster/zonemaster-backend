@@ -120,23 +120,23 @@ Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working i
 
 ```ini
 [DB]
-engine=MySQL
-user=zonemaster
-password=zonemaster
-database_host=localhost
-database_name=zonemaster
-polling_interval=0.5
+engine            = MySQL
+user              = zonemaster
+password          = zonemaster
+database_host     = localhost
+database_name     = zonemaster
+polling_interval  = 0.5
 
 [LOG]
-log_dir=logs/
+log_dir           = logs/
 
 [PERL]
-interpreter=perl
+interpreter       = perl
 
 [ZONEMASTER]
-max_zonemaster_execution_time=300
-number_of_processes_for_frontend_testing=20
-number_of_processes_for_batch_testing=20
+max_zonemaster_execution_time            = 300
+number_of_processes_for_frontend_testing = 20
+number_of_processes_for_batch_testing    = 20
 ```
 
 Using a database adminstrator user (called root in the example below), run the
@@ -305,23 +305,23 @@ Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working i
 
 ```ini
 [DB]
-engine=MySQL
-user=zonemaster
-password=zonemaster
-database_host=localhost
-database_name=zonemaster
-polling_interval=0.5
+engine           = MySQL
+user             = zonemaster
+password         = zonemaster
+database_host    = localhost
+database_name    = zonemaster
+polling_interval = 0.5
 
 [LOG]
-log_dir=logs/
+log_dir          = logs/
 
 [PERL]
-interpreter=perl
+interpreter      = perl
 
 [ZONEMASTER]
-max_zonemaster_execution_time=300
-number_of_processes_for_frontend_testing=20
-number_of_processes_for_batch_testing=20
+max_zonemaster_execution_time             = 300
+number_of_processes_for_frontend_testing  = 20
+number_of_processes_for_batch_testing     = 20
 ```
 
 Using a database adminstrator user (called root in the example below), run the

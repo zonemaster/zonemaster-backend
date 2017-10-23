@@ -25,9 +25,6 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 > **Note:** In addition to the normal dependencies, the post-installation sanity
 > check instruction assumes that you have curl installed.
 
-
-## Installation
-
 This instruction covers the following operating systems:
 
  * [CentOS](#1-centos)
@@ -36,7 +33,7 @@ This instruction covers the following operating systems:
  * [Ubuntu](#4-ubuntu)
 
 
-## 1. CentOS
+## 1. Installation on CentOS
 
 ### 1.1 Installing dependencies 
 
@@ -116,18 +113,25 @@ sudo chmod +x /etc/init.d/zm-centos.sh
 
 #### 1.6.1 MySQL
 
-Edit the file `/etc/zonemaster/backend_config.ini`.
+Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
 
-```
-engine           = MySQL
-user             = zonemaster
-password         = zonemaster
-database_name    = zonemaster
-database_host    = localhost
-polling_interval = 0.5
-log_dir          = logs/
-interpreter      = perl
-max_zonemaster_execution_time   = 300
+```ini
+[DB]
+engine            = MySQL
+user              = zonemaster
+password          = zonemaster
+database_host     = localhost
+database_name     = zonemaster
+polling_interval  = 0.5
+
+[LOG]
+log_dir           = logs/
+
+[PERL]
+interpreter       = perl
+
+[ZONEMASTER]
+max_zonemaster_execution_time            = 300
 number_of_processes_for_frontend_testing = 20
 number_of_processes_for_batch_testing    = 20
 ```
@@ -168,18 +172,25 @@ mysql --user=root --password < ./cleanup-mysql.sql
 > At this time there is no instruction for creating a database in PostgreSQL.
 >
 
-Edit the file `/etc/zonemaster/backend_config.ini`.
+Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
 
-```
+```ini
+[DB]
 engine           = PostgreSQL
 user             = zonemaster
 password         = zonemaster
-database_name    = zonemaster
 database_host    = localhost
+database_name    = zonemaster
 polling_interval = 0.5
+
+[LOG]
 log_dir          = logs/
+
+[PERL]
 interpreter      = perl
-max_zonemaster_execution_time   = 300
+
+[ZONEMASTER]
+max_zonemaster_execution_time            = 300
 number_of_processes_for_frontend_testing = 20
 number_of_processes_for_batch_testing    = 20
 ```
@@ -213,7 +224,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-## 2. Debian
+## 2. Installation on Debian
 
 ### 2.1 Installing dependencies
 
@@ -287,20 +298,27 @@ sudo update-rc.d zm-backend.sh defaults
 
 #### 2.6.1 MySQL
 
-Edit the file `/etc/zonemaster/backend_config.ini`.
+Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
 
-```
+```ini
+[DB]
 engine           = MySQL
 user             = zonemaster
 password         = zonemaster
-database_name    = zonemaster
 database_host    = localhost
+database_name    = zonemaster
 polling_interval = 0.5
+
+[LOG]
 log_dir          = logs/
+
+[PERL]
 interpreter      = perl
-max_zonemaster_execution_time   = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
+
+[ZONEMASTER]
+max_zonemaster_execution_time             = 300
+number_of_processes_for_frontend_testing  = 20
+number_of_processes_for_batch_testing     = 20
 ```
 
 Using a database adminstrator user (called root in the example below), run the
@@ -334,20 +352,27 @@ mysql --user=root --password < ./cleanup-mysql.sql
 
 #### 2.6.2 PostgreSQL
 
-Edit the file `/etc/zonemaster/backend_config.ini`.
+Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file
 
-```sh
+```ini
+[DB]
 engine           = PostgreSQL
 user             = zonemaster
 password         = zonemaster
-database_name    = zonemaster
 database_host    = localhost
+database_name    = zonemaster
 polling_interval = 0.5
+
+[LOG]
 log_dir          = logs/
+
+[PERL]
 interpreter      = perl
-max_zonemaster_execution_time   = 300
-number_of_processes_for_frontend_testing  = 20
-number_of_processes_for_batch_testing     = 20
+
+[ZONEMASTER]
+max_zonemaster_execution_time            = 300
+number_of_processes_for_frontend_testing = 20
+number_of_processes_for_batch_testing    = 20
 ```
 
 Connect to Postgres as a user with administrative privileges and set things up:
@@ -401,7 +426,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-## 3. FreeBSD
+## 3. Installation on FreeBSD
 
 ### 3.1 Acquire privileges
 
@@ -468,76 +493,76 @@ cp ./backend_config.ini /etc/zonemaster/
 Zonemaster::Backend supports MySQL and PostgreSQL on FreeBSD. See [declaration
 of prerequisites] for details on specific versions.
 
- * Instructions for **MySQL**:
+#### 3.4.1 Instructions for **MySQL**:
 
-   Install the database engine and its dependencies:
+Install the database engine and its dependencies:
 
-   ```sh
-   pkg install mysql56-server p5-DBD-mysql
-   ```
+```sh
+pkg install mysql56-server p5-DBD-mysql
+```
 
-   >
-   > At this time there is no instruction for configuring/starting MySQL on FreeBSD.
-   >
+>
+> At this time there is no instruction for configuring/starting MySQL on FreeBSD.
+>
 
-   Configure the database engine:
+Configure the database engine:
 
-   >
-   > At this time there is no instruction for configuring and creating a database
-   > in MySQL.
-   >
+>
+> At this time there is no instruction for configuring and creating a database
+> in MySQL.
+>
 
- * Instructions for **PostgreSQL**:
+#### 3.4.2 Instructions for **PostgreSQL**:
 
-   Install, configure and start database engine (and Perl bindings):
+Install, configure and start database engine (and Perl bindings):
 
-   ```sh
-   pkg install postgresql95-server p5-DBD-Pg
-   echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
-   service postgresql initdb
-   service postgresql start
-   ```
+```sh
+pkg install postgresql95-server p5-DBD-Pg
+echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
+service postgresql initdb
+service postgresql start
+```
 
-   Configure Zonemaster::Backend:
+Configure Zonemaster::Backend:
 
-   Edit the file `/etc/zonemaster/backend_config.ini`.
+Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
 
-   ```ini
-   [DB]
-   engine           = PostgreSQL
-   user             = zonemaster
-   password         = zonemaster
-   database_host    = localhost
-   database_name    = zonemaster
-   polling_interval = 0.5
+```ini
+[DB]
+engine           = PostgreSQL
+user             = zonemaster
+password         = zonemaster
+database_host    = localhost
+database_name    = zonemaster
+polling_interval = 0.5
 
-   [LOG]
-   log_dir          = logs/
+[LOG]
+log_dir          = logs/
 
-   [PERL]
-   interpreter      = perl
+[PERL]
+interpreter      = perl
 
-   [ZONEMASTER]
-   max_zonemaster_execution_time            = 300
-   number_of_processes_for_frontend_testing = 20
-   number_of_processes_for_batch_testing    = 20
-   ```
+[ZONEMASTER]
+max_zonemaster_execution_time            = 300
+number_of_processes_for_frontend_testing = 20
+number_of_processes_for_batch_testing    = 20
+```
 
-   > **ToDo:** Add instruction about the
-   > `config_logfilter_1=/full/path/to/a/config_file.json` line.
+> **ToDo:** Add instruction about the
+> `config_logfilter_1=/full/path/to/a/config_file.json` line.
 
-   Initialize the database:
+Initialize the database:
 
-   ```sh
-   psql -U pgsql -f ./initial-postgres.sql template1
-   ```
+```sh
+psql -U pgsql -f ./initial-postgres.sql template1
+```
 
- * Instructions for **SQLite**:
+#### 3.4.3 Instructions for **SQLite**:
 
-   >
-   > At this time there is no instruction for configuring and creating a database
-   > in SQLite.
-   >
+>
+> At this time there is no instruction for configuring and creating a database
+> in SQLite.
+>
 
 ### 3.5 Service startup
 
@@ -562,15 +587,15 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-## 4. Ubuntu
+## 4. Installation on Ubuntu
 
 Use the procedure for installation on [Debian](#2-debian).
 
 
 ## What to do next?
 
- * For a web interface, follow the [Zonemaster::GUI installation] instructions.
- * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
+* For a web interface, follow the [Zonemaster::GUI installation] instructions.
+* For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
 -------

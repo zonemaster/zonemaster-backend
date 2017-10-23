@@ -25,9 +25,6 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 > **Note:** In addition to the normal dependencies, the post-installation sanity
 > check instruction assumes that you have curl installed.
 
-
-## Installation
-
 This instruction covers the following operating systems:
 
  * [CentOS](#1-centos)
@@ -36,7 +33,7 @@ This instruction covers the following operating systems:
  * [Ubuntu](#4-ubuntu)
 
 
-## 1. CentOS
+## 1. Installation on CentOS
 
 ### 1.1 Installing dependencies 
 
@@ -227,7 +224,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-## 2. Debian
+## 2. Installation on Debian
 
 ### 2.1 Installing dependencies
 
@@ -429,7 +426,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-## 3. FreeBSD
+## 3. Installation on FreeBSD
 
 ### 3.1 Acquire privileges
 
@@ -590,7 +587,7 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-## 4. Ubuntu
+## 4. Installation on Ubuntu
 
 Use the procedure for installation on [Debian](#2-debian).
 

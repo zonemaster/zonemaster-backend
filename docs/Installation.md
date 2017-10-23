@@ -496,7 +496,7 @@ cp ./backend_config.ini /etc/zonemaster/
 Zonemaster::Backend supports MySQL and PostgreSQL on FreeBSD. See [declaration
 of prerequisites] for details on specific versions.
 
-* Instructions for **MySQL**:
+#### 3.4.1 Instructions for **MySQL**:
 
 Install the database engine and its dependencies:
 
@@ -515,7 +515,7 @@ Configure the database engine:
 > in MySQL.
 >
 
-* Instructions for **PostgreSQL**:
+#### 3.4.2 Instructions for **PostgreSQL**:
 
 Install, configure and start database engine (and Perl bindings):
 
@@ -560,7 +560,7 @@ Initialize the database:
 psql -U pgsql -f ./initial-postgres.sql template1
 ```
 
-* Instructions for **SQLite**:
+#### 3.4.3 Instructions for **SQLite**:
 
 >
 > At this time there is no instruction for configuring and creating a database

@@ -27,10 +27,10 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 
 This instruction covers the following operating systems:
 
- * [CentOS](#1-centos)
- * [Debian](#2-debian)
- * [FreeBSD](#3-freebsd)
- * [Ubuntu](#4-ubuntu)
+ * [CentOS](#1-installation-on-centos)
+ * [Debian](#2-installation-on-debian)
+ * [FreeBSD](#3-installation-on-freebsd)
+ * [Ubuntu](#4-installation-on-ubuntu)
 
 
 ## 1. Installation on CentOS
@@ -409,7 +409,7 @@ The command is expected to give an immediate JSON response similiar to :
 Become root:
 
 ```sh
-su
+su -l
 ```
 
 
@@ -565,28 +565,29 @@ The command is expected to give an immediate JSON response similiar to :
 
 ## 4. Installation on Ubuntu
 
-Use the procedure for installation on [Debian](#2-debian).
+Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 
 ## What to do next?
 
 * For a web interface, follow the [Zonemaster::GUI installation] instructions.
+* For a command line interface, follow the [Zonemaster::CLI installation] instruction.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
-
 
 -------
 
 [Declaration of prerequisites]: https://github.com/dotse/zonemaster#prerequisites
 [JSON-RPC API]: API.md
-[Main Zonemaster repository]: https://github.com/dotse/zonemaster
+[Main Zonemaster repository]: https://github.com/dotse/zonemaster/blob/master/README.md
+[Zonemaster::CLI installation]: https://github.com/dotse/zonemaster-cli/blob/master/docs/Installation.md
+[Zonemaster::GUI installation]: https://github.com/dotse/zonemaster-gui/blob/master/docs/Installation.md
 [Zonemaster::Engine installation]: https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md
-[Zonemaster::Engine]: https://github.com/dotse/zonemaster-engine
-[Zonemaster::GUI installation]: https://github.com/dotse/zonemaster-gui/blob/master/docs/installation.md
-[Zonemaster::LDNS]: https://github.com/dotse/zonemaster-ldns
+[Zonemaster::Engine]: https://github.com/dotse/zonemaster-engine/blob/master/README.md
+[Zonemaster::LDNS]: https://github.com/dotse/zonemaster-ldns/blob/master/README.md
 
 Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
 Copyright (c) 2013 - 2017, AFNIC \
 Creative Commons Attribution 4.0 International License
 
 You should have received a copy of the license along with this
-work.  If not, see <http://creativecommons.org/licenses/by/4.0/>.
+work.  If not, see <https://creativecommons.org/licenses/by/4.0/>.

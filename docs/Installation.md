@@ -409,7 +409,7 @@ The command is expected to give an immediate JSON response similiar to :
 Become root:
 
 ```sh
-su
+su -l
 ```
 
 

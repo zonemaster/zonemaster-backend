@@ -172,30 +172,6 @@ mysql --user=root --password < ./cleanup-mysql.sql
 > At this time there is no instruction for creating a database in PostgreSQL.
 >
 
-Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
-
-```ini
-[DB]
-engine           = PostgreSQL
-user             = zonemaster
-password         = zonemaster
-database_host    = localhost
-database_name    = zonemaster
-polling_interval = 0.5
-
-[LOG]
-log_dir          = logs/
-
-[PERL]
-interpreter      = perl
-
-[ZONEMASTER]
-max_zonemaster_execution_time            = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
-```
-
-
 #### 1.6.3 SQLite
 
 >
@@ -205,7 +181,7 @@ number_of_processes_for_batch_testing    = 20
 ### 1.7 Service startup
 
 ```sh
-sudo systemctl start zm-centos
+sudo /etc/init.d/zm-centos.sh start
 ```
 
 ### 1.8 Post-installation sanity check
@@ -219,8 +195,8 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 
 The command is expected to give an immediate JSON response similiar to :
 
-```sh
-{"id":140715758026879,"jsonrpc":"2.0","result":"Zonemaster Test Engine Version: v1.0.2"}
+```json
+{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 
 
@@ -421,7 +397,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 
 The command is expected to give an immediate JSON response similiar to :
 
-```sh
+```json
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
 

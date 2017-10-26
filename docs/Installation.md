@@ -228,43 +228,23 @@ Install Zonemaster::Backend:
 sudo cpan -i Zonemaster::Backend
 ```
 
-
-### 2.2 Service configuration
-
-```sh
-sudo mkdir /etc/zonemaster
-mkdir "$HOME/logs"
-```
-
-The Zonemaster::Backend module installs a number of configuration files in a
-shared data directory.  This section refers to the shared data directory as the
-current directory, so locate it and go there like this:
+Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-```
-
-Copy the `backend_config.ini` file to `/etc/zonemaster`:
-
-```sh
-sudo cp ./backend_config.ini /etc/zonemaster/
-```
-
-Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an
-executable file, and add the file to start up script.
-
-```sh
+sudo install -d /etc/zonemaster
+sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-backend.sh /etc/init.d/
-sudo update-rc.d zm-backend.sh defaults
+mkdir "$HOME/logs"
 ```
 
 
-### 2.3 Database engine installation and configuratoin
+### 2.2 Database engine installation and configuratoin
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-#### 2.3.1 Instructions for **MySQL**:
+#### 2.2.1 Instructions for **MySQL**:
 
 Install the database engine and its dependencies:
 
@@ -315,7 +295,7 @@ mysql --user=root --password < ./initial-mysql.sql
 > your database.
 
 
-#### 2.3.2 Instructions for **PostgreSQL**:
+#### 2.2.2 Instructions for **PostgreSQL**:
 
 Install, configure and start database engine (and Perl bindings):
 
@@ -362,7 +342,13 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > This user has just enough permissions to run the backend software.
 
 
-### 2.4 Service startup
+### 2.3 Service configuration and startup
+
+Add `zm-backend.sh` to start up script:
+
+```sh
+sudo update-rc.d zm-backend.sh defaults
+```
 
 Starting the starman part that listens for and answers the JSON-RPC requests:
 
@@ -384,7 +370,7 @@ sudo service zm-backend.sh status
 zonemaster_backend_testagent start
 ```
 
-### 2.5 Post-installation sanity check
+### 2.4 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:

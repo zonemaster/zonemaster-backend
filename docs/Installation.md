@@ -202,44 +202,34 @@ The command is expected to give an immediate JSON response similiar to :
 
 ## 2. Installation on Debian
 
-### 2.1 Installing dependencies
+### 2.1 Install Zonemaster::Backend and related dependencies
+
+Install dependencies available from binary packages:
 
 ```sh
-sudo apt-get update
 sudo apt-get install git libmodule-install-perl libconfig-inifiles-perl libdbd-sqlite3-perl starman libio-captureoutput-perl libproc-processtable-perl libstring-shellquote-perl librouter-simple-perl libclass-method-modifiers-perl libtext-microtemplate-perl libdaemon-control-perl
-sudo cpan -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON::RPC 
 ```
->
-> Note: The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as Debian
-> packages, but with versions too old to be useful for us.
->
 
-### 2.2 Install the chosen database engine and related dependencies
-
-#### 2.2.1 MySQL
+Install dependencies not available from binary packages:
 
 ```sh
-sudo apt-get install mysql-server libdbd-mysql-perl
+sudo cpan -i  Test::Requires Plack::Middleware::Debug Parallel::ForkManager JSON::RPC
 ```
 
-#### 2.2.2 PostgreSQL
+> **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
+> are dealt with in the [prerequisites](#prerequisites) section.
 
-```sh
-sudo apt-get install libdbd-pg-perl postgresql
-```
+> **Note:** The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as
+> Debian packages, but with versions too old to be useful for us.
 
-#### 2.2.3 SQLite
-
->
-> At this time there is no instruction for using SQLite on Debian and Ubuntu.
->
-
-### 2.3 Installation of Zonemaster Backend
+Install Zonemaster::Backend:
 
 ```sh
 sudo cpan -i Zonemaster::Backend
 ```
-### 2.4 Directory and file manipulation
+
+
+### 2.2 Service configuration
 
 ```sh
 sudo mkdir /etc/zonemaster
@@ -254,12 +244,11 @@ current directory, so locate it and go there like this:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
-Copy the `backend_config.ini` file to `/etc/zonemaster`.
+Copy the `backend_config.ini` file to `/etc/zonemaster`:
 
 ```sh
 sudo cp ./backend_config.ini /etc/zonemaster/
 ```
-### 2.5 Service script set up
 
 Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an
 executable file, and add the file to start up script.
@@ -270,9 +259,21 @@ sudo chmod +x /etc/init.d/zm-backend.sh
 sudo update-rc.d zm-backend.sh defaults
 ```
 
-### 2.6 Chosen database configuration
 
-#### 2.6.1 MySQL
+### 2.3 Database engine installation and configuratoin
+
+Check the [declaration of prerequisites] to make sure your preferred combination
+of operating system version and database engine version is supported.
+
+#### 2.3.1 Instructions for **MySQL**:
+
+Install the database engine and its dependencies:
+
+```sh
+sudo apt-get install mysql-server libdbd-mysql-perl
+```
+
+Configure Zonemaster::Backend:
 
 Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
 
@@ -297,38 +298,35 @@ number_of_processes_for_frontend_testing  = 20
 number_of_processes_for_batch_testing     = 20
 ```
 
-Using a database adminstrator user (called root in the example below), run the
-setup file:
+> **ToDo:** Add instruction about the
+> `config_logfilter_1=/full/path/to/a/config_file.json` line.
+
+Initialize the database:
 
 ```sh
 mysql --user=root --password < ./initial-mysql.sql
 ```
 
-This creates a database called `zonemaster`, as well as a user called
-"zonemaster" with the password "zonemaster" (as stated in the config file). This
-user has just enough permissions to run the backend software.
-
+> **Note:** This creates a database called `zonemaster`, as well as a user
+> called "zonemaster" with the password "zonemaster" (as stated in the config
+> file). This user has just enough permissions to run the backend software.
 >
-> Note : Only run the above command during an initial installation of the
-> Zonemaster backend. If you do this on an existing system, you will wipe out
-> the
-> data in your database.
->
+> Only run this command during an initial installation of the Zonemaster
+> backend. If you do this on an existing system, you will wipe out the data in
+> your database.
 
-If, at some point, you want to delete all traces of Zonemaster in the database,
-you can run the file `cleanup-mysql.sql` as a database administrator. Commands
-for locating and running the file are below. It removes the user and drops the
-database (obviously taking all data with it).
 
+#### 2.3.2 Instructions for **PostgreSQL**:
+
+Install, configure and start database engine (and Perl bindings):
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-mysql --user=root --password < ./cleanup-mysql.sql
+sudo apt-get install libdbd-pg-perl postgresql
 ```
 
-#### 2.6.2 PostgreSQL
+Configure Zonemaster::Backend:
 
-Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file
+Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
 
 ```ini
 [DB]
@@ -351,42 +349,43 @@ number_of_processes_for_frontend_testing = 20
 number_of_processes_for_batch_testing    = 20
 ```
 
-Connect to Postgres as a user with administrative privileges and set things up:
+> **ToDo:** Add instruction about the
+> `config_logfilter_1=/full/path/to/a/config_file.json` line.
+
+Initialize the database:
 
 ```sh
 sudo -u postgres psql -f ./initial-postgres.sql
 ```
 
-This creates a database called `zonemaster`, as well as a user called
-"zonemaster" with the password "zonemaster" (as stated in the config file). This
-user has just enough permissions to run the backend software.
+> **Note:** This creates a database called `zonemaster`, as well as a user called
+> "zonemaster" with the password "zonemaster" (as stated in the config file).
+> This user has just enough permissions to run the backend software.
 
-#### 2.6.3 SQLite
 
->
-> At this time there is no instruction for configuring and creating a database
-> in SQLite.
->
+### 2.4 Service startup
 
-### 2.7 Service startup
-
-Starting the starman part that listens for and answers the JSON::RPC requests
+Starting the starman part that listens for and answers the JSON-RPC requests:
 
 ```sh
 sudo service zm-backend.sh start
 ```
 
-This only needs to be run as root in order to make sure the log file can be
-opened. The `starman` process will change to the `www-data` user as soon as it
-can, and all of the real work will be done as that user.
+> **Note:** This only needs to be run as root in order to make sure the log file
+> can be opened. The `starman` process will change to the `www-data` user as
+> soon as it can, and all of the real work will be done as that user.
 
-Check that the service has started 
+Check that the service has started:
 
 ```sh
 sudo service zm-backend.sh status
 ```
 
-### 2.8 Post-installation sanity check
+```sh
+zonemaster_backend_testagent start
+```
+
+### 2.5 Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -395,7 +394,7 @@ API on localhost port 5000, like this:
 curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
 ```
 
-The command is expected to give an immediate JSON response similiar to :
+The command is expected to give an immediate JSON response similiar to:
 
 ```json
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
@@ -573,6 +572,20 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 * For a web interface, follow the [Zonemaster::GUI installation] instructions.
 * For a command line interface, follow the [Zonemaster::CLI installation] instruction.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
+
+
+### Cleaning up MySQL
+
+If, at some point, you want to delete all traces of Zonemaster in the database,
+you can run the file `cleanup-mysql.sql` as a database administrator. Commands
+for locating and running the file are below. It removes the user and drops the
+database (obviously taking all data with it).
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+mysql --user=root --password < ./cleanup-mysql.sql
+```
+
 
 -------
 

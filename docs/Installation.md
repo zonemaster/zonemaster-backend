@@ -254,8 +254,7 @@ Copy the file `./zm-backend.sh` to the directory `/etc/init`, make it an
 executable file, and add the file to start up script.
 
 ```sh
-sudo cp ./zm-backend.sh /etc/init.d/
-sudo chmod +x /etc/init.d/zm-backend.sh
+sudo install --mode=755 ./zm-backend.sh /etc/init.d/
 sudo update-rc.d zm-backend.sh defaults
 ```
 

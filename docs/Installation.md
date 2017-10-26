@@ -313,24 +313,16 @@ Add `zm-backend.sh` to start up script:
 sudo update-rc.d zm-backend.sh defaults
 ```
 
-Starting the starman part that listens for and answers the JSON-RPC requests:
+Start the service:
 
 ```sh
 sudo service zm-backend.sh start
 ```
 
-> **Note:** This only needs to be run as root in order to make sure the log file
-> can be opened. The `starman` process will change to the `www-data` user as
-> soon as it can, and all of the real work will be done as that user.
-
 Check that the service has started:
 
 ```sh
 sudo service zm-backend.sh status
-```
-
-```sh
-zonemaster_backend_testagent start
 ```
 
 ### 2.4 Post-installation sanity check (Debian)

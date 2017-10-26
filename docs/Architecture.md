@@ -42,6 +42,10 @@ recording *test* requests in the *Database* and fetching *test* results from the
 *Database*. The *Backend* architecture supports multiple *RPC API daemons*
 interacting with the same *Database*.
 
+This only needs to be run as root in order to make sure the log file
+can be opened. The `starman` process will change to the `www-data` user as
+soon as it can, and all of the real work will be done as that user.
+
 >
 > TODO: List all ports these processes listen to.
 >

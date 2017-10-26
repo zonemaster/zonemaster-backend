@@ -252,34 +252,6 @@ Install the database engine and its dependencies:
 sudo apt-get install mysql-server libdbd-mysql-perl
 ```
 
-Configure Zonemaster::Backend:
-
-Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
-
-```ini
-[DB]
-engine           = MySQL
-user             = zonemaster
-password         = zonemaster
-database_host    = localhost
-database_name    = zonemaster
-polling_interval = 0.5
-
-[LOG]
-log_dir          = logs/
-
-[PERL]
-interpreter      = perl
-
-[ZONEMASTER]
-max_zonemaster_execution_time             = 300
-number_of_processes_for_frontend_testing  = 20
-number_of_processes_for_batch_testing     = 20
-```
-
-> **ToDo:** Add instruction about the
-> `config_logfilter_1=/full/path/to/a/config_file.json` line.
-
 Initialize the database:
 
 ```sh
@@ -294,6 +266,12 @@ mysql --user=root --password < ./initial-mysql.sql
 > backend. If you do this on an existing system, you will wipe out the data in
 > your database.
 
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
+```
+
 
 #### 2.2.2 Instructions for **PostgreSQL**:
 
@@ -302,34 +280,6 @@ Install, configure and start database engine (and Perl bindings):
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
 ```
-
-Configure Zonemaster::Backend:
-
-Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
-
-```ini
-[DB]
-engine           = PostgreSQL
-user             = zonemaster
-password         = zonemaster
-database_host    = localhost
-database_name    = zonemaster
-polling_interval = 0.5
-
-[LOG]
-log_dir          = logs/
-
-[PERL]
-interpreter      = perl
-
-[ZONEMASTER]
-max_zonemaster_execution_time            = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
-```
-
-> **ToDo:** Add instruction about the
-> `config_logfilter_1=/full/path/to/a/config_file.json` line.
 
 Initialize the database:
 
@@ -340,6 +290,12 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > **Note:** This creates a database called `zonemaster`, as well as a user called
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
+```
 
 
 ### 2.3 Service configuration and startup

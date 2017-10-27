@@ -219,9 +219,6 @@ sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
-> **Note:** The Perl modules `Parallel::ForkManager` and `JSON::RPC` exist as
-> Debian packages, but with versions too old to be useful for us.
-
 Install Zonemaster::Backend:
 
 ```sh

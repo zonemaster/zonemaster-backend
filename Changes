@@ -6,6 +6,7 @@ v2.0.0 2017-11-02
 	 * Renamed distribution from Zonemaster-WebBackend to Zonemaster-Backend (#284)
 	 * Renamed zonemaster_backend.psgi to zonemaster_rpcapi.psgi (#284)
 	 * Renamed zm_wb_daemon to zonemaster_backend_testagent (#284)
+	 * Renamed CHANGES to Changes
 	Fixed
 	 * Fixed licensing discrepancy (#308)
 	 * Fixed broken imports (#301)

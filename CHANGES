@@ -1,6 +1,21 @@
 Revision history for Zonemaster Backend.
+
+v2.0.0 2017-11-02
+	Switch version scheme to Semantic Versioning.
+	Changed
+	 * Renamed distribution from Zonemaster-WebBackend to Zonemaster-Backend (#284)
+	 * Renamed zonemaster_backend.psgi to zonemaster_rpcapi.psgi (#284)
+	 * Renamed zm_wb_daemon to zonemaster_backend_testagent (#284)
+	Fixed
+	 * Fixed licensing discrepancy (#308)
+	 * Fixed broken imports (#301)
+	 * Replaced dependencies on obsolete Net::LDNS and Zonemaster with Zonemaster::LDNS and Zonemaster::Engine (#299)
+	 * Commented out bogus line in backend_config.ini (#307)
+	 * Updated installation instructions (#300, #303, #304, #305, #306)
+	 * Fixed Commonmark rendering on Github (d25c36a)
+
 v1.2.0 2017-04-11 Public Pre-Release
-        Fixes #182 - Tests fail with `unexpected end of string while parsing JSON string
+	Fixes #182 - Tests fail with `unexpected end of string while parsing JSON string
 	Fixes #206 - Perl warning when creating a batch
 	Fixes #270 - "default_profile" would not be loaded
 	Fixes #276 - Accept SHA-384 digests in DS records.

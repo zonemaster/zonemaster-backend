@@ -1,5 +1,5 @@
 .travis.yml
-CHANGES
+Changes
 CodeSnippets/client.pl
 CodeSnippets/Client.pm
 CodeSnippets/sample_api_call__get_data_from_parent_zone.pl

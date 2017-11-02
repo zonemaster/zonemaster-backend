@@ -17,12 +17,12 @@ need of logging the Zonemaster test runs in one's own respective database for
 analysing.  
 
 
-### Prerequisites
+### Prerequisites
 
 Before you install the Zonemaster Backend, you need the
 Zonemaster Engine installed. Please see the
 [Zonemaster Engine installation
-instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/installation.md).
+instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md).
 
 ### Upgrade 
 
@@ -35,7 +35,7 @@ instructions below.
 
 ### Installation
 
-Follow the detailed [installation instructions](docs/installation.md).
+Follow the detailed [installation instructions](docs/Installation.md).
 
 ### Configuration 
 
@@ -46,7 +46,7 @@ Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_conf
 >
 
 
-### Documentation
+### Documentation
 
 The Zonemaster Backend documentation is split up into several documents:
 
@@ -58,8 +58,8 @@ The Zonemaster Backend documentation is split up into several documents:
   glossary over domain specific technical terms.
 * The [Getting Started](docs/GettingStarted.md) guide walks you through creating
   a *test* and following it through its life cycle, all using JSON-RPC calls to
-  the *Web backend*.
-* The [API](docs/API.md) documentation describes the *Web backend* inteface in
+  the *RPC API daemon*.
+* The [API](docs/API.md) documentation describes the *RPC API daemon* inteface in
   detail.
 
 The [docs](docs/) directory also contains the SQL commands for manipulating the

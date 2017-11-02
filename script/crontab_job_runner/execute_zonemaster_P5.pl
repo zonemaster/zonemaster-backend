@@ -31,6 +31,6 @@ unshift(@INC, $PROJECT_BASE_DIR);
 ##################################################################
 
 unshift(@INC, $PROD_DIR."zonemaster-backend/lib/") unless $INC{$PROD_DIR."zonemaster-backend/lib/"};
-require Zonemaster::WebBackend::Runner;
+require Zonemaster::Backend::TestAgent;
 
-Zonemaster::WebBackend::Runner->new()->run($ARGV[0]);
+Zonemaster::Backend::TestAgent->new()->run($ARGV[0]);

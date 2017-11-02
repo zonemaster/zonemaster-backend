@@ -1,29 +1,27 @@
 use inc::Module::Install;
 
-name 'Zonemaster-WebBackend';
+name 'Zonemaster-Backend';
 author q{Michal TOMA <toma@nic.fr>};
-version_from 'lib/Zonemaster/WebBackend/Engine.pm';
-abstract 'The Zonemaster project Web Backend engine';
-license 'perl';
+version_from 'lib/Zonemaster/Backend.pm';
+abstract 'The Zonemaster Backend project with RPC API and Test Agents';
+license 'bsd';
 perl_version '5.014002';
 
 requires
-  'Zonemaster'               => 0,
+  'Zonemaster::Engine'       => 2.0,
   'Config::IniFiles'         => 0,
   'DBI'                      => 1.616,
   'File::Slurp'              => 0,
   'HTML::Entities'           => 0,
   'IO::CaptureOutput'        => 0,
   'JSON::PP'                 => 0,
-  'JSON::RPC::Dispatch'      => 0,
+  'JSON::RPC'                => 0.96,
   'Locale::TextDomain'       => 0,
-  'LWP::UserAgent'           => 0,
   'Moose'                    => 2.04,
-  'Moose::Role'              => 0,
   'Net::IP::XS'              => 0.14,
-  'Net::LDNS'                => 0.72,
+  'Zonemaster::LDNS'         => 1.0,
   'Plack::Builder'           => 0,
-  'Plack::Middleware::Debug' => 0,
+  'Plack::Middleware::Debug' => 0.14,
   'Router::Simple::Declare'  => 0,
   'String::ShellQuote'       => 0,
   'Starman'                  => 0,
@@ -40,8 +38,8 @@ recommends 'DBD::SQLite';
 
 install_share;
 
-install_script 'zonemaster_webbackend.psgi';
-install_script 'zm_wb_daemon';
+install_script 'zonemaster_backend_rpcapi.psgi';
+install_script 'zonemaster_backend_testagent';
 
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';

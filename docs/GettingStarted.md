@@ -1,16 +1,16 @@
 # Getting started
 
-This is a guide for getting started with the Zonemaster Web Backend JSON-RPC API.
+This is a guide for getting started with the Zonemaster RPC API daemon.
 
 >
 > Note: This guide makes a number of assumptions about you setup:
 >
 > * that it's a Unix-like environment
-> * that you have Zonemaster *backend* installed according to the [installation guide](installation.md)
+> * that you have Zonemaster *backend* installed according to the [installation guide](Installation.md)
 > * that you have the tools `curl` and `jq` installed
 >
 
-First, check that the *Web backend* is running and answering properly.
+First, check that the *RPC API daemon* is running and answering properly.
 
 ```sh
 curl -sS -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "id": 1, "method": "version_info"}' http://localhost:5000/ | jq .

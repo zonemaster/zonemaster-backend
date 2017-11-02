@@ -1,4 +1,4 @@
-package Zonemaster::WebBackend::DB::SQLite;
+package Zonemaster::Backend::DB::SQLite;
 
 our $VERSION = '1.1.0';
 
@@ -9,11 +9,11 @@ use DBI qw(:utils);
 use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 
-use Zonemaster::WebBackend::Config;
+use Zonemaster::Backend::Config;
 
-with 'Zonemaster::WebBackend::DB';
+with 'Zonemaster::Backend::DB';
 
-my $connection_string = Zonemaster::WebBackend::Config->DB_connection_string( 'sqlite' );
+my $connection_string = Zonemaster::Backend::Config->DB_connection_string( 'sqlite' );
 
 has 'dbh' => (
     is      => 'ro',

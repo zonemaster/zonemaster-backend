@@ -40,13 +40,10 @@ instructions below.
 
 Follow the detailed [installation instructions](docs/Installation.md).
 
-### Configuration 
 
-Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`.
+### Configuration
 
->
-> At this time there is no documentation for `backend_config.ini`.
->
+See the [configuration documentation].
 
 
 ### Documentation
@@ -73,3 +70,6 @@ database.
 
 The software is released under the 2-clause BSD license. See separate
 [LICENSE](LICENSE) file.
+
+
+[Configuration documentation]: docs/Configuration.md

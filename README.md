@@ -1,6 +1,7 @@
-Zonemaster Backend
-==================
+# Zonemaster Backend
+
 [![Build Status](https://travis-ci.org/dotse/zonemaster-backend.svg?branch=master)](https://travis-ci.org/dotse/zonemaster-backend)
+
 
 ### Purpose
 This repository is one of the components of the Zonemaster software. For an
@@ -14,7 +15,7 @@ run the Zonemaster engine on many domains)
 
 A Zonemaster user needs to install the backend only in the case where there is a
 need of logging the Zonemaster test runs in one's own respective database for
-analysing.  
+analysing.
 
 
 ### Prerequisites
@@ -24,6 +25,7 @@ Zonemaster Engine installed. Please see the
 [Zonemaster Engine installation
 instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md).
 
+
 ### Upgrade 
 
 If you are upgrading Zonemaster Backend from 1.0.X to 1.1.X please follow the
@@ -32,6 +34,7 @@ relevant parts of the installation instructions below.
 
 For all other upgrades follow the relevant parts of the installation
 instructions below.
+
 
 ### Installation
 
@@ -66,8 +69,7 @@ The [docs](docs/) directory also contains the SQL commands for manipulating the
 database. 
 
 
-License
-=======
+## License
 
 The software is released under the 2-clause BSD license. See separate
 [LICENSE](LICENSE) file.

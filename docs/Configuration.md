@@ -32,11 +32,7 @@ Keys are profile names and values are absolute file system paths to profile JSON
 The profile named `default` is special and always available.
 If it isn't explicitly defined, it's implicitly mapped to the Zonemaster Engine default profile.
 
-Profile names are restricted to:
-
- * letters A-Z and a-z, digits 0-9, hyphen '-' and underscore '_'
- * minimum one character in length
- * maximum 32 characters in length
+Legal values for profile names are specified in the [profile name] section of the RPC-API documentation.
 
 
 ## ZONEMASTER section
@@ -45,4 +41,5 @@ TBD
 
 --------
 
+[Profile name]: API.md#profile-name
 [Profiles]: Architecture.md#profile

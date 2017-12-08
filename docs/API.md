@@ -140,19 +140,10 @@ The typical use case for this parameter would be a setup with several separate T
 
 Basic data type: string
 
+* Must consist entirely of letters A-Z and a-z, digits 0-9, hyphen '-' and underscore '_'.
+* Length must be between 1 and 32 characters inclusive.
+
 The name of a [*profile*](Architecture.md#profile).
-
-One of the strings:
-
-* `"default_profile"`
-* `"test_profile_1"`
-* `"test_profile_2"`
-
-The `"test_profile_2"` *profile* is identical to `"default_profile"`.
-
->
-> TODO: What is the expected behavior when a *profile* other than the ones listed above is requested?
->
 
 
 ### Progress percentage
@@ -453,14 +444,13 @@ An object with the following properties:
 
 * `"client_id"`: A free-form string, optional.
 * `"domain"`: A *domain name*, required.
-* `"profile"`: A *profile name*, optional.
+* `"profile"`: A *profile name*, optional. (default `"default"`)
 * `"client_version"`: A free-form string, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default `false`)
 * `"ipv4"`: A boolean, optional. (default `false`)
-* `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.
 * `"priority"`: A *priority*, optional
@@ -884,14 +874,13 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A free-form string, optional.
-* `"profile"`: A *profile name*, optional.
+* `"profile"`: A *profile name*, optional. (default `"default"`)
 * `"client_version"`: A free-form string, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
-* `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: A ..., optional.
 * `"user_location_info"`: A ..., optional.
 * `"priority"`: A *priorty*, optional
@@ -1039,13 +1028,12 @@ An object with the following properties:
 * `"ipv6"`: an optional `1`, `0`, `true` or `false`.
 * `"ds_info"`: an optional list of *DS info* objects.
 * `"nameservers"`: an optional list of objects each of *name server* objects.
-* `"profile"`: an optional *profile name*.
+* `"profile"`: an optional *profile name*. (default `"default"`)
 * `"advanced"`: an optional `true` or `false`.
 * `"client_id"`: ...
 * `"client_version"`: ...
 * `"user_ip"`: ...
 * `"user_location_info"`: ...
-* `"config"`: ...
 
 If the `"nameservers"` key is _not_ set, a recursive query made by the
 server to its locally configured resolver for NS records for the
@@ -1056,8 +1044,7 @@ At least one of `"ipv4"` and `"ipv6"` must be present and either `1` or `true`.
 
 >
 > TODO: Clarify the data type of the following `"params"` properties:
-> `"client_id"`, `"client_version"`, `"user_ip"`, `"user_location_info"` and
-> `"config"`.
+> `"client_id"`, `"client_version"`, `"user_ip"`, `"user_location_info"`.
 >
 > TODO: Clarify the purpose of each `"params"` property.
 >

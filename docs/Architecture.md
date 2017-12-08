@@ -71,9 +71,12 @@ soon as it can, and all of the real work will be done as that user.
 
 ### Profile
 
->
-> TODO: Come up with a better name to distinguish it from *config profiles*.
->
+Zonemaster Backend allows users to specify a profile to be used when starting tests.
+
+Zonemaster Backend allows administrators to configure the set of available profiles.
+
+See also: [Profiles overview], [Backend profile configuration]
+
 
 ### Config profile
 
@@ -88,3 +91,7 @@ soon as it can, and all of the real work will be done as that user.
 
 The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
 own repository](https://github.com/dotse/zonemaster-engine/).
+
+--------
+[Backend profile configuration]: Configuration.md#profiles
+[Profiles overview]: https://github.com/dotse/zonemaster/blob/master/docs/design/Profiles.md

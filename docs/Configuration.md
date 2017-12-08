@@ -26,16 +26,11 @@ TBD
 
 ## PROFILES section
 
-This section declares available [profiles].
+The PROFILES section declares the available [profiles].
 
-Keys are profile names and values are absolute file system paths to profile JSON files.
+Keys are [profile names], and values are absolute file system paths to [profile JSON files].
 The profile named `default` is special and always available.
-If it isn't explicitly defined, it's implicitly mapped to the Zonemaster Engine default profile.
-
-Legal values for profile names are specified in the [profile name] section of the RPC-API documentation.
-
-The profile file format is specified in the [PROFILE DATA] section of the Zonemaster::Engine::Config.
-See the [profile data specification]
+When it isn't explicitly defined, it's implicitly mapped to the Zonemaster Engine default profile.
 
 
 ## ZONEMASTER section
@@ -44,6 +39,6 @@ TBD
 
 --------
 
-[Profile data]: https://metacpan.org/pod/Zonemaster::Engine::Config
-[Profile name]: API.md#profile-name
+[Profile JSON files]: https://metacpan.org/pod/Zonemaster::Engine::Config#PROFILE-DATA
+[Profile names]: API.md#profile-name
 [Profiles]: Architecture.md#profile

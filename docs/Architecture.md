@@ -71,11 +71,9 @@ soon as it can, and all of the real work will be done as that user.
 
 ### Profile
 
-Zonemaster Backend allows users to specify a profile to be used when starting tests.
-
-Zonemaster Backend allows administrators to configure the set of available profiles.
-
-See also: [Profiles overview], [Backend profile configuration]
+A profile is a configuration for Zonemaster Engine; see the [profiles overview] for context.
+Administrators can [configure available profiles], which is a mapping from [profile names] to [profiles files].
+The [RPC-API] contains several methods that accept profile name arguments.
 
 
 ### Config profile
@@ -93,5 +91,8 @@ The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
 own repository](https://github.com/dotse/zonemaster-engine/).
 
 --------
-[Backend profile configuration]: Configuration.md#profiles
+[Configure available profiles]: Configuration.md#profiles-section
+[Profile files]: https://github.com/dotse/zonemaster-engine/blob/master/lib/Zonemaster/Engine/Config.md#PROFILE-DATA
+[Profile names]: API.md#profile-name
 [Profiles overview]: https://github.com/dotse/zonemaster/blob/master/docs/design/Profiles.md
+[RPC-API]: API.md

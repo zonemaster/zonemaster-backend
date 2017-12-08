@@ -34,6 +34,9 @@ If it isn't explicitly defined, it's implicitly mapped to the Zonemaster Engine 
 
 Legal values for profile names are specified in the [profile name] section of the RPC-API documentation.
 
+The profile file format is specified in the [PROFILE DATA] section of the Zonemaster::Engine::Config.
+See the [profile data specification]
+
 
 ## ZONEMASTER section
 
@@ -41,5 +44,6 @@ TBD
 
 --------
 
+[Profile data]: https://metacpan.org/pod/Zonemaster::Engine::Config
 [Profile name]: API.md#profile-name
 [Profiles]: Architecture.md#profile

@@ -8,9 +8,14 @@ use Zonemaster::Backend::Config;
 
 use Parallel::ForkManager;
 use Daemon::Control;
+use Log::Any qw( $log );
+use Log::Any::Adapter;
+use Log::Dispatch;
 
-use Time::HiRes qw[time sleep];
+use English;
 use Getopt::Long;
+use POSIX;
+use Time::HiRes qw[time sleep];
 
 ###
 ### Compile-time stuff.
@@ -27,12 +32,33 @@ BEGIN {
 my $pidfile;
 my $user;
 my $group;
+my $logfile;
 GetOptions(
     'pidfile=s' => \$pidfile,
     'user=s' => \$user,
     'group=s' => \$group,
+    'logfile=s' => \$logfile,
 );
 $pidfile //= '/tmp/zonemaster_backend_testagent.pid';
+$logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
+
+print STDERR "Logging to $logfile\n";
+
+{
+    my $dispatcher = Log::Dispatch->new(outputs => [
+        [
+            'File',
+            min_level => 'info',
+            filename => $logfile,
+            mode => '>>',
+            callbacks => sub {
+                my %args = @_;
+                $args{message} = sprintf "%s [%d] %s - %s\n", strftime("%FT%TZ", gmtime), $PID, uc $args{level}, $args{message};
+            },
+        ]
+    ]);
+    Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
+}
 
 # Yes, the method names are spelled like that.
 my $maximum_processes =
@@ -89,9 +115,12 @@ sub main {
         my $id = $db->get_test_request();
 
         if ( $id ) {
+            $log->info("Test found: $id");
             $pm->wait_for_available_procs();
             if ( $pm->start( $id ) == 0 ) {    # Child process
+                $log->info("Test starting: $id");
                 Zonemaster::Backend::TestAgent->new->run( $id );
+                $log->info("Test completed: $id");
                 $pm->finish;
             }
         }
@@ -105,11 +134,18 @@ sub main {
 ### Daemon Control stuff.
 ###
 
-my $daemon = Daemon::Control->with_plugins(qw( +Zonemaster::Backend::Config::DCPlugin ))->new({
-    name     => 'zonemaster-testagent',
-    program  => \&main,
-    pid_file => $pidfile,
-});
+my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DCPlugin ) )->new(
+    {
+        name    => 'zonemaster-testagent',
+        program => sub {
+            my $self = shift;
+            $log->notice( "Daemon spawned" );
+            main( $self );
+            $log->notice( "Daemon terminating" );
+        },
+        pid_file => $pidfile,
+    }
+);
 
 $daemon->init_config( $ENV{PERLBREW_ROOT} . '/etc/bashrc' ) if ( $ENV{PERLBREW_ROOT} );
 $daemon->user($user) if $user;

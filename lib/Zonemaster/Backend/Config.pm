@@ -7,6 +7,7 @@ use 5.14.2;
 
 use Config::IniFiles;
 use File::ShareDir qw[dist_file];
+use Log::Any qw( $log );
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -205,6 +206,8 @@ sub new_DB {
     my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
     require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
     $dbclass->import();
+    $log->notice("Constructing database adapter: $dbclass");
+
     my $db = $dbclass->new;
 
     # Connect or die

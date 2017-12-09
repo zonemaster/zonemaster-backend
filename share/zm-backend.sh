@@ -37,7 +37,7 @@ start() {
 stop() {
     if [ -f $PIDDIR/zonemaster_backend_testagent.pid ]
     then
-        $BASEDIR/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid stop
+        $BASEDIR/bin/zonemaster_backend_testagent --logfile=$LOGDIR/zonemaster_backend_testagent.log --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid stop
     fi
 
     if [ -f $PIDDIR/zm-starman.pid ]

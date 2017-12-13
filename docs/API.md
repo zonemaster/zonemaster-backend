@@ -100,8 +100,9 @@ Basic data type: string
 
 Basic data type: object
 
-Properties:
+DS for [Delegation Signer](https://tools.ietf.org/html/rfc3658) references DNSKEY-records in the sub-delegated zone.
 
+Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
 * `"algorithm"`: An integer, optional.
 * `"digtype"`: An integer, optional.
@@ -150,10 +151,17 @@ One of the strings:
 
 The `"test_profile_2"` *profile* is identical to `"default_profile"`.
 
->
-> TODO: What is the expected behavior when a *profile* other than the ones listed above is requested?
->
-
+When a *profile* other than the ones listed above is requested the user receives the following error message :
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "message": "Invalid profile option format",
+        "status": "nok"
+    }
+}
+```
 
 ### Progress percentage
 
@@ -195,21 +203,28 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*.
-
->
-> TODO: Can other extra keys in addition to `"ns"` occur here? Can something be said
-> about when each extra key is present?
->
+* `"ns"`: a *domain name*. The name server used by the *test module*. 
+This key is added when the module name is `"NAMESERVER"`.
 
 
 ### Timestamp
 
 Basic data type: string
 
->
-> TODO: Specify date format
->
+Default database timestamp format. 
+
+### Location
+
+Basic data type: object
+
+The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"latitude"`.
+
+
+* `"isp"`: a string. The Internet Service Provider of the user.
+* `"country"`: a string. The country of the user.
+* `"city"`: a string. The city of the user.
+* `"longitude"`: a string. The longtitude of the user.
+* `"latitude"`: a string. The latitude of the user.
 
 
 ### Translation language
@@ -218,6 +233,7 @@ Basic data type: string
 
 * Any string starting with `"fr"` is interpreted as French.
 * Any string starting with `"sv"` is interpreted as Swedish.
+* Any string starting with `"da"` is interpreted as Danish.
 * Any other string is interpreted as English.
 
 
@@ -306,7 +322,7 @@ other for IPv6). The objects each have a single key and value. The key is the
 value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 >
-> TODO: If the name resolves to two or more IPv4 address, how is that represented?
+> TODO: If the name resolves to two or more IPv4 address, how is that represented? 
 >
 
 #### `"error"`
@@ -383,12 +399,7 @@ A *domain name*. The domain whose DNS records are requested.
 An object with the following properties:
 
 * `"ns_list"`: A list of *name server* objects representing the nameservers of the given *domain name*.
-* `"ds_list"`: A list of *DS info* objects.
-
-
->
-> TODO: Add wording about what the `"ds_list"` objects represent.
->
+* `"ds_list"`: A list of *DS info* objects representing delegated signer of the given *domain name*.
 
 
 #### `"error"`
@@ -451,42 +462,31 @@ Example response:
 
 An object with the following properties:
 
-* `"client_id"`: A free-form string, optional.
-* `"domain"`: A *domain name*, required.
-* `"profile"`: A *profile name*, optional.
-* `"client_version"`: A free-form string, optional.
-* `"nameservers"`: A list of *name server* objects, optional.
-* `"ds_info"`: A list of *DS info* objects, optional.
+* `"client_id"`: A free-form string, optional. Used to monitor which client uses the API.
+* `"domain"`: A *domain name*, required. Used to perform the test.
+* `"profile"`: A *profile name*, optional. Used to perform the test with a specific set of parameters and tests.
+* `"client_version"`: A free-form string, optional. Used to monitor which client use the API
+* `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
+* `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
-* `"ipv6"`: A boolean, optional. (default `false`)
-* `"ipv4"`: A boolean, optional. (default `false`)
+* `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
+* `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: A ..., optional.
-* `"user_location_info"`: A ..., optional.
-* `"priority"`: A *priority*, optional
-* `"queue"`: A *queue*, optional
-
->
-> TODO: Clarify the data type of the following `"params"` properties:
-> `"user_ip"` and `"user_location_info"`.
->
-> TODO: Clarify the purpose of each `"params"` property.
->
-> TODO: Clarify the default value of each optional `"params"` property.
->
+* `"user_ip"`: An IP, optional. Used to monitor information about the user. (We only keep the location of the IP).
+* `"user_location_info"`: An *location* object, optional. Used to monitor information about the user. 
+* `"priority"`: A *priority*, optional.
+* `"queue"`: A *queue*, optional.
 
 
 #### `"result"`
 
 A *test id*. The newly started *test*, or a recently run *test* with the same
-parameters.
-started within the recent configurable short time.
+parameters. Started within the recent configurable short time.
 
 >
 > TODO: Specify which configuration option controls the duration of the window
-> of *test* reuse.
+> of *test* reuse. => I don't know (and i didn't find any traces) if such a feature exists.
 >
-
 
 #### `"error"`
 
@@ -620,19 +620,15 @@ An object with a the following properties:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A string.
+* `"hash_id"`: A string. The *test id*. 
 * `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
   was started.
 * `"results"`: A list of *test result* objects.
 
+In the case of a test created with `add_batch_job`, the result is a list of *test id* corresponding to each tested domain.
+
 >
-> TODO: Specify the MD5 hash format.
->
-> TODO: What about if the Test was created with `add_batch_job` or something
-> else?
->
-> TODO: It's confusing that the method is named `"start_domain_test"`, when
-> it doesn't actually start the *test*.
+> TODO: Change name in the API of `"hash_id"` to `"test_id"`
 >
 
 
@@ -715,8 +711,8 @@ Example response:
 
 An object with the following properties:
 
-* `"offset"`: An integer, optional. (default: 0).
-* `"limit"`: An integer, optional. (default: 200).
+* `"offset"`: An integer, optional. (default: 0). Position of the first returned element from the database returned list.  
+* `"limit"`: An integer, optional. (default: 200). Number of element returned from the *offset* element.
 * `"frontend_params"`: As described below.
 
 The value of `"frontend_params"` is an object in turn, with the
@@ -725,19 +721,25 @@ will be used to look up all tests for the given domain, separated
 according to if they were started with a `"nameservers"` parameter or
 not.
 
->
-> TODO: Do we have an SQL injection opportunity here?
->
-> TODO: Describe the remaining keys in the example
->
-> TODO: Describe the purpose of `"offset"` and `"limit"`
->
-> TODO: Is the `"nameservers"` value a boolean in disguise?
->
-> TODO: The description of `"frontend_params"` is clearly not up to date. Can it
-> be described in a better way?
->
+* `"client_id"`: A free-form string, optional.
+* `"profile"`: A *profile name*, optional.
+* `"client_version"`: A free-form string, optional.
+* `"nameservers"`: A list of *name server* objects, optional.
+* `"ds_info"`: A list of *DS info* objects, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
+* `"ipv6"`: A boolean, optional. (default: `false`)
+* `"ipv4"`: A boolean, optional. (default: `false`)
+* `"config"`: A string, optional. The name of a *config profile*.
+* `"user_ip"`: An IP, optional.
+* `"user_location_info"`: An *location* object, optional.
+* `"priority"`: A *priorty*, optional.
+* `"queue"`: A *queue*, optional.
 
+>
+> TODO: Do we have an SQL injection opportunity here? => No, i don't think
+>
+> TODO: Is the `"nameservers"` value a boolean in disguise? => Yes
+>
 
 #### `"result"`
 
@@ -749,13 +751,18 @@ An object with the following properties:
   `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
   In some future release this property will no longer be included in the result.
 * `"overall_result"`: A string. The most severe problem level logged in the test results.
+It could be:
+    * `"ok"`, all is normal
+    * `"warning"`, equivalent to the `"WARNING"` *severity level*.
+    * `"error"`, equivalent to the `"ERROR"` *severity level*.
+    * `"critical"`, equivalent to the `"CRITICAL"` *severity level*.
 
->
-> TODO: Describe the format of `"overall_result"`.
->
+
 > TODO: What about if the *test* was created with `add_batch_job` or something else?
 >
-> TODO: What about if the *test* was created with `"advanced"` set to `false` in `start_domain_test`?
+> TODO: What about if the *test* was created with `"advanced"` set to `false` in `start_domain_test`? => Not evaluate, so if the 
+> test was done with `"nameservers"`, the get_test_history must send a `"frontend_params"` object with the `"nameservers"`
+> set to an equivalent to true ([], or something else).
 >
 
 
@@ -768,9 +775,11 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
->
-> TODO: Method description.
->
+In order to use avance api features such as the *batch test*, it's necessaire to previously create an api key.
+This key can be obtain with the creation of an user in the system.
+This function allow the creation of a new user and so, the creation of a new api key.
+
+Add a new *user* 
 
 This method requires the *administrative* *privilege level*.
 
@@ -792,7 +801,7 @@ Example response:
 {
   "id": 4711,
   "jsonrpc": "2.0",
-  "result": 0
+  "result": 1
 }
 ```
 
@@ -801,38 +810,38 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A string, optional. The name of the user to add.
-* `"api_key"`: A string, optional. The API key (in effect, password) for the user to add.
-
->
-> TODO: Are `"username"` and `"api_key"` really supposed to be optional? Because
-> they are now, is that a bug? I get `"result": 0` when I omit them. I would
-> have expected parameter validation errors.
->
-
+* `"username"`: A string, required. The name of the user to add.
+* `"api_key"`: A string, required. The API key (in effect, password) for the user to add.
 
 #### `"result"`
 
-An integer.
-
->
-> TODO: Describe the possible values of the result and what they mean.
->
-
+An integer. The value could be equal to 1 if the registration is a success, or 0 if the SQL request failed.
 
 #### `"error"`
-
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
+Trying to add a already existing user:
+```json
+{
+  "code": -32603,
+  "message": "User already exists\n"
+}
+```
+
+Ommitting params:
+```json 
+{
+  "message": "username or api_key not provided to the method add_api_user\n",
+  "code": -32603
+}
+```
+
 
 ## API method: `add_batch_job`
 
->
-> TODO: Method description.
->
-
+Add a run a new *batch test* composed by a set of *domain name* and a *params* object.
 All the domains will be tested using identical parameters.
 
 An *api user* can only have one un-finished *batch* at a time.
@@ -892,25 +901,13 @@ The value of `"test_params"` is an object with the following properties:
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: A ..., optional.
-* `"user_location_info"`: A ..., optional.
+* `"user_ip"`: An IP, optional.
+* `"user_location_info"`: An *location* object, optional.
 * `"priority"`: A *priorty*, optional
 * `"queue"`: A *queue*, optional
 
-
 >
-> TODO: Clarify the data type of the following `"frontend_params"` properties:
-> `"user_ip"` and `"user_location_info"`.
->
-> TODO: Clarify which `"params"` and `"frontend_params"` properties are optional
-> and which are required.
->
-> TODO: Clarify the default value of each optional `"params"` and
-> `"frontend_params"` property.
->
-> TODO: Clarify the purpose of each `"params"` and `"frontend_params"` property.
->
-> TODO: Are domain names actually validated in practice?
+> TODO: Are domain names actually validated in practice? Can you explain ? => There are some security tests (look postgres.pm).
 >
 
 
@@ -931,9 +928,7 @@ A *batch id*.
 
 ## API method: `get_batch_job_result`
 
->
-> TODO: Method description.
->
+Return all *test id* objects of a *batch test*, with the number of finshed *test*.
 
 Example request:
 ```json
@@ -1034,18 +1029,18 @@ Example response:
 
 An object with the following properties:
 
-* `"domain"`: a *domain name*.
-* `"ipv4"`: an optional `1`, `0`, `true` or `false`.
-* `"ipv6"`: an optional `1`, `0`, `true` or `false`.
-* `"ds_info"`: an optional list of *DS info* objects.
-* `"nameservers"`: an optional list of objects each of *name server* objects.
-* `"profile"`: an optional *profile name*.
-* `"advanced"`: an optional `true` or `false`.
-* `"client_id"`: ...
-* `"client_version"`: ...
-* `"user_ip"`: ...
-* `"user_location_info"`: ...
-* `"config"`: ...
+* `"domain"`: A *domain name*, required.
+* `"ipv6"`: A boolean, optional. (default `false`)
+* `"ipv4"`: A boolean, optional. (default `false`)
+* `"ds_info"`: A list of *DS info* objects, optional.
+* `"nameservers"`: A list of *name server* objects, optional.
+* `"profile"`: A *profile name*, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
+* `"client_id"`: A free-form string, optional.
+* `"client_version"`: A free-form string, optional.
+* `"config"`: A string, optional. The name of a *config profile*.
+* `"user_ip"`: An IP, optional.
+* `"user_location_info"`: An *location* object, optional.
 
 If the `"nameservers"` key is _not_ set, a recursive query made by the
 server to its locally configured resolver for NS records for the
@@ -1053,15 +1048,6 @@ value of the `"domain"` key must return a reply with at least one
 resource record in the Answer Section.
 
 At least one of `"ipv4"` and `"ipv6"` must be present and either `1` or `true`.
-
->
-> TODO: Clarify the data type of the following `"params"` properties:
-> `"client_id"`, `"client_version"`, `"user_ip"`, `"user_location_info"` and
-> `"config"`.
->
-> TODO: Clarify the purpose of each `"params"` property.
->
-
 
 #### `"result"`
 
@@ -1079,14 +1065,45 @@ An object with the following properties:
 
 ## API method: `get_test_params`
 
->
-> TODO: Method description
->
-> TODO: Example request
->
-> TODO: Example response
->
+Return all *params* objects of a *test*.
 
+Example request:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "method": "get_test_params",
+    "params": "6814584dc820354a"
+}
+```
+
+Example response:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "result": {
+         "domain": "zonemaster.net",
+         "profile": "default_profile",
+         "client_id": "Zonemaster Dancer Frontend",
+         "advanced": true,
+         "nameservers": [
+            {
+                "ns": "ns3.nic.se",
+                "ip": "2001:67c:124c:2007::45"
+            },
+            {
+                "ip": "192.93.0.4",
+                "ns": "ns2.nic.fr"
+            }
+         ],
+         "ipv4": true,
+         "ipv6": true,
+         "client_version": "1.0.1",
+         "ds_info": []
+    }
+}
+```
 
 #### `"params"`
 
@@ -1098,7 +1115,7 @@ A *test id*.
 The `"params"` object sent to `start_domain_test` when the *test* was started.
 
 >
-> TODO: What about if the *test* was created with `add_batch_job` or something else?
+> TODO: What about if the *test* was created with `add_batch_job` or something else? => Same results.
 >
 
 

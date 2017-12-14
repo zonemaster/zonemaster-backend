@@ -58,7 +58,7 @@ sub run {
     }
     $domain = $self->to_idn( $domain );
 
-    if (defined $params->{ipv4} || defined $params->{ipv4}) {
+    if (defined $params->{ipv4} || defined $params->{ipv6}) {
 		Zonemaster::Engine->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
 		Zonemaster::Engine->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
 	}

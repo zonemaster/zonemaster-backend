@@ -90,13 +90,13 @@ sub get_data_from_parent_zone {
     $zone = Zonemaster::Engine->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
-		my @ds = $ds_p->get_records( 'DS', 'answer' );
+        my @ds = $ds_p->get_records( 'DS', 'answer' );
 
-		foreach my $ds ( @ds ) {
+        foreach my $ds ( @ds ) {
             next unless $ds->type eq 'DS';
-			push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-		} 
-	}
+            push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
+        } 
+    }
 
     $result{ns_list} = \@ns_list;
     $result{ds_list} = \@ds_list;
@@ -180,6 +180,9 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{ipv4} ) {
+        return { status => 'nok', message => encode_entities( "Invalid IPv4 address format" ) }
+            unless( $syntax_input->{ipv4} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/);
+    
         return { status => 'nok', message => encode_entities( "Invalid IPv4 transport option format" ) }
           unless ( $syntax_input->{ipv4} eq JSON::PP::false
             || $syntax_input->{ipv4} eq JSON::PP::true
@@ -188,6 +191,9 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{ipv6} ) {
+        return { status => 'nok', message => encode_entities( "Invalid IPv6 address format" ) }
+            unless( $syntax_input->{ipv6} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
+            
         return { status => 'nok', message => encode_entities( "Invalid IPv6 transport option format" ) }
           unless ( $syntax_input->{ipv6} eq JSON::PP::false
             || $syntax_input->{ipv6} eq JSON::PP::true
@@ -226,16 +232,16 @@ sub validate_syntax {
         }
 
         foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-			return {
-				status  => 'nok',
-				message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
-			}
-			if (
-				( length( $ds_digest->{digest} ) != 96 &&
-			          length( $ds_digest->{digest} ) != 64 &&
-			          length( $ds_digest->{digest} ) != 40 ) ||
-			          $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
-			);
+            return {
+                status  => 'nok',
+                message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
+            }
+            if (
+                ( length( $ds_digest->{digest} ) != 96 &&
+                      length( $ds_digest->{digest} ) != 64 &&
+                      length( $ds_digest->{digest} ) != 40 ) ||
+                      $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
+            );
         }
     }
 
@@ -245,31 +251,31 @@ sub validate_syntax {
 sub add_user_ip_geolocation {
     my ( $self, $params ) = @_;
     
-	if ($params->{user_ip} 
-		&& Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
-		&& Zonemaster::Backend::Config->Maxmind_City_DB_File()
-	) {
-		my $ip = new Net::IP::XS($params->{user_ip});
-		if ($ip->iptype() eq 'PUBLIC') {
-			require Geo::IP;
-			my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
-			my $isp = $gi->isp_by_addr($params->{user_ip});
-			
-			require GeoIP2::Database::Reader;
-			my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
-	
-			my $city = $reader->city(ip => $params->{user_ip});
+    if ($params->{user_ip} 
+        && Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
+        && Zonemaster::Backend::Config->Maxmind_City_DB_File()
+    ) {
+        my $ip = new Net::IP::XS($params->{user_ip});
+        if ($ip->iptype() eq 'PUBLIC') {
+            require Geo::IP;
+            my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
+            my $isp = $gi->isp_by_addr($params->{user_ip});
+            
+            require GeoIP2::Database::Reader;
+            my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
+    
+            my $city = $reader->city(ip => $params->{user_ip});
 
-			$params->{user_location_info}->{isp} = $isp;
-			$params->{user_location_info}->{country} = $city->country()->name();
-			$params->{user_location_info}->{city} = $city->city()->name();
-			$params->{user_location_info}->{longitude} = $city->location()->longitude();
-			$params->{user_location_info}->{latitude} = $city->location()->latitude();
-		}
-		else {
-			$params->{user_location_info}->{isp} = "Private IP address";
-		}
-	}
+            $params->{user_location_info}->{isp} = $isp;
+            $params->{user_location_info}->{country} = $city->country()->name();
+            $params->{user_location_info}->{city} = $city->city()->name();
+            $params->{user_location_info}->{longitude} = $city->location()->longitude();
+            $params->{user_location_info}->{latitude} = $city->location()->latitude();
+        }
+        else {
+            $params->{user_location_info}->{isp} = "Private IP address";
+        }
+    }
 }
 
 sub start_domain_test {
@@ -283,9 +289,9 @@ sub start_domain_test {
     die "No domain in parameters\n" unless ( $params->{domain} );
     
     if ($params->{config}) {
-		$params->{config} =~ s/[^\w_]//isg;
-		die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
-	}
+        $params->{config} =~ s/[^\w_]//isg;
+        die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+    }
     
     $self->add_user_ip_geolocation($params);
 
@@ -318,8 +324,8 @@ sub get_test_results {
     my ( $self, $params ) = @_;
     my $result;
 
-    #	my $syntax_result = $self->validate_syntax($params);
-    #	die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
+    #    my $syntax_result = $self->validate_syntax($params);
+    #    die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
 
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
@@ -392,7 +398,7 @@ sub add_api_user {
     }
 
     if ( $allow ) {
-		$result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
+        $result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
     }
     
     return $result;

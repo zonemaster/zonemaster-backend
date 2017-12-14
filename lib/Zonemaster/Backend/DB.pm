@@ -29,7 +29,7 @@ sub add_api_user {
 
     my $result = $self->add_api_user_to_db( $username, $api_key );
 
-    die "add_api_user_to_db not successfull" unless ( $result );
+    die "add_api_user_to_db not successfull\n" unless ( $result );
 
     return $result;
 }
@@ -46,7 +46,7 @@ sub _get_allowed_id_field_name {
 			$id_field = 'id';
 		}
 		else {
-			die "Querying test results with the [id] field is dissallowed by the current configuration values";
+			die "Querying test results with the [id] field is dissallowed by the current configuration values\n";
 		}
     }
 }

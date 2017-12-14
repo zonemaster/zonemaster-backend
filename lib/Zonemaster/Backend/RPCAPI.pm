@@ -34,19 +34,19 @@ sub new {
     if ( $params && $params->{db} ) {
         eval {
             eval "require $params->{db}";
-            die $@ if $@;
+            die "$@ \n" if $@;
             $self->{db} = "$params->{db}"->new();
         };
-        die $@ if $@;
+        die "$@ \n" if $@;
     }
     else {
         eval {
             my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
             eval "require $backend_module";
-            die $@ if $@;
+            die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
         };
-        die $@ if $@;
+        die "$@ \n" if $@;
     }
 
     return ( $self );
@@ -278,7 +278,7 @@ sub start_domain_test {
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );
-    die $syntax_result->{message} unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
+    die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
     die "No domain in parameters\n" unless ( $params->{domain} );
     
@@ -317,9 +317,6 @@ sub get_test_params {
 sub get_test_results {
     my ( $self, $params ) = @_;
     my $result;
-
-    #	my $syntax_result = $self->validate_syntax($params);
-    #	die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
 
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;

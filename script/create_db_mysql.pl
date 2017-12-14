@@ -70,6 +70,8 @@ sub create_db {
 		'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
     );
     
+	$dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
+    
     ####################################################################
     # BATCH JOBS
     ####################################################################

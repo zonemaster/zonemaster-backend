@@ -67,6 +67,9 @@ sub create_db {
 		'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
     );
     
+	$dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))" );
+
+    
     $dbh->do( "ALTER TABLE test_results OWNER TO $db_user" );
 
     ####################################################################

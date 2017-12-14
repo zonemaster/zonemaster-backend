@@ -25,6 +25,7 @@ CREATE INDEX test_results__hash_id ON test_results (hash_id);
 CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash);
 CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress);
 CREATE INDEX test_results__progress ON test_results (progress);
+CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated);
 
 DELIMITER //
 CREATE TRIGGER before_insert_test_results

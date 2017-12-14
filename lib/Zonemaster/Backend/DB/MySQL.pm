@@ -295,6 +295,7 @@ sub add_batch_job {
 		eval {$dbh->do( "DROP INDEX test_results__params_deterministic_hash ON test_results" );};
 		eval {$dbh->do( "DROP INDEX test_results__batch_id_progress ON test_results" );};
 		eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
+		eval {$dbh->do( "DROP INDEX test_results__domain_undelegated ON test_results" );};
 		
 		my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
@@ -308,6 +309,7 @@ sub add_batch_job {
 		$dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
 		$dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
 		$dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
+		$dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
        
         $dbh->commit();
         $dbh->{AutoCommit} = 1;

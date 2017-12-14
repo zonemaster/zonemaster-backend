@@ -374,7 +374,11 @@ sub get_test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my $results = $self->{db}->get_test_history( $p );
+    my $results;
+    
+    return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+    
+    $results = $self->{db}->get_test_history( $p );
 
     return $results;
 }

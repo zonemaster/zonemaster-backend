@@ -33,14 +33,20 @@ my $pidfile;
 my $user;
 my $group;
 my $logfile;
+my $loglevel;
 GetOptions(
     'pidfile=s' => \$pidfile,
     'user=s' => \$user,
     'group=s' => \$group,
     'logfile=s' => \$logfile,
+    'loglevel=s' => \$loglevel,
 );
 $pidfile //= '/tmp/zonemaster_backend_testagent.pid';
 $logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
+$loglevel //= 'info';
+$loglevel = lc $loglevel;
+
+$loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
 
 print STDERR "Logging to $logfile\n";
 
@@ -48,7 +54,7 @@ print STDERR "Logging to $logfile\n";
     my $dispatcher = Log::Dispatch->new(outputs => [
         [
             'File',
-            min_level => 'info',
+            min_level => $loglevel,
             filename => $logfile,
             mode => '>>',
             callbacks => sub {

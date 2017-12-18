@@ -211,7 +211,8 @@ This key is added when the module name is `"NAMESERVER"`.
 
 Basic data type: string
 
-Default database timestamp format. 
+Default database timestamp format: "Y-M-D H:M:S.ms"
+Example: "2017-12-18 07:56:17.156939"
 
 ### Location
 
@@ -226,6 +227,9 @@ The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"l
 * `"longitude"`: a string. The longtitude of the user.
 * `"latitude"`: a string. The latitude of the user.
 
+>
+> TODO Add regex
+>
 
 ### Translation language
 
@@ -322,7 +326,7 @@ other for IPv6). The objects each have a single key and value. The key is the
 value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 >
-> TODO: If the name resolves to two or more IPv4 address, how is that represented? 
+> TODO: If the name resolves to two or more IPv4 address, how is that represented?
 >
 
 #### `"error"`
@@ -463,7 +467,7 @@ Example response:
 An object with the following properties:
 
 * `"client_id"`: A free-form string, optional. Used to monitor which client uses the API.
-* `"domain"`: A *domain name*, required. Used to perform the test.
+* `"domain"`: A *domain name*, required. The zone to test.
 * `"profile"`: A *profile name*, optional. Used to perform the test with a specific set of parameters and tests.
 * `"client_version"`: A free-form string, optional. Used to monitor which client use the API
 * `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
@@ -480,14 +484,11 @@ An object with the following properties:
 
 #### `"result"`
 
-A *test id*. The newly started *test*, or a recently run *test* with the same
-parameters. Started within the recent configurable short time.
+A *test id*. 
 
->
-> TODO: Specify which configuration option controls the duration of the window
-> of *test* reuse. => I don't know (and i didn't find any traces) if such a feature exists.
->
-
+If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
+then the new request dos not trigger a new test, but returns with the results of the last test
+ 
 #### `"error"`
 
 >
@@ -616,16 +617,25 @@ An object with the following properties:
 
 #### `"result"`
 
-An object with a the following properties:
+There are two different results depending on the test creation method:
+
+In the case of a test created with `start_domain_test`:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A string. The *test id*. 
+* `"hash_id"`: A *test id*. The *test* in question. 
 * `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
   was started.
 * `"results"`: A list of *test result* objects.
 
-In the case of a test created with `add_batch_job`, the result is a list of *test id* corresponding to each tested domain.
+
+In the case of a test created with `add_batch_job`:
+* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
+* `"id"`: An integer.
+* `"hash_id"`: A *test id*. The *test* in question. 
+* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
+  was started.
+* `"results"`: the result is a list of *test id* corresponding to each tested domain.
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -715,16 +725,10 @@ An object with the following properties:
 * `"limit"`: An integer, optional. (default: 200). Number of element returned from the *offset* element.
 * `"frontend_params"`: As described below.
 
-The value of `"frontend_params"` is an object in turn, with the
-keys `"domain"` and `"nameservers"`. `"domain"` and `"nameservers"`
-will be used to look up all tests for the given domain, separated
-according to if they were started with a `"nameservers"` parameter or
-not.
-
 * `"client_id"`: A free-form string, optional.
 * `"profile"`: A *profile name*, optional.
 * `"client_version"`: A free-form string, optional.
-* `"nameservers"`: A list of *name server* objects, optional.
+* `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true).
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
@@ -734,12 +738,6 @@ not.
 * `"user_location_info"`: An *location* object, optional.
 * `"priority"`: A *priorty*, optional.
 * `"queue"`: A *queue*, optional.
-
->
-> TODO: Do we have an SQL injection opportunity here? => No, i don't think
->
-> TODO: Is the `"nameservers"` value a boolean in disguise? => Yes
->
 
 #### `"result"`
 
@@ -775,8 +773,8 @@ It could be:
 
 ## API method: `add_api_user`
 
-In order to use avance api features such as the *batch test*, it's necessaire to previously create an api key.
-This key can be obtain with the creation of an user in the system.
+In order to use advanced api features such as the *batch test*, it's necessaire to previously create an api key.
+This key can be obtain with the creation of a user in the system.
 This function allow the creation of a new user and so, the creation of a new api key.
 
 Add a new *user* 
@@ -815,7 +813,7 @@ An object with the following properties:
 
 #### `"result"`
 
-An integer. The value could be equal to 1 if the registration is a success, or 0 if the SQL request failed.
+An integer. The value is equal to 1 if the registration is a success, or 0 if the SQL request failed.
 
 #### `"error"`
 >

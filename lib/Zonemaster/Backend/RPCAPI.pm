@@ -180,9 +180,6 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{ipv4} ) {
-        return { status => 'nok', message => encode_entities( "Invalid IPv4 address format" ) }
-            unless( $syntax_input->{ipv4} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/);
-    
         return { status => 'nok', message => encode_entities( "Invalid IPv4 transport option format" ) }
           unless ( $syntax_input->{ipv4} eq JSON::PP::false
             || $syntax_input->{ipv4} eq JSON::PP::true
@@ -191,9 +188,6 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{ipv6} ) {
-        return { status => 'nok', message => encode_entities( "Invalid IPv6 address format" ) }
-            unless( $syntax_input->{ipv6} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
-            
         return { status => 'nok', message => encode_entities( "Invalid IPv6 transport option format" ) }
           unless ( $syntax_input->{ipv6} eq JSON::PP::false
             || $syntax_input->{ipv6} eq JSON::PP::true
@@ -219,6 +213,9 @@ sub validate_syntax {
         }
 
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
+            return { status => 'nok', message => encode_entities( "Invalid IP address format" ) }
+                unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
+    
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
               unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }

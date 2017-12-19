@@ -20,6 +20,7 @@ unset LC_MESSAGES
 unset LC_ALL
 export LC_CTYPE="en_US.UTF-8"
 
+BASEDIR=/usr/local
 LOGDIR=/var/log/zonemaster
 PIDDIR=/var/run/zonemaster
 LISTENIP=127.0.0.1
@@ -29,14 +30,14 @@ GROUP=zonemaster
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
 start() {
-    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
-    /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
+    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize $BASEDIR/bin/zonemaster_backend_rpcapi.psgi
+    $BASEDIR/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
 }
 
 stop() {
     if [ -f $PIDDIR/zonemaster_backend_testagent.pid ]
     then
-        /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid stop
+        $BASEDIR/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid stop
     fi
 
     if [ -f $PIDDIR/zm-starman.pid ]

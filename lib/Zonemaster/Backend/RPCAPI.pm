@@ -376,6 +376,7 @@ sub get_test_history {
 
     my $results;
     
+    # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
     return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
     
     $results = $self->{db}->get_test_history( $p );

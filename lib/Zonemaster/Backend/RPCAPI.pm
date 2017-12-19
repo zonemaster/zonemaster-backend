@@ -213,7 +213,7 @@ sub validate_syntax {
         }
 
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
-            return { status => 'nok', message => encode_entities( "Invalid IP address format" ) }
+            return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                 unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
     
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }

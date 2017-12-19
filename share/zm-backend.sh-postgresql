@@ -2,15 +2,16 @@
 #
 ### BEGIN INIT INFO
 # Provides:          zm-backend
-# Required-Start:    mysql $network $local_fs
-# Required-Stop:     mysql $network $local_fs
+# Required-Start:    postgresql $network $local_fs
+# Required-Stop:     postgresql $network $local_fs
 # Should-Start:
 # Should-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Start and stop the Zonemaster Backend (RPC API daemon and Test Agent daemon)
 # Description:       Control script for the two demon processes that
-#                    make up the Zonemaster Backend.
+#                    make up the Zonemaster Backend. This for PostgreSQL
+#                    database engine.
 ### END INIT INFO
 
 LOGDIR=/var/log/zonemaster

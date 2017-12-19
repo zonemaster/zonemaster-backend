@@ -59,13 +59,13 @@ sub run {
     $domain = $self->to_idn( $domain );
 
     if (defined $params->{ipv4} || defined $params->{ipv6}) {
-		Zonemaster::Engine->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
-		Zonemaster::Engine->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
-	}
-	else {
-		Zonemaster::Engine->config->get->{net}{ipv4} = 1;
-		Zonemaster::Engine->config->get->{net}{ipv6} = 1;
-	}
+        Zonemaster::Engine->config->get->{net}{ipv4} = ( $params->{ipv4} ) ? ( 1 ) : ( 0 );
+        Zonemaster::Engine->config->get->{net}{ipv6} = ( $params->{ipv6} ) ? ( 1 ) : ( 0 );
+    }
+    else {
+        Zonemaster::Engine->config->get->{net}{ipv4} = 1;
+        Zonemaster::Engine->config->get->{net}{ipv6} = 1;
+    }
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
@@ -123,31 +123,31 @@ sub run {
 
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
-	if ( $params->{profile} eq 'test_profile_1' and Zonemaster::Backend::Config->CustomProfilesPath()) {
-	    # The config has defined an alternative profile and "test_profile_1" has been set.
-	    Zonemaster::Engine->config->load_policy_file( Zonemaster::Backend::Config->CustomProfilesPath() . '/iana-profile.json' );
-	}
-	else { # The profile parameter has been set to something else or alternative profile is not defined
-	    Zonemaster::Engine->config->load_policy_file( 'iana-profile.json' );
-	}
-	# It will be silently ignored if the file does not exist.
+    if ( $params->{profile} eq 'test_profile_1' and Zonemaster::Backend::Config->CustomProfilesPath()) {
+        # The config has defined an alternative profile and "test_profile_1" has been set.
+        Zonemaster::Engine->config->load_policy_file( Zonemaster::Backend::Config->CustomProfilesPath() . '/iana-profile.json' );
+    }
+    else { # The profile parameter has been set to something else or alternative profile is not defined
+        Zonemaster::Engine->config->load_policy_file( 'iana-profile.json' );
+    }
+    # It will be silently ignored if the file does not exist.
     }
 
 
-	if ( $params->{config} ) {
-		my $config_file_path = Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});
-		if ($config_file_path) {
-			if (-e $config_file_path) {
-				Zonemaster::Engine->config->load_config_file( $config_file_path );
-			}
-			else {
-				die "The file specified by the config parameter value: [$params->{config}] doesn't exist\n";
-			}
-		}
-		else {
-			die "Unknown test configuration: [$params->{config}]\n"
-		}
-	}
+    if ( $params->{config} ) {
+        my $config_file_path = Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config});
+        if ($config_file_path) {
+            if (-e $config_file_path) {
+                Zonemaster::Engine->config->load_config_file( $config_file_path );
+            }
+            else {
+                die "The file specified by the config parameter value: [$params->{config}] doesn't exist";
+            }
+        }
+        else {
+            die "Unknown test configuration: [$params->{config}]\n"
+        }
+    }
 
     # Actually run tests!
     eval { Zonemaster::Engine->test_zone( $domain ); };
@@ -174,24 +174,24 @@ sub add_fake_delegation {
     my %data;
 
     foreach my $ns_ip_pair ( @$nameservers ) {
-		if ( $ns_ip_pair->{ns} && $ns_ip_pair->{ip} ) {
-			push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} );
-		}
-		elsif ($ns_ip_pair->{ns}) {
+        if ( $ns_ip_pair->{ns} && $ns_ip_pair->{ip} ) {
+            push( @{ $data{ $self->to_idn( $ns_ip_pair->{ns} ) } }, $ns_ip_pair->{ip} );
+        }
+        elsif ($ns_ip_pair->{ns}) {
             push(@ns_with_no_ip, $self->to_idn( $ns_ip_pair->{ns} ) );
-		}
-		else {
-			die "Invalid ns_ip_pair\n";
-		}
+        }
+        else {
+            die "Invalid ns_ip_pair";
+        }
     }
 
-	foreach my $ns ( @ns_with_no_ip ) {
-		if ( not exists $data{ $ns } ) {
-			$data{ $self->to_idn( $ns ) } = undef;
-		}
-	}
-	
-	Zonemaster::Engine->add_fake_delegation( $domain => \%data );
+    foreach my $ns ( @ns_with_no_ip ) {
+        if ( not exists $data{ $ns } ) {
+            $data{ $self->to_idn( $ns ) } = undef;
+        }
+    }
+    
+    Zonemaster::Engine->add_fake_delegation( $domain => \%data );
 
     return;
 }

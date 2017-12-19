@@ -16,6 +16,7 @@ use English;
 use Getopt::Long;
 use POSIX;
 use Time::HiRes qw[time sleep];
+use sigtrap qw(die normal-signals);
 
 ###
 ### Compile-time stuff.
@@ -146,7 +147,11 @@ my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DC
         program => sub {
             my $self = shift;
             $log->notice( "Daemon spawned" );
-            main( $self );
+            eval { main( $self ) };
+            if ( $@ ) {
+                chomp $@;
+                $log->critical( $@ );
+            }
             $log->notice( "Daemon terminating" );
         },
         pid_file => $pidfile,

@@ -65,6 +65,9 @@ service mysqld status
 >
 > At this time there is no instruction for using PostgreSQL on CentOS.
 >
+> [Sandoche! I think we should be able to support PostgreSQL!
+> Can you try to find PostgreSQL package plus perl lib?]
+>
 
 #### 1.2.3 SQLite
 
@@ -93,10 +96,18 @@ current directory, so locate it and go there like this:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
-Copy the `backend_config.ini` file to `/etc/zonemaster`.
+If you have selected **MySQL**, copy the Backend configuration file with the 
+following command:
 
 ```sh
-sudo cp ./backend_config.ini /etc/zonemaster/
+sudo cp ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+```
+
+If you have selected **PostgreSQL**, copy the Backend configuration file with the 
+following command:
+
+```sh
+sudo cp ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
 ```
 
 ### 1.5 Service script set up (CentOS)
@@ -105,36 +116,26 @@ file in order to use a more suitable user and group.  As distributed, it uses
 the MySQL user and group, since we can be sure that exists and it shouldn't mess
 up anything included with the system.
 
+If you have selected **MySQL**, copy and activate the Backend start file with the 
+following command:
+
 ```sh
-sudo cp ./zm-centos.sh /etc/init.d/
+sudo cp ./zm-centos.sh-mysql /etc/init.d/zm-centos.sh
 sudo chmod +x /etc/init.d/zm-centos.sh
 ```
+
+If you have selected **PostgreSQL**, copy and activate the Backend start file with the 
+following command:
+
+```sh
+sudo cp ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
+sudo chmod +x /etc/init.d/zm-centos.sh
+```
+
+
 ### 1.6 Chosen database configuration (CentOS)
 
 #### 1.6.1 MySQL
-
-Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
-
-```ini
-[DB]
-engine            = MySQL
-user              = zonemaster
-password          = zonemaster
-database_host     = localhost
-database_name     = zonemaster
-polling_interval  = 0.5
-
-[LOG]
-log_dir           = logs/
-
-[PERL]
-interpreter       = perl
-
-[ZONEMASTER]
-max_zonemaster_execution_time            = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
-```
 
 Using a database adminstrator user (called root in the example below), run the
 setup file:
@@ -153,7 +154,7 @@ user has just enough permissions to run the backend software.
 > data in your database.
 >
 
- 
+
 If, at some point, you want to delete all traces of Zonemaster in the database,
 you can run the file `cleanup-mysql.sql` as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
@@ -168,9 +169,15 @@ mysql --user=root --password < ./cleanup-mysql.sql
 
 #### 1.6.2 PostgreSQL
 
->
-> At this time there is no instruction for creating a database in PostgreSQL.
->
+Initialize the database:
+
+```sh
+sudo -u postgres psql -f ./initial-postgres.sql
+```
+
+> **Note:** This creates a database called `zonemaster`, as well as a user called
+> "zonemaster" with the password "zonemaster" (as stated in the config file).
+> This user has just enough permissions to run the backend software.
 
 #### 1.6.3 SQLite
 
@@ -225,13 +232,23 @@ Install Zonemaster::Backend:
 sudo cpan -i Zonemaster::Backend
 ```
 
-Install files to their proper locations:
+If you have selected **MySQL**, install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
-sudo install --mode=755 ./zm-backend.sh /etc/init.d/
+sudo install --mode=755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./zm-backend.sh-mysql /etc/init.d/zm-backend.sh
+mkdir "$HOME/logs"
+```
+
+If you have selected **PostgreSQL**, install files to their proper locations:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo install -d /etc/zonemaster
+sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./zm-backend.sh-postgresql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
 ```
 
@@ -263,12 +280,6 @@ mysql --user=root --password < ./initial-mysql.sql
 > backend. If you do this on an existing system, you will wipe out the data in
 > your database.
 
-Configure Zonemaster::Backend to us the correct database engine:
-
-```sh
-sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
-```
-
 
 #### 2.2.2 Instructions for **PostgreSQL**:
 
@@ -287,12 +298,6 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > **Note:** This creates a database called `zonemaster`, as well as a user called
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
-
-Configure Zonemaster::Backend to us the correct database engine:
-
-```sh
-sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
-```
 
 
 #### 2.2.3 SQLite
@@ -388,10 +393,18 @@ current directory, so locate it and go there like this:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 ```
 
-Copy the `backend_config.ini` file to `/etc/zonemaster`:
+If you have selected **MySQL**, copy the Backend configuration file with the 
+following command:
 
 ```sh
-cp ./backend_config.ini /etc/zonemaster/
+sudo cp ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+```
+
+If you have selected **PostgreSQL**, copy the Backend configuration file with the 
+following command:
+
+```sh
+sudo cp ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
 ```
 
 >
@@ -433,31 +446,6 @@ pkg install postgresql95-server p5-DBD-Pg
 echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
 service postgresql initdb
 service postgresql start
-```
-
-Configure Zonemaster::Backend:
-
-Edit the file `/etc/zonemaster/backend_config.ini` to create an inital working ini file:
-
-```ini
-[DB]
-engine           = PostgreSQL
-user             = zonemaster
-password         = zonemaster
-database_host    = localhost
-database_name    = zonemaster
-polling_interval = 0.5
-
-[LOG]
-log_dir          = logs/
-
-[PERL]
-interpreter      = perl
-
-[ZONEMASTER]
-max_zonemaster_execution_time            = 300
-number_of_processes_for_frontend_testing = 20
-number_of_processes_for_batch_testing    = 20
 ```
 
 > **ToDo:** Add instruction about the

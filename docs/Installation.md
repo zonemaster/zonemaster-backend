@@ -41,6 +41,11 @@ Install dependencies available from binary packages:
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
+```
+
+Install dependencies not available from binary packages:
+
+```sh 
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 

@@ -6,6 +6,8 @@ version_from 'lib/Zonemaster/Backend.pm';
 abstract 'The Zonemaster Backend project with RPC API and Test Agents';
 license 'bsd';
 perl_version '5.014002';
+repository 'https://github.com/dotse/zonemaster-backend';
+bugtracker 'https://github.com/dotse/zonemaster-backend/issues';
 
 requires
   'Zonemaster::Engine'       => 2.0,

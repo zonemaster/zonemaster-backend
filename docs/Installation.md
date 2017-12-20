@@ -35,16 +35,52 @@ This instruction covers the following operating systems:
 
 ## 1. Installation on CentOS
 
-### 1.1 Installing dependencies (CentOS)
+### 1.1 Install Zonemaster::Backend and related dependencies (CentOS)
+
+Install dependencies available from binary packages:
 
 ```sh 
 sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote 
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
-### 1.2 Install the chosen database engine and related dependencies (CentOS)
+> **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
+> are dealt with in the [prerequisites](#prerequisites) section.
 
-#### 1.2.1 MySQL
+Install Zonemaster::Backend:
+
+```sh
+sudo cpan -i Zonemaster::Backend
+```
+
+If you have selected **MySQL**, install files to their proper locations:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo install -d /etc/zonemaster
+sudo install --mode=755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./zm-centos.sh-mysql /etc/init.d/zm-centos.sh
+mkdir "$HOME/logs"
+```
+
+If you have selected **PostgreSQL**, install files to their proper locations:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo install -d /etc/zonemaster
+sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
+mkdir "$HOME/logs"
+```
+
+### 1.2 Database engine installation and configuration (CentOS)
+
+Check the [declaration of prerequisites] to make sure your preferred combination
+of operating system version and database engine version is supported.
+
+#### 1.2.1 Instructions for MySQL
+
+Install, configure and start database engine (and Perl bindings):
 
 ```sh 
 sudo yum install wget 
@@ -60,7 +96,23 @@ Verify that MySQL has started:
 service mysqld status
 ```
 
-#### 1.2.2 PostgreSQL
+Initialize the database:
+
+```sh
+mysql --user=root --password < ./initial-mysql.sql
+```
+
+> **Note:** This creates a database called `zonemaster`, as well as a user
+> called "zonemaster" with the password "zonemaster" (as stated in the config
+> file). This user has just enough permissions to run the backend software.
+>
+> Only run this command during an initial installation of the Zonemaster
+> backend. If you do this on an existing system, you will wipe out the data in
+> your database.
+
+#### 1.2.2 Instructions for PostgreSQL
+
+Install, configure and start database engine (and Perl bindings):
 
 >
 > At this time there is no instruction for using PostgreSQL on CentOS.
@@ -68,106 +120,6 @@ service mysqld status
 > [Sandoche! I think we should be able to support PostgreSQL!
 > Can you try to find PostgreSQL package plus perl lib?]
 >
-
-#### 1.2.3 SQLite
-
->
-> At this time there is no instruction for using SQLite on CentOS.
->
-
-### 1.3 Installation of Zonemaster Backend (CentOS)
-
-```sh
-sudo cpan -i Zonemaster::Backend
-```
-
-### 1.4 Directory and file manipulation (CentOS)
-
-```sh
-sudo mkdir /etc/zonemaster
-mkdir "$HOME/logs"
-```
-
-The Zonemaster::Backend module installs a number of configuration files in a
-shared data directory.  This section refers to the shared data directory as the
-current directory, so locate it and go there like this:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-```
-
-If you have selected **MySQL**, copy the Backend configuration file with the 
-following command:
-
-```sh
-sudo cp ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
-```
-
-If you have selected **PostgreSQL**, copy the Backend configuration file with the 
-following command:
-
-```sh
-sudo cp ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
-```
-
-### 1.5 Service script set up (CentOS)
-Copy the example init file to the system directory.  You may wish to edit the
-file in order to use a more suitable user and group.  As distributed, it uses
-the MySQL user and group, since we can be sure that exists and it shouldn't mess
-up anything included with the system.
-
-If you have selected **MySQL**, copy and activate the Backend start file with the 
-following command:
-
-```sh
-sudo cp ./zm-centos.sh-mysql /etc/init.d/zm-centos.sh
-sudo chmod +x /etc/init.d/zm-centos.sh
-```
-
-If you have selected **PostgreSQL**, copy and activate the Backend start file with the 
-following command:
-
-```sh
-sudo cp ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
-sudo chmod +x /etc/init.d/zm-centos.sh
-```
-
-
-### 1.6 Chosen database configuration (CentOS)
-
-#### 1.6.1 MySQL
-
-Using a database adminstrator user (called root in the example below), run the
-setup file:
-
-```sh
-mysql --user=root --password < ./initial-mysql.sql
-```
-
-This creates a database called `zonemaster`, as well as a user called
-"zonemaster" with the password "zonemaster" (as stated in the config file). This
-user has just enough permissions to run the backend software.
-
->
-> Note : Only run the above command during an initial installation of
-> Zonemaster Backend. If you do this on an existing system, you will wipe out the
-> data in your database.
->
-
-
-If, at some point, you want to delete all traces of Zonemaster in the database,
-you can run the file `cleanup-mysql.sql` as a database administrator. Commands
-for locating and running the file are below. It removes the user and drops the
-database (obviously taking all data with it).
- 
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-mysql --user=root --password < ./cleanup-mysql.sql
-```
-
-
-#### 1.6.2 PostgreSQL
 
 Initialize the database:
 
@@ -179,19 +131,28 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
 
-#### 1.6.3 SQLite
+
+#### 1.2.3 Instructions for  SQLite
 
 >
-> At this time there is no instruction for configuring/creating a database in PostgreSQL.
+> At this time there is no instruction for using SQLite on CentOS.
 >
 
-### 1.7 Service startup (CentOS)
+### 1.3 Service configuration and startup (CentOS)
+
+Start the service:
 
 ```sh
 sudo /etc/init.d/zm-centos.sh start
 ```
 
-### 1.8 Post-installation sanity check (CentOS)
+Check that the service has started:
+
+```sh
+sudo /etc/init.d/zm-centos.sh status
+```
+
+### 1.4 Post-installation sanity check (CentOS)
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -205,7 +166,6 @@ The command is expected to give an immediate JSON response similiar to :
 ```json
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
-
 
 ## 2. Installation on Debian
 
@@ -300,7 +260,7 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > This user has just enough permissions to run the backend software.
 
 
-#### 2.2.3 SQLite
+#### 2.2.3 Instructions for SQLite
 
 >
 > At this time there is no instruction for configuring/creating a database in SQLite 
@@ -418,7 +378,7 @@ sudo cp ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
 Zonemaster::Backend supports MySQL and PostgreSQL on FreeBSD. See [declaration
 of prerequisites] for details on specific versions.
 
-#### 3.4.1 Instructions for **MySQL**:
+#### 3.4.1 Instructions for MySQL
 
 Install the database engine and its dependencies:
 
@@ -437,7 +397,7 @@ Configure the database engine:
 > in MySQL.
 >
 
-#### 3.4.2 Instructions for **PostgreSQL**:
+#### 3.4.2 Instructions for PostgreSQL
 
 Install, configure and start database engine (and Perl bindings):
 
@@ -457,7 +417,7 @@ Initialize the database:
 psql -U pgsql -f ./initial-postgres.sql template1
 ```
 
-#### 3.4.3 Instructions for **SQLite**:
+#### 3.4.3 Instructions for SQLite
 
 >
 > At this time there is no instruction for configuring and creating a database
@@ -499,17 +459,29 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-### Cleaning up MySQL
+## Cleaning up the database
 
 If, at some point, you want to delete all traces of Zonemaster in the database,
-you can run the file `cleanup-mysql.sql` as a database administrator. Commands
+you can run the file `cleanup-mysql.sql` or file `cleanup-postgres.sql`
+as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
 database (obviously taking all data with it).
+
+### MySQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
+
+### PostgreSQL
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
+```
+
+
 
 
 -------

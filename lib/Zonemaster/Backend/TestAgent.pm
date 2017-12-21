@@ -141,7 +141,7 @@ sub run {
 				Zonemaster::Engine->config->load_config_file( $config_file_path );
 			}
 			else {
-				die "The file specified by the config parameter value: [$params->{config}] doesn't exist";
+				die "The file specified by the config parameter value: [$params->{config}] doesn't exist\n";
 			}
 		}
 		else {
@@ -157,7 +157,7 @@ sub run {
             say STDERR "Exited early: " . $err->message;
         }
         else {
-            die $err;    # Don't know what it is, rethrow
+            die "$err\n";    # Don't know what it is, rethrow
         }
     }
 
@@ -181,7 +181,7 @@ sub add_fake_delegation {
             push(@ns_with_no_ip, $self->to_idn( $ns_ip_pair->{ns} ) );
 		}
 		else {
-			die "Invalid ns_ip_pair";
+			die "Invalid ns_ip_pair\n";
 		}
     }
 

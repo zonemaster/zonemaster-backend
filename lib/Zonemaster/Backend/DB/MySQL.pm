@@ -87,7 +87,7 @@ sub create_new_batch_job {
 			LIMIT 1
 			", undef, $username );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running " if ( $batch_id );
+    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
 
     $self->dbh->do( "INSERT INTO batch_jobs (username) VALUES(?)", undef, $username );
     my ( $new_batch_id ) = $self->dbh->{mysql_insertid};

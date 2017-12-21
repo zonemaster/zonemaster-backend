@@ -105,7 +105,7 @@ sub create_new_batch_job {
 			LIMIT 1
 			", undef, $username );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running " if ( $batch_id );
+    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running \n" if ( $batch_id );
 
     my ( $new_batch_id ) =
       $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
@@ -163,7 +163,7 @@ sub get_test_params {
 	my $id_field = $self->_get_allowed_id_field_name($test_id);
     my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
-    die $@ if $@;
+    die "$@ \n" if $@;
 
     return $result;
 }
@@ -184,7 +184,7 @@ sub test_results {
         $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
         $result->{results} = decode_json( encode_utf8( $result->{results} ) );
     };
-    die $@ if $@;
+    die "$@ \n" if $@;
 
     return $result;
 }

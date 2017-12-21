@@ -34,19 +34,19 @@ sub new {
     if ( $params && $params->{db} ) {
         eval {
             eval "require $params->{db}";
-            die $@ if $@;
+            die "$@ \n" if $@;
             $self->{db} = "$params->{db}"->new();
         };
-        die $@ if $@;
+        die "$@ \n" if $@;
     }
     else {
         eval {
             my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
             eval "require $backend_module";
-            die $@ if $@;
+            die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
         };
-        die $@ if $@;
+        die "$@ \n" if $@;
     }
 
     return ( $self );
@@ -281,7 +281,7 @@ sub start_domain_test {
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );
-    die $syntax_result->{message} unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
+    die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
     die "No domain in parameters\n" unless ( $params->{domain} );
     
@@ -321,9 +321,6 @@ sub get_test_results {
     my ( $self, $params ) = @_;
     my $result;
 
-    #    my $syntax_result = $self->validate_syntax($params);
-    #    die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
-
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
     my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
@@ -353,15 +350,25 @@ sub get_test_results {
         if ( $test_res->{module} eq 'SYSTEM' ) {
             if ( $res->{message} =~ /policy\.json/ ) {
                 my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                my $policy_description = 'DEFAULT POLICY';
-                $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
-                $res->{message} =~ s/$policy/$policy_description/;
+                if ( $policy ) {
+                    my $policy_description = 'DEFAULT POLICY';
+                    $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
+                    $res->{message} =~ s/$policy/$policy_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN POLICY FORMAT';
+                }
             }
             elsif ( $res->{message} =~ /config\.json/ ) {
                 my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                my $config_description = 'DEFAULT CONFIGURATION';
-                $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
-                $res->{message} =~ s/$config/$config_description/;
+                if ( $config ) {
+                    my $config_description = 'DEFAULT CONFIGURATION';
+                    $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
+                    $res->{message} =~ s/$config/$config_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN CONFIG FORMAT';
+                }
             }
         }
 
@@ -377,7 +384,12 @@ sub get_test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my $results = $self->{db}->get_test_history( $p );
+    my $results;
+    
+    # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
+    return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+    
+    $results = $self->{db}->get_test_history( $p );
 
     return $results;
 }

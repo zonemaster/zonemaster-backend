@@ -140,7 +140,9 @@ The typical use case for this parameter would be a setup with several separate T
 
 Basic data type: string
 
-* Must consist entirely of letters A-Z and a-z, digits 0-9, hyphen '-' and underscore '_'.
+* Must consist entirely of letters A-Z and a-z, digits 0-9, hyphen '-'
+  and underscore '_'.
+  Must not start or end with hyphen or underscore.
 * Length must be between 1 and 32 characters inclusive.
 
 The name of a [*profile*](Architecture.md#profile).

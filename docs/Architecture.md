@@ -67,22 +67,11 @@ soon as it can, and all of the real work will be done as that user.
 
 ### Message
 
-### Policy
-
 ### Profile
 
 A profile is a configuration for Zonemaster Engine; see the [profiles overview] for context.
 Administrators can [configure available profiles], which is a mapping from [profile names] to [profiles files].
 The [RPC-API] contains several methods that accept profile name arguments.
-
-
-### Config profile
-
-*Config profiles* are configured under the the `ZONEMASTER` section of `zonemaster_backend.ini`.
-
->
-> TODO: Describe this in greater detail.
->
 
 
 ### Engine

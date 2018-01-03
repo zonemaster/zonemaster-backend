@@ -7,6 +7,7 @@ use 5.14.2;
 
 use DBI qw(:utils);
 use JSON::PP;
+use Scalar::Util qw( blessed );
 
 use Zonemaster::LDNS;
 

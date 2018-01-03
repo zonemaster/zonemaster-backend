@@ -69,8 +69,16 @@ soon as it can, and all of the real work will be done as that user.
 
 ### Profile
 
-A profile is a configuration for Zonemaster Engine; see the [profiles overview] for context.
-Administrators can [configure available profiles], which is a mapping from [profile names] to [profiles files].
+A profile is a configuration for Zonemaster Engine; see the [profiles
+overview] for context.
+Zonemaster Backend allows administrators to [configure the set of
+available profiles].
+
+Each available profile has a [profile name].
+Each one is based on the [Zonemaster Engine default profile],
+Each one (with the possible exception of `default`) has a [profile file]
+with overrides to the Zonemaster Engine default profile.
+
 The [RPC-API] contains several methods that accept profile name arguments.
 
 
@@ -80,8 +88,9 @@ The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
 own repository](https://github.com/dotse/zonemaster-engine/).
 
 --------
-[Configure available profiles]: Configuration.md#profiles-section
-[Profile files]: https://github.com/dotse/zonemaster-engine/blob/master/lib/Zonemaster/Engine/Config.md#PROFILE-DATA
+[Configure the set of available profiles]: Configuration.md#profiles-section
+[Profile files]: https://metacpan.org/pod/Zonemaster::Engine::Config#PROFILE-DATA
 [Profile names]: API.md#profile-name
 [Profiles overview]: https://github.com/dotse/zonemaster/blob/master/docs/design/Profiles.md
 [RPC-API]: API.md
+[Zonemaster Engine default profile]: https://metacpan.org/pod/Zonemaster::Engine::Config#DESCRIPTION

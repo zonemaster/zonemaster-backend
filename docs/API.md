@@ -446,7 +446,8 @@ An object with the following properties:
 
 * `"client_id"`: A free-form string, optional.
 * `"domain"`: A *domain name*, required.
-* `"profile"`: A *profile name*, optional. (default `"default"`)
+* `"profile"`: A *profile name*, optional (default `"default"`). Run
+  the test using the given profile.
 * `"client_version"`: A free-form string, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
@@ -481,6 +482,9 @@ started within the recent configurable short time.
 
 
 #### `"error"`
+
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -876,7 +880,8 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A free-form string, optional.
-* `"profile"`: A *profile name*, optional. (default `"default"`)
+* `"profile"`: A *profile name*, optional (default `"default"`). Run
+  the tests using the given profile.
 * `"client_version"`: A free-form string, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
@@ -914,6 +919,9 @@ A *batch id*.
 
 * You can't create a new batch job.
   A *batch* with unfinished *tests* already exists for this *api user*.
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
+
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1030,7 +1038,7 @@ An object with the following properties:
 * `"ipv6"`: an optional `1`, `0`, `true` or `false`.
 * `"ds_info"`: an optional list of *DS info* objects.
 * `"nameservers"`: an optional list of objects each of *name server* objects.
-* `"profile"`: an optional *profile name*. (default `"default"`)
+* `"profile"`: A *profile name*, optional (default `"default"`).
 * `"advanced"`: an optional `true` or `false`.
 * `"client_id"`: ...
 * `"client_version"`: ...
@@ -1060,6 +1068,9 @@ An object with the following properties:
 * `"message"`: a string. Human-readable details about the status.
 
 #### `"error"`
+
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1096,3 +1107,5 @@ The `"params"` object sent to `start_domain_test` when the *test* was started.
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
+
+[Available profiles]: Configuration.md#profiles-section

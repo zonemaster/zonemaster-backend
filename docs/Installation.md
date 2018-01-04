@@ -52,11 +52,13 @@ Install dependencies not available from binary packages:
 sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
 ```
 
-Install Zonemaster::Backend:
-
+Install Zonemaster::Backend: 
 ```sh
 sudo cpan -i Zonemaster::Backend
 ```
+
+> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 ### 1.2 Database engine installation and configuration (CentOS)
 
@@ -196,6 +198,9 @@ Install Zonemaster::Backend:
 ```sh
 sudo cpan -i Zonemaster::Backend
 ```
+
+> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 ### 2.2 Database engine installation and configuration (Debian)
 
@@ -337,6 +342,9 @@ Install Zonemaster::Backend:
 ```sh
 cpan -i Zonemaster::Backend
 ```
+
+> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 ### 3.2 Database engine installation and configuration (FreeBSD)
 

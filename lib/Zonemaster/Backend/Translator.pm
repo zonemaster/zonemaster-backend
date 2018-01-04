@@ -25,6 +25,9 @@ sub translate_tag {
     elsif ( $browser_lang eq 'sv' ) {
         setlocale( LC_ALL, "sv_SE.UTF-8" );
     }
+    elsif ( $browser_lang eq 'da' ) {
+        setlocale( LC_ALL, "da_DK.UTF-8" );
+    }
     else {
         setlocale( LC_ALL, "en_US.UTF-8" );
     }

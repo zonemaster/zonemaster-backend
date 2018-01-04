@@ -100,7 +100,7 @@ Basic data type: string
 
 Basic data type: object
 
-DS for [Delegation Signer](https://tools.ietf.org/html/rfc3658) references DNSKEY-records in the sub-delegated zone.
+DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
@@ -118,7 +118,7 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An IPv4 or IPv6 address, required.
+* `"ip"`: An IPv4 or IPv6 address, optional.
 
 
 ### Priority
@@ -136,6 +136,39 @@ Basic data type: number
 This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
 The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
 
+### Client id
+
+Basic data type: string
+
+This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
+### Client version
+
+Basic data type: string
+
+This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
+
+### User name
+
+Basic data type: string
+ 
+This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
+
+### API key
+
+Basic data type: string
+
+This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
+
+> Note: Currently there are no restrictions on what characters that are allowed.
 
 ### Profile name
 
@@ -466,10 +499,10 @@ Example response:
 
 An object with the following properties:
 
-* `"client_id"`: A free-form string, optional. Used to monitor which client uses the API.
+* `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
 * `"domain"`: A *domain name*, required. The zone to test.
 * `"profile"`: A *profile name*, optional. Used to perform the test with a specific set of parameters and tests.
-* `"client_version"`: A free-form string, optional. Used to monitor which client use the API
+* `"client_version"`: A *client version*, optional. Used to monitor which client use the API
 * `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
@@ -487,7 +520,7 @@ An object with the following properties:
 A *test id*. 
 
 If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
-then the new request dos not trigger a new test, but returns with the results of the last test
+then the new request does not trigger a new test, but returns with the results of the last test
  
 #### `"error"`
 
@@ -723,21 +756,20 @@ An object with the following properties:
 
 * `"offset"`: An integer, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An integer, optional. (default: 200). Number of element returned from the *offset* element.
-* `"frontend_params"`: As described below.
+* `"frontend_params"`: An object.
 
-* `"client_id"`: A free-form string, optional.
+The value of "frontend_params" is an object with the following properties:
+
+* `"client_id"`: A *client id*, optional.
+* `"domain"`: A *domain name*, required.
 * `"profile"`: A *profile name*, optional.
-* `"client_version"`: A free-form string, optional.
-* `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true).
-* `"ds_info"`: A list of *DS info* objects, optional.
+* `"client_version"`: A *client version*, optional.
+* `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
+* `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
-* `"ipv6"`: A boolean, optional. (default: `false`)
-* `"ipv4"`: A boolean, optional. (default: `false`)
-* `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: An IP, optional.
-* `"user_location_info"`: An *location* object, optional.
-* `"priority"`: A *priorty*, optional.
-* `"queue"`: A *queue*, optional.
+* `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
+* `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
+* `"config"`: **Deprecated**. A string, optional. The name of a *config profile*.
 
 #### `"result"`
 
@@ -757,11 +789,6 @@ It could be:
 
 
 > TODO: What about if the *test* was created with `add_batch_job` or something else?
->
-> TODO: What about if the *test* was created with `"advanced"` set to `false` in `start_domain_test`? => Not evaluate, so if the 
-> test was done with `"nameservers"`, the get_test_history must send a `"frontend_params"` object with the `"nameservers"`
-> set to an equivalent to true ([], or something else).
->
 
 
 #### `"error"`
@@ -774,7 +801,7 @@ It could be:
 ## API method: `add_api_user`
 
 In order to use advanced api features such as the *batch test*, it's necessaire to previously create an api key.
-This key can be obtain with the creation of a user in the system.
+This key can be obtained with the creation of a user in the system.
 This function allow the creation of a new user and so, the creation of a new api key.
 
 Add a new *user* 
@@ -808,12 +835,12 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A string, required. The name of the user to add.
-* `"api_key"`: A string, required. The API key (in effect, password) for the user to add.
+* `"username"`: An *username*, required. The name of the user to add.
+* `"api_key"`: An *api key*, required. The API key for the user to add.
 
 #### `"result"`
 
-An integer. The value is equal to 1 if the registration is a success, or 0 if the SQL request failed.
+An integer. The value is equal to 1 if the registration is a success, or 0 if it failed.
 
 #### `"error"`
 >
@@ -883,8 +910,8 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A string. The username of this batch.
-* `"api_key"`: A string. The api_key associated with the username username of this *batch*.
+* `"username"`: An *username*. The name of the account of an authorized user.
+* `"api_key"`: An *api key*. The api_key associated with the username.
 * `"domains"`: A list of *domain names*. The domains to be tested.
 * `"test_params"`: As described below.
 
@@ -1110,11 +1137,7 @@ A *test id*.
 
 #### `"result"`
 
-The `"params"` object sent to `start_domain_test` when the *test* was started.
-
->
-> TODO: What about if the *test* was created with `add_batch_job` or something else? => Same results.
->
+The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *test* was started.
 
 
 #### `"error"`

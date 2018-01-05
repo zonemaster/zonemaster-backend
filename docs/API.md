@@ -77,7 +77,7 @@ is based on a JSON data type, but additionally imposes its own restrictions.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
+This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
 
 > Note: Currently there are no restrictions on what characters that are allowed.
 
@@ -284,11 +284,11 @@ Basic data type: string
  An unsigned integer is either positive or zero.
  
 
-### User name
+### Username
 
 Basic data type: string
  
-This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
+This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
 
 > Note: Currently there are no restrictions on what characters that are allowed.
 
@@ -497,7 +497,6 @@ Example request:
       }
     ],
     "ds_info": [],
-    "advanced": true,
     "ipv6": true,
     "ipv4": true
   }
@@ -716,10 +715,7 @@ Example request:
     "offset": 0,
     "limit": 200,
     "frontend_params": {
-      "client_id": "Zonemaster Dancer Frontend",
-      "domain": "zonemaster.net",
-      "profile": "default_profile",
-      "client_version": "1.0.1",
+      "domain": "zonemaster.net",      
       "nameservers": [
         {
           "ns": "ns3.nic.se",
@@ -729,11 +725,7 @@ Example request:
           "ns": "ns2.nic.fr",
           "ip": "192.93.0.4"
         }
-      ],
-      "ds_info": [],
-      "advanced": true,
-      "ipv6": true,
-      "ipv4": true
+      ]
     }
   }
 }
@@ -779,10 +771,10 @@ An object with the following properties:
 
 The value of "frontend_params" is an object with the following properties:
 
-* `"client_id"`: A *client id*, optional.
+* `"client_id"`: **Deprecated**. A *client id*, optional.
 * `"domain"`: A *domain name*, required.
-* `"profile"`: A *profile name*, optional.
-* `"client_version"`: A *client version*, optional.
+* `"profile"`: **Deprecated**. A *profile name*, optional.
+* `"client_version"`: **Deprecated**. A *client version*, optional.
 * `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
 * `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.

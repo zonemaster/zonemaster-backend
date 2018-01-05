@@ -397,7 +397,7 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+sudo install -m 755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
 mkdir "$HOME/logs"
 ```
 
@@ -431,7 +431,7 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+sudo install -m 755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
 mkdir "$HOME/logs"
 ```
 

@@ -73,13 +73,39 @@ This sections describes a number of data types used in this API. Each data type
 is based on a JSON data type, but additionally imposes its own restrictions.
 
 
+### API key
+
+Basic data type: string
+
+This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
 ### Batch id
 
 Basic data type: number
 
-An positive integer.
+A positive integer.
 
 The unique id of a *batch*.
+
+
+### Client id
+
+Basic data type: string
+
+This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
+
+### Client version
+
+Basic data type: string
+
+This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
+
+> Note: Currently there are no restrictions on what characters that are allowed.
 
 
 ### Domain name
@@ -111,6 +137,33 @@ Properties:
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
 
+### IP address
+
+Basic data type: string
+
+This parameter is a string that are an IPv4 or IPv6. It's validate with the following regexes:
+ - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
+ - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
+
+
+
+### Location
+
+Basic data type: object
+
+The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"latitude"`.
+
+
+* `"isp"`: a string. The Internet Service Provider of the user.
+* `"country"`: a string. The country of the user.
+* `"city"`: a string. The city of the user.
+* `"longitude"`: a string. The longtitude of the user.
+* `"latitude"`: a string. The latitude of the user.
+
+>
+> TODO Add regex
+>
+
 ### Name server
 
 Basic data type: object
@@ -118,7 +171,7 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An IPv4 or IPv6 address, optional.
+* `"ip"`: An *IP address*, IPv4 or IPv6 , optional.
 
 
 ### Priority
@@ -128,47 +181,6 @@ Basic data type: number
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
-
-### Queue
-
-Basic data type: number
-
-This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
-The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
-
-### Client id
-
-Basic data type: string
-
-This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
-
-> Note: Currently there are no restrictions on what characters that are allowed.
-
-### Client version
-
-Basic data type: string
-
-This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
-
-> Note: Currently there are no restrictions on what characters that are allowed.
-
-
-### User name
-
-Basic data type: string
- 
-This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
-
-> Note: Currently there are no restrictions on what characters that are allowed.
-
-
-### API key
-
-Basic data type: string
-
-This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
-
-> Note: Currently there are no restrictions on what characters that are allowed.
 
 ### Profile name
 
@@ -201,6 +213,14 @@ When a *profile* other than the ones listed above is requested the user receives
 Basic data type: number
 
 An integer ranging from 0 (not started) to 100 (finished).
+
+
+### Queue
+
+Basic data type: number
+
+This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
+The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
 
 
 ### Severity level
@@ -247,23 +267,6 @@ Basic data type: string
 Default database timestamp format: "Y-M-D H:M:S.ms"
 Example: "2017-12-18 07:56:17.156939"
 
-### Location
-
-Basic data type: object
-
-The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"latitude"`.
-
-
-* `"isp"`: a string. The Internet Service Provider of the user.
-* `"country"`: a string. The country of the user.
-* `"city"`: a string. The city of the user.
-* `"longitude"`: a string. The longtitude of the user.
-* `"latitude"`: a string. The latitude of the user.
-
->
-> TODO Add regex
->
-
 ### Translation language
 
 Basic data type: string
@@ -272,6 +275,22 @@ Basic data type: string
 * Any string starting with `"sv"` is interpreted as Swedish.
 * Any string starting with `"da"` is interpreted as Danish.
 * Any other string is interpreted as English.
+
+
+### Unsigned integer
+
+ Basic data type: number
+ 
+ An unsigned integer is either positive or zero.
+ 
+
+### User name
+
+Basic data type: string
+ 
+This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#Privilege levels))
+
+> Note: Currently there are no restrictions on what characters that are allowed.
 
 
 ## API method: `version_info`
@@ -508,8 +527,8 @@ An object with the following properties:
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
 * `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
-* `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: An IP, optional. Used to monitor information about the user. (We only keep the location of the IP).
+* `"config"`: A string, optional. The name of a config profile.
+* `"user_ip"`: An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
 * `"user_location_info"`: An *location* object, optional. Used to monitor information about the user. 
 * `"priority"`: A *priority*, optional.
 * `"queue"`: A *queue*, optional.
@@ -754,8 +773,8 @@ Example response:
 
 An object with the following properties:
 
-* `"offset"`: An integer, optional. (default: 0). Position of the first returned element from the database returned list.  
-* `"limit"`: An integer, optional. (default: 200). Number of element returned from the *offset* element.
+* `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
+* `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:
@@ -917,18 +936,18 @@ An object with the following properties:
 
 The value of `"test_params"` is an object with the following properties:
 
-* `"client_id"`: A free-form string, optional.
+* `"client_id"`: A *client id*, optional.
 * `"profile"`: A *profile name*, optional.
-* `"client_version"`: A free-form string, optional.
+* `"client_version"`: A *client version*, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: An IP, optional.
+* `"user_ip"`: An *IP address*, optional.
 * `"user_location_info"`: An *location* object, optional.
-* `"priority"`: A *priorty*, optional
+* `"priority"`: A *priority*, optional
 * `"queue"`: A *queue*, optional
 
 >
@@ -994,8 +1013,8 @@ A *batch id*.
 
 An object with the following properties:
 
-* `"nb_finished"`: an integer. The number of finished tests.
-* `"nb_running"`: an integer. The number of running tests.
+* `"nb_finished"`: an *unsigned integer*. The number of finished tests.
+* `"nb_running"`: an *unsigned integer*. The number of running tests.
 * `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
 
 
@@ -1061,11 +1080,11 @@ An object with the following properties:
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"profile"`: A *profile name*, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
-* `"client_id"`: A free-form string, optional.
-* `"client_version"`: A free-form string, optional.
+* `"client_id"`: A *client id*, optional.
+* `"client_version"`: A *client version*, optional.
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: An IP, optional.
-* `"user_location_info"`: An *location* object, optional.
+* `"user_ip"`: An *IP address*, optional.
+* `"user_location_info"`: A *location* object, optional.
 
 If the `"nameservers"` key is _not_ set, a recursive query made by the
 server to its locally configured resolver for NS records for the

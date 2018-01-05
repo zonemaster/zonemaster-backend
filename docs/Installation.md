@@ -118,19 +118,49 @@ sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_
 sudo install --mode=755 ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
-
-Install, configure and start database engine (and Perl bindings):
-
->
-> At this time there is no instruction for using PostgreSQL on CentOS.
->
-> [Sandoche! I think we should be able to support PostgreSQL!
-> Can you try to find PostgreSQL package plus perl lib?]
->
-
-Initialize the database:
+Get the appropriate PostgreSQL version
 
 ```sh
+sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
+```
+
+Install the missing dependencies:
+
+```sh
+sudo yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs postgresql93-devel
+sudo cpan -i DBD::Pg
+```
+
+Configure:
+
+```sh
+# Switch to root user
+sudo -s
+# In the below file modify all instances of "ident" to "md5"
+sudo vi /var/lib/pgsql/9.3/data/pg_hba.conf
+# Exit from the root user
+exit
+```
+
+Enable and initialize the database:
+
+```sh
+# To enable PostgreSQL from boot
+sudo systemctl enable postgresql-9.3
+
+# Initialise PostgreSQL
+sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
+
+# Start PostgreSQL
+sudo systemctl start postgresql-9.3 
+
+# Verify PostgreSQL has started
+sudo systemctl status postgresql-9.3
+
+# Add Zonemaster user
+sudo useradd zonemaster
+
+# Iniitialize Zonemaster database
 sudo -u postgres psql -f ./initial-postgres.sql
 ```
 

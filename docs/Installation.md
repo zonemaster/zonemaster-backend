@@ -136,8 +136,10 @@ Configure:
 ```sh
 # Switch to root user
 sudo -s
+
 # In the below file modify all instances of "ident" to "md5"
 sudo vi /var/lib/pgsql/9.3/data/pg_hba.conf
+
 # Exit from the root user
 exit
 ```

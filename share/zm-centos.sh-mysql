@@ -16,8 +16,8 @@
 LOGDIR=/var/log/zonemaster
 PIDDIR=/var/run/zonemaster
 LISTENIP=127.0.0.1
-USER=mysql
-GROUP=mysql
+USER=zonemaster
+GROUP=zonemaster
 
 setup() {
     if [ ! -d $LOGDIR ]

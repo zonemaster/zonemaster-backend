@@ -56,14 +56,19 @@ Install Zonemaster::Backend:
 ```sh
 sudo cpan -i Zonemaster::Backend
 ```
-
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
+
+Add Zonemaster user:
+```sh
+sudo useradd -r -c "Zonemaster daemon user" zonemaster
+```
 
 ### 1.2 Database engine installation and configuration (CentOS)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
+
 
 #### 1.2.1 Instructions for MySQL (CentOS)
 
@@ -118,17 +123,51 @@ sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_
 sudo install --mode=755 ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
+Add PostgreSQL package repository needed to get the appropriate PostgreSQL 
+binary package
 
-Install, configure and start database engine (and Perl bindings):
+```sh
+sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
+```
 
->
-> At this time there is no instruction for using PostgreSQL on CentOS.
->
-> [Sandoche! I think we should be able to support PostgreSQL!
-> Can you try to find PostgreSQL package plus perl lib?]
->
+Install the PostgreSQL packages:
 
-Initialize the database:
+```sh
+sudo yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs postgresql93-devel perl-DBD-Pg
+```
+
+To enable PostgreSQL from boot:
+
+```sh
+sudo systemctl enable postgresql-9.3
+```
+
+Initialise PostgreSQL:
+
+```sh
+sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
+```
+
+Configure:
+
+```sh
+# In the below file modify all instances of "ident" to "md5"
+sudoedit /var/lib/pgsql/9.3/data/pg_hba.conf
+```
+
+Start PostgreSQL:
+
+```sh
+sudo systemctl start postgresql-9.3 
+```
+
+Verify PostgreSQL has started:
+
+```sh
+sudo systemctl status postgresql-9.3
+```
+
+Initialize Zonemaster database:
 
 ```sh
 sudo -u postgres psql -f ./initial-postgres.sql

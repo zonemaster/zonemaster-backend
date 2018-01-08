@@ -56,14 +56,13 @@ Install Zonemaster::Backend:
 ```sh
 sudo cpan -i Zonemaster::Backend
 ```
+> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add Zonemaster user:
 ```sh
 sudo useradd -r -c "Zonemaster daemon user" zonemaster
 ```
-
-> The command above might try to install "DBD::Pg" and "DBD::mysql".
-> You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 ### 1.2 Database engine installation and configuration (CentOS)
 
@@ -124,7 +123,7 @@ sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_
 sudo install --mode=755 ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
-Add PostGreSQL package repository needed to get the appropriate PostgreSQL 
+Add PostgreSQL package repository needed to get the appropriate PostgreSQL 
 binary package
 
 ```sh

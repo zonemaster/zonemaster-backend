@@ -65,7 +65,7 @@ sudo cpan -i Zonemaster::Backend
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-# Add Zonemaster user
+Add Zonemaster user:
 sudo useradd zonemaster
 
 
@@ -150,7 +150,7 @@ sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
 
 ```sh
 # In the below file modify all instances of "ident" to "md5"
-sudo vi /var/lib/pgsql/9.3/data/pg_hba.conf
+sudoedit /var/lib/pgsql/9.3/data/pg_hba.conf
 ```
 
 # Start PostgreSQL
@@ -165,7 +165,7 @@ sudo systemctl start postgresql-9.3
 sudo systemctl status postgresql-9.3
 ```
 
-# Iniitialize Zonemaster database
+# Initialize Zonemaster database
 
 ```sh
 sudo -u postgres psql -f ./initial-postgres.sql

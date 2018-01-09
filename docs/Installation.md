@@ -71,6 +71,38 @@ of operating system version and database engine version is supported.
 
 
 #### 1.2.1 Instructions for MySQL (CentOS)
+Add mySQL package repository needed to get the appropriate mySQL
+binary package:
+
+```sh 
+sudo yum install wget
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+```
+
+Install, configure and start database engine (and Perl bindings):
+
+```sh
+sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+sudo yum install mysql-server perl-DBD-mysql
+sudo systemctl start mysqld
+```
+
+Verify that MySQL has started:
+
+```sh
+service mysqld status
+```
+
+Run the mysql_secure_installation script to address several security concerns in 
+a default MySQL installation.
+
+```sh
+sudo mysql_secure_installation
+```
+
+> **Note:** You will be given the choice to change the MySQL root password, remove 
+> anonymous user accounts, disable root logins outside of localhost, and remove 
+> test databases. It is recommended that you answer 'yes' to these options.
 
 Install files to their proper locations:
 
@@ -82,23 +114,9 @@ sudo install --mode=755 ./zm-centos.sh-mysql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
 
-Install, configure and start database engine (and Perl bindings):
 
-```sh 
-sudo yum install wget 
-wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
-sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm 
-sudo yum install mysql-server perl-DBD-mysql 
-sudo systemctl start mysqld 
-```
-
-Verify that MySQL has started:
-
-```sh
-service mysqld status
-```
-
-Initialize the database:
+Initialize the database by providing the password provided during the secure installation
+step :
 
 ```sh
 mysql --user=root --password < ./initial-mysql.sql
@@ -197,6 +215,8 @@ Check that the service has started:
 ```sh
 sudo /etc/init.d/zm-centos.sh status
 ```
+> **Note:** As of now status does not show any information if the service has 
+> started
 
 ### 1.4 Post-installation sanity check (CentOS)
 

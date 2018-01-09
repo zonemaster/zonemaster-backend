@@ -2,10 +2,10 @@
 #
 ### BEGIN INIT INFO
 # Provides:          zm-backend
-# Required-Start:    postgresql $network $local_fs
-# Required-Stop:     postgresql $network $local_fs
-# Should-Start:
-# Should-Stop:
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Should-Start:      mysql postgresql
+# Should-Stop:       mysql postgresql
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Start and stop the Zonemaster Backend (RPC API daemon and Test Agent daemon)

@@ -199,21 +199,6 @@ Check that the service has started:
 sudo /etc/init.d/zm-centos.sh status
 ```
 
-### 1.4 Post-installation sanity check (CentOS)
-
-If you followed this instructions to the letter, you should be able to use the
-API on localhost port 5000, like this:
-
-```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
-```
-
-The command is expected to give an immediate JSON response similiar to :
-
-```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
-```
-
 ## 2. Installation on Debian
 
 ### 2.1 Install Zonemaster::Backend and related dependencies (Debian)
@@ -355,21 +340,6 @@ Check that the service has started:
 sudo service zm-backend.sh status
 ```
 
-### 2.4 Post-installation sanity check (Debian)
-
-If you followed this instructions to the letter, you should be able to use the
-API on localhost port 5000, like this:
-
-```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
-```
-
-The command is expected to give an immediate JSON response similiar to:
-
-```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
-```
-
 
 ## 3. Installation on FreeBSD
 
@@ -508,7 +478,13 @@ service zm_rpcapi start
 service zm_testagent start
 ```
 
-### 3.4 Post-installation sanity check (FreeBSD)
+
+## 4. Installation on Ubuntu
+
+Use the procedure for installation on [Debian](#2-installation-on-debian).
+
+
+## Post-installation sanity check
 
 If you followed this instructions to the letter, you should be able to use the
 API on localhost port 5000, like this:
@@ -522,11 +498,6 @@ The command is expected to give an immediate JSON response similiar to :
 ```json
 { "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
 ```
-
-
-## 4. Installation on Ubuntu
-
-Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 
 ## What to do next?

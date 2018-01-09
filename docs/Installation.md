@@ -77,9 +77,15 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-centos.sh-mysql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
+```
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -117,10 +123,17 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
+```
+
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL 
 binary package
 
@@ -251,9 +264,15 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-backend.sh-mysql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
+```
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
 Install the database engine and its dependencies:
@@ -284,9 +303,15 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-backend.sh-postgresql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
+```
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
 The following block of commands is for **Debian 7** only. For all others, go to the step of installing
@@ -412,8 +437,14 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -d /etc/zonemaster
-install -m 644 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+install -m 644 ./backend_config.ini /etc/zonemaster/
 mkdir "$HOME/logs"
+```
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sed -i '/\bengine\b/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -446,8 +477,14 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -d /etc/zonemaster
-install -m 644 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+install -m 644 ./backend_config.ini /etc/zonemaster/
 mkdir "$HOME/logs"
+```
+
+Configure Zonemaster::Backend to us the correct database engine:
+
+```sh
+sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):

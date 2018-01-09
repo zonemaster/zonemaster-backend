@@ -396,23 +396,23 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
+install -d /etc/zonemaster
+install -m 644 ./backend_config.ini-mysql /etc/zonemaster/backend_config.ini
 mkdir "$HOME/logs"
 ```
 
-Install the database engine and its dependencies (and Perl bindings):
+Install, configure and start database engine (and Perl bindings):
 
 ```sh
 pkg install mysql56-server p5-DBD-mysql
+echo 'mysql_enable="YES"' | tee -a /etc/rc.conf
+service mysql-server start
 ```
-
-> Before next step the MySQL database engine must be started.
 
 Initialize the database:
 
 ```sh
-mysql --user=root --password < ./initial-mysql.sql
+mysql < ./initial-mysql.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user
@@ -430,8 +430,8 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
+install -d /etc/zonemaster
+install -m 644 ./backend_config.ini-postgresql /etc/zonemaster/backend_config.ini
 mkdir "$HOME/logs"
 ```
 

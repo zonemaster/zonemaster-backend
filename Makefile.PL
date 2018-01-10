@@ -18,6 +18,7 @@ requires
   'IO::CaptureOutput'        => 0,
   'JSON::PP'                 => 0,
   'JSON::RPC'                => 0.96,
+  'JSON::RPC::Dispatch'      => 0,
   'Locale::TextDomain'       => 0,
   'Moose'                    => 2.04,
   'Net::IP::XS'              => 0.14,

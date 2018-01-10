@@ -93,16 +93,17 @@ Verify that MySQL has started:
 service mysqld status
 ```
 
-Run the mysql_secure_installation script to address several security concerns in 
-a default MySQL installation.
+Run the mysql_secure_installation script to address several security
+concerns in a default MySQL installation.
 
 ```sh
 sudo mysql_secure_installation
 ```
 
-> **Note:** You will be given the choice to change the MySQL root password, remove 
-> anonymous user accounts, disable root logins outside of localhost, and remove 
-> test databases. It is recommended that you answer 'yes' to these options.
+> **Note:** You will be given the choice to change the MySQL root
+> password, remove anonymous user accounts, disable root logins outside
+> of localhost, and remove test databases. It is recommended that you
+> answer 'yes' to these options.
 
 Install files to their proper locations:
 
@@ -115,8 +116,8 @@ mkdir "$HOME/logs"
 ```
 
 
-Initialize the database by providing the password provided during the secure installation
-step :
+Initialize the database by providing the password provided during the
+secure installation step :
 
 ```sh
 mysql --user=root --password < ./initial-mysql.sql
@@ -215,8 +216,8 @@ Check that the service has started:
 ```sh
 sudo /etc/init.d/zm-centos.sh status
 ```
-> **Note:** As of now status does not show any information if the service has 
-> started
+> **Note:** As of now status does not show any information if the service
+> has started
 
 ### 1.4 Post-installation sanity check (CentOS)
 

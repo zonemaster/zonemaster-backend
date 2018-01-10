@@ -34,19 +34,19 @@ sub new {
     if ( $params && $params->{db} ) {
         eval {
             eval "require $params->{db}";
-            die $@ if $@;
+            die "$@ \n" if $@;
             $self->{db} = "$params->{db}"->new();
         };
-        die $@ if $@;
+        die "$@ \n" if $@;
     }
     else {
         eval {
             my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
             eval "require $backend_module";
-            die $@ if $@;
+            die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
         };
-        die $@ if $@;
+        die "$@ \n" if $@;
     }
 
     return ( $self );
@@ -90,13 +90,13 @@ sub get_data_from_parent_zone {
     $zone = Zonemaster::Engine->zone($domain);
     my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
     if ($ds_p) {
-		my @ds = $ds_p->get_records( 'DS', 'answer' );
+        my @ds = $ds_p->get_records( 'DS', 'answer' );
 
-		foreach my $ds ( @ds ) {
+        foreach my $ds ( @ds ) {
             next unless $ds->type eq 'DS';
-			push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-		} 
-	}
+            push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
+        } 
+    }
 
     $result{ns_list} = \@ns_list;
     $result{ds_list} = \@ds_list;
@@ -214,6 +214,9 @@ sub validate_syntax {
 
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
+    
+            return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
               unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }
 
@@ -226,16 +229,16 @@ sub validate_syntax {
         }
 
         foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-			return {
-				status  => 'nok',
-				message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
-			}
-			if (
-				( length( $ds_digest->{digest} ) != 96 &&
-			          length( $ds_digest->{digest} ) != 64 &&
-			          length( $ds_digest->{digest} ) != 40 ) ||
-			          $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
-			);
+            return {
+                status  => 'nok',
+                message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
+            }
+            if (
+                ( length( $ds_digest->{digest} ) != 96 &&
+                      length( $ds_digest->{digest} ) != 64 &&
+                      length( $ds_digest->{digest} ) != 40 ) ||
+                      $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
+            );
         }
     }
 
@@ -245,31 +248,31 @@ sub validate_syntax {
 sub add_user_ip_geolocation {
     my ( $self, $params ) = @_;
     
-	if ($params->{user_ip} 
-		&& Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
-		&& Zonemaster::Backend::Config->Maxmind_City_DB_File()
-	) {
-		my $ip = new Net::IP::XS($params->{user_ip});
-		if ($ip->iptype() eq 'PUBLIC') {
-			require Geo::IP;
-			my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
-			my $isp = $gi->isp_by_addr($params->{user_ip});
-			
-			require GeoIP2::Database::Reader;
-			my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
-	
-			my $city = $reader->city(ip => $params->{user_ip});
+    if ($params->{user_ip} 
+        && Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
+        && Zonemaster::Backend::Config->Maxmind_City_DB_File()
+    ) {
+        my $ip = new Net::IP::XS($params->{user_ip});
+        if ($ip->iptype() eq 'PUBLIC') {
+            require Geo::IP;
+            my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
+            my $isp = $gi->isp_by_addr($params->{user_ip});
+            
+            require GeoIP2::Database::Reader;
+            my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
+    
+            my $city = $reader->city(ip => $params->{user_ip});
 
-			$params->{user_location_info}->{isp} = $isp;
-			$params->{user_location_info}->{country} = $city->country()->name();
-			$params->{user_location_info}->{city} = $city->city()->name();
-			$params->{user_location_info}->{longitude} = $city->location()->longitude();
-			$params->{user_location_info}->{latitude} = $city->location()->latitude();
-		}
-		else {
-			$params->{user_location_info}->{isp} = "Private IP address";
-		}
-	}
+            $params->{user_location_info}->{isp} = $isp;
+            $params->{user_location_info}->{country} = $city->country()->name();
+            $params->{user_location_info}->{city} = $city->city()->name();
+            $params->{user_location_info}->{longitude} = $city->location()->longitude();
+            $params->{user_location_info}->{latitude} = $city->location()->latitude();
+        }
+        else {
+            $params->{user_location_info}->{isp} = "Private IP address";
+        }
+    }
 }
 
 sub start_domain_test {
@@ -278,14 +281,14 @@ sub start_domain_test {
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );
-    die $syntax_result->{message} unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
+    die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
     die "No domain in parameters\n" unless ( $params->{domain} );
     
     if ($params->{config}) {
-		$params->{config} =~ s/[^\w_]//isg;
-		die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
-	}
+        $params->{config} =~ s/[^\w_]//isg;
+        die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+    }
     
     $self->add_user_ip_geolocation($params);
 
@@ -318,9 +321,6 @@ sub get_test_results {
     my ( $self, $params ) = @_;
     my $result;
 
-    #	my $syntax_result = $self->validate_syntax($params);
-    #	die $syntax_result->{message} unless ($syntax_result && $syntax_result->{status} eq 'ok');
-
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
     my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
@@ -350,15 +350,25 @@ sub get_test_results {
         if ( $test_res->{module} eq 'SYSTEM' ) {
             if ( $res->{message} =~ /policy\.json/ ) {
                 my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                my $policy_description = 'DEFAULT POLICY';
-                $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
-                $res->{message} =~ s/$policy/$policy_description/;
+                if ( $policy ) {
+                    my $policy_description = 'DEFAULT POLICY';
+                    $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
+                    $res->{message} =~ s/$policy/$policy_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN POLICY FORMAT';
+                }
             }
             elsif ( $res->{message} =~ /config\.json/ ) {
                 my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                my $config_description = 'DEFAULT CONFIGURATION';
-                $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
-                $res->{message} =~ s/$config/$config_description/;
+                if ( $config ) {
+                    my $config_description = 'DEFAULT CONFIGURATION';
+                    $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
+                    $res->{message} =~ s/$config/$config_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN CONFIG FORMAT';
+                }
             }
         }
 
@@ -374,7 +384,12 @@ sub get_test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my $results = $self->{db}->get_test_history( $p );
+    my $results;
+    
+    # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
+    return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+    
+    $results = $self->{db}->get_test_history( $p );
 
     return $results;
 }
@@ -392,7 +407,7 @@ sub add_api_user {
     }
 
     if ( $allow ) {
-		$result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
+        $result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
     }
     
     return $result;

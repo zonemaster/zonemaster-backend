@@ -32,9 +32,9 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_specs' ) or die "SQLite Fatal error: " . $self->dbh->errstr();
+    $self->dbh->do( 'DROP TABLE IF EXISTS test_specs' ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_results' ) or die "SQLite Fatal error: " . $self->dbh->errstr();
+    $self->dbh->do( 'DROP TABLE IF EXISTS test_results' ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     $self->dbh->do(
         'CREATE TABLE test_results (
@@ -51,12 +51,12 @@ sub create_db {
 					results text DEFAULT NULL
 			)
 	'
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr();
+    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS batch_jobs' ) or die "SQLite Fatal error: " . $self->dbh->errstr();
+    $self->dbh->do( 'DROP TABLE IF EXISTS batch_jobs' ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     $self->dbh->do(
         'CREATE TABLE batch_jobs (
@@ -65,7 +65,7 @@ sub create_db {
 					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 			)
 	'
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr();
+    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
     # USERS
@@ -77,7 +77,7 @@ sub create_db {
 					user_info json DEFAULT NULL
 			)
 	'
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr();
+    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     return 1;
 }
@@ -136,7 +136,7 @@ sub create_new_batch_job {
 			LIMIT 1
 			" );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running " if ( $batch_id );
+    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
 
     my ( $new_batch_id ) = $self->dbh->selectrow_array(
         "INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ") RETURNING id" );
@@ -194,7 +194,7 @@ sub get_test_params {
 
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE id=$test_id" );
     eval { $result = decode_json( $params_json ); };
-    die $@ if $@;
+    die "$@ \n" if $@;
 
     return $result;
 }
@@ -214,7 +214,7 @@ sub test_results {
         $result->{params}  = decode_json( $result->{params} );
         $result->{results} = decode_json( $result->{results} );
     };
-    die $@ if $@;
+    die "$@ \n" if $@;
 
     return $result;
 }

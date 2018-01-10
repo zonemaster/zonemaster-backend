@@ -72,17 +72,17 @@ sub user_authorized {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-	my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
     my $dbh = $self->dbh;
     if ( $progress ) {
-		if ($progress == 1) {
-			$dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
-		}
-		else {
-			$dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
-		}
-	}
-	
+        if ($progress == 1) {
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+        }
+        else {
+            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+        }
+    }
+    
     my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
 
     return $result;
@@ -93,19 +93,19 @@ sub create_new_batch_job {
 
     my $dbh = $self->dbh;
     my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
-			SELECT 
-				batch_id, 
-				batch_jobs.creation_time AS batch_creation_time 
-			FROM 
-				test_results 
-			JOIN batch_jobs 
-				ON batch_id=batch_jobs.id 
-				AND username=? WHERE 
-				test_results.progress<>100
-			LIMIT 1
-			", undef, $username );
+            SELECT 
+                batch_id, 
+                batch_jobs.creation_time AS batch_creation_time 
+            FROM 
+                test_results 
+            JOIN batch_jobs 
+                ON batch_id=batch_jobs.id 
+                AND username=? WHERE 
+                test_results.progress<>100
+            LIMIT 1
+            ", undef, $username );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running " if ( $batch_id );
+    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running \n" if ( $batch_id );
 
     my ( $new_batch_id ) =
       $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
@@ -145,10 +145,10 @@ sub create_new_test {
         "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
         
     if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
-		$result = $hash_id;
+        $result = $hash_id;
     }
     else {
-		$result = $id;
+        $result = $id;
     }
 
     return $result;
@@ -160,10 +160,10 @@ sub get_test_params {
     my $result;
 
     my $dbh = $self->dbh;
-	my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
     my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
-    die $@ if $@;
+    die "$@ \n" if $@;
 
     return $result;
 }
@@ -172,7 +172,7 @@ sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
     my $dbh = $self->dbh;
-	my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
     $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?",
         undef, $results, $test_id )
       if ( $results );
@@ -184,7 +184,7 @@ sub test_results {
         $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
         $result->{results} = decode_json( encode_utf8( $result->{results} ) );
     };
-    die $@ if $@;
+    die "$@ \n" if $@;
 
     return $result;
 }
@@ -205,54 +205,54 @@ sub get_test_history {
 
     my @results;
     my $query = "
-		SELECT 
-			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
-			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,
-			(SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
-			id,
-			hash_id,
-			creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, 
-			params->>'advanced_options' AS advanced_options 
-		FROM test_results 
-		WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
-		ORDER BY id DESC 
-		OFFSET $p->{offset} LIMIT $p->{limit}";
-	my $sth1 = $dbh->prepare( $query );
-	$sth1->execute;
-	while ( my $h = $sth1->fetchrow_hashref ) {
-		my $overall_result = 'ok';
-		if ( $h->{nb_critical} ) {
-			$overall_result = 'critical';
-		}
-		elsif ( $h->{nb_error} ) {
-			$overall_result = 'error';
-		}
-		elsif ( $h->{nb_warning} ) {
-			$overall_result = 'warning';
-		}
+        SELECT 
+            (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
+            (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,
+            (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
+            id,
+            hash_id,
+            creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, 
+            params->>'advanced_options' AS advanced_options 
+        FROM test_results 
+        WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
+        ORDER BY id DESC 
+        OFFSET $p->{offset} LIMIT $p->{limit}";
+    my $sth1 = $dbh->prepare( $query );
+    $sth1->execute;
+    while ( my $h = $sth1->fetchrow_hashref ) {
+        my $overall_result = 'ok';
+        if ( $h->{nb_critical} ) {
+            $overall_result = 'critical';
+        }
+        elsif ( $h->{nb_error} ) {
+            $overall_result = 'error';
+        }
+        elsif ( $h->{nb_warning} ) {
+            $overall_result = 'warning';
+        }
 
-		push(
-			@results,
-			{
-				id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
-				creation_time    => $h->{creation_time},
-				advanced_options => $h->{advanced_options},
-				overall_result   => $overall_result
-			}
-		);
-	}
+        push(
+            @results,
+            {
+                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
+                creation_time    => $h->{creation_time},
+                advanced_options => $h->{advanced_options},
+                overall_result   => $overall_result
+            }
+        );
+    }
 
-	return \@results;
+    return \@results;
 }
 
 sub add_batch_job {
     my ( $self, $params ) = @_;
     my $batch_id;
 
-	my $dbh = $self->dbh;
-	my $js = JSON::PP->new;
-	$js->canonical( 1 );
-    		
+    my $dbh = $self->dbh;
+    my $js = JSON::PP->new;
+    $js->canonical( 1 );
+            
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
         $params->{test_params}->{client_version} = '1.0';
@@ -261,35 +261,37 @@ sub add_batch_job {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $minutes_between_tests_with_same_params = 5;
-		my $test_params = $params->{test_params};
-		
-		my $priority = 10;
-		$priority = $test_params->{priority} if (defined $test_params->{priority});
-		
-		my $queue = 0;
-		$queue = $test_params->{queue} if (defined $test_params->{queue});
-		
-		$dbh->begin_work();
-		$dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
-		$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
-		$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
-		$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
-		$dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
-		
-		$dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
+        my $test_params = $params->{test_params};
+        
+        my $priority = 10;
+        $priority = $test_params->{priority} if (defined $test_params->{priority});
+        
+        my $queue = 0;
+        $queue = $test_params->{queue} if (defined $test_params->{queue});
+        
+        $dbh->begin_work();
+        $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
+        
+        $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
-			$test_params->{domain} = $domain;
-			my $encoded_params                 = $js->encode( $test_params );
-			my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+            $test_params->{domain} = $domain;
+            my $encoded_params                 = $js->encode( $test_params );
+            my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-			$dbh->pg_putcopydata("$batch_id\t$priority\t$queue\t$test_params_deterministic_hash\t$encoded_params\n");
+            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue\t$test_params_deterministic_hash\t$encoded_params\n");
         }
         $dbh->pg_putcopyend();
-		$dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
-		$dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
-		$dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))" );
         
         $dbh->commit();
     }

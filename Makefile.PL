@@ -17,7 +17,7 @@ requires
   'HTML::Entities'           => 0,
   'IO::CaptureOutput'        => 0,
   'JSON::PP'                 => 0,
-  'JSON::RPC'                => 0.96,
+  'JSON::RPC'                => 1.00,
   'JSON::RPC::Dispatch'      => 0,
   'Locale::TextDomain'       => 0,
   'Moose'                    => 2.04,

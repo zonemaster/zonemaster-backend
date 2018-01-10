@@ -291,10 +291,28 @@ sudo install --mode=755 ./zm-backend.sh-postgresql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
 ```
 
-Install, configure and start database engine (and Perl bindings):
+The following block of commands is for **Debian 7** only. For all others, go to the step of installing
+database engine. First create or edit Debian 7 sources list file. Then fetch and import the repository signing key.
+And finally update the package lists.
+
+```sh
+sudo bash -c 'echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+wget https://www.postgresql.org/media/keys/ACCC4CF8.asc -O /tmp/ACCC4CF8.asc
+sudo apt-key add /tmp/ACCC4CF8.asc
+sudo apt-get update
+```
+
+For all versions of Debian and Ubuntu, install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
+```
+
+Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database
+engine version depending on OS found in [Zonemaster/README](https://github.com/dotse/zonemaster/blob/master/README.md).
+
+```sh
+psql --version
 ```
 
 Initialize the database:

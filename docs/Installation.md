@@ -223,13 +223,13 @@ The command is expected to give an immediate JSON response similiar to :
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdaemon-control-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl libmodule-build-tiny-perl libmoose-perl libplack-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
+sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdaemon-control-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl libmoose-perl libplack-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
+sudo cpan -i Module::Build::Tiny JSON::RPC::Dispatch Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
 ```
 
 Install Zonemaster::Backend:

@@ -86,8 +86,9 @@ Install, configure and start database engine (and Perl bindings):
 
 ```sh 
 sudo yum install wget 
-wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm -O /tmp/mysql-community-release-el7-5.noarch.rpm
-sudo rpm -ivh /tmp/mysql-community-release-el7-5.noarch.rpm 
+TMPDIR="`mktemp -d`"
+wget -O "$TMPDIR/mysql-community-release-el7-5.noarch.rpm" http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+sudo rpm -ivh "$TMPDIR/mysql-community-release-el7-5.noarch.rpm"
 sudo yum install mysql-server perl-DBD-mysql 
 sudo systemctl start mysqld 
 ```
@@ -297,8 +298,7 @@ And finally update the package lists.
 
 ```sh
 sudo bash -c 'echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
-wget https://www.postgresql.org/media/keys/ACCC4CF8.asc -O /tmp/ACCC4CF8.asc
-sudo apt-key add /tmp/ACCC4CF8.asc
+wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt-get update
 ```
 

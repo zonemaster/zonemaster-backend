@@ -86,8 +86,8 @@ Install, configure and start database engine (and Perl bindings):
 
 ```sh 
 sudo yum install wget 
-wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
-sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm 
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm -O /tmp/mysql-community-release-el7-5.noarch.rpm
+sudo rpm -ivh /tmp/mysql-community-release-el7-5.noarch.rpm 
 sudo yum install mysql-server perl-DBD-mysql 
 sudo systemctl start mysqld 
 ```

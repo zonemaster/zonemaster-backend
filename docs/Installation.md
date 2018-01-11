@@ -297,7 +297,7 @@ database engine. First create or edit Debian 7 sources list file. Then fetch and
 And finally update the package lists.
 
 ```sh
-sudo bash -c 'echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" | sudo tee -a /etc/apt/sources.list.d/pgdg.list
 wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt-get update
 ```

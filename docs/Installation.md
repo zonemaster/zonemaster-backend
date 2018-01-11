@@ -85,10 +85,7 @@ mkdir "$HOME/logs"
 Install, configure and start database engine (and Perl bindings):
 
 ```sh 
-sudo yum install wget 
-TMPDIR="`mktemp -d`"
-wget -O "$TMPDIR/mysql-community-release-el7-5.noarch.rpm" http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
-sudo rpm -ivh "$TMPDIR/mysql-community-release-el7-5.noarch.rpm"
+sudo rpm -ivh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
 sudo yum install mysql-server perl-DBD-mysql 
 sudo systemctl start mysqld 
 ```

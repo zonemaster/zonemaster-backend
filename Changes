@@ -1,5 +1,29 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+
+v2.0.1 2018-01-12
+    Natural Language support
+     * Update Translator.pm Add support for Danish "da" in Backend. (#346)
+    
+    Fixed
+     * Workaround for "query of death" problem (#287, #325)
+     * Partial fix of leakage of system path information (#334)
+     * Fixed the issue that validate_syntax and start_domain_test functions do not correctly validate
+       IPv4 and IPv6 addresses (#173, #328)
+     * Fixed: Use of uninitialized value $config/$policy (#268, #329)
+     * Fixed incomplete stored data for unit test and fixed bug in 
+       TestAgent.pm (#337, #342)
+     * Fix config and start files (#336)
+     * Fixed: ipv4 || ipv4 must be ipv4 || ipv6 (#319, #326)
+     * Create a new index for get_test_history API (#292, #324)
+     * Update Installation.md (#344, #351, #352, #356, #359)
+     * Update lowest version of dependency in Makefile.PL (#356)
+     * Update Translator.pm Add support for Danish "da" in Backend. (#346)
+     * Start script fix (#345)
+     * Add repo and issue tracker to metadata (#348)
+     * Adjusting the locale environment before the daemons are started (#347)
+
+
 v2.0.0 2017-11-02
 	Switch version scheme to Semantic Versioning.
 	Changed

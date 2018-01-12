@@ -86,8 +86,8 @@ Install, configure and start database engine (and Perl bindings):
 
 ```sh 
 sudo yum install wget 
-wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm 
-sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm 
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm -O /tmp/mysql-community-release-el7-5.noarch.rpm
+sudo rpm -ivh /tmp/mysql-community-release-el7-5.noarch.rpm 
 sudo yum install mysql-server perl-DBD-mysql 
 sudo systemctl start mysqld 
 ```
@@ -223,13 +223,13 @@ The command is expected to give an immediate JSON response similiar to :
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdaemon-control-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl libmodule-build-tiny-perl libmoose-perl libplack-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
+sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdaemon-control-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libmoose-perl libplack-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
+sudo cpan -i JSON::RPC Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
 ```
 
 Install Zonemaster::Backend:
@@ -291,10 +291,28 @@ sudo install --mode=755 ./zm-backend.sh-postgresql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
 ```
 
-Install, configure and start database engine (and Perl bindings):
+The following block of commands is for **Debian 7** only. For all others, go to the step of installing
+database engine. First create or edit Debian 7 sources list file. Then fetch and import the repository signing key.
+And finally update the package lists.
+
+```sh
+sudo bash -c 'echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+wget https://www.postgresql.org/media/keys/ACCC4CF8.asc -O /tmp/ACCC4CF8.asc
+sudo apt-key add /tmp/ACCC4CF8.asc
+sudo apt-get update
+```
+
+For all versions of Debian and Ubuntu, install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
+```
+
+Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database
+engine version depending on OS found in [Zonemaster/README](https://github.com/dotse/zonemaster/blob/master/README.md).
+
+```sh
+psql --version
 ```
 
 Initialize the database:

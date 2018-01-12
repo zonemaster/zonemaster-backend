@@ -73,15 +73,15 @@ sub run_zonemaster_test_with_backend_API {
 	ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
 	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
-	if ( $ENV{ZONEMASTER_RECORD} ) {
-		Zonemaster::Engine->save_cache( $datafile );
-	}
 }
 
 run_zonemaster_test_with_backend_API(1);
 $frontend_params_1->{ipv6} = 0;
 run_zonemaster_test_with_backend_API(2);
 
+if ( $ENV{ZONEMASTER_RECORD} ) {
+	Zonemaster::Engine->save_cache( $datafile );
+}
 done_testing();
 
 my $dbfile = 'zonemaster';

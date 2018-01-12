@@ -10,8 +10,16 @@
 # Default-Stop:      0 1 6
 # Short-Description: Start and stop the Zonemaster Backend (RPC API daemon and Test Agent daemon)
 # Description:       Control script for the two demon processes that
-#                    make up the Zonemaster Backend.
+#                    make up the Zonemaster Backend. This for MySQL
+#                    database engine.
 ### END INIT INFO
+
+# Unset potentially conflicting locale, setting the default
+unset LANGUAGE
+unset LANG
+unset LC_MESSAGES
+unset LC_ALL
+export LC_CTYPE="en_US.UTF-8"
 
 LOGDIR=/var/log/zonemaster
 PIDDIR=/var/run/zonemaster

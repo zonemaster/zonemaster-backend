@@ -74,20 +74,20 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
-			SELECT 
-				batch_id, 
-				batch_jobs.creation_time AS batch_creation_time 
-			FROM 
-				test_results 
-			JOIN batch_jobs 
-				ON batch_id=batch_jobs.id 
-				AND username=?
+            SELECT 
+                batch_id, 
+                batch_jobs.creation_time AS batch_creation_time 
+            FROM 
+                test_results 
+            JOIN batch_jobs 
+                ON batch_id=batch_jobs.id 
+                AND username=?
             WHERE 
-				test_results.progress<>100
-			LIMIT 1
-			", undef, $username );
+                test_results.progress<>100
+            LIMIT 1
+            ", undef, $username );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running " if ( $batch_id );
+    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
 
     $self->dbh->do( "INSERT INTO batch_jobs (username) VALUES(?)", undef, $username );
     my ( $new_batch_id ) = $self->dbh->{mysql_insertid};
@@ -124,11 +124,11 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
         if ( $recent_id ) {
             # A recent entry exists, so return its id
             if ( $recent_id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
-				$result_id = $recent_hash_id;
-			}
-			else {
-				$result_id = $recent_id;
-			}
+                $result_id = $recent_hash_id;
+            }
+            else {
+                $result_id = $recent_id;
+            }
         }
         else {
             $dbh->do(
@@ -145,15 +145,15 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
                 ($test_params->{nameservers})?(1):(0),
             );
             
-			my ( $id, $hash_id ) = $dbh->selectrow_array(
-				"SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
-				
-			if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
-				$result_id = $hash_id;
-			}
-			else {
-				$result_id = $id;
-			}
+            my ( $id, $hash_id ) = $dbh->selectrow_array(
+                "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
+                
+            if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+                $result_id = $hash_id;
+            }
+            else {
+                $result_id = $id;
+            }
         }
     };
     $dbh->do( q[UNLOCK TABLES] );
@@ -164,17 +164,17 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-	my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
 
-	my $dbh = $self->dbh;
+    my $dbh = $self->dbh;
     if ( $progress ) {
-		if ($progress == 1) {
-			$dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
-		}
-		else {
-			$dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
-		}
-	}
+        if ($progress == 1) {
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+        }
+        else {
+            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+        }
+    }
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
 
@@ -184,12 +184,12 @@ sub test_progress {
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
-	my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
 
     my $result;
     eval {
-		$result = decode_json( $params_json );
+        $result = decode_json( $params_json );
     };
     
     warn "decoding of params_json failed (testi_id: [$test_id]):".Dumper($params_json) if $@;
@@ -200,8 +200,8 @@ sub get_test_params {
 sub test_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-	my $id_field = $self->_get_allowed_id_field_name($test_id);
-	
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
+    
     if ( $new_results ) {
         $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?],
             undef, $new_results, $test_id );
@@ -224,19 +224,19 @@ sub get_test_history {
     my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
     
     my $sth = $self->dbh->prepare(
-			q[SELECT 
-				id, 
-				hash_id, 
-				CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time, 
-				params, 
-				results 
-			FROM 
-				test_results 
-			WHERE 
-				domain = ? 
-				AND undelegated = ? 
-			ORDER BY id DESC 
-			LIMIT ? OFFSET ?]
+            q[SELECT 
+                id, 
+                hash_id, 
+                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time, 
+                params, 
+                results 
+            FROM 
+                test_results 
+            WHERE 
+                domain = ? 
+                AND undelegated = ? 
+            ORDER BY id DESC 
+            LIMIT ? OFFSET ?]
     );
     $sth->execute( $p->{frontend_params}{domain}, ($p->{frontend_params}{nameservers})?1:0, $p->{limit}, $p->{offset} );
     while ( my $h = $sth->fetchrow_hashref ) {
@@ -270,10 +270,10 @@ sub add_batch_job {
     my ( $self, $params ) = @_;
     my $batch_id;
 
-	my $dbh = $self->dbh;
-	my $js = JSON::PP->new;
-	$js->canonical( 1 );
-    		
+    my $dbh = $self->dbh;
+    my $js = JSON::PP->new;
+    $js->canonical( 1 );
+            
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
         $params->{test_params}->{client_version} = '1.0';
@@ -282,32 +282,34 @@ sub add_batch_job {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $minutes_between_tests_with_same_params = 5;
-		my $test_params = $params->{test_params};
-		
-		my $priority = 10;
-		$priority = $test_params->{priority} if (defined $test_params->{priority});
-		
-		my $queue = 0;
-		$queue = $test_params->{queue} if (defined $test_params->{queue});
-		
-		$dbh->{AutoCommit} = 0;
-		eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
-		eval {$dbh->do( "DROP INDEX test_results__params_deterministic_hash ON test_results" );};
-		eval {$dbh->do( "DROP INDEX test_results__batch_id_progress ON test_results" );};
-		eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
-		
-		my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?) ' );
+        my $test_params = $params->{test_params};
+        
+        my $priority = 10;
+        $priority = $test_params->{priority} if (defined $test_params->{priority});
+        
+        my $queue = 0;
+        $queue = $test_params->{queue} if (defined $test_params->{queue});
+        
+        $dbh->{AutoCommit} = 0;
+        eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
+        eval {$dbh->do( "DROP INDEX test_results__params_deterministic_hash ON test_results" );};
+        eval {$dbh->do( "DROP INDEX test_results__batch_id_progress ON test_results" );};
+        eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
+        eval {$dbh->do( "DROP INDEX test_results__domain_undelegated ON test_results" );};
+        
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
-			$test_params->{domain} = $domain;
-			my $encoded_params                 = $js->encode( $test_params );
-			my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+            $test_params->{domain} = $domain;
+            my $encoded_params                 = $js->encode( $test_params );
+            my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-			$sth->execute( $test_params->{domain}, $batch_id, $priority, $queue, $test_params_deterministic_hash, $encoded_params );
+            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue, $test_params_deterministic_hash, $encoded_params );
         }
-		$dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
-		$dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
-		$dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
-		$dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+        $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
        
         $dbh->commit();
         $dbh->{AutoCommit} = 1;

@@ -2,8 +2,8 @@
 #
 ### BEGIN INIT INFO
 # Provides:          zm-backend
-# Required-Start:    mysql $network $local_fs
-# Required-Stop:     mysql $network $local_fs
+# Required-Start:    postgresql $network $local_fs
+# Required-Stop:     postgresql $network $local_fs
 # Should-Start:
 # Should-Stop:
 # Default-Start:     2 3 4 5
@@ -13,11 +13,18 @@
 #                    make up the Zonemaster Backend.
 ### END INIT INFO
 
+# Unset potentially conflicting locale, setting the default
+unset LANGUAGE
+unset LANG
+unset LC_MESSAGES
+unset LC_ALL
+export LC_CTYPE="en_US.UTF-8"
+
 LOGDIR=/var/log/zonemaster
 PIDDIR=/var/run/zonemaster
 LISTENIP=127.0.0.1
-USER=mysql
-GROUP=mysql
+USER=zonemaster
+GROUP=zonemaster
 
 setup() {
     if [ ! -d $LOGDIR ]

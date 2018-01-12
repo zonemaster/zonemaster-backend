@@ -2,6 +2,9 @@ Release history for Zonemaster component Zonemaster-Backend
 
 
 v2.0.1 2018-01-12
+    Natural Language support
+     * Update Translator.pm Add support for Danish "da" in Backend. (#346)
+    
     Fixed
      * Workaround for "query of death" problem (#287, #325)
      * Partial fix of the #213 issue - added \n to all die statements to avoid leaking

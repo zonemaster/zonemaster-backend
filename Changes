@@ -7,9 +7,8 @@ v2.0.1 2018-01-12
     
     Fixed
      * Workaround for "query of death" problem (#287, #325)
-     * Partial fix of the #213 issue - added \n to all die statements to avoid leaking
-       system path information (#334)
-     * Fixed: validate_syntax and start_domain_test functions do not correctly validate
+     * Partial fix of leakage of system path information (#334)
+     * Fixed the issue that validate_syntax and start_domain_test functions do not correctly validate
        IPv4 and IPv6 addresses (#173, #328)
      * Fixed: Use of uninitialized value $config/$policy (#268, #329)
      * Fixed incomplete stored data for unit test and fixed bug in 

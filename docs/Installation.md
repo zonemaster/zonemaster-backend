@@ -82,7 +82,7 @@ sudo install --mode=755 ./zm-centos.sh-mysql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
 
-Configure Zonemaster::Backend to us the correct database engine:
+Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
@@ -128,7 +128,7 @@ sudo install --mode=755 ./zm-centos.sh-postgresql /etc/init.d/zm-centos.sh
 mkdir "$HOME/logs"
 ```
 
-Configure Zonemaster::Backend to us the correct database engine:
+Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
@@ -269,7 +269,7 @@ sudo install --mode=755 ./zm-backend.sh-mysql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
 ```
 
-Configure Zonemaster::Backend to us the correct database engine:
+Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
@@ -308,7 +308,7 @@ sudo install --mode=755 ./zm-backend.sh-postgresql /etc/init.d/zm-backend.sh
 mkdir "$HOME/logs"
 ```
 
-Configure Zonemaster::Backend to us the correct database engine:
+Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
@@ -441,7 +441,7 @@ install -m 644 ./backend_config.ini /etc/zonemaster/
 mkdir "$HOME/logs"
 ```
 
-Configure Zonemaster::Backend to us the correct database engine:
+Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '/\bengine\b/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
@@ -481,7 +481,7 @@ install -m 644 ./backend_config.ini /etc/zonemaster/
 mkdir "$HOME/logs"
 ```
 
-Configure Zonemaster::Backend to us the correct database engine:
+Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini

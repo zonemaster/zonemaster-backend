@@ -18,11 +18,20 @@ use Plack::Response;
 BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
 use Zonemaster::Backend::RPCAPI;
+use Zonemaster::Backend::Config;
 
 local $| = 1;
 
 builder {
-	enable 'Debug',
+    enable 'Debug';
+    enable sub {
+        my $app = shift;
+
+        # Make sure we can connect to the database
+        Zonemaster::Backend::Config->new_DB();
+
+        return $app;
+    };
 };
 
 my $router = router {

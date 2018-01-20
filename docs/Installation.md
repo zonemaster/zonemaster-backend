@@ -518,15 +518,22 @@ psql -U pgsql -f ./initial-postgres.sql template1
 
 ### 3.3 Service startup (FreeBSD)
 
-Install service scripts and start services:
+Install service scripts:
 
 ```sh
 install -m 775 -g zonemaster -d /var/log/zonemaster
 install -m 775 -g zonemaster -d /var/run/zonemaster
-install -m 755 ./zm_rpcapi /usr/local/etc/rc.d/
-install -m 755 ./zm_testagent /usr/local/etc/rc.d/
+install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 echo 'zm_rpcapi_enable="YES"' | tee -a /etc/rc.conf
 echo 'zm_testagent_enable="YES"' | tee -a /etc/rc.conf
+```
+
+Start services:
+
+```sh
+service zm_rpcapi start
+service zm_testagent start
 ```
 
 ### 3.4 Post-installation sanity check (FreeBSD)

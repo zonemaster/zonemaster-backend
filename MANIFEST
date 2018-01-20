@@ -59,8 +59,8 @@ share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini
 share/zm-backend.sh
 share/zm-centos.sh
-share/zm_rpcapi
-share/zm_testagent
+share/zm_rpcapi-bsd
+share/zm_testagent-bsd
 share/zonemaster_backend_testagent.conf
 t/test01.data
 t/test01.t

@@ -48,8 +48,6 @@ script/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
 share/backend_config.ini
-share/backend_config.ini-mysql
-share/backend_config.ini-postgresql
 share/backend_config.ini-sqlite
 share/cleanup-mysql.sql
 share/cleanup-postgres.sql
@@ -69,4 +67,3 @@ t/test01.t
 t/test_DB_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t
-

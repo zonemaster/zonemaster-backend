@@ -57,10 +57,8 @@ share/starman-zm-backend-RPC-API.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini
-share/zm-backend.sh-mysql
-share/zm-backend.sh-postgresql
-share/zm-centos.sh-mysql
-share/zm-centos.sh-postgresql
+share/zm-backend.sh
+share/zm-centos.sh
 share/zonemaster_backend_testagent.conf
 t/test01.data
 t/test01.t

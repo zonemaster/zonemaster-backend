@@ -1,11 +1,7 @@
 use inc::Module::Install;
 
 name 'Zonemaster-Backend';
-author q{Michal TOMA <toma@nic.fr>};
-version_from 'lib/Zonemaster/Backend.pm';
-abstract 'The Zonemaster Backend project with RPC API and Test Agents';
-license 'bsd';
-perl_version '5.014002';
+all_from 'lib/Zonemaster/Backend.pm';
 repository 'https://github.com/dotse/zonemaster-backend';
 bugtracker 'https://github.com/dotse/zonemaster-backend/issues';
 

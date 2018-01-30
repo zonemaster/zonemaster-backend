@@ -525,8 +525,8 @@ install -m 775 -g zonemaster -d /var/log/zonemaster
 install -m 775 -g zonemaster -d /var/run/zonemaster
 install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
-echo 'zm_rpcapi_enable="YES"' | tee -a /etc/rc.conf
-echo 'zm_testagent_enable="YES"' | tee -a /etc/rc.conf
+sysrc zm_rpcapi_enable="YES"
+sysrc zm_testagent_enable="YES"
 ```
 
 Start services:

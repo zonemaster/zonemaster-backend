@@ -13,22 +13,11 @@ use Time::HiRes qw[time sleep];
 use Getopt::Long;
 
 ###
-### Global variable.
-###
-
-our $dbclass;
-
-###
 ### Compile-time stuff.
 ###
 
-# Demand-load the database class specified in the configuration.
 BEGIN {
 	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
-    my $dbtype = Zonemaster::Backend::Config->BackendDBType();
-    $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
-    require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
-    $dbclass->import();
 }
 
 ###
@@ -92,7 +81,9 @@ $pm->run_on_finish(
 );
 
 sub main {
-    my $db = $dbclass->new;
+    my $self = shift;
+
+    my $db = $self->config->{db};
 
     while ( 1 ) {
         my $id = $db->get_test_request();
@@ -114,7 +105,7 @@ sub main {
 ### Daemon Control stuff.
 ###
 
-my $daemon = Daemon::Control->new({
+my $daemon = Daemon::Control->with_plugins(qw( +Zonemaster::Backend::Config::DCPlugin ))->new({
     name     => 'zonemaster-testagent',
     program  => \&main,
     pid_file => $pidfile,

@@ -413,34 +413,6 @@ sub add_api_user {
     return $result;
 }
 
-=coment
-sub add_batch_job {
-    my ( $self, $params ) = @_;
-    my $batch_id;
-
-    if ( $self->{db}->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
-        $params->{test_params}->{client_version} = '1.0';
-        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
-
-        $batch_id = $self->{db}->create_new_batch_job( $params->{username} );
-
-        my $minutes_between_tests_with_same_params = 5;
-#        $self->{db}->dbhandle->begin_work();
-        foreach my $domain ( @{$params->{domains}} ) {
-            $self->{db}
-              ->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
-        }
-#        $self->{db}->dbhandle->commit();
-    }
-    else {
-        die "User $params->{username} not authorized to use batch mode\n";
-    }
-
-    return $batch_id;
-}
-=cut
-
 sub add_batch_job {
     my ( $self, $params ) = @_;
 

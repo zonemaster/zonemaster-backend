@@ -425,6 +425,12 @@ cpan -i Zonemaster::Backend
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
+Add `zonemaster` user and group:
+```sh
+pw groupadd zonemaster
+pw useradd zonemaster -g zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
+```
+
 ### 3.2 Database engine installation and configuration (FreeBSD)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
@@ -438,7 +444,6 @@ Install files to their proper locations:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -d /etc/zonemaster
 install -m 644 ./backend_config.ini /etc/zonemaster/
-mkdir "$HOME/logs"
 ```
 
 Configure Zonemaster::Backend to use the correct database engine:
@@ -478,7 +483,6 @@ Install files to their proper locations:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -d /etc/zonemaster
 install -m 644 ./backend_config.ini /etc/zonemaster/
-mkdir "$HOME/logs"
 ```
 
 Configure Zonemaster::Backend to use the correct database engine:
@@ -514,14 +518,22 @@ psql -U pgsql -f ./initial-postgres.sql template1
 
 ### 3.3 Service startup (FreeBSD)
 
->
-> At this time there is no instruction for automatically running Zonemaster Web backends
-> nor Workers as services on FreeBSD.
->
+Install service scripts:
 
 ```sh
-starman --error-log="$HOME/logs/error.log" --pid-file="$HOME/logs/starman.pid" --listen=127.0.0.1:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi 
-zonemaster_backend_testagent start
+install -m 775 -g zonemaster -d /var/log/zonemaster
+install -m 775 -g zonemaster -d /var/run/zonemaster
+install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
+sysrc zm_rpcapi_enable="YES"
+sysrc zm_testagent_enable="YES"
+```
+
+Start services:
+
+```sh
+service zm_rpcapi start
+service zm_testagent start
 ```
 
 ### 3.4 Post-installation sanity check (FreeBSD)

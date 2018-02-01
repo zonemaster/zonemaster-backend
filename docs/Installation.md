@@ -64,14 +64,6 @@ Add Zonemaster user:
 sudo useradd -r -c "Zonemaster daemon user" zonemaster
 ```
 
-### 1.2 Database engine installation and configuration (CentOS)
-
-Check the [declaration of prerequisites] to make sure your preferred combination
-of operating system version and database engine version is supported.
-
-
-#### 1.2.1 Instructions for MySQL (CentOS)
-
 Install files to their proper locations:
 
 ```sh
@@ -81,6 +73,14 @@ sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-centos.sh /etc/init.d/
 mkdir "$HOME/logs"
 ```
+
+### 1.2 Database engine installation and configuration (CentOS)
+
+Check the [declaration of prerequisites] to make sure your preferred combination
+of operating system version and database engine version is supported.
+
+
+#### 1.2.1 Instructions for MySQL (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -117,16 +117,6 @@ mysql --user=root --password < ./initial-mysql.sql
 > your database.
 
 #### 1.2.2 Instructions for PostgreSQL (CentOS)
-
-Install files to their proper locations:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
-sudo install --mode=755 ./zm-centos.sh /etc/init.d/
-mkdir "$HOME/logs"
-```
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -252,13 +242,6 @@ sudo cpan -i Zonemaster::Backend
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
-### 2.2 Database engine installation and configuration (Debian)
-
-Check the [declaration of prerequisites] to make sure your preferred combination
-of operating system version and database engine version is supported.
-
-#### 2.2.1 Instructions for MySQL (Debian)
-
 Install files to their proper locations:
 
 ```sh
@@ -268,6 +251,13 @@ sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
 sudo install --mode=755 ./zm-backend.sh /etc/init.d/
 mkdir "$HOME/logs"
 ```
+
+### 2.2 Database engine installation and configuration (Debian)
+
+Check the [declaration of prerequisites] to make sure your preferred combination
+of operating system version and database engine version is supported.
+
+#### 2.2.1 Instructions for MySQL (Debian)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -297,16 +287,6 @@ mysql --user=root --password < ./initial-mysql.sql
 
 
 #### 2.2.2 Instructions for PostgreSQL (Debian)
-
-Install files to their proper locations:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
-sudo install --mode=755 ./zm-backend.sh /etc/init.d/
-mkdir "$HOME/logs"
-```
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -431,13 +411,6 @@ pw groupadd zonemaster
 pw useradd zonemaster -g zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
 ```
 
-### 3.2 Database engine installation and configuration (FreeBSD)
-
-Check the [declaration of prerequisites] to make sure your preferred combination
-of operating system version and database engine version is supported.
-
-#### 3.2.1 Instructions for MySQL (FreeBSD)
-
 Install files to their proper locations:
 
 ```sh
@@ -445,6 +418,13 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 install -d /etc/zonemaster
 install -m 644 ./backend_config.ini /etc/zonemaster/
 ```
+
+### 3.2 Database engine installation and configuration (FreeBSD)
+
+Check the [declaration of prerequisites] to make sure your preferred combination
+of operating system version and database engine version is supported.
+
+#### 3.2.1 Instructions for MySQL (FreeBSD)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -476,14 +456,6 @@ mysql < ./initial-mysql.sql
 
 
 #### 3.2.2 Instructions for PostgreSQL (FreeBSD)
-
-Install files to their proper locations:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -d /etc/zonemaster
-install -m 644 ./backend_config.ini /etc/zonemaster/
-```
 
 Configure Zonemaster::Backend to use the correct database engine:
 

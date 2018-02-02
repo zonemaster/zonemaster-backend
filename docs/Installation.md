@@ -86,7 +86,7 @@ Install files to their proper locations:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -d /etc/zonemaster
 sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
-sudo install --mode=755 ./zm-centos.sh /etc/init.d/
+sudo install --mode=755 ./zm-backend.sh /etc/init.d/
 mkdir "$HOME/logs"
 ```
 
@@ -206,13 +206,13 @@ sudo -u postgres psql -f ./initial-postgres.sql
 Start the service:
 
 ```sh
-sudo /etc/init.d/zm-centos.sh start
+sudo /etc/init.d/zm-backend.sh start
 ```
 
 Check that the service has started:
 
 ```sh
-sudo /etc/init.d/zm-centos.sh status
+sudo /etc/init.d/zm-backend.sh status
 ```
 
 ### 3.4 Post-installation sanity check (CentOS)
@@ -257,6 +257,12 @@ sudo cpan -i Zonemaster::Backend
 
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
+
+Add Zonemaster user:
+
+```sh
+sudo useradd -r -c "Zonemaster daemon user" zonemaster
+```
 
 Install files to their proper locations:
 

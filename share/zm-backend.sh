@@ -23,8 +23,10 @@ export LC_CTYPE="en_US.UTF-8"
 LOGDIR=/var/log/zonemaster
 PIDDIR=/var/run/zonemaster
 LISTENIP=127.0.0.1
-USER=www-data
-GROUP=www-data
+USER=zonemaster
+GROUP=zonemaster
+
+STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
 setup() {
     if [ ! -d $LOGDIR ]
@@ -37,14 +39,14 @@ setup() {
         mkdir -p $PIDDIR
     fi
 
-    chown -R www-data $LOGDIR
-    chown -R www-data $PIDDIR
+    chown -R $USER $LOGDIR
+    chown -R $GROUP $PIDDIR
 }
 
 start() {
     setup
 
-    starman --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
+    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
     /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
 }
 

@@ -389,6 +389,10 @@ Install files to their proper locations:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -d /etc/zonemaster
+install -m 775 -g zonemaster -d /var/log/zonemaster
+install -m 775 -g zonemaster -d /var/run/zonemaster
+install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 install -m 644 ./backend_config.ini /etc/zonemaster/
 ```
 
@@ -463,13 +467,9 @@ psql -U pgsql -f ./initial-postgres.sql template1
 
 ### 3.3 Service startup (FreeBSD)
 
-Install service scripts:
+Enable services at startup:
 
 ```sh
-install -m 775 -g zonemaster -d /var/log/zonemaster
-install -m 775 -g zonemaster -d /var/run/zonemaster
-install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
-install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 sysrc zm_rpcapi_enable="YES"
 sysrc zm_testagent_enable="YES"
 ```

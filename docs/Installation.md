@@ -2,13 +2,10 @@
 
 ## Overview
 
-This document describes prerequisites, installation, configuration and
-startup for Zonemaster Backend.
-The final section covers post-installation topics: sanity check, pointers
-to different Zonemaster interfaces, and instructions for cleaning out
-Zonemaster Backend from the database.
-For an overview of the Zonemaster product, please see the [main Zonemaster
-Repository].
+This document describes prerequisites, installation, configuration, startup and
+post-install sanity checking for Zonemaster::Backend. The final section wraps up
+with a few pointer to interfaces for Zonemaster::Backend. For an overview of the
+Zonemaster product, please see the [main Zonemaster Repository].
 
 
 ## Prerequisites
@@ -487,12 +484,10 @@ service zm_testagent start
 Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 
-## Post-installaiton
+## Post-installation sanity check
 
-### Sanity check
-
-If you followed the installation instructions to the letter, you should
-be able to use the API on localhost port 5000, like this:
+If you followed this instructions to the letter, you should be able to use the
+API on localhost port 5000, like this:
 
 ```sh
 curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
@@ -505,14 +500,14 @@ The command is expected to give an immediate JSON response similiar to :
 ```
 
 
-### What to do next?
+## What to do next?
 
 * For a web interface, follow the [Zonemaster::GUI installation] instructions.
 * For a command line interface, follow the [Zonemaster::CLI installation] instruction.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-### Cleaning up the database
+## Cleaning up the database
 
 If, at some point, you want to delete all traces of Zonemaster in the database,
 you can run the file `cleanup-mysql.sql` or file `cleanup-postgres.sql`
@@ -520,14 +515,14 @@ as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
 database (obviously taking all data with it).
 
-#### MySQL
+### MySQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
-#### PostgreSQL
+### PostgreSQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`

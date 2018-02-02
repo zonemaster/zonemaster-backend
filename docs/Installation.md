@@ -413,7 +413,7 @@ Install, configure and start database engine (and Perl bindings):
 
 ```sh
 pkg install mysql56-server p5-DBD-mysql
-echo 'mysql_enable="YES"' | tee -a /etc/rc.conf
+sysrc mysql_enable="YES"
 service mysql-server start
 ```
 
@@ -444,7 +444,7 @@ Install, configure and start database engine (and Perl bindings):
 
 ```sh
 pkg install postgresql95-server p5-DBD-Pg
-echo 'postgresql_enable="YES"' | tee -a /etc/rc.conf
+sysrc postgresql_enable="YES"
 service postgresql initdb
 service postgresql start
 ```

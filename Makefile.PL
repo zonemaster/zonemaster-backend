@@ -10,9 +10,10 @@ repository 'https://github.com/dotse/zonemaster-backend';
 bugtracker 'https://github.com/dotse/zonemaster-backend/issues';
 
 requires
+  'Class::Method::Modifiers' => 1.09,
   'Config::IniFiles'         => 0,
   'DBI'                      => 1.616,
-  'Daemon::Control'          => 0,
+  'Daemon::Control'          => 0.001007,
   'File::ShareDir'           => 0,
   'File::Slurp'              => 0,
   'HTML::Entities'           => 0,
@@ -25,6 +26,7 @@ requires
   'Parallel::ForkManager'    => 1.12,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0.14,
+  'Role::Tiny'               => 1.001003,
   'Router::Simple::Declare'  => 0,
   'Starman'                  => 0,
   'String::ShellQuote'       => 0,

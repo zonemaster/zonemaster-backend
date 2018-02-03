@@ -25,6 +25,7 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
+lib/Zonemaster/Backend/Config/DCPlugin.pm
 lib/Zonemaster/Backend/DB.pm
 lib/Zonemaster/Backend/DB/MySQL.pm
 lib/Zonemaster/Backend/DB/PostgreSQL.pm

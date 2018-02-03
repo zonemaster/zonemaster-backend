@@ -90,7 +90,7 @@ own repository](https://github.com/dotse/zonemaster-engine/).
 --------
 [Configure the set of available profiles]: Configuration.md#profiles-section
 [Profile files]: https://metacpan.org/pod/Zonemaster::Engine::Config#PROFILE-DATA
-[Profile names]: API.md#profile-name
+[Profile name]: API.md#profile-name
 [Profiles overview]: https://github.com/dotse/zonemaster/blob/master/docs/design/Profiles.md
 [RPC-API]: API.md
 [Zonemaster Engine default profile]: https://metacpan.org/pod/Zonemaster::Engine::Config#DESCRIPTION

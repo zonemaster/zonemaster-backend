@@ -230,7 +230,7 @@ sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libd
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i JSON::RPC Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
+sudo cpan -i JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
 ```
 
 Install Zonemaster::Backend:

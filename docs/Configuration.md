@@ -33,15 +33,17 @@ Keys are [profile names], and values are absolute file system paths to
 Each profile JSON file contains a (possibly empty) set of overrides to
 the [Zonemaster Engine default profile].
 
-The profile named `default` is special and always available.
-Having no entry for `default` at all is equivalent to having an entry
-mapping `default` to a profile JSON file without any overrides (i.e. a
-minimal JSON file containing only `{}`).
+There is a `default` profile that is special.
+It is always available.
+If there isn't an overriding profile JSON file defined for the `default`
+profile, it is implicitly mapped to the Zonemaster Engine default profile.
 
 Specifying a profile JSON file that contains a complete set of profile
 data is equivalent to specifying a profile JSON file with only the parts
 that differ from the Zonemaster Engine default profile.
-
+Specifying a profile JSON file that contains no profile data is equivalent
+to specifying a profile JSON file containing the entire Zonemaster Engine
+default profile.
 
 ## ZONEMASTER section
 

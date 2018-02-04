@@ -75,9 +75,10 @@ Zonemaster Backend allows administrators to [configure the set of
 available profiles].
 
 Each available profile has a [profile name].
-Each one is based on the [Zonemaster Engine default profile],
+A profile named `default` is always available.
+Each available profile is based on the [Zonemaster Engine default profile].
 Each one (with the possible exception of `default`) has a [profile file]
-with overrides to the Zonemaster Engine default profile.
+with profile data overriding the Zonemaster Engine default profile.
 
 The [RPC-API] contains several methods that accept profile name arguments.
 

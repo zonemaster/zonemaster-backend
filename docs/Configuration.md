@@ -35,8 +35,8 @@ the [Zonemaster Engine default profile].
 
 There is a `default` profile that is special.
 It is always available.
-If there isn't an overriding profile JSON file defined for the `default`
-profile, it is implicitly mapped to the Zonemaster Engine default profile.
+If it is not explicitly mapped to a profile JSON file, it is implicitly
+mapped to the Zonemaster Engine default profile.
 
 Specifying a profile JSON file that contains a complete set of profile
 data is equivalent to specifying a profile JSON file with only the parts

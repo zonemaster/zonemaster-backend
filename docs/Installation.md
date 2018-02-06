@@ -28,9 +28,7 @@
 
 ## 1. Overview
 
-This document describes prerequisites, installation, configuration, startup and
-post-install sanity checking for Zonemaster::Backend. The final section wraps up
-with a few pointer to interfaces for Zonemaster::Backend. For an overview of the
+This document contains all steps needed to install Zonemaster::Backend. For an overview of the
 Zonemaster product, please see the [main Zonemaster Repository].
 
 

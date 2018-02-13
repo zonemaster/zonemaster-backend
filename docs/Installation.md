@@ -65,7 +65,7 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 Install dependencies not available from binary packages:
 
 ```sh 
-sudo cpan -i Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Router::Simple::Declare Starman 
+sudo cpan -i Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
 ```
 
 Install Zonemaster::Backend: 
@@ -240,13 +240,13 @@ The command is expected to give an immediate JSON response similiar to :
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdaemon-control-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libmoose-perl libplack-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
+sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libmoose-perl libplack-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i JSON::RPC Plack::Middleware::Debug Parallel::ForkManager Net::IP::XS
+sudo cpan -i Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
 ```
 
 Install Zonemaster::Backend:
@@ -403,7 +403,7 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Router-Simple p5-Starman p5-String-ShellQuote
+pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
 ```
 
 Install dependencies not available from binary packages:

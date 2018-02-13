@@ -10,9 +10,11 @@ repository 'https://github.com/dotse/zonemaster-backend';
 bugtracker 'https://github.com/dotse/zonemaster-backend/issues';
 
 requires
-  'Zonemaster::Engine'       => 2.0,
+  'Class::Method::Modifiers' => 1.09,
   'Config::IniFiles'         => 0,
   'DBI'                      => 1.616,
+  'Daemon::Control'          => 0.001007,
+  'File::ShareDir'           => 0,
   'File::Slurp'              => 0,
   'HTML::Entities'           => 0,
   'IO::CaptureOutput'        => 0,
@@ -21,15 +23,15 @@ requires
   'Locale::TextDomain'       => 0,
   'Moose'                    => 2.04,
   'Net::IP::XS'              => 0.14,
-  'Zonemaster::LDNS'         => 1.0,
+  'Parallel::ForkManager'    => 1.12,
   'Plack::Builder'           => 0,
   'Plack::Middleware::Debug' => 0.14,
+  'Role::Tiny'               => 1.001003,
   'Router::Simple::Declare'  => 0,
-  'String::ShellQuote'       => 0,
   'Starman'                  => 0,
-  'File::ShareDir'           => 0,
-  'Parallel::ForkManager'    => 1.12,
-  'Daemon::Control'          => 0,
+  'String::ShellQuote'       => 0,
+  'Zonemaster::Engine'       => 2.0,
+  'Zonemaster::LDNS'         => 1.0,
   ;
 
 test_requires 'DBD::SQLite';

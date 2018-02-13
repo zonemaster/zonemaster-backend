@@ -492,9 +492,6 @@ service postgresql initdb
 service postgresql start
 ```
 
-> **ToDo:** Add instruction about the
-> `config_logfilter_1=/full/path/to/a/config_file.json` line.
-
 Initialize the database:
 
 ```sh

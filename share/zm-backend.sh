@@ -28,24 +28,7 @@ GROUP=zonemaster
 
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
-setup() {
-    if [ ! -d $LOGDIR ]
-    then
-        mkdir -p $LOGDIR
-    fi
-
-    if [ ! -d $PIDDIR ]
-    then
-        mkdir -p $PIDDIR
-    fi
-
-    chown -R $USER $LOGDIR
-    chown -R $GROUP $PIDDIR
-}
-
 start() {
-    setup
-
     $STARMAN --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
     /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
 }

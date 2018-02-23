@@ -20,12 +20,12 @@ unset LC_MESSAGES
 unset LC_ALL
 export LC_CTYPE="en_US.UTF-8"
 
-BASEDIR=/usr/local
-LOGDIR=/var/log/zonemaster
-PIDDIR=/var/run/zonemaster
-LISTENIP=127.0.0.1
-USER=zonemaster
-GROUP=zonemaster
+BASEDIR=${ZM_BACKEND_BASEDIR:-/usr/local}
+LOGDIR=${ZM_BACKEND_LOGDIR:-/var/log/zonemaster}
+PIDDIR=${ZM_BACKEND_PIDDIR:-/var/run/zonemaster}
+LISTENIP=${ZM_BACKEND_LISTENIP:-127.0.0.1}
+USER=${ZM_BACKEND_USER:-zonemaster}
+GROUP=${ZM_BACKEND_GROUP:-zonemaster}
 
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 

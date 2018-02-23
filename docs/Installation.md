@@ -84,10 +84,11 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
-sudo install --mode=755 ./zm-backend.sh /etc/init.d/
-mkdir "$HOME/logs"
+sudo install -m 755 -d /etc/zonemaster
+sudo install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+sudo install -m 775 -g zonemaster -d /var/log/zonemaster
+sudo install -m 775 -g zonemaster -d /var/run/zonemaster
+sudo install -m 755 ./zm-backend.sh /etc/init.d/
 ```
 
 ### 3.2 Database engine installation and configuration (CentOS)
@@ -268,10 +269,11 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -d /etc/zonemaster
-sudo install --mode=755 ./backend_config.ini /etc/zonemaster/
-sudo install --mode=755 ./zm-backend.sh /etc/init.d/
-mkdir "$HOME/logs"
+sudo install -m 755 -d /etc/zonemaster
+sudo install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+sudo install -m 775 -g zonemaster -d /var/log/zonemaster
+sudo install -m 775 -g zonemaster -d /var/run/zonemaster
+sudo install -m 755 ./zm-backend.sh /etc/init.d/
 ```
 
 ### 4.2 Database engine installation and configuration (Debian)
@@ -437,12 +439,12 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -d /etc/zonemaster
+install -m 755 -d /etc/zonemaster
+install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
 install -m 775 -g zonemaster -d /var/log/zonemaster
 install -m 775 -g zonemaster -d /var/run/zonemaster
 install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
-install -m 644 ./backend_config.ini /etc/zonemaster/
 ```
 
 ### 5.2 Database engine installation and configuration (FreeBSD)

@@ -135,6 +135,16 @@ sub _check_domain {
             );
         }
     }
+    
+    if( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+	    return (
+		   $dn,
+		   {
+			   status  => 'nok',
+			   message => encode_entities( "The domain name contains unauthorized character(s)")
+                   }
+            );
+    }
 
     my @res;
     @res = Zonemaster::Engine::Test::Basic->basic00($dn);

@@ -1,5 +1,7 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v2.0.2 2018-02-23
+     * Protect domain name input field from disallowed characters (#380, #381)
 
 v2.0.1 2018-01-12
     Natural Language support

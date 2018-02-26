@@ -186,17 +186,14 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 
 Basic data type: string
 
+* Must consist entirely of letters A-Z and a-z, digits 0-9, hyphen '-'
+  and underscore '_'.
+  Must not start or end with hyphen or underscore.
+* Length must be between 1 and 32 characters inclusive.
+
 The name of a [*profile*](Architecture.md#profile).
 
-One of the strings:
-
-* `"default_profile"`
-* `"test_profile_1"`
-* `"test_profile_2"`
-
-The `"test_profile_2"` *profile* is identical to `"default_profile"`.
-
-When a *profile* other than the ones listed above is requested the user receives the following error message :
+When a method receives an unrecognized profile name in a parameter with this data type, the method returns the following error message:
 ```json
 {
     "jsonrpc": "2.0",
@@ -207,6 +204,7 @@ When a *profile* other than the ones listed above is requested the user receives
     }
 }
 ```
+
 
 ### Progress percentage
 
@@ -519,18 +517,24 @@ An object with the following properties:
 
 * `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
 * `"domain"`: A *domain name*, required. The zone to test.
-* `"profile"`: A *profile name*, optional. Used to perform the test with a specific set of parameters and tests.
+* `"profile"`: A *profile name*, optional (default `"default"`). Run
+  the test using the given profile.
 * `"client_version"`: A *client version*, optional. Used to monitor which client use the API
 * `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
 * `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
-* `"config"`: A string, optional. The name of a config profile.
 * `"user_ip"`: An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
 * `"user_location_info"`: An *location* object, optional. Used to monitor information about the user. 
 * `"priority"`: A *priority*, optional.
 * `"queue"`: A *queue*, optional.
+
+>
+> TODO: Clarify the purpose of each `"params"` property.
+>
+> TODO: Clarify the default value of each optional `"params"` property.
+>
 
 
 #### `"result"`
@@ -541,6 +545,9 @@ If the test has been run with the same domain name within an interval of 10 mins
 then the new request does not trigger a new test, but returns with the results of the last test
  
 #### `"error"`
+
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -929,14 +936,14 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional.
-* `"profile"`: A *profile name*, optional.
+* `"profile"`: A *profile name*, optional (default `"default"`). Run
+  the tests using the given profile.
 * `"client_version"`: A *client version*, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
-* `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: An *IP address*, optional.
 * `"user_location_info"`: An *location* object, optional.
 * `"priority"`: A *priority*, optional
@@ -956,6 +963,9 @@ A *batch id*.
 
 * You can't create a new batch job.
   A *batch* with unfinished *tests* already exists for this *api user*.
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
+
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1070,11 +1080,10 @@ An object with the following properties:
 * `"ipv4"`: A boolean, optional. (default `false`)
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
-* `"profile"`: A *profile name*, optional.
+* `"profile"`: A *profile name*, optional (default `"default"`).
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"client_id"`: A *client id*, optional.
 * `"client_version"`: A *client version*, optional.
-* `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: An *IP address*, optional.
 * `"user_location_info"`: A *location* object, optional.
 
@@ -1085,6 +1094,11 @@ resource record in the Answer Section.
 
 At least one of `"ipv4"` and `"ipv6"` must be present and either `1` or `true`.
 
+>
+> TODO: Clarify the purpose of each `"params"` property.
+>
+
+
 #### `"result"`
 
 An object with the following properties:
@@ -1093,6 +1107,9 @@ An object with the following properties:
 * `"message"`: a string. Human-readable details about the status.
 
 #### `"error"`
+
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1156,3 +1173,5 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
+
+[Available profiles]: Configuration.md#profiles-section

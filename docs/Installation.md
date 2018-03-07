@@ -21,7 +21,7 @@
   * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
 * [6. Installation on Ubuntu](#6-installation-on-ubuntu)
 * [7. Post-installation](#7-post-installation)
-  * [7.1 Check of Zonemaster::Backend](#71-check-of-zonemaster--backend)
+  * [7.1 Check of Zonemaster::Backend](#71-check-of-zonemasterbackend)
   * [7.2 What to do next?](#72-what-to-do-next)
   * [7.3 Cleaning up the database](#73-cleaning-up-the-database)
 

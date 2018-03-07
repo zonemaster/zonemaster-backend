@@ -8,24 +8,22 @@
   * [3.1 Install Zonemaster::Backend and related dependencies (CentOS)](#31-install-zonemasterbackend-and-related-dependencies-centos)
   * [3.2 Database engine installation and configuration (CentOS)](#32-database-engine-installation-and-configuration-centos)
   * [3.3 Service configuration and startup (CentOS)](#33-service-configuration-and-startup-centos)
-  * [3.4 Sanity check (CentOS)](#34-sanity-check-centos)
-  * [3.5 Post-installation (CentOS)](#35-post-installation-centos)
+  * [3.4 Post-installation (CentOS)](#34-post-installation-centos)
 * [4. Installation on Debian](#4-installation-on-debian)
   * [4.1 Install Zonemaster::Backend and related dependencies (Debian)](#41-install-zonemasterbackend-and-related-dependencies-debian)
   * [4.2 Database engine installation and configuration (Debian)](#42-database-engine-installation-and-configuration-debian)
   * [4.3 Service configuration and startup (Debian)](#43-service-configuration-and-startup-debian)
-  * [4.4 Sanity check (Debian)](#44-sanity-check-debian)
-  * [4.5 Post-installation (Debian)](#45-post-installation-debian)
+  * [4.4 Post-installation (Debian)](#44-post-installation-debian)
 * [5. Installation on FreeBSD](#5-installation-on-freebsd)
   * [5.1 Install Zonemaster::Backend and related dependencies (FreeBSD)](#51-install-zonemasterbackend-and-related-dependencies-freebsd)
   * [5.2 Database engine installation and configuration (FreeBSD)](#52-database-engine-installation-and-configuration-freebsd)
   * [5.3 Service startup (FreeBSD)](#53-service-startup-freebsd)
-  * [5.4 Sanity check (FreeBSD)](#54-sanity-check-freebsd)
-  * [5.5 Post-installation (FreeBSD)](#55-post-installation-freebsd)
+  * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
 * [6. Installation on Ubuntu](#6-installation-on-ubuntu)
 * [7. Post-installation](#7-post-installation)
-  * [7.1 What to do next?](#71-what-to-do-next)
-  * [7.2 Cleaning up the database](#72-cleaning-up-the-database)
+  * [7.1 Sanity check](#71-sanity-check)
+  * [7.2 What to do next?](#72-what-to-do-next)
+  * [7.3 Cleaning up the database](#73-cleaning-up-the-database)
 
 
 ## 1. Overview
@@ -218,22 +216,7 @@ Check that the service has started:
 sudo /etc/init.d/zm-backend.sh status
 ```
 
-### 3.4 Sanity check (CentOS)
-
-If you followed this instructions to the letter, you should be able to use the
-API on localhost port 5000, like this:
-
-```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
-```
-
-The command is expected to give an immediate JSON response similiar to :
-
-```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
-```
-
-### 3.5 Post-installation (CentOS)
+### 3.4 Post-installation (CentOS)
 
 See the [post-installation] section for post-installation matters.
 
@@ -386,22 +369,7 @@ Check that the service has started:
 sudo service zm-backend.sh status
 ```
 
-### 4.4 Sanity check (Debian)
-
-If you followed this instructions to the letter, you should be able to use the
-API on localhost port 5000, like this:
-
-```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
-```
-
-The command is expected to give an immediate JSON response similiar to:
-
-```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
-```
-
-### 4.5 Post-installation (Debian)
+### 4.4 Post-installation (Debian)
 
 See the [post-installation] section for post-installation matters.
 
@@ -540,22 +508,7 @@ service zm_rpcapi start
 service zm_testagent start
 ```
 
-### 5.4 Sanity check (FreeBSD)
-
-If you followed this instructions to the letter, you should be able to use the
-API on localhost port 5000, like this:
-
-```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
-```
-
-The command is expected to give an immediate JSON response similiar to :
-
-```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
-```
-
-### 5.5 Post-installation (FreeBSD)
+### 5.4 Post-installation (FreeBSD)
 
 See the [post-installation] section for post-installation matters.
 
@@ -567,14 +520,30 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 ## 7. Post-installation
 
-### 7.1. What to do next?
+### 7.1 Sanity check
+
+If you followed this instructions to the letter, you should be able to use the
+API on localhost port 5000, like this:
+
+```sh
+curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+```
+
+The command is expected to give an immediate JSON response similiar to:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
+```
+
+
+### 7.2. What to do next?
 
 * For a web interface, follow the [Zonemaster::GUI installation] instructions.
 * For a command line interface, follow the [Zonemaster::CLI installation] instruction.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-### 7.2. Cleaning up the database
+### 7.3. Cleaning up the database
 
 If, at some point, you want to delete all traces of Zonemaster in the database,
 you can run the file `cleanup-mysql.sql` or file `cleanup-postgres.sql`
@@ -582,14 +551,14 @@ as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
 database (obviously taking all data with it).
 
-#### 7.2.1 MySQL
+#### 7.3.1 MySQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
-#### 7.2.2 PostgreSQL
+#### 7.3.2 PostgreSQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`

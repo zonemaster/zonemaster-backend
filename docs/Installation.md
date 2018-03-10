@@ -21,7 +21,7 @@
   * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
 * [6. Installation on Ubuntu](#6-installation-on-ubuntu)
 * [7. Post-installation](#7-post-installation)
-  * [7.1 Check of Zonemaster::Backend](#71-check-of-zonemasterbackend)
+  * [7.1 Smoke test of Zonemaster::Backend](#71-smoke-test-of-zonemasterbackend)
   * [7.2 What to do next?](#72-what-to-do-next)
   * [7.3 Cleaning up the database](#73-cleaning-up-the-database)
 
@@ -520,10 +520,10 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 ## 7. Post-installation
 
-### 7.1 Check of Zonemaster::Backend
+### 7.1 Smoke test of Zonemaster::Backend
 
-If you have followed the installation instructions for Zonemaster::Backend and chosen database engine 
-for your OS above, you should be able to use the
+If you have followed the installation instructions for Zonemaster::Backend above, 
+you should be able to use the
 API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh

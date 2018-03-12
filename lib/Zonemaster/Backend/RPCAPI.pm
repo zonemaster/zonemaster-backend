@@ -119,7 +119,7 @@ sub _check_domain {
                     $dn,
                     {
                         status  => 'nok',
-                        message => encode_entities( "The domain name cannot be converted to the IDN format" )
+                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
                     }
                 );
             }
@@ -130,7 +130,7 @@ sub _check_domain {
                 {
                     status => 'nok',
                     message =>
-                      encode_entities( "$type contains non-ascii characters and IDN conversion is not installed" )
+                      encode_entities( "$type contains non-ascii characters and IDNA conversion is not installed" )
                 }
             );
         }

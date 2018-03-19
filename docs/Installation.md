@@ -21,7 +21,7 @@
   * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
 * [6. Installation on Ubuntu](#6-installation-on-ubuntu)
 * [7. Post-installation](#7-post-installation)
-  * [7.1 Sanity check](#71-sanity-check)
+  * [7.1 Smoke test](#71-smoke-test)
   * [7.2 What to do next?](#72-what-to-do-next)
   * [7.3 Cleaning up the database](#73-cleaning-up-the-database)
 
@@ -46,8 +46,8 @@ Zonemaster::Engine installation].
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
-> **Note:** In addition to the normal dependencies, the post-installation sanity
-> check instruction assumes that you have curl installed.
+> **Note:** In addition to the normal dependencies, the post-installation
+> smoke test instruction assumes that you have curl installed.
 
 ## 3. Installation on CentOS
 
@@ -520,10 +520,11 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 ## 7. Post-installation
 
-### 7.1 Sanity check
+### 7.1 Smoke test
 
-If you followed this instructions to the letter, you should be able to use the
-API on localhost port 5000, like this:
+If you have followed the installation instructions for Zonemaster::Backend above, 
+you should be able to use the
+API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh
 curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo

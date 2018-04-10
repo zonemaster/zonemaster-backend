@@ -22,6 +22,7 @@ use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
+use Zonemaster::Backend::Validator;
 
 my $recursor = Zonemaster::Engine::Recursor->new;
 
@@ -65,6 +66,8 @@ sub version_info {
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
+    Zonemaster::Backend::Validator->Validate('get_ns_ips', {'ns_name' => $ns_name});
+
     my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
     @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
@@ -73,6 +76,8 @@ sub get_ns_ips {
 
 sub get_data_from_parent_zone {
     my ( $self, $domain ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('get_data_from_parent_zone', {'domain' => $domain});
 
     my %result;
 
@@ -95,7 +100,7 @@ sub get_data_from_parent_zone {
         foreach my $ds ( @ds ) {
             next unless $ds->type eq 'DS';
             push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-        } 
+        }
     }
 
     $result{ns_list} = \@ns_list;
@@ -135,7 +140,7 @@ sub _check_domain {
             );
         }
     }
-    
+
     if( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
 	    return (
 		   $dn,
@@ -157,6 +162,8 @@ sub _check_domain {
 
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('validate_syntax', $syntax_input);
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
@@ -225,7 +232,7 @@ sub validate_syntax {
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                 unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
-    
+
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
               unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }
@@ -257,8 +264,8 @@ sub validate_syntax {
 
 sub add_user_ip_geolocation {
     my ( $self, $params ) = @_;
-    
-    if ($params->{user_ip} 
+
+    if ($params->{user_ip}
         && Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
         && Zonemaster::Backend::Config->Maxmind_City_DB_File()
     ) {
@@ -267,10 +274,10 @@ sub add_user_ip_geolocation {
             require Geo::IP;
             my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
             my $isp = $gi->isp_by_addr($params->{user_ip});
-            
+
             require GeoIP2::Database::Reader;
             my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
-    
+
             my $city = $reader->city(ip => $params->{user_ip});
 
             $params->{user_location_info}->{isp} = $isp;
@@ -287,6 +294,9 @@ sub add_user_ip_geolocation {
 
 sub start_domain_test {
     my ( $self, $params ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('start_domain_test', $params);
+
     my $result = 0;
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
@@ -294,12 +304,12 @@ sub start_domain_test {
     die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
     die "No domain in parameters\n" unless ( $params->{domain} );
-    
+
     if ($params->{config}) {
         $params->{config} =~ s/[^\w_]//isg;
         die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
-    
+
     $self->add_user_ip_geolocation($params);
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
@@ -309,6 +319,8 @@ sub start_domain_test {
 
 sub test_progress {
     my ( $self, $test_id ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('test_progress', {test_id => $test_id});
 
     my $result = 0;
 
@@ -320,6 +332,8 @@ sub test_progress {
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
+    Zonemaster::Backend::Validator->Validate('get_test_params', {test_id => $test_id});
+
     my $result = 0;
 
     $result = $self->{db}->get_test_params( $test_id );
@@ -329,6 +343,9 @@ sub get_test_params {
 
 sub get_test_results {
     my ( $self, $params ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('get_test_results', $params);
+
     my $result;
 
     my $translator;
@@ -394,11 +411,13 @@ sub get_test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
+    Zonemaster::Backend::Validator->Validate('get_test_history', $p);
+
     my $results;
-    
+
     # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
     return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
-    
+
     $results = $self->{db}->get_test_history( $p );
 
     return $results;
@@ -406,6 +425,9 @@ sub get_test_history {
 
 sub add_api_user {
     my ( $self, $p, undef, $remote_ip ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('add_api_user', $p);
+
     my $result = 0;
 
     my $allow = 0;
@@ -419,12 +441,14 @@ sub add_api_user {
     if ( $allow ) {
         $result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
     }
-    
+
     return $result;
 }
 
 sub add_batch_job {
     my ( $self, $params ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('add_batch_job', $params);
 
     my $results = $self->{db}->add_batch_job( $params );
 
@@ -434,6 +458,8 @@ sub add_batch_job {
 
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
+
+    Zonemaster::Backend::Validator->Validate('get_batch_job_result', {batch_id => $batch_id});
 
     return $self->{db}->get_batch_job_result($batch_id);
 }

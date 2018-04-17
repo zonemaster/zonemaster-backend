@@ -65,7 +65,7 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{get_ns_ips} = joi->string->required;
+$json_schemas{get_ns_ips} = joi->object->strict->props( ns_name => joi->string->required );
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
@@ -75,7 +75,9 @@ sub get_ns_ips {
     return \@adresses;
 }
 
-$json_schemas{get_data_from_parent_zone} = $Zonemaster::Backend::Validator::domain_name->required;
+$json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
+    domain   => $Zonemaster::Backend::Validator::domain_name->required
+);
 sub get_data_from_parent_zone {
     my ( $self, $domain ) = @_;
 
@@ -367,7 +369,9 @@ sub test_progress {
     return $result;
 }
 
-$json_schemas{get_test_params} = $Zonemaster::Backend::Validator::test_id->required;
+$json_schemas{get_test_params} = joi->object->strict->props(
+    test_id => $Zonemaster::Backend::Validator::test_id->required
+);
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
@@ -535,7 +539,9 @@ sub add_batch_job {
     return $results;
 }
 
-$json_schemas{get_batch_job_result} = $Zonemaster::Backend::Validator::batch_id->required;
+$json_schemas{get_batch_job_result} = joi->object->strict->props(
+    batch_id => $Zonemaster::Backend::Validator::batch_id->required
+);
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
 
@@ -562,6 +568,24 @@ sub json_validate {
         } if @error_rpc;
 
     if (exists $json_schema->{"params"}) {
+
+        if ($json_schema->{"method"} eq "get_ns_ips" && ref \$json_schema->{"params"} eq "SCALAR") {
+            $json_schema->{"params"} = { ns_name => $json_schema->{"params"}};
+            warn "[DEPRECATE] - 'get_ns_ips' method using scalar is depreciated. Please update to {\"ns_name\"} \n";
+        } elsif ($json_schema->{"method"} eq "test_progress" && ref \$json_schema->{"params"} eq "SCALAR") {
+            $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
+            warn "[DEPRECATE] - 'test_progress' method using scalar is depreciated. Please update to {\"test_id\"} \n";
+        } elsif ($json_schema->{"method"} eq "get_test_params" && ref \$json_schema->{"params"} eq "SCALAR") {
+            $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
+            warn "[DEPRECATE] - 'get_test_params' method using scalar is depreciated. Please update to {\"test_id\"} \n";
+        } elsif ($json_schema->{"method"} eq "get_batch_job_result" && ref \$json_schema->{"params"} eq "SCALAR") {
+            $json_schema->{"params"} = { batch_id => $json_schema->{"params"} };
+            warn "[DEPRECATE] - 'get_batch_job_result' method using scalar is depreciated. Please update to {\"batch_id\"} \n";
+        } elsif ($json_schema->{"method"} eq "get_data_from_parent_zone" && ref \$json_schema->{"params"} eq "SCALAR") {
+            $json_schema->{"params"} = { domain => $json_schema->{"params"} };
+            warn "[DEPRECATE] - 'get_data_from_parent_zone' method using scalar is depreciated. Please update to {\"domain\"} \n";
+        }
+
         my @error = $json_schemas{$json_schema->{"method"}}->validate($json_schema->{"params"});
         return 1, {
                 jsonrpc => $json_schema->{"jsonrpc"},

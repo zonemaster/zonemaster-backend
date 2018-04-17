@@ -11,6 +11,7 @@ use JSON::PP;
 use POSIX;
 
 use Plack::Builder;
+use Plack::Response;
 
 BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
@@ -94,10 +95,18 @@ my $dispatch = JSON::RPC::Dispatch->new(
 sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
-    eval {
-		my $json = $req->content;
-		my $content = decode_json($json);
-	};
-    
-    $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
+
+	my $json = $req->content;
+	my $content = decode_json($json);
+
+	my ($has_error, $errors) = Zonemaster::Backend::RPCAPI->json_validate($content);
+
+    if ($has_error) {
+      my $res = Plack::Response->new(200);
+      $res->content_type('application/json');
+      $res->body( encode_json($errors) );
+      $res->finalize;
+    } else {
+        $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
+    }
 };

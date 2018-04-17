@@ -13,6 +13,7 @@ use File::Slurp qw(append_file);
 use Zonemaster::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
+use JSON::Validator "joi";
 
 # Zonemaster Modules
 use Zonemaster::Engine;
@@ -24,6 +25,7 @@ use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 
+my %json_schemas;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub new {
@@ -63,10 +65,9 @@ sub version_info {
     return \%ver;
 }
 
+$json_schemas{get_ns_ips} = joi->object->strict->props( ns_name => joi->string->required );
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('get_ns_ips', {'ns_name' => $ns_name});
 
     my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
     @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
@@ -74,10 +75,11 @@ sub get_ns_ips {
     return \@adresses;
 }
 
+$json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
+    domain   => $Zonemaster::Backend::Validator::domain_name
+);
 sub get_data_from_parent_zone {
     my ( $self, $domain ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('get_data_from_parent_zone', {'domain' => $domain});
 
     my %result;
 
@@ -108,6 +110,7 @@ sub get_data_from_parent_zone {
 
     return \%result;
 }
+
 
 sub _check_domain {
     my ( $self, $dn, $type ) = @_;
@@ -160,10 +163,27 @@ sub _check_domain {
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
 }
 
+$json_schemas{validate_syntax} = joi->object->strict->props(
+    ipv4 => joi->boolean,
+    ipv6 => joi->boolean,
+    ds_info => joi->array->strict->items(
+        $Zonemaster::Backend::Validator::ds_info
+    ),
+    nameservers => joi->array->strict->items(
+        $Zonemaster::Backend::Validator::nameserver
+    ),
+    profile => $Zonemaster::Backend::Validator::profil_name,
+    client_id => $Zonemaster::Backend::Validator::client_id,
+    client_version => $Zonemaster::Backend::Validator::client_version,
+    user_ip => $Zonemaster::Backend::Validator::ip_address,
+    user_location_info => $Zonemaster::Backend::Validator::location,
+    config => joi->string,
+    domain => $Zonemaster::Backend::Validator::domain_name,
+    priority => $Zonemaster::Backend::Validator::priority,
+    queue => $Zonemaster::Backend::Validator::queue
+);
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('validate_syntax', $syntax_input);
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
@@ -292,10 +312,27 @@ sub add_user_ip_geolocation {
     }
 }
 
+$json_schemas{start_domain_test} = joi->object->strict->props(
+    domain => $Zonemaster::Backend::Validator::domain_name,
+    ipv4 => joi->boolean,
+    ipv6 => joi->boolean,
+    ds_info => joi->array->items(
+        $Zonemaster::Backend::Validator::ds_info
+    ),
+    nameservers => joi->array->items(
+        $Zonemaster::Backend::Validator::nameserver
+    ),
+    profile => $Zonemaster::Backend::Validator::profil_name,
+    client_id => $Zonemaster::Backend::Validator::client_id,
+    client_version => $Zonemaster::Backend::Validator::client_version,
+    user_ip => $Zonemaster::Backend::Validator::ip_address,
+    user_location_info => $Zonemaster::Backend::Validator::location,
+    config => joi->string,
+    priority => $Zonemaster::Backend::Validator::priority,
+    queue => $Zonemaster::Backend::Validator::queue
+);
 sub start_domain_test {
     my ( $self, $params ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('start_domain_test', $params);
 
     my $result = 0;
 
@@ -317,10 +354,11 @@ sub start_domain_test {
     return $result;
 }
 
+$json_schemas{test_progress} = joi->object->strict->props(
+    test_id => $Zonemaster::Backend::Validator::test_id
+);
 sub test_progress {
     my ( $self, $test_id ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('test_progress', {test_id => $test_id});
 
     my $result = 0;
 
@@ -329,10 +367,11 @@ sub test_progress {
     return $result;
 }
 
+$json_schemas{get_test_params} = joi->object->strict->props(
+    test_id => $Zonemaster::Backend::Validator::test_id
+);
 sub get_test_params {
     my ( $self, $test_id ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('get_test_params', {test_id => $test_id});
 
     my $result = 0;
 
@@ -341,10 +380,12 @@ sub get_test_params {
     return $result;
 }
 
+$json_schemas{get_test_results} = joi->object->strict->props(
+    id => $Zonemaster::Backend::Validator::test_id,
+    language => $Zonemaster::Backend::Validator::translate_language
+);
 sub get_test_results {
     my ( $self, $params ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('get_test_results', $params);
 
     my $result;
 
@@ -408,10 +449,27 @@ sub get_test_results {
     return $result;
 }
 
+$json_schemas{get_test_history} = joi->object->strict->props(
+    offset => joi->integer->min(0),
+    limit => joi->integer->min(0),
+    frontend_params => joi->object->strict->props(
+        domain => $Zonemaster::Backend::Validator::domain_name,
+        ipv4 => joi->boolean,
+        ipv6 => joi->boolean,
+        ds_info => joi->array->strict->items(
+            $Zonemaster::Backend::Validator::ds_info
+        ),
+        nameservers => joi->array->strict->items(
+            $Zonemaster::Backend::Validator::nameserver
+        ),
+        profile => $Zonemaster::Backend::Validator::profil_name,
+        client_id => $Zonemaster::Backend::Validator::client_id,
+        client_version => $Zonemaster::Backend::Validator::client_version,
+        config => joi->string,
+    )
+);
 sub get_test_history {
     my ( $self, $p ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('get_test_history', $p);
 
     my $results;
 
@@ -423,10 +481,12 @@ sub get_test_history {
     return $results;
 }
 
+$json_schemas{add_api_user} = joi->object->strict->props(
+    username => $Zonemaster::Backend::Validator::username,
+    api_key => $Zonemaster::Backend::Validator::api_key,
+);
 sub add_api_user {
     my ( $self, $p, undef, $remote_ip ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('add_api_user', $p);
 
     my $result = 0;
 
@@ -445,22 +505,77 @@ sub add_api_user {
     return $result;
 }
 
+$json_schemas{add_batch_job} = joi->object->strict->props(
+    username => $Zonemaster::Backend::Validator::username,
+    api_key => $Zonemaster::Backend::Validator::api_key,
+    domains => joi->array->strict->items(
+        $Zonemaster::Backend::Validator::domain_name
+    ),
+    test_params => joi->object->strict->props(
+        ipv4 => joi->boolean,
+        ipv6 => joi->boolean,
+        ds_info => joi->array->strict->items(
+            $Zonemaster::Backend::Validator::ds_info
+        ),
+        nameservers => joi->array->strict->items(
+            $Zonemaster::Backend::Validator::nameserver
+        ),
+        profile => $Zonemaster::Backend::Validator::profil_name,
+        client_id => $Zonemaster::Backend::Validator::client_id,
+        client_version => $Zonemaster::Backend::Validator::client_version,
+        user_ip => $Zonemaster::Backend::Validator::ip_address,
+        user_location_info => $Zonemaster::Backend::Validator::location,
+        config => joi->string
+    )
+);
 sub add_batch_job {
     my ( $self, $params ) = @_;
-
-    Zonemaster::Backend::Validator->Validate('add_batch_job', $params);
 
     my $results = $self->{db}->add_batch_job( $params );
 
     return $results;
 }
 
-
+$json_schemas{get_batch_job_result} = joi->object->strict->props(
+    batch_id => $Zonemaster::Backend::Validator::batch_id
+);
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
 
-    Zonemaster::Backend::Validator->Validate('get_batch_job_result', {batch_id => $batch_id});
-
     return $self->{db}->get_batch_job_result($batch_id);
+}
+
+my $rpc_request = joi->object->props(
+    jsonrpc => joi->string->required,
+    id => joi->integer->min(0)->required,
+    method => joi->string->regex("[a-zA-Z0-9_-]*")->required
+);
+sub json_validate {
+    my ( $self, $json_schema) = @_;
+
+    my @error_rpc = $rpc_request->validate($json_schema);
+    return 1, {
+            jsonrpc => '2.0',
+            id => (defined $json_schema->{"id"} ? $json_schema->{'id'} + 0 : "1"),
+            error => {
+                code => '-32600',
+                message=> 'The JSON sent is not a valid Request object.',
+                data => "@error_rpc\n"
+            }
+        } if @error_rpc;
+
+    if (exists $json_schema->{"params"}) {
+        my @error = $json_schemas{$json_schema->{"method"}}->validate($json_schema->{"params"});
+        return 1, {
+                jsonrpc => $json_schema->{"jsonrpc"},
+                id => $json_schema->{"id"},
+                result => {
+                    message=> 'nok',
+                    data => "@error"
+                }
+            } if @error;
+    }
+
+    return 0, '';
 }
 1;

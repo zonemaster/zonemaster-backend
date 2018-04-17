@@ -722,6 +722,7 @@ Example request:
   "params": {
     "offset": 0,
     "limit": 200,
+    "filter": "all",
     "frontend_params": {
       "domain": "zonemaster.net",      
       "nameservers": [

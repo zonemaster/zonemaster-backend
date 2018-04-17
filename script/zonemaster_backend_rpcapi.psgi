@@ -9,6 +9,7 @@ use JSON::RPC::Dispatch;
 use Router::Simple::Declare;
 use JSON::PP;
 use POSIX;
+use Try::Tiny;
 
 use Plack::Builder;
 use Plack::Response;
@@ -95,18 +96,32 @@ my $dispatch = JSON::RPC::Dispatch->new(
 sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
+    my $res;
+    try {
+        my $json = $req->content;
+        my $content = decode_json($json);
+ 	    my ($has_error, $errors) = Zonemaster::Backend::RPCAPI->json_validate($content);
 
-	my $json = $req->content;
-	my $content = decode_json($json);
-
-	my ($has_error, $errors) = Zonemaster::Backend::RPCAPI->json_validate($content);
-
-    if ($has_error) {
-      my $res = Plack::Response->new(200);
-      $res->content_type('application/json');
-      $res->body( encode_json($errors) );
-      $res->finalize;
-    } else {
-        $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
+        if ($has_error) {
+          $res = Plack::Response->new(200);
+          $res->content_type('application/json');
+          $res->body( encode_json($errors) );
+          $res->finalize;
+        } else {
+            $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
+        }
+    } catch {
+        my $error = (split /at \//, $_)[0];
+        $res = Plack::Response->new(200);
+        $res->content_type('application/json');
+        $res->body( encode_json({
+                    jsonrpc => '2.0',
+                    id => 1,
+                    error => {
+                        code => '-32700',
+                        message=> 'Invalid JSON was received by the server.',
+                        data => "$error"
+                    }}) );
+        $res->finalize;
     }
 };

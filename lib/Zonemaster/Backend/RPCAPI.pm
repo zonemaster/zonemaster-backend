@@ -65,7 +65,7 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{get_ns_ips} = joi->object->strict->props( ns_name => joi->string->required );
+$json_schemas{get_ns_ips} = joi->string->required;
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
@@ -75,9 +75,7 @@ sub get_ns_ips {
     return \@adresses;
 }
 
-$json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
-    domain   => $Zonemaster::Backend::Validator::domain_name
-);
+$json_schemas{get_data_from_parent_zone} = $Zonemaster::Backend::Validator::domain_name->required;
 sub get_data_from_parent_zone {
     my ( $self, $domain ) = @_;
 
@@ -164,21 +162,22 @@ sub _check_domain {
 }
 
 $json_schemas{validate_syntax} = joi->object->strict->props(
-    ipv4 => joi->boolean,
-    ipv6 => joi->boolean,
+    domain => $Zonemaster::Backend::Validator::domain_name->required,
     ds_info => joi->array->strict->items(
         $Zonemaster::Backend::Validator::ds_info
     ),
     nameservers => joi->array->strict->items(
         $Zonemaster::Backend::Validator::nameserver
     ),
+    advanced => joi->boolean,
+    ipv4 => joi->boolean,
+    ipv6 => joi->boolean,
     profile => $Zonemaster::Backend::Validator::profil_name,
     client_id => $Zonemaster::Backend::Validator::client_id,
     client_version => $Zonemaster::Backend::Validator::client_version,
     user_ip => $Zonemaster::Backend::Validator::ip_address,
     user_location_info => $Zonemaster::Backend::Validator::location,
     config => joi->string,
-    domain => $Zonemaster::Backend::Validator::domain_name,
     priority => $Zonemaster::Backend::Validator::priority,
     queue => $Zonemaster::Backend::Validator::queue
 );
@@ -313,7 +312,7 @@ sub add_user_ip_geolocation {
 }
 
 $json_schemas{start_domain_test} = joi->object->strict->props(
-    domain => $Zonemaster::Backend::Validator::domain_name,
+    domain => $Zonemaster::Backend::Validator::domain_name->required,
     ipv4 => joi->boolean,
     ipv6 => joi->boolean,
     ds_info => joi->array->items(
@@ -322,6 +321,7 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     nameservers => joi->array->items(
         $Zonemaster::Backend::Validator::nameserver
     ),
+    advanced => joi->boolean,
     profile => $Zonemaster::Backend::Validator::profil_name,
     client_id => $Zonemaster::Backend::Validator::client_id,
     client_version => $Zonemaster::Backend::Validator::client_version,
@@ -355,7 +355,7 @@ sub start_domain_test {
 }
 
 $json_schemas{test_progress} = joi->object->strict->props(
-    test_id => $Zonemaster::Backend::Validator::test_id
+    test_id => $Zonemaster::Backend::Validator::test_id->required
 );
 sub test_progress {
     my ( $self, $test_id ) = @_;
@@ -367,9 +367,7 @@ sub test_progress {
     return $result;
 }
 
-$json_schemas{get_test_params} = joi->object->strict->props(
-    test_id => $Zonemaster::Backend::Validator::test_id
-);
+$json_schemas{get_test_params} = $Zonemaster::Backend::Validator::test_id->required;
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
@@ -381,8 +379,8 @@ sub get_test_params {
 }
 
 $json_schemas{get_test_results} = joi->object->strict->props(
-    id => $Zonemaster::Backend::Validator::test_id,
-    language => $Zonemaster::Backend::Validator::translate_language
+    id => $Zonemaster::Backend::Validator::test_id->required,
+    language => $Zonemaster::Backend::Validator::translate_language->required
 );
 sub get_test_results {
     my ( $self, $params ) = @_;
@@ -453,7 +451,7 @@ $json_schemas{get_test_history} = joi->object->strict->props(
     offset => joi->integer->min(0),
     limit => joi->integer->min(0),
     frontend_params => joi->object->strict->props(
-        domain => $Zonemaster::Backend::Validator::domain_name,
+        domain => $Zonemaster::Backend::Validator::domain_name->required,
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
         ds_info => joi->array->strict->items(
@@ -462,11 +460,12 @@ $json_schemas{get_test_history} = joi->object->strict->props(
         nameservers => joi->array->strict->items(
             $Zonemaster::Backend::Validator::nameserver
         ),
+        advanced => joi->boolean,
         profile => $Zonemaster::Backend::Validator::profil_name,
         client_id => $Zonemaster::Backend::Validator::client_id,
         client_version => $Zonemaster::Backend::Validator::client_version,
         config => joi->string,
-    )
+    )->required
 );
 sub get_test_history {
     my ( $self, $p ) = @_;
@@ -482,8 +481,8 @@ sub get_test_history {
 }
 
 $json_schemas{add_api_user} = joi->object->strict->props(
-    username => $Zonemaster::Backend::Validator::username,
-    api_key => $Zonemaster::Backend::Validator::api_key,
+    username => $Zonemaster::Backend::Validator::username->required,
+    api_key => $Zonemaster::Backend::Validator::api_key->required,
 );
 sub add_api_user {
     my ( $self, $p, undef, $remote_ip ) = @_;
@@ -506,11 +505,11 @@ sub add_api_user {
 }
 
 $json_schemas{add_batch_job} = joi->object->strict->props(
-    username => $Zonemaster::Backend::Validator::username,
-    api_key => $Zonemaster::Backend::Validator::api_key,
+    username => $Zonemaster::Backend::Validator::username->required,
+    api_key => $Zonemaster::Backend::Validator::api_key->required,
     domains => joi->array->strict->items(
-        $Zonemaster::Backend::Validator::domain_name
-    ),
+        $Zonemaster::Backend::Validator::domain_name->required
+    )->required,
     test_params => joi->object->strict->props(
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
@@ -536,9 +535,7 @@ sub add_batch_job {
     return $results;
 }
 
-$json_schemas{get_batch_job_result} = joi->object->strict->props(
-    batch_id => $Zonemaster::Backend::Validator::batch_id
-);
+$json_schemas{get_batch_job_result} = $Zonemaster::Backend::Validator::batch_id->required;
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
 
@@ -575,7 +572,6 @@ sub json_validate {
                 }
             } if @error;
     }
-
     return 0, '';
 }
 1;

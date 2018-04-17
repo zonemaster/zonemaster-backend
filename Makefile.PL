@@ -28,7 +28,7 @@ requires
   'String::ShellQuote'       => 0,
   'Zonemaster::Engine'       => 2.0,
   'Zonemaster::LDNS'         => 1.0,
-  'JSON::Validator'        => 2.6
+  'JSON::Validator'        => 2.06
   ;
 
 test_requires 'DBD::SQLite';

@@ -343,7 +343,7 @@ Example request:
   "jsonrpc": "2.0",
   "id": 2,
   "method": "get_ns_ips",
-  "params": "zonemaster.net"
+  "params": {"domain": "zonemaster.net"}
 }
 ```
 
@@ -366,7 +366,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The *domain name* whose IP addresses are to be resolved.
+An object with the property:
+
+`"domain"`: A *domain name*. The *domain name* whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -398,7 +400,7 @@ Example request:
   "jsonrpc": "2.0",
   "id": 3,
   "method": "get_data_from_parent_zone",
-  "params": "zonemaster.net"
+  "params": {"domain": "zonemaster.net"}
 }
 ```
 
@@ -446,7 +448,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The domain whose DNS records are requested.
+An object with the property:
+
+`"domain"`: A *domain name*. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -565,7 +569,7 @@ Example request:
   "jsonrpc": "2.0",
   "id": 5,
   "method": "test_progress",
-  "params": "c45a3f8256c4a155"
+  "params": {"test_id": "c45a3f8256c4a155"}
 }
 ```
 
@@ -581,7 +585,9 @@ Example response:
 
 #### `"params"`
 
-A *test id*. The *test* to report on.
+An object with the property:
+
+`"test_id"`: A *test id*. The *test* to report on.
 
 
 #### `"result"`
@@ -988,7 +994,7 @@ Example request:
     "jsonrpc": "2.0",
     "id": 147559211994909,
     "method": "get_batch_job_result",
-    "params": "8"
+    "params": {"batch_id": "8"}
 }
 ```
 
@@ -1014,8 +1020,9 @@ Example response:
 
 #### `"params"`
 
-A *batch id*.
+An object with the property:
 
+* `"batch_id"`: A *batch id*, required.
 
 #### `"result"`
 
@@ -1131,7 +1138,7 @@ Example request:
     "jsonrpc": "2.0",
     "id": 143014426992009,
     "method": "get_test_params",
-    "params": "6814584dc820354a"
+    "params": {"test_id": "6814584dc820354a"}
 }
 ```
 
@@ -1164,8 +1171,9 @@ Example response:
 ```
 
 #### `"params"`
+An object with the property:
 
-A *test id*.
+* `"test_id"`: A *test id*, required.
 
 
 #### `"result"`

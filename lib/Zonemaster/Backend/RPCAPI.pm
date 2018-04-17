@@ -65,7 +65,7 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{get_ns_ips} = joi->object->strict->props( ns_name => joi->string->required );
+$json_schemas{get_ns_ips} = joi->object->strict->props(domain => joi->string->required);
 sub get_ns_ips {
     my ( $self, $ns_name ) = @_;
 
@@ -570,8 +570,8 @@ sub json_validate {
     if (exists $json_schema->{"params"}) {
 
         if ($json_schema->{"method"} eq "get_ns_ips" && ref \$json_schema->{"params"} eq "SCALAR") {
-            $json_schema->{"params"} = { ns_name => $json_schema->{"params"}};
-            warn "[DEPRECATE] - 'get_ns_ips' method using scalar is depreciated. Please update to {\"ns_name\"} \n";
+            $json_schema->{"params"} = { domain => $json_schema->{"params"}};
+            warn "[DEPRECATE] - 'get_ns_ips' method using scalar is depreciated. Please update to {\"domain\"} \n";
         } elsif ($json_schema->{"method"} eq "test_progress" && ref \$json_schema->{"params"} eq "SCALAR") {
             $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
             warn "[DEPRECATE] - 'test_progress' method using scalar is depreciated. Please update to {\"test_id\"} \n";

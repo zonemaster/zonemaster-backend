@@ -588,7 +588,7 @@ my $rpc_request = joi->object->props(
     id => joi->integer->min(0)->required,
     method => joi->string->regex("[a-zA-Z0-9_-]*")->required
 );
-sub json_validate {
+sub jsonrpc_validate {
     my ( $self, $json_schema) = @_;
 
     my @error_rpc = $rpc_request->validate($json_schema);

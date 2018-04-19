@@ -37,7 +37,7 @@ sub domain_name {
 }
 sub ds_info {
     return joi->object->strict->props(
-        digest => joi->string->regex("^[A-Fa-f0-9]{40,64}\$")->required,
+        digest => joi->string->regex("^[A-Fa-f0-9]{40}\$|^[A-Fa-f0-9]{64}\$")->required,
         algorithm => joi->integer->min(0),
         digtype => joi->integer->min(0),
         keytag => joi->integer->min(0)

@@ -130,9 +130,9 @@ DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKE
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
-* `"algorithm"`: An integer, optional.
-* `"digtype"`: An integer, optional.
-* `"keytag"`: An integer, optional.
+* `"algorithm"`: An non negative integer, optional.
+* `"digtype"`: An non negative integer, optional.
+* `"keytag"`: An non negative integer, optional.
 
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
@@ -147,7 +147,7 @@ This parameter is a string that are an IPv4 or IPv6. It's validate with the foll
 
 
 
-### Location
+### Location 
 
 Basic data type: object
 
@@ -157,8 +157,8 @@ The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"l
 * `"isp"`: a string. The Internet Service Provider of the user.
 * `"country"`: a string. The country of the user.
 * `"city"`: a string. The city of the user.
-* `"longitude"`: a string. The longtitude of the user.
-* `"latitude"`: a string. The latitude of the user.
+* `"longitude"`: a string. The longtitude of the user. Validate with `^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$`.
+* `"latitude"`: a string. The latitude of the user. Validate with `^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$`.
 
 >
 > TODO Add regex

@@ -339,6 +339,18 @@ An object with the following properties:
 Looks up the A and AAAA records for a *domain name* on the public Internet.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "get_ns_ips",
+  "params": {"domain": "zonemaster.net"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
   "jsonrpc": "2.0",
@@ -346,7 +358,8 @@ Example request:
   "method": "get_ns_ips",
   "params": "zonemaster.net"
 }
-```
+``` 
+
 
 Example response:
 ```json
@@ -367,7 +380,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The *domain name* whose IP addresses are to be resolved.
+An object with the property:
+
+`"domain"`: A *domain name*. The *domain name* whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -394,7 +409,19 @@ Returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from the
 parent zone.
 
 Example request:
+*Valid syntax:*
 ```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "get_data_from_parent_zone",
+  "params": {"domain": "zonemaster.net"}
+}
+```
+
+*Deprecated syntax:*
+```json
+
 {
   "jsonrpc": "2.0",
   "id": 3,
@@ -447,7 +474,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The domain whose DNS records are requested.
+An object with the property:
+
+`"domain"`: A *domain name*. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -552,6 +581,18 @@ then the new request does not trigger a new test, but returns with the results o
 Reports on the progress of a *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "test_progress",
+  "params": {"test_id": "c45a3f8256c4a155"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
   "jsonrpc": "2.0",
@@ -573,7 +614,9 @@ Example response:
 
 #### `"params"`
 
-A *test id*. The *test* to report on.
+An object with the property:
+
+`"test_id"`: A *test id*. The *test* to report on.
 
 
 #### `"result"`
@@ -967,6 +1010,17 @@ A *batch id*.
 Return all *test id* objects of a *batch test*, with the number of finshed *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 147559211994909,
+    "method": "get_batch_job_result",
+    "params": {"batch_id": "8"}
+}
+```
+*Deprecated syntax:*
 ```json
 {
     "jsonrpc": "2.0",
@@ -998,7 +1052,9 @@ Example response:
 
 #### `"params"`
 
-A *batch id*.
+An object with the property:
+
+* `"batch_id"`: A *batch id*.
 
 
 #### `"result"`
@@ -1104,6 +1160,18 @@ An object with the following properties:
 Return all *params* objects of a *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "method": "get_test_params",
+    "params": {"test_id": "6814584dc820354a"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
     "jsonrpc": "2.0",
@@ -1143,7 +1211,9 @@ Example response:
 
 #### `"params"`
 
-A *test id*.
+An object with the property:
+
+* `"test_id"`: A *test id*, required.
 
 
 #### `"result"`

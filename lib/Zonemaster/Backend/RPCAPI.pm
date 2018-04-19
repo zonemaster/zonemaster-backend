@@ -623,11 +623,12 @@ sub json_validate {
 
         my @error = $json_schemas{$json_schema->{"method"}}->validate($json_schema->{"params"});
         return {
-                jsonrpc => $json_schema->{"jsonrpc"},
-                id => $json_schema->{"id"},
-                result => {
-                    message=> 'nok',
-                    data => "@error"
+                jsonrpc => '2.0',
+                id => undef,
+                error => {
+                    code => '-32602',
+                    message=> 'Invalid method parameter(s).',
+                    data => "@error\n"
                 }
             } if @error;
     }

@@ -64,7 +64,7 @@ sub nameserver {
 sub priority {
     return joi->integer;
 }
-sub profil_name {
+sub profile_name {
     return joi->string->regex("^(?![-_])[a-zA-Z0-9-_]{1,32}(?<![-_])\$")->min(1)->max(32);
 }
 sub queue {
@@ -73,7 +73,7 @@ sub queue {
 sub test_id {
     return joi->string;
 }
-sub translate_language {
+sub translation_language {
     return joi->string->length(2);
 }
 sub username {

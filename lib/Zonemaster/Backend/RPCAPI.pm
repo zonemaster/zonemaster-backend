@@ -192,7 +192,7 @@ $json_schemas{validate_syntax} = joi->object->strict->props(
     advanced => joi->boolean,
     ipv4 => joi->boolean,
     ipv6 => joi->boolean,
-    profile => $zm_validator->profil_name,
+    profile => $zm_validator->profile_name,
     client_id => $zm_validator->client_id,
     client_version => $zm_validator->client_version,
     user_ip => $zm_validator->ip_address,
@@ -342,7 +342,7 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
         $zm_validator->nameserver
     ),
     advanced => joi->boolean,
-    profile => $zm_validator->profil_name,
+    profile => $zm_validator->profile_name,
     client_id => $zm_validator->client_id,
     client_version => $zm_validator->client_version,
     user_ip => $zm_validator->ip_address,
@@ -414,7 +414,7 @@ sub get_test_params {
 
 $json_schemas{get_test_results} = joi->object->strict->props(
     id => $zm_validator->test_id->required,
-    language => $zm_validator->translate_language->required
+    language => $zm_validator->translation_language->required
 );
 sub get_test_results {
     my ( $self, $params ) = @_;
@@ -495,7 +495,7 @@ $json_schemas{get_test_history} = joi->object->strict->props(
             $zm_validator->nameserver
         ),
         advanced => joi->boolean,
-        profile => $zm_validator->profil_name,
+        profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id,
         client_version => $zm_validator->client_version,
         config => joi->string,
@@ -553,7 +553,7 @@ $json_schemas{add_batch_job} = joi->object->strict->props(
         nameservers => joi->array->strict->items(
             $zm_validator->nameserver
         ),
-        profile => $zm_validator->profil_name,
+        profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id,
         client_version => $zm_validator->client_version,
         user_ip => $zm_validator->ip_address,

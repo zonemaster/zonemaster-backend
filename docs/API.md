@@ -760,6 +760,12 @@ Example response:
 > symbol.
 >
 
+>
+> In order to keep backward compatibility with the old GUI, we deprecate to send 
+> an empty string as value for the domain parameter.
+> It will continue to return without error an empty array.
+>
+
 
 #### `"params"`
 

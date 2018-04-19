@@ -606,19 +606,19 @@ sub json_validate {
 
         if ($json_schema->{"method"} eq "get_ns_ips" && ref \$json_schema->{"params"} eq "SCALAR") {
             $json_schema->{"params"} = { domain => $json_schema->{"params"}};
-            warn "[DEPRECATE] - 'get_ns_ips' method using scalar is depreciated. Please update to {\"domain\"} \n";
+            warn "[DEPRECATED] - 'get_ns_ips' method using scalar is depreciated. Please update to {\"domain\"} \n";
         } elsif ($json_schema->{"method"} eq "test_progress" && ref \$json_schema->{"params"} eq "SCALAR") {
             $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
-            warn "[DEPRECATE] - 'test_progress' method using scalar is depreciated. Please update to {\"test_id\"} \n";
+            warn "[DEPRECATED] - 'test_progress' method using scalar is depreciated. Please update to {\"test_id\"} \n";
         } elsif ($json_schema->{"method"} eq "get_test_params" && ref \$json_schema->{"params"} eq "SCALAR") {
             $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
-            warn "[DEPRECATE] - 'get_test_params' method using scalar is depreciated. Please update to {\"test_id\"} \n";
+            warn "[DEPRECATED] - 'get_test_params' method using scalar is depreciated. Please update to {\"test_id\"} \n";
         } elsif ($json_schema->{"method"} eq "get_batch_job_result" && ref \$json_schema->{"params"} eq "SCALAR") {
             $json_schema->{"params"} = { batch_id => $json_schema->{"params"} };
-            warn "[DEPRECATE] - 'get_batch_job_result' method using scalar is depreciated. Please update to {\"batch_id\"} \n";
+            warn "[DEPRECATED] - 'get_batch_job_result' method using scalar is depreciated. Please update to {\"batch_id\"} \n";
         } elsif ($json_schema->{"method"} eq "get_data_from_parent_zone" && ref \$json_schema->{"params"} eq "SCALAR") {
             $json_schema->{"params"} = { domain => $json_schema->{"params"} };
-            warn "[DEPRECATE] - 'get_data_from_parent_zone' method using scalar is depreciated. Please update to {\"domain\"} \n";
+            warn "[DEPRECATED] - 'get_data_from_parent_zone' method using scalar is depreciated. Please update to {\"domain\"} \n";
         }
 
         my @error = $json_schemas{$json_schema->{"method"}}->validate($json_schema->{"params"});

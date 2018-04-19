@@ -220,25 +220,53 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my @results;
-    
+
     my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
-    
-    my $sth = $self->dbh->prepare(
-            q[SELECT 
-                id, 
-                hash_id, 
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time, 
-                params, 
-                results 
-            FROM 
-                test_results 
-            WHERE 
-                domain = ? 
-                AND undelegated = ? 
-            ORDER BY id DESC 
+
+    my $undelegated = "";
+    if ($p->{filter} eq "old_behavior" ) {
+        $undelegated = (defined $p->{frontend_params}->{nameservers}) ? 1:0;
+    } elsif ($p->{filter} eq "undelegated") {
+        $undelegated = 1;
+    } elsif ($p->{filter} eq "delegated") {
+        $undelegated = 0;
+    }
+
+    if ($p->{filter} eq "all") {
+        my $sth = $self->dbh->prepare(
+            q[SELECT
+                id,
+                hash_id,
+                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+                params,
+                results
+            FROM
+                test_results
+            WHERE
+                domain = ?
+            ORDER BY id DESC
             LIMIT ? OFFSET ?]
-    );
-    $sth->execute( $p->{frontend_params}{domain}, ($p->{frontend_params}{nameservers})?1:0, $p->{limit}, $p->{offset} );
+        );
+        $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
+    } else {
+        my $sth = $self->dbh->prepare(
+            q[SELECT
+                id,
+                hash_id,
+                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+                params,
+                results
+            FROM
+                test_results
+            WHERE
+                domain = ?
+                AND undelegated = ?
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?]
+        );
+        $sth->execute( $p->{frontend_params}{domain}, $undelegated, $p->{limit}, $p->{offset} );
+    }
+
     while ( my $h = $sth->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
         $h->{params} = decode_json($h->{params}) if $h->{params};

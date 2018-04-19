@@ -69,7 +69,14 @@ sub version_info {
 
 $json_schemas{get_ns_ips} = joi->object->strict->props(domain => joi->string->required);
 sub get_ns_ips {
-    my ( $self, $ns_name ) = @_;
+    my ( $self, $params ) = @_;
+    my $ns_name = "";
+
+    if (ref \$params eq "SCALAR") {
+        $ns_name = $params;
+    } else {
+        $ns_name = $params->{"domain"};
+    }
 
     my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
     @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
@@ -81,7 +88,14 @@ $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
     domain   => $Zonemaster::Backend::Validator::domain_name->required
 );
 sub get_data_from_parent_zone {
-    my ( $self, $domain ) = @_;
+    my ( $self, $params ) = @_;
+    my $domain = "";
+
+    if (ref \$params eq "SCALAR") {
+        $domain = $params;
+    } else {
+        $domain = $params->{"domain"};
+    }
 
     my %result;
 
@@ -362,7 +376,13 @@ $json_schemas{test_progress} = joi->object->strict->props(
     test_id => $Zonemaster::Backend::Validator::test_id->required
 );
 sub test_progress {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $params ) = @_;
+    my $test_id = "";
+    if (ref \$params eq "SCALAR") {
+        $test_id = $params;
+    } else {
+        $test_id = $params->{"test_id"};
+    }
 
     my $result = 0;
 
@@ -375,7 +395,13 @@ $json_schemas{get_test_params} = joi->object->strict->props(
     test_id => $Zonemaster::Backend::Validator::test_id->required
 );
 sub get_test_params {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $params ) = @_;
+    my $test_id = "";
+    if (ref \$params eq "SCALAR") {
+        $test_id = $params;
+    } else {
+        $test_id = $params->{"test_id"};
+    }
 
     my $result = 0;
 
@@ -545,8 +571,13 @@ $json_schemas{get_batch_job_result} = joi->object->strict->props(
     batch_id => $Zonemaster::Backend::Validator::batch_id->required
 );
 sub get_batch_job_result {
-    my ( $self, $batch_id ) = @_;
-
+    my ( $self, $params ) = @_;
+    my $batch_id = "";
+    if (ref \$params eq "SCALAR") {
+        $batch_id = $params;
+    } else {
+        $batch_id = $params->{"batch_id"};
+    }
     return $self->{db}->get_batch_job_result($batch_id);
 }
 

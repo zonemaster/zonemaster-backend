@@ -1028,7 +1028,7 @@ An object with the following properties:
 >
 
 
-## API method: `validate_syntax` - **Deprecated**
+## API method: `validate_syntax`
 
 Checks the `"params"` structure for syntax coherence. It is very strict on what
 is allowed and what is not to avoid any SQL injection and cross site scripting

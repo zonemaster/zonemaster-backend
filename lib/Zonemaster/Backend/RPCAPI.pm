@@ -589,9 +589,9 @@ my $rpc_request = joi->object->props(
     method => joi->string->regex("[a-zA-Z0-9_-]*")->required
 );
 sub jsonrpc_validate {
-    my ( $self, $json_schema) = @_;
+    my ( $self, $jsonrpc_request) = @_;
 
-    my @error_rpc = $rpc_request->validate($json_schema);
+    my @error_rpc = $rpc_request->validate($jsonrpc_request);
     return {
             jsonrpc => '2.0',
             id => undef,
@@ -602,26 +602,26 @@ sub jsonrpc_validate {
             }
         } if @error_rpc;
 
-    if (exists $json_schema->{"params"}) {
+    if (exists $jsonrpc_request->{"params"}) {
 
-        if ($json_schema->{"method"} eq "get_ns_ips" && ref \$json_schema->{"params"} eq "SCALAR") {
-            $json_schema->{"params"} = { domain => $json_schema->{"params"}};
+        if ($jsonrpc_request->{"method"} eq "get_ns_ips" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { domain => $jsonrpc_request->{"params"}};
             warn "[DEPRECATED] - 'get_ns_ips' method using scalar is deprecated. Please update to {\"domain\"} \n";
-        } elsif ($json_schema->{"method"} eq "test_progress" && ref \$json_schema->{"params"} eq "SCALAR") {
-            $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
+        } elsif ($jsonrpc_request->{"method"} eq "test_progress" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'test_progress' method using scalar is deprecated. Please update to {\"test_id\"} \n";
-        } elsif ($json_schema->{"method"} eq "get_test_params" && ref \$json_schema->{"params"} eq "SCALAR") {
-            $json_schema->{"params"} = { test_id => $json_schema->{"params"} };
+        } elsif ($jsonrpc_request->{"method"} eq "get_test_params" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_test_params' method using scalar is deprecated. Please update to {\"test_id\"} \n";
-        } elsif ($json_schema->{"method"} eq "get_batch_job_result" && ref \$json_schema->{"params"} eq "SCALAR") {
-            $json_schema->{"params"} = { batch_id => $json_schema->{"params"} };
+        } elsif ($jsonrpc_request->{"method"} eq "get_batch_job_result" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { batch_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_batch_job_result' method using scalar is deprecated. Please update to {\"batch_id\"} \n";
-        } elsif ($json_schema->{"method"} eq "get_data_from_parent_zone" && ref \$json_schema->{"params"} eq "SCALAR") {
-            $json_schema->{"params"} = { domain => $json_schema->{"params"} };
+        } elsif ($jsonrpc_request->{"method"} eq "get_data_from_parent_zone" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { domain => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_data_from_parent_zone' method using scalar is deprecated. Please update to {\"domain\"} \n";
         }
 
-        my @error = $json_schemas{$json_schema->{"method"}}->validate($json_schema->{"params"});
+        my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});
         return {
                 jsonrpc => '2.0',
                 id => undef,

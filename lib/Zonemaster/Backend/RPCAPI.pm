@@ -13,6 +13,7 @@ use File::Slurp qw(append_file);
 use Zonemaster::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
+use Data::Dumper;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
@@ -290,10 +291,12 @@ sub start_domain_test {
     my $result = 0;
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
+    $params->{domain} .= '.' if '.' ne substr $params->{domain}, -1;
+
     my $syntax_result = $self->validate_syntax( $params );
     die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
-    die "No domain in parameters\n" unless ( $params->{domain} );
+    die "No domain in parameters\n" unless ( $params->{domain} ); #Dead code ?
     
     if ($params->{config}) {
         $params->{config} =~ s/[^\w_]//isg;

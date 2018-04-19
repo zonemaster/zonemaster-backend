@@ -214,11 +214,12 @@ sub to_idn {
     my ( $self, $str ) = @_;
 
     if ( $str =~ m/^[[:ascii:]]+$/ ) {
+        $str = lc $str;
         return $str;
     }
 
     if ( Zonemaster::LDNS::has_idn() ) {
-        return Zonemaster::LDNS::to_idn( $str );
+        return lc Zonemaster::LDNS::to_idn( $str );
     }
     else {
         warn __( "Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII names correctly." );

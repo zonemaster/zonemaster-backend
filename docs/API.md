@@ -714,6 +714,7 @@ Example request:
   "params": {
     "offset": 0,
     "limit": 200,
+    "filter": "all",
     "frontend_params": {
       "domain": "zonemaster.net",      
       "nameservers": [
@@ -767,6 +768,7 @@ An object with the following properties:
 
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:
@@ -775,12 +777,15 @@ The value of "frontend_params" is an object with the following properties:
 * `"domain"`: A *domain name*, required.
 * `"profile"`: **Deprecated**. A *profile name*, optional.
 * `"client_version"`: **Deprecated**. A *client version*, optional.
-* `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
+* `"nameservers"`: **Deprecated**. A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
 * `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
 * `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
 * `"config"`: **Deprecated**. A string, optional. The name of a *config profile*.
+
+Please, use a non-deprecated value for `"filter"` property: "all", "delegated" and "undelegated".
+The default filter value, "old_behavior", will be removed and replaced by the value "all".
 
 #### `"result"`
 

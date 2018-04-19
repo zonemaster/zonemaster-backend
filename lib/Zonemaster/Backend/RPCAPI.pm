@@ -26,7 +26,7 @@ use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 
-# my $zm_validator = Zonemaster::Backend::Validator->new;
+my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
@@ -67,7 +67,9 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{get_ns_ips} = joi->object->strict->props(domain => joi->string->required);
+$json_schemas{get_ns_ips} = joi->object->strict->props(
+    domain   => $zm_validator->domain_name->required
+);
 sub get_ns_ips {
     my ( $self, $params ) = @_;
     my $ns_name = "";
@@ -85,7 +87,7 @@ sub get_ns_ips {
 }
 
 $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
-    domain   => $Zonemaster::Backend::Validator::domain_name->required
+    domain   => $zm_validator->domain_name->required
 );
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
@@ -180,24 +182,24 @@ sub _check_domain {
 }
 
 $json_schemas{validate_syntax} = joi->object->strict->props(
-    domain => $Zonemaster::Backend::Validator::domain_name->required,
+    domain => $zm_validator->domain_name->required,
     ds_info => joi->array->strict->items(
-        $Zonemaster::Backend::Validator::ds_info
+        $zm_validator->ds_info
     ),
     nameservers => joi->array->strict->items(
-        $Zonemaster::Backend::Validator::nameserver
+        $zm_validator->nameserver
     ),
     advanced => joi->boolean,
     ipv4 => joi->boolean,
     ipv6 => joi->boolean,
-    profile => $Zonemaster::Backend::Validator::profil_name,
-    client_id => $Zonemaster::Backend::Validator::client_id,
-    client_version => $Zonemaster::Backend::Validator::client_version,
-    user_ip => $Zonemaster::Backend::Validator::ip_address,
-    user_location_info => $Zonemaster::Backend::Validator::location,
+    profile => $zm_validator->profil_name,
+    client_id => $zm_validator->client_id,
+    client_version => $zm_validator->client_version,
+    user_ip => $zm_validator->ip_address,
+    user_location_info => $zm_validator->location,
     config => joi->string,
-    priority => $Zonemaster::Backend::Validator::priority,
-    queue => $Zonemaster::Backend::Validator::queue
+    priority => $zm_validator->priority,
+    queue => $zm_validator->queue
 );
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
@@ -330,24 +332,24 @@ sub add_user_ip_geolocation {
 }
 
 $json_schemas{start_domain_test} = joi->object->strict->props(
-    domain => $Zonemaster::Backend::Validator::domain_name->required,
+    domain => $zm_validator->domain_name->required,
     ipv4 => joi->boolean,
     ipv6 => joi->boolean,
     ds_info => joi->array->items(
-        $Zonemaster::Backend::Validator::ds_info
+        $zm_validator->ds_info
     ),
     nameservers => joi->array->items(
-        $Zonemaster::Backend::Validator::nameserver
+        $zm_validator->nameserver
     ),
     advanced => joi->boolean,
-    profile => $Zonemaster::Backend::Validator::profil_name,
-    client_id => $Zonemaster::Backend::Validator::client_id,
-    client_version => $Zonemaster::Backend::Validator::client_version,
-    user_ip => $Zonemaster::Backend::Validator::ip_address,
-    user_location_info => $Zonemaster::Backend::Validator::location,
+    profile => $zm_validator->profil_name,
+    client_id => $zm_validator->client_id,
+    client_version => $zm_validator->client_version,
+    user_ip => $zm_validator->ip_address,
+    user_location_info => $zm_validator->location,
     config => joi->string,
-    priority => $Zonemaster::Backend::Validator::priority,
-    queue => $Zonemaster::Backend::Validator::queue
+    priority => $zm_validator->priority,
+    queue => $zm_validator->queue
 );
 sub start_domain_test {
     my ( $self, $params ) = @_;
@@ -373,7 +375,7 @@ sub start_domain_test {
 }
 
 $json_schemas{test_progress} = joi->object->strict->props(
-    test_id => $Zonemaster::Backend::Validator::test_id->required
+    test_id => $zm_validator->test_id->required
 );
 sub test_progress {
     my ( $self, $params ) = @_;
@@ -392,7 +394,7 @@ sub test_progress {
 }
 
 $json_schemas{get_test_params} = joi->object->strict->props(
-    test_id => $Zonemaster::Backend::Validator::test_id->required
+    test_id => $zm_validator->test_id->required
 );
 sub get_test_params {
     my ( $self, $params ) = @_;
@@ -411,8 +413,8 @@ sub get_test_params {
 }
 
 $json_schemas{get_test_results} = joi->object->strict->props(
-    id => $Zonemaster::Backend::Validator::test_id->required,
-    language => $Zonemaster::Backend::Validator::translate_language->required
+    id => $zm_validator->test_id->required,
+    language => $zm_validator->translate_language->required
 );
 sub get_test_results {
     my ( $self, $params ) = @_;
@@ -483,19 +485,19 @@ $json_schemas{get_test_history} = joi->object->strict->props(
     offset => joi->integer->min(0),
     limit => joi->integer->min(0),
     frontend_params => joi->object->strict->props(
-        domain => $Zonemaster::Backend::Validator::domain_name->required,
+        domain => $zm_validator->domain_name->required,
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
         ds_info => joi->array->strict->items(
-            $Zonemaster::Backend::Validator::ds_info
+            $zm_validator->ds_info
         ),
         nameservers => joi->array->strict->items(
-            $Zonemaster::Backend::Validator::nameserver
+            $zm_validator->nameserver
         ),
         advanced => joi->boolean,
-        profile => $Zonemaster::Backend::Validator::profil_name,
-        client_id => $Zonemaster::Backend::Validator::client_id,
-        client_version => $Zonemaster::Backend::Validator::client_version,
+        profile => $zm_validator->profil_name,
+        client_id => $zm_validator->client_id,
+        client_version => $zm_validator->client_version,
         config => joi->string,
     )->required
 );
@@ -513,8 +515,8 @@ sub get_test_history {
 }
 
 $json_schemas{add_api_user} = joi->object->strict->props(
-    username => $Zonemaster::Backend::Validator::username->required,
-    api_key => $Zonemaster::Backend::Validator::api_key->required,
+    username => $zm_validator->username->required,
+    api_key => $zm_validator->api_key->required,
 );
 sub add_api_user {
     my ( $self, $p, undef, $remote_ip ) = @_;
@@ -537,25 +539,25 @@ sub add_api_user {
 }
 
 $json_schemas{add_batch_job} = joi->object->strict->props(
-    username => $Zonemaster::Backend::Validator::username->required,
-    api_key => $Zonemaster::Backend::Validator::api_key->required,
+    username => $zm_validator->username->required,
+    api_key => $zm_validator->api_key->required,
     domains => joi->array->strict->items(
-        $Zonemaster::Backend::Validator::domain_name->required
+        $zm_validator->domain_name->required
     )->required,
     test_params => joi->object->strict->props(
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
         ds_info => joi->array->strict->items(
-            $Zonemaster::Backend::Validator::ds_info
+            $zm_validator->ds_info
         ),
         nameservers => joi->array->strict->items(
-            $Zonemaster::Backend::Validator::nameserver
+            $zm_validator->nameserver
         ),
-        profile => $Zonemaster::Backend::Validator::profil_name,
-        client_id => $Zonemaster::Backend::Validator::client_id,
-        client_version => $Zonemaster::Backend::Validator::client_version,
-        user_ip => $Zonemaster::Backend::Validator::ip_address,
-        user_location_info => $Zonemaster::Backend::Validator::location,
+        profile => $zm_validator->profil_name,
+        client_id => $zm_validator->client_id,
+        client_version => $zm_validator->client_version,
+        user_ip => $zm_validator->ip_address,
+        user_location_info => $zm_validator->location,
         config => joi->string
     )
 );
@@ -568,7 +570,7 @@ sub add_batch_job {
 }
 
 $json_schemas{get_batch_job_result} = joi->object->strict->props(
-    batch_id => $Zonemaster::Backend::Validator::batch_id->required
+    batch_id => $zm_validator->batch_id->required
 );
 sub get_batch_job_result {
     my ( $self, $params ) = @_;

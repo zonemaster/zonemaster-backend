@@ -100,17 +100,7 @@ sub {
     try {
         my $json = $req->content;
         my $content = decode_json($json);
- 	    my ($has_error, $errors) = Zonemaster::Backend::RPCAPI->json_validate($content);
-
-        if ($has_error) {
-          $res = Plack::Response->new(200);
-          $res->content_type('application/json');
-          $res->body( encode_json($errors) );
-          $res->finalize;
-        } else {
-            $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
-        }
-    } catch {
+    } catch JSONException with {
         my $error = (split /at \//, $_)[0];
         $res = Plack::Response->new(200);
         $res->content_type('application/json');
@@ -123,5 +113,15 @@ sub {
                         data => "$error"
                     }}) );
         $res->finalize;
+    }
+    my ($has_error, $errors) = Zonemaster::Backend::RPCAPI->json_validate($content);
+
+    if ($has_error) {
+      $res = Plack::Response->new(200);
+      $res->content_type('application/json');
+      $res->body( encode_json($errors) );
+      $res->finalize;
+    } else {
+        $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
     }
 };

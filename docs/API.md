@@ -1017,7 +1017,9 @@ An object with the following properties:
 >
 
 
-## API method: `validate_syntax`
+## API method: `validate_syntax` - **Deprecated**
+
+*This API method is Deprecated. Use directly `start_domain_test`*
 
 Checks the `"params"` structure for syntax coherence. It is very strict on what
 is allowed and what is not to avoid any SQL injection and cross site scripting

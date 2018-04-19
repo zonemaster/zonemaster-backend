@@ -220,6 +220,7 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my @results;
+    my $sth = {};
 
     my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
 
@@ -233,7 +234,7 @@ sub get_test_history {
     }
 
     if ($p->{filter} eq "all") {
-        my $sth = $self->dbh->prepare(
+        $sth = $self->dbh->prepare(
             q[SELECT
                 id,
                 hash_id,
@@ -249,7 +250,7 @@ sub get_test_history {
         );
         $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
     } else {
-        my $sth = $self->dbh->prepare(
+        $sth = $self->dbh->prepare(
             q[SELECT
                 id,
                 hash_id,

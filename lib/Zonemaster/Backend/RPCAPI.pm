@@ -14,6 +14,7 @@ use Zonemaster::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
 use JSON::Validator "joi";
+use Data::Dumper;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
@@ -25,6 +26,7 @@ use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 
+# my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
@@ -557,12 +559,12 @@ sub json_validate {
     my ( $self, $json_schema) = @_;
 
     my @error_rpc = $rpc_request->validate($json_schema);
-    return 1, {
+    return {
             jsonrpc => '2.0',
-            id => (defined $json_schema->{"id"} ? $json_schema->{'id'} + 0 : "1"),
+            id => undef,
             error => {
                 code => '-32600',
-                message=> 'The JSON sent is not a valid Request object.',
+                message=> 'The JSON sent is not a valid request object.',
                 data => "@error_rpc\n"
             }
         } if @error_rpc;
@@ -587,7 +589,7 @@ sub json_validate {
         }
 
         my @error = $json_schemas{$json_schema->{"method"}}->validate($json_schema->{"params"});
-        return 1, {
+        return {
                 jsonrpc => $json_schema->{"jsonrpc"},
                 id => $json_schema->{"id"},
                 result => {
@@ -596,6 +598,6 @@ sub json_validate {
                 }
             } if @error;
     }
-    return 0, '';
+    return '';
 }
 1;

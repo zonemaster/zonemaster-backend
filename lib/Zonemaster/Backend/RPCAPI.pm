@@ -119,7 +119,7 @@ sub _check_domain {
                     $dn,
                     {
                         status  => 'nok',
-                        message => encode_entities( "The domain name cannot be converted to the IDN format" )
+                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
                     }
                 );
             }
@@ -130,7 +130,7 @@ sub _check_domain {
                 {
                     status => 'nok',
                     message =>
-                      encode_entities( "$type contains non-ascii characters and IDN conversion is not installed" )
+                      encode_entities( "$type contains non-ascii characters and IDNA conversion is not installed" )
                 }
             );
         }
@@ -395,10 +395,14 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my $results;
+
+    $p->{offset} //= 0;
+    $p->{limit} //= 200;
+    $p->{filter} //= "old_behavior";
     
     # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
     return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
-    
+
     $results = $self->{db}->get_test_history( $p );
 
     return $results;
@@ -422,34 +426,6 @@ sub add_api_user {
     
     return $result;
 }
-
-=coment
-sub add_batch_job {
-    my ( $self, $params ) = @_;
-    my $batch_id;
-
-    if ( $self->{db}->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
-        $params->{test_params}->{client_version} = '1.0';
-        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
-
-        $batch_id = $self->{db}->create_new_batch_job( $params->{username} );
-
-        my $minutes_between_tests_with_same_params = 5;
-#        $self->{db}->dbhandle->begin_work();
-        foreach my $domain ( @{$params->{domains}} ) {
-            $self->{db}
-              ->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
-        }
-#        $self->{db}->dbhandle->commit();
-    }
-    else {
-        die "User $params->{username} not authorized to use batch mode\n";
-    }
-
-    return $batch_id;
-}
-=cut
 
 sub add_batch_job {
     my ( $self, $params ) = @_;

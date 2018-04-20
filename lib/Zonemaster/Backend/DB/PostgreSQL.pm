@@ -193,15 +193,18 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my $dbh = $self->dbh;
-    
-    $p->{offset} //= 0;
-    $p->{limit} //= 200;
 
     my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
-    my $undelegated =
-        ( defined $p->{frontend_params}->{nameservers} )
-      ? ( "AND (params->'nameservers') IS NOT NULL" )
-      : ( "AND (params->'nameservers') IS NULL" );
+    my $undelegated = "";
+    if ($p->{filter} eq "old_behavior" ) {
+        $undelegated = (defined $p->{frontend_params}->{nameservers})
+            ? ("AND (params->'nameservers') IS NOT NULL")
+            : ("AND (params->'nameservers') IS NULL");
+    } elsif ($p->{filter} eq "undelegated") {
+        $undelegated = "AND (params->'nameservers') IS NOT NULL";
+    } elsif ($p->{filter} eq "delegated") {
+        $undelegated = "AND (params->'nameservers') IS NULL";
+    }
 
     my @results;
     my $query = "

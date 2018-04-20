@@ -25,6 +25,7 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
+lib/Zonemaster/Backend/Config/DCPlugin.pm
 lib/Zonemaster/Backend/DB.pm
 lib/Zonemaster/Backend/DB/MySQL.pm
 lib/Zonemaster/Backend/DB/PostgreSQL.pm
@@ -48,8 +49,6 @@ script/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
 share/backend_config.ini
-share/backend_config.ini-mysql
-share/backend_config.ini-postgresql
 share/backend_config.ini-sqlite
 share/cleanup-mysql.sql
 share/cleanup-postgres.sql
@@ -59,14 +58,12 @@ share/starman-zm-backend-RPC-API.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini
-share/zm-backend.sh-mysql
-share/zm-backend.sh-postgresql
-share/zm-centos.sh-mysql
-share/zm-centos.sh-postgresql
+share/zm-backend.sh
+share/zm_rpcapi-bsd
+share/zm_testagent-bsd
 share/zonemaster_backend_testagent.conf
 t/test01.data
 t/test01.t
 t/test_DB_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t
-

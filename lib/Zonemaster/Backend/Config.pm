@@ -26,7 +26,7 @@ else {
 
 sub _load_config {
     my $cfg = Config::IniFiles->new( -file => $path );
-    die "UNABLE TO LOAD $path\n" unless ( $cfg );
+    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $cfg );
 
     return $cfg;
 }

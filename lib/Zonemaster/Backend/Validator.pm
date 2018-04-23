@@ -79,3 +79,9 @@ sub translation_language {
 sub username {
     return joi->string;
 }
+sub jsonrpc_method {
+    return joi->string->regex("[a-zA-Z0-9_-]*");
+}
+sub jsonrpc_id {
+    return joi->integer->min(0);
+}

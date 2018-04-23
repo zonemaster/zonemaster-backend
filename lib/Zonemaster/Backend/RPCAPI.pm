@@ -14,7 +14,6 @@ use Zonemaster::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
 use JSON::Validator "joi";
-use Data::Dumper;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
@@ -487,9 +486,7 @@ $json_schemas{get_test_history} = joi->object->strict->props(
         domain => $zm_validator->domain_name->required,
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
-        nameservers => joi->array->strict->items(
-            $zm_validator->nameserver
-        ),
+        nameservers => joi->boolean,
         ds_info => joi->array->strict->items(
             $zm_validator->ds_info
         ),
@@ -552,12 +549,15 @@ $json_schemas{add_batch_job} = joi->object->strict->props(
         ds_info => joi->array->strict->items(
             $zm_validator->ds_info
         ),
+        advanced => joi->boolean,
         profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id,
         client_version => $zm_validator->client_version,
         config => joi->string,
         user_ip => $zm_validator->ip_address,
-        user_location_info => $zm_validator->location
+        user_location_info => $zm_validator->location,
+        priority => $zm_validator->priority,
+        queue => $zm_validator->queue
     )
 );
 sub add_batch_job {
@@ -584,9 +584,8 @@ sub get_batch_job_result {
 
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
-    id => joi->integer->min(0)->required,
-    method => joi->string->regex("[a-zA-Z0-9_-]*")->required
-);
+    id => $zm_validator->jsonrpc_id()->required,
+    method => $zm_validator->jsonrpc_method()->required);
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 

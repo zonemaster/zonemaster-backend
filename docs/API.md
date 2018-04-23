@@ -382,7 +382,7 @@ Example response:
 
 An object with the property:
 
-`"hostname"`: A *domain name*. The *domain name* whose IP addresses are to be resolved.
+`"hostname"`: A *domain name*. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`

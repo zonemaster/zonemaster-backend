@@ -57,6 +57,7 @@ sub new {
     return ( $self );
 }
 
+$json_schemas{get_ns_ips} = {};
 sub version_info {
     my ( $self ) = @_;
 
@@ -183,23 +184,21 @@ sub _check_domain {
 
 $json_schemas{validate_syntax} = joi->object->strict->props(
     domain => $zm_validator->domain_name->required,
-    ds_info => joi->array->strict->items(
-        $zm_validator->ds_info
-    ),
+    ipv4 => joi->boolean,
+    ipv6 => joi->boolean,
     nameservers => joi->array->strict->items(
         $zm_validator->nameserver
     ),
-    advanced => joi->boolean,
-    ipv4 => joi->boolean,
-    ipv6 => joi->boolean,
+    ds_info => joi->array->strict->items(
+        $zm_validator->ds_info
+    ),
     profile => $zm_validator->profile_name,
+    advanced => joi->boolean,
     client_id => $zm_validator->client_id,
     client_version => $zm_validator->client_version,
-    user_ip => $zm_validator->ip_address,
-    user_location_info => $zm_validator->location,
     config => joi->string,
-    priority => $zm_validator->priority,
-    queue => $zm_validator->queue
+    user_ip => $zm_validator->ip_address,
+    user_location_info => $zm_validator->location
 );
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
@@ -335,19 +334,19 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     domain => $zm_validator->domain_name->required,
     ipv4 => joi->boolean,
     ipv6 => joi->boolean,
-    ds_info => joi->array->items(
-        $zm_validator->ds_info
-    ),
     nameservers => joi->array->items(
         $zm_validator->nameserver
+    ),
+    ds_info => joi->array->items(
+        $zm_validator->ds_info
     ),
     advanced => joi->boolean,
     profile => $zm_validator->profile_name,
     client_id => $zm_validator->client_id,
     client_version => $zm_validator->client_version,
+    config => joi->string,
     user_ip => $zm_validator->ip_address,
     user_location_info => $zm_validator->location,
-    config => joi->string,
     priority => $zm_validator->priority,
     queue => $zm_validator->queue
 );
@@ -488,11 +487,11 @@ $json_schemas{get_test_history} = joi->object->strict->props(
         domain => $zm_validator->domain_name->required,
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
-        ds_info => joi->array->strict->items(
-            $zm_validator->ds_info
-        ),
         nameservers => joi->array->strict->items(
             $zm_validator->nameserver
+        ),
+        ds_info => joi->array->strict->items(
+            $zm_validator->ds_info
         ),
         advanced => joi->boolean,
         profile => $zm_validator->profile_name,
@@ -547,18 +546,18 @@ $json_schemas{add_batch_job} = joi->object->strict->props(
     test_params => joi->object->strict->props(
         ipv4 => joi->boolean,
         ipv6 => joi->boolean,
-        ds_info => joi->array->strict->items(
-            $zm_validator->ds_info
-        ),
         nameservers => joi->array->strict->items(
             $zm_validator->nameserver
+        ),
+        ds_info => joi->array->strict->items(
+            $zm_validator->ds_info
         ),
         profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id,
         client_version => $zm_validator->client_version,
+        config => joi->string,
         user_ip => $zm_validator->ip_address,
-        user_location_info => $zm_validator->location,
-        config => joi->string
+        user_location_info => $zm_validator->location
     )
 );
 sub add_batch_job {

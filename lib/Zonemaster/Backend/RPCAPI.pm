@@ -56,7 +56,7 @@ sub new {
     return ( $self );
 }
 
-$json_schemas{get_ns_ips} = {};
+$json_schemas{version_info} = joi->object->strict;
 sub version_info {
     my ( $self ) = @_;
 
@@ -600,6 +600,7 @@ sub jsonrpc_validate {
             }
         } if @error_rpc;
 
+    say "OUT";
     if (exists $jsonrpc_request->{"params"}) {
 
         if ($jsonrpc_request->{"method"} eq "get_ns_ips" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
@@ -618,7 +619,7 @@ sub jsonrpc_validate {
             $jsonrpc_request->{"params"} = { domain => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_data_from_parent_zone' method using scalar is deprecated. Please update to {\"domain\"} \n";
         }
-
+        say "IN";
         my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});
         return {
                 jsonrpc => '2.0',

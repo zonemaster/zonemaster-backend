@@ -68,7 +68,7 @@ sub version_info {
 }
 
 $json_schemas{get_ns_ips} = joi->object->strict->props(
-    domain   => $zm_validator->domain_name->required
+    hostname   => $zm_validator->domain_name->required
 );
 sub get_ns_ips {
     my ( $self, $params ) = @_;
@@ -77,7 +77,7 @@ sub get_ns_ips {
     if (ref \$params eq "SCALAR") {
         $ns_name = $params;
     } else {
-        $ns_name = $params->{"domain"};
+        $ns_name = $params->{"hostname"};
     }
 
     my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
@@ -603,7 +603,7 @@ sub jsonrpc_validate {
     if (exists $jsonrpc_request->{"params"}) {
 
         if ($jsonrpc_request->{"method"} eq "get_ns_ips" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
-            $jsonrpc_request->{"params"} = { domain => $jsonrpc_request->{"params"}};
+            $jsonrpc_request->{"params"} = { hostname => $jsonrpc_request->{"params"}};
             warn "[DEPRECATED] - 'get_ns_ips' method using scalar is deprecated. Please update to {\"domain\"} \n";
         } elsif ($jsonrpc_request->{"method"} eq "test_progress" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };

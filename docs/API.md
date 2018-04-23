@@ -336,7 +336,7 @@ An object with the following properties:
 
 ## API method: `get_ns_ips`
 
-Looks up the A and AAAA records for a *domain name* on the public Internet.
+Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
 
 Example request:
 
@@ -346,7 +346,7 @@ Example request:
   "jsonrpc": "2.0",
   "id": 2,
   "method": "get_ns_ips",
-  "params": {"domain": "zonemaster.net"}
+  "params": {"hostname": "zonemaster.net"}
 }
 ```
 
@@ -382,7 +382,7 @@ Example response:
 
 An object with the property:
 
-`"domain"`: A *domain name*. The *domain name* whose IP addresses are to be resolved.
+`"hostname"`: A *domain name*. The *domain name* whose IP addresses are to be resolved.
 
 
 #### `"result"`

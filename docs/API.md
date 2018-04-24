@@ -146,8 +146,7 @@ This parameter is a string that are an IPv4 or IPv6. It's validate with the foll
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
 
-
-### Location 
+### Location - **Deprecated** 
 
 Basic data type: object
 
@@ -561,8 +560,8 @@ An object with the following properties:
 * `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. Used to monitor which client use the API
 * `"config"`: A string, optional. The name of a config profile.
-* `"user_ip"`: An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
-* `"user_location_info"`: An *location* object, optional. Used to monitor information about the user. 
+* `"user_ip"`: **Deprecated**. An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
+* `"user_location_info"`: **Deprecated**. An *location* object, optional. Used to monitor information about the user. 
 * `"priority"`: A *priority*, optional.
 * `"queue"`: A *queue*, optional.
 
@@ -990,8 +989,8 @@ The value of `"test_params"` is an object with the following properties:
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: An *IP address*, optional.
-* `"user_location_info"`: An *location* object, optional.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional.
+* `"user_location_info"`: **Deprecated**. An *location* object, optional.
 * `"priority"`: A *priority*, optional
 * `"queue"`: A *queue*, optional
 
@@ -1143,8 +1142,8 @@ An object with the following properties:
 * `"client_id"`: A *client id*, optional.
 * `"client_version"`: A *client version*, optional.
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: An *IP address*, optional.
-* `"user_location_info"`: A *location* object, optional.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional.
+* `"user_location_info"`: **Deprecated**. A *location* object, optional.
 
 If the `"nameservers"` key is _not_ set, a recursive query made by the
 server to its locally configured resolver for NS records for the

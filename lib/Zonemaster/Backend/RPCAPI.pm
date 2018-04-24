@@ -308,36 +308,6 @@ sub validate_syntax {
     return { status => 'ok', message => encode_entities( 'Syntax ok' ) };
 }
 
-sub add_user_ip_geolocation {
-    my ( $self, $params ) = @_;
-
-    if ($params->{user_ip}
-        && Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
-        && Zonemaster::Backend::Config->Maxmind_City_DB_File()
-    ) {
-        my $ip = new Net::IP::XS($params->{user_ip});
-        if ($ip->iptype() eq 'PUBLIC') {
-            require Geo::IP;
-            my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
-            my $isp = $gi->isp_by_addr($params->{user_ip});
-
-            require GeoIP2::Database::Reader;
-            my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
-
-            my $city = $reader->city(ip => $params->{user_ip});
-
-            $params->{user_location_info}->{isp} = $isp;
-            $params->{user_location_info}->{country} = $city->country()->name();
-            $params->{user_location_info}->{city} = $city->city()->name();
-            $params->{user_location_info}->{longitude} = $city->location()->longitude();
-            $params->{user_location_info}->{latitude} = $city->location()->latitude();
-        }
-        else {
-            $params->{user_location_info}->{isp} = "Private IP address";
-        }
-    }
-}
-
 $json_schemas{start_domain_test} = joi->object->strict->props(
     domain => $zm_validator->domain_name->required,
     ipv4 => joi->boolean,
@@ -363,6 +333,9 @@ sub start_domain_test {
 
     my $result = 0;
 
+    $params->{user_ip} = '';
+    $params->{user_location_info} = '';
+
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );
     die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
@@ -373,8 +346,6 @@ sub start_domain_test {
         $params->{config} =~ s/[^\w_]//isg;
         die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
-
-    $self->add_user_ip_geolocation($params);
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
 
@@ -575,6 +546,9 @@ $json_schemas{add_batch_job} = joi->object->strict->props(
 );
 sub add_batch_job {
     my ( $self, $params ) = @_;
+
+    $params->{test_params}->{user_ip} = '';
+    $params->{test_params}->{user_location_info} = '';
 
     my $results = $self->{db}->add_batch_job( $params );
 

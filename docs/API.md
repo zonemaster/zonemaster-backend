@@ -334,7 +334,12 @@ An object with the following properties:
 >
 
 
-## API method: `get_ns_ips`
+## API method: `get_host_by_name` (formerly `get_ns_ips`)
+
+>
+> We renamed `get_ns_ips` into `get_host_by_name` to be more explicit. 
+> The method `get_ns_ips` is deprecated, please use `get_host_by_name` instead.
+>
 
 Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
 
@@ -345,7 +350,7 @@ Example request:
 {
   "jsonrpc": "2.0",
   "id": 2,
-  "method": "get_ns_ips",
+  "method": "get_host_by_name",
   "params": {"hostname": "zonemaster.net"}
 }
 ```

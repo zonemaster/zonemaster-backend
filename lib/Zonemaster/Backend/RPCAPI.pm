@@ -67,10 +67,10 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{get_ns_ips} = joi->object->strict->props(
+$json_schemas{get_host_by_name} = joi->object->strict->props(
     hostname   => $zm_validator->domain_name->required
 );
-sub get_ns_ips {
+sub get_host_by_name {
     my ( $self, $params ) = @_;
     my $ns_name = "";
 
@@ -84,6 +84,15 @@ sub get_ns_ips {
     @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     return \@adresses;
+
+}
+
+$json_schemas{get_ns_ips} = joi->object->strict->props(
+    hostname   => $zm_validator->domain_name->required
+);
+sub get_ns_ips {
+    my ( $self, $params ) = @_;
+    $self->get_host_by_name($params);
 }
 
 $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
@@ -605,10 +614,12 @@ sub jsonrpc_validate {
         } if @error_rpc;
 
     if (exists $jsonrpc_request->{"params"}) {
-
-        if ($jsonrpc_request->{"method"} eq "get_ns_ips" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+        if ($jsonrpc_request->{"method"} eq "get_ns_ips") {
+            warn "[DEPRECATED] - 'get_ns_ips' is deprecated. Please use 'get_host_by_name' \n";
+        }
+        if (($jsonrpc_request->{"method"} eq "get_host_by_name" || $jsonrpc_request->{"method"} eq "get_ns_ips") && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { hostname => $jsonrpc_request->{"params"}};
-            warn "[DEPRECATED] - 'get_ns_ips' method using scalar is deprecated. Please update to {\"domain\"} \n";
+            warn "[DEPRECATED] - 'get_host_by_name' method using scalar is deprecated. Please update to {\"hostname\"} \n";
         } elsif ($jsonrpc_request->{"method"} eq "test_progress" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'test_progress' method using scalar is deprecated. Please update to {\"test_id\"} \n";

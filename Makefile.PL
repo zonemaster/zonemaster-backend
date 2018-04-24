@@ -28,7 +28,7 @@ requires
   'String::ShellQuote'       => 0,
   'Zonemaster::Engine'       => 2.0,
   'Zonemaster::LDNS'         => 1.0,
-  'JSON::Validator'          => 2.06,
+  'JSON::Validator'          => 2.07,
   'Try::Tiny'                => 0.30
   ;
 

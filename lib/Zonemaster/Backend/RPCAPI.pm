@@ -502,6 +502,10 @@ sub get_test_history {
 
     my $results;
 
+    $p->{offset} //= 0;
+    $p->{limit} //= 200;
+    $p->{filter} //= "old_behavior";
+    
     # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
     return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
 

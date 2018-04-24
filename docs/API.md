@@ -757,6 +757,7 @@ Example request:
   "params": {
     "offset": 0,
     "limit": 200,
+    "filter": "all",
     "frontend_params": {
       "domain": "zonemaster.net",      
       "nameservers": [
@@ -810,6 +811,7 @@ An object with the following properties:
 
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:
@@ -817,13 +819,16 @@ The value of "frontend_params" is an object with the following properties:
 * `"domain"`: A *domain name*, required.
 * `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
 * `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
-* `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
+* `"nameservers"`: **Deprecated**. A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
 * `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"profile"`: **Deprecated**. A *profile name*, optional.
 * `"client_id"`: **Deprecated**. A *client id*, optional.
 * `"client_version"`: **Deprecated**. A *client version*, optional.
 * `"config"`: **Deprecated**. A string, optional. The name of a *config profile*.
+
+Please, use a non-deprecated value for `"filter"` property: "all", "delegated" and "undelegated".
+The default filter value, "old_behavior", will be removed and replaced by the value "all".
 
 #### `"result"`
 
@@ -1073,7 +1078,9 @@ An object with the following properties:
 >
 
 
-## API method: `validate_syntax`
+## API method: `validate_syntax` - **Deprecated**
+
+*This API method is Deprecated. Use directly `start_domain_test`*
 
 Checks the `"params"` structure for syntax coherence. It is very strict on what
 is allowed and what is not to avoid any SQL injection and cross site scripting

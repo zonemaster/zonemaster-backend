@@ -333,8 +333,12 @@ sub start_domain_test {
 
     my $result = 0;
 
-    $params->{user_ip} = '';
-    $params->{user_location_info} = '';
+    if ($params->{user_ip}){
+        delete $params->{user_ip};
+    }
+    if ($params->{user_location_info}){
+        delete $params->{user_location_info};
+    }
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );

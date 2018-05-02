@@ -366,6 +366,12 @@ sub start_domain_test {
     }
 
     #$self->add_user_ip_geolocation($params);
+    if ($params->{user_ip}) {
+        delete $params->{user_ip};
+    }
+    if ($params->{user_location_info}) {
+        delete $params->{user_location_info};
+    }
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
 

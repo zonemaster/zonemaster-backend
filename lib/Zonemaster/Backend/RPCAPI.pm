@@ -365,7 +365,7 @@ sub start_domain_test {
         die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
 
-    $self->add_user_ip_geolocation($params);
+    #$self->add_user_ip_geolocation($params);
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
 

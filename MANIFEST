@@ -33,6 +33,7 @@ lib/Zonemaster/Backend/DB/SQLite.pm
 lib/Zonemaster/Backend/RPCAPI.pm
 lib/Zonemaster/Backend/TestAgent.pm
 lib/Zonemaster/Backend/Translator.pm
+lib/Zonemaster/Backend/Validator.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files

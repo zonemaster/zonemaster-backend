@@ -20,9 +20,13 @@ else {
 }
 
 
+=head1 SUBROUTINES
+
+=cut
+
 sub _load_config {
     my $cfg = Config::IniFiles->new( -file => $path );
-    die "UNABLE TO LOAD $path\n" unless ( $cfg );
+    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $cfg );
 
     return $cfg;
 }
@@ -169,6 +173,56 @@ sub lock_on_queue {
     return $val;
 }
 
+=head2 new_DB
 
+Create a new database adapter object according to configuration.
+
+The adapter connects to the database before it is returned.
+
+=head3 INPUT
+
+The database adapter class is selected based on the return value
+of L<Zonemaster::Backend::Config->BackendDBType()>. The database
+adapter class constructor is called without arguments and is expected
+to configure itself according to available global configuration.
+
+=back
+
+=head3 RETURNS
+
+A configured L<Zonemaster::Backend::DB> object.
+
+=head3 EXCEPTIONS
+
+=over 4
+
+=item Dies if no database engine type is defined in the configuration.
+
+=item Dies if no adapter for the configured database engine can be loaded.
+
+=item Dies if the adapter is unable to connect to the database.
+
+=back
+
+=cut
+
+sub new_DB {
+    # Get DB type from config
+    my $dbtype = Zonemaster::Backend::Config->BackendDBType();
+    if (!defined $dbtype) {
+        die "Unrecognized DB.engine in backend config";
+    }
+
+    # Load and construct DB adapter
+    my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
+    require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
+    $dbclass->import();
+    my $db = $dbclass->new;
+
+    # Connect or die
+    $db->dbh;
+
+    return $db;
+}
 
 1;

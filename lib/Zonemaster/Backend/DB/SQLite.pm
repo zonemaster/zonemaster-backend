@@ -233,10 +233,30 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my @results;
+
+    my $undelegated = "";
+    if ($p->{filter} eq "old_behavior" ) {
+        $undelegated = (defined $p->{frontend_params}->{nameservers})
+            ? ("AND (params->'nameservers') IS NOT NULL")
+            : ("AND (params->'nameservers') IS NULL");
+    } elsif ($p->{filter} eq "undelegated") {
+        $undelegated = "AND (params->'nameservers') IS NOT NULL";
+    } elsif ($p->{filter} eq "delegated") {
+        $undelegated = "AND (params->'nameservers') IS NULL";
+    }
+
     my $quoted_domain = $self->dbh->quote( $p->{frontend_params}->{domain} );
     $quoted_domain =~ s/'/"/g;
-    my $query =
-"SELECT id, creation_time, params FROM test_results WHERE params like '\%\"domain\":$quoted_domain\%' ORDER BY id DESC LIMIT $p->{limit} OFFSET $p->{offset} ";
+    my $query = "SELECT
+                    id,
+                    creation_time,
+                    params
+                 FROM
+                    test_results
+                 WHERE
+                    params like '\%\"domain\":$quoted_domain\%'
+                    $undelegated
+                 ORDER BY id DESC LIMIT $p->{limit} OFFSET $p->{offset} ";
     my $sth1 = $self->dbh->prepare( $query );
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {

@@ -130,9 +130,9 @@ DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKE
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
-* `"algorithm"`: An integer, optional.
-* `"digtype"`: An integer, optional.
-* `"keytag"`: An integer, optional.
+* `"algorithm"`: An non negative integer, optional.
+* `"digtype"`: An non negative integer, optional.
+* `"keytag"`: An non negative integer, optional.
 
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
@@ -146,8 +146,7 @@ This parameter is a string that are an IPv4 or IPv6. It's validate with the foll
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
 
-
-### Location
+### Location - **Deprecated** 
 
 Basic data type: object
 
@@ -157,8 +156,8 @@ The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"l
 * `"isp"`: a string. The Internet Service Provider of the user.
 * `"country"`: a string. The country of the user.
 * `"city"`: a string. The city of the user.
-* `"longitude"`: a string. The longtitude of the user.
-* `"latitude"`: a string. The latitude of the user.
+* `"longitude"`: a string. The longtitude of the user. Validate with `^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$`.
+* `"latitude"`: a string. The latitude of the user. Validate with `^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$`.
 
 >
 > TODO Add regex
@@ -176,8 +175,8 @@ Properties:
 
 ### Priority
 
-Basic data type: number
-
+Basic data type: number (integer)
+ 
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
@@ -209,14 +208,14 @@ When a method received an unknown *profile name* value for in parameter with thi
 
 ### Progress percentage
 
-Basic data type: number
+Basic data type: number (integer)
 
 An integer ranging from 0 (not started) to 100 (finished).
 
 
 ### Queue
 
-Basic data type: number
+Basic data type: number (integer)
 
 This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
 The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
@@ -278,7 +277,7 @@ Basic data type: string
 
 ### Unsigned integer
 
- Basic data type: number
+ Basic data type: number (integer)
  
  An unsigned integer is either positive or zero.
  
@@ -333,11 +332,28 @@ An object with the following properties:
 >
 
 
-## API method: `get_ns_ips`
+## API method: `get_host_by_name` (formerly `get_ns_ips`)
 
-Looks up the A and AAAA records for a *domain name* on the public Internet.
+>
+> We renamed `get_ns_ips` into `get_host_by_name` to be more explicit. 
+> The method `get_ns_ips` is deprecated, please use `get_host_by_name` instead.
+>
+
+Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "get_host_by_name",
+  "params": {"hostname": "zonemaster.net"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
   "jsonrpc": "2.0",
@@ -345,7 +361,8 @@ Example request:
   "method": "get_ns_ips",
   "params": "zonemaster.net"
 }
-```
+``` 
+
 
 Example response:
 ```json
@@ -366,7 +383,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The *domain name* whose IP addresses are to be resolved.
+An object with the property:
+
+`"hostname"`: A *domain name*. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -393,7 +412,19 @@ Returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from the
 parent zone.
 
 Example request:
+*Valid syntax:*
 ```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "get_data_from_parent_zone",
+  "params": {"domain": "zonemaster.net"}
+}
+```
+
+*Deprecated syntax:*
+```json
+
 {
   "jsonrpc": "2.0",
   "id": 3,
@@ -446,7 +477,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The domain whose DNS records are requested.
+An object with the property:
+
+`"domain"`: A *domain name*. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -516,18 +549,18 @@ Example response:
 
 An object with the following properties:
 
-* `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
 * `"domain"`: A *domain name*, required. The zone to test.
-* `"profile"`: A *profile name*, optional (default `"default"`). Run
-  the test using the given profile.
-* `"client_version"`: A *client version*, optional. Used to monitor which client use the API
+* `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
+* `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
 * `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
-* `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
-* `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
-* `"user_ip"`: An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
-* `"user_location_info"`: An *location* object, optional. Used to monitor information about the user. 
+* `"profile"`: A *profile name*, optional (default `"default"`). Run
+* `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
+* `"client_version"`: A *client version*, optional. Used to monitor which client use the API
+* `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
+* `"user_location_info"`: **Deprecated**. An *location* object, optional. Used to monitor information about the user. 
 * `"priority"`: A *priority*, optional.
 * `"queue"`: A *queue*, optional.
 
@@ -560,6 +593,18 @@ then the new request does not trigger a new test, but returns with the results o
 Reports on the progress of a *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "test_progress",
+  "params": {"test_id": "c45a3f8256c4a155"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
   "jsonrpc": "2.0",
@@ -581,7 +626,9 @@ Example response:
 
 #### `"params"`
 
-A *test id*. The *test* to report on.
+An object with the property:
+
+`"test_id"`: A *test id*. The *test* to report on.
 
 
 #### `"result"`
@@ -722,6 +769,7 @@ Example request:
   "params": {
     "offset": 0,
     "limit": 200,
+    "filter": "all",
     "frontend_params": {
       "domain": "zonemaster.net",      
       "nameservers": [
@@ -775,20 +823,24 @@ An object with the following properties:
 
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:
 
-* `"client_id"`: **Deprecated**. A *client id*, optional.
 * `"domain"`: A *domain name*, required.
-* `"profile"`: **Deprecated**. A *profile name*, optional.
-* `"client_version"`: **Deprecated**. A *client version*, optional.
-* `"nameservers"`: A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
-* `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
-* `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
 * `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
-* `"config"`: **Deprecated**. A string, optional. The name of a *config profile*.
+* `"nameservers"`: **Deprecated**. A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
+* `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
+* `"profile"`: **Deprecated**. A *profile name*, optional.
+* `"client_id"`: **Deprecated**. A *client id*, optional.
+* `"client_version"`: **Deprecated**. A *client version*, optional.
+* `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
+
+Please, use a non-deprecated value for `"filter"` property: "all", "delegated" and "undelegated".
+The default filter value, "old_behavior", will be removed and replaced by the value "all".
 
 #### `"result"`
 
@@ -945,8 +997,9 @@ The value of `"test_params"` is an object with the following properties:
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
-* `"user_ip"`: An *IP address*, optional.
-* `"user_location_info"`: An *location* object, optional.
+* `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional.
+* `"user_location_info"`: **Deprecated**. An *location* object, optional.
 * `"priority"`: A *priority*, optional
 * `"queue"`: A *queue*, optional
 
@@ -978,6 +1031,17 @@ A *batch id*.
 Return all *test id* objects of a *batch test*, with the number of finshed *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 147559211994909,
+    "method": "get_batch_job_result",
+    "params": {"batch_id": "8"}
+}
+```
+*Deprecated syntax:*
 ```json
 {
     "jsonrpc": "2.0",
@@ -1009,7 +1073,9 @@ Example response:
 
 #### `"params"`
 
-A *batch id*.
+An object with the property:
+
+* `"batch_id"`: A *batch id*.
 
 
 #### `"result"`
@@ -1028,7 +1094,9 @@ An object with the following properties:
 >
 
 
-## API method: `validate_syntax`
+## API method: `validate_syntax` - **Deprecated**
+
+*This API method is Deprecated. Use directly `start_domain_test`*
 
 Checks the `"params"` structure for syntax coherence. It is very strict on what
 is allowed and what is not to avoid any SQL injection and cross site scripting
@@ -1084,8 +1152,9 @@ An object with the following properties:
 * `"profile"`: A *profile name*, optional (default `"default"`).
 * `"advanced"`: **Deprecated**. A boolean, optional.  * `"client_id"`: A *client id*, optional.
 * `"client_version"`: A *client version*, optional.
-* `"user_ip"`: An *IP address*, optional.
-* `"user_location_info"`: A *location* object, optional.
+* `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional.
+* `"user_location_info"`: **Deprecated**. A *location* object, optional.
 
 If the `"nameservers"` key is _not_ set, a recursive query made by the
 server to its locally configured resolver for NS records for the
@@ -1121,6 +1190,18 @@ An object with the following properties:
 Return all *params* objects of a *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "method": "get_test_params",
+    "params": {"test_id": "6814584dc820354a"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
     "jsonrpc": "2.0",
@@ -1160,7 +1241,9 @@ Example response:
 
 #### `"params"`
 
-A *test id*.
+An object with the property:
+
+* `"test_id"`: A *test id*, required.
 
 
 #### `"result"`

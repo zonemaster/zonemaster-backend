@@ -65,12 +65,12 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 Install dependencies not available from binary packages:
 
 ```sh 
-sudo cpan -i Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
+sudo cpanm Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
 ```
 
 Install Zonemaster::Backend: 
 ```sh
-sudo cpan -i Zonemaster::Backend
+sudo cpanm Zonemaster::Backend
 ```
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
@@ -237,13 +237,13 @@ sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libd
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
+sudo cpanm Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
 ```
 
 Install Zonemaster::Backend:
 
 ```sh
-sudo cpan -i Zonemaster::Backend
+sudo cpanm Zonemaster::Backend
 ```
 
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
@@ -291,6 +291,19 @@ Initialize the database:
 mysql --user=root --password < ./initial-mysql.sql
 ```
 
+For latest versions of MySQL, wherein the root password is blank and you get an
+error "Access denied for the above command", follow the below procedure:
+
+```sh
+If you know the root password
+        mysql -u root 
+In MySQL prompt type the following 
+        SET PASSWORD FOR 'root'@'localhost' =PASSWORD("root-password");
+        flush privileges;
+        quit;
+Run again 
+	mysql --user=root --password < ./initial-mysql.sql
+```
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
@@ -527,7 +540,7 @@ you should be able to use the
 API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":1}' http://localhost:5000/ && echo
 ```
 
 The command is expected to give an immediate JSON response similiar to:

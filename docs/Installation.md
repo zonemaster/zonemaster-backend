@@ -65,13 +65,14 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 Install dependencies not available from binary packages:
 
 ```sh 
-sudo cpan -i Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
+sudo cpanm Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
 ```
 
 Install Zonemaster::Backend: 
 ```sh
-sudo cpan -i Zonemaster::Backend
+sudo cpanm Zonemaster::Backend
 ```
+
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
@@ -215,6 +216,8 @@ Check that the service has started:
 ```sh
 sudo /etc/init.d/zm-backend.sh status
 ```
+*Does not return any status as of now*
+
 
 ### 3.4 Post-installation (CentOS)
 
@@ -237,13 +240,13 @@ sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libd
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
+sudo cpanm Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
 ```
 
 Install Zonemaster::Backend:
 
 ```sh
-sudo cpan -i Zonemaster::Backend
+sudo cpanm Zonemaster::Backend
 ```
 
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
@@ -291,6 +294,20 @@ Initialize the database:
 mysql --user=root --password < ./initial-mysql.sql
 ```
 
+For latest versions of MySQL, wherein the root password is blank and you get an
+error "Access denied for the above command" on running the above command ,
+follow the below procedure: 
+
+```sh
+If you know the root password
+        mysql -u root 
+In MySQL prompt type the following 
+        SET PASSWORD FOR 'root'@'localhost' =PASSWORD("root-password");
+        flush privileges;
+        quit;
+Run again 
+	mysql --user=root --password < ./initial-mysql.sql
+```
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
@@ -308,17 +325,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
-The following block of commands is for **Debian 7** only. For all others, go to the step of installing
-database engine. First create or edit Debian 7 sources list file. Then fetch and import the repository signing key.
-And finally update the package lists.
-
-```sh
-echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" | sudo tee -a /etc/apt/sources.list.d/pgdg.list
-wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
-```
-
-For all versions of Debian and Ubuntu, install, configure and start database engine (and Perl bindings):
+Install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql

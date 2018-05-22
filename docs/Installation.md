@@ -308,17 +308,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
-The following block of commands is for **Debian 7** only. For all others, go to the step of installing
-database engine. First create or edit Debian 7 sources list file. Then fetch and import the repository signing key.
-And finally update the package lists.
-
-```sh
-echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" | sudo tee -a /etc/apt/sources.list.d/pgdg.list
-wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
-```
-
-For all versions of Debian and Ubuntu, install, configure and start database engine (and Perl bindings):
+For all versions of Debian and Ubuntu supported by Zonemaster, install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql

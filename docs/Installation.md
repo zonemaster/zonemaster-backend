@@ -72,6 +72,7 @@ Install Zonemaster::Backend:
 ```sh
 sudo cpanm Zonemaster::Backend
 ```
+
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
@@ -215,6 +216,8 @@ Check that the service has started:
 ```sh
 sudo /etc/init.d/zm-backend.sh status
 ```
+*Does not return any status as of now*
+
 
 ### 3.4 Post-installation (CentOS)
 
@@ -227,6 +230,18 @@ See the [post-installation] section for post-installation matters.
 
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
+
+Install dependencies available from binary packages:
+
+```sh
+sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libmoose-perl libplack-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
+```
+
+Install dependencies not available from binary packages:
+
+```sh
+sudo cpanm Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
+```
 
 Install Zonemaster::Backend:
 
@@ -280,7 +295,8 @@ mysql --user=root --password < ./initial-mysql.sql
 ```
 
 For latest versions of MySQL, wherein the root password is blank and you get an
-error "Access denied for the above command", follow the below procedure:
+error "Access denied for the above command" on running the above command ,
+follow the below procedure: 
 
 ```sh
 If you know the root password
@@ -309,17 +325,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
-The following block of commands is for **Debian 7** only. For all others, go to the step of installing
-database engine. First create or edit Debian 7 sources list file. Then fetch and import the repository signing key.
-And finally update the package lists.
-
-```sh
-echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" | sudo tee -a /etc/apt/sources.list.d/pgdg.list
-wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
-```
-
-For all versions of Debian and Ubuntu, install, configure and start database engine (and Perl bindings):
+Install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
@@ -528,7 +534,7 @@ you should be able to use the
 API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":1}' http://localhost:5000/ && echo
+curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
 ```
 
 The command is expected to give an immediate JSON response similiar to:

@@ -443,7 +443,7 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '/\bengine\b/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -474,7 +474,7 @@ mysql < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):

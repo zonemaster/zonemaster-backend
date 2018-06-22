@@ -15,6 +15,8 @@ load_rc_config $name
 : ${zm_testagent_group="zonemaster"}
 : ${zm_testagent_pidfile="/var/run/zonemaster/${name}.pid"}
 
+export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini"
+
 command="/usr/local/bin/zonemaster_backend_testagent"
 command_args="--user=${zm_testagent_user} --group=${zm_testagent_group} --pidfile=${zm_testagent_pidfile}"
 pidfile="${zm_testagent_pidfile}"

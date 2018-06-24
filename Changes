@@ -1,5 +1,32 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v2.1.0 2018-06-25
+    Updates
+     * Updated API specification (#320)
+     * Add input validation layer (#399)
+     * Deprecate validate_syntax (#411, #231
+     * Update "get_test_history" with the "filter" property (#412, #293)
+     * "get_ns_ips" should have an alias to "get_host_by_name" (#421)
+     * Remove personnal information (GDPR) (#420)
+     * delete user info from start_domain request (#425)
+     
+
+    Fixed
+     * Update paths and permissions in installation doc and startup script (#383)
+     * Make the installation instruction easier to follow (#391)
+     * Corrected error message for IDN (#382)
+     * Deduplicate sanity checks across OSes (#393)
+     * Editorial updates in Installation instructions (#394)
+     * Wrong policy file loaded by TestAgent.pm (#392, #400)
+     * More explicit error message when ini file cannot be loaded (#302, #419)
+     * Update JSON::Validator from 2.06 to 2.07 (#422)
+     * Update manifest with Validator.pm (#426)
+     * Updated the install instructions to use cpanm and others (#430)
+     * Allow null, string, number as id in json rpc request (#431, #432)
+     * Update sed commands on FreeBSD in installation instructions (#435)
+     * Editorial updates of installation instructions (#438)
+
+
 v2.0.2 2018-02-23
      * Protect domain name input field from disallowed characters (#380, #381)
 

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# PROVIDE: zm_rpcapi
+# REQUIRE: NETWORKING mysql postgresql
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="zm_rpcapi"
+rcvar="${name}_enable"
+
+load_rc_config $name
+: ${zm_rpcapi_enable="NO"}
+: ${zm_rpcapi_user="zonemaster"}
+: ${zm_rpcapi_group="zonemaster"}
+: ${zm_rpcapi_pidfile="/var/run/zonemaster/${name}.pid"}
+: ${zm_rpcapi_logfile="/var/log/zonemaster/${name}.log"}
+: ${zm_rpcapi_listen="127.0.0.1:5000"}
+
+export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini"
+
+command="/usr/local/bin/starman"
+command_args="--daemonize --user=${zm_rpcapi_user} --group=${zm_rpcapi_group} --pid=${zm_rpcapi_pidfile} --error-log=${zm_rpcapi_logfile} --listen=${zm_rpcapi_listen} --app /usr/local/bin/zonemaster_backend_rpcapi.psgi"
+pidfile="${zm_rpcapi_pidfile}"
+required_files="/usr/local/etc/zonemaster/backend_config.ini /usr/local/bin/zonemaster_backend_rpcapi.psgi"
+
+run_rc_command "$1"

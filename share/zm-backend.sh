@@ -2,10 +2,10 @@
 #
 ### BEGIN INIT INFO
 # Provides:          zm-backend
-# Required-Start:    postgresql $network $local_fs
-# Required-Stop:     postgresql $network $local_fs
-# Should-Start:
-# Should-Stop:
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Should-Start:      mysql postgresql
+# Should-Stop:       mysql postgresql
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Start and stop the Zonemaster Backend (RPC API daemon and Test Agent daemon)
@@ -26,25 +26,10 @@ LISTENIP=127.0.0.1
 USER=zonemaster
 GROUP=zonemaster
 
-setup() {
-    if [ ! -d $LOGDIR ]
-    then
-        mkdir -p $LOGDIR
-    fi
-
-    if [ ! -d $PIDDIR ]
-    then
-        mkdir -p $PIDDIR
-    fi
-
-    chown -R $USER $LOGDIR
-    chown -R $GROUP $PIDDIR
-}
+STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
 start() {
-    setup
-
-    /usr/local/bin/starman --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
+    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
     /usr/local/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
 }
 

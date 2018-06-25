@@ -13,6 +13,7 @@ use File::Slurp qw(append_file);
 use Zonemaster::LDNS;
 use Net::IP::XS qw(:PROC);
 use HTML::Entities;
+use JSON::Validator "joi";
 
 # Zonemaster Modules
 use Zonemaster::Engine;
@@ -22,7 +23,10 @@ use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
+use Zonemaster::Backend::Validator;
 
+my $zm_validator = Zonemaster::Backend::Validator->new;
+my %json_schemas;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub new {
@@ -52,6 +56,7 @@ sub new {
     return ( $self );
 }
 
+$json_schemas{version_info} = joi->object->strict;
 sub version_info {
     my ( $self ) = @_;
 
@@ -62,17 +67,46 @@ sub version_info {
     return \%ver;
 }
 
-sub get_ns_ips {
-    my ( $self, $ns_name ) = @_;
+$json_schemas{get_host_by_name} = joi->object->strict->props(
+    hostname   => $zm_validator->domain_name->required
+);
+sub get_host_by_name {
+    my ( $self, $params ) = @_;
+    my $ns_name = "";
+
+    if (ref \$params eq "SCALAR") {
+        $ns_name = $params;
+    } else {
+        $ns_name = $params->{"hostname"};
+    }
 
     my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
     @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     return \@adresses;
+
 }
 
+$json_schemas{get_ns_ips} = joi->object->strict->props(
+    hostname   => $zm_validator->domain_name->required
+);
+sub get_ns_ips {
+    my ( $self, $params ) = @_;
+    $self->get_host_by_name($params);
+}
+
+$json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
+    domain   => $zm_validator->domain_name->required
+);
 sub get_data_from_parent_zone {
-    my ( $self, $domain ) = @_;
+    my ( $self, $params ) = @_;
+    my $domain = "";
+
+    if (ref \$params eq "SCALAR") {
+        $domain = $params;
+    } else {
+        $domain = $params->{"domain"};
+    }
 
     my %result;
 
@@ -95,7 +129,7 @@ sub get_data_from_parent_zone {
         foreach my $ds ( @ds ) {
             next unless $ds->type eq 'DS';
             push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-        } 
+        }
     }
 
     $result{ns_list} = \@ns_list;
@@ -103,6 +137,7 @@ sub get_data_from_parent_zone {
 
     return \%result;
 }
+
 
 sub _check_domain {
     my ( $self, $dn, $type ) = @_;
@@ -119,7 +154,7 @@ sub _check_domain {
                     $dn,
                     {
                         status  => 'nok',
-                        message => encode_entities( "The domain name cannot be converted to the IDN format" )
+                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
                     }
                 );
             }
@@ -130,12 +165,12 @@ sub _check_domain {
                 {
                     status => 'nok',
                     message =>
-                      encode_entities( "$type contains non-ascii characters and IDN conversion is not installed" )
+                      encode_entities( "$type contains non-ascii characters and IDNA conversion is not installed" )
                 }
             );
         }
     }
-    
+
     if( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
 	    return (
 		   $dn,
@@ -155,6 +190,24 @@ sub _check_domain {
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
 }
 
+$json_schemas{validate_syntax} = joi->object->strict->props(
+    domain => $zm_validator->domain_name->required,
+    ipv4 => joi->boolean,
+    ipv6 => joi->boolean,
+    nameservers => joi->array->strict->items(
+        $zm_validator->nameserver
+    ),
+    ds_info => joi->array->strict->items(
+        $zm_validator->ds_info
+    ),
+    profile => $zm_validator->profile_name,
+    advanced => joi->boolean,
+    client_id => $zm_validator->client_id,
+    client_version => $zm_validator->client_version,
+    config => joi->string,
+    user_ip => $zm_validator->ip_address,
+    user_location_info => $zm_validator->location
+);
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
@@ -225,7 +278,7 @@ sub validate_syntax {
         foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                 unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
-    
+
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
               unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
         }
@@ -255,60 +308,65 @@ sub validate_syntax {
     return { status => 'ok', message => encode_entities( 'Syntax ok' ) };
 }
 
-sub add_user_ip_geolocation {
-    my ( $self, $params ) = @_;
-    
-    if ($params->{user_ip} 
-        && Zonemaster::Backend::Config->Maxmind_ISP_DB_File()
-        && Zonemaster::Backend::Config->Maxmind_City_DB_File()
-    ) {
-        my $ip = new Net::IP::XS($params->{user_ip});
-        if ($ip->iptype() eq 'PUBLIC') {
-            require Geo::IP;
-            my $gi = Geo::IP->new(Zonemaster::Backend::Config->Maxmind_ISP_DB_File());
-            my $isp = $gi->isp_by_addr($params->{user_ip});
-            
-            require GeoIP2::Database::Reader;
-            my $reader = GeoIP2::Database::Reader->new(file => Zonemaster::Backend::Config->Maxmind_City_DB_File());
-    
-            my $city = $reader->city(ip => $params->{user_ip});
-
-            $params->{user_location_info}->{isp} = $isp;
-            $params->{user_location_info}->{country} = $city->country()->name();
-            $params->{user_location_info}->{city} = $city->city()->name();
-            $params->{user_location_info}->{longitude} = $city->location()->longitude();
-            $params->{user_location_info}->{latitude} = $city->location()->latitude();
-        }
-        else {
-            $params->{user_location_info}->{isp} = "Private IP address";
-        }
-    }
-}
-
+$json_schemas{start_domain_test} = joi->object->strict->props(
+    domain => $zm_validator->domain_name->required,
+    ipv4 => joi->boolean,
+    ipv6 => joi->boolean,
+    nameservers => joi->array->items(
+        $zm_validator->nameserver
+    ),
+    ds_info => joi->array->items(
+        $zm_validator->ds_info
+    ),
+    advanced => joi->boolean,
+    profile => $zm_validator->profile_name,
+    client_id => $zm_validator->client_id,
+    client_version => $zm_validator->client_version,
+    config => joi->string,
+    user_ip => $zm_validator->ip_address,
+    user_location_info => $zm_validator->location,
+    priority => $zm_validator->priority,
+    queue => $zm_validator->queue
+);
 sub start_domain_test {
     my ( $self, $params ) = @_;
+
     my $result = 0;
+
+    if ($params->{user_ip}){
+        delete $params->{user_ip};
+    }
+    if ($params->{user_location_info}){
+        delete $params->{user_location_info};
+    }
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );
     die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
     die "No domain in parameters\n" unless ( $params->{domain} );
-    
+
     if ($params->{config}) {
         $params->{config} =~ s/[^\w_]//isg;
         die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
-    
-    $self->add_user_ip_geolocation($params);
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
 
     return $result;
 }
 
+$json_schemas{test_progress} = joi->object->strict->props(
+    test_id => $zm_validator->test_id->required
+);
 sub test_progress {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $params ) = @_;
+    my $test_id = "";
+    if (ref \$params eq "SCALAR") {
+        $test_id = $params;
+    } else {
+        $test_id = $params->{"test_id"};
+    }
 
     my $result = 0;
 
@@ -317,8 +375,17 @@ sub test_progress {
     return $result;
 }
 
+$json_schemas{get_test_params} = joi->object->strict->props(
+    test_id => $zm_validator->test_id->required
+);
 sub get_test_params {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $params ) = @_;
+    my $test_id = "";
+    if (ref \$params eq "SCALAR") {
+        $test_id = $params;
+    } else {
+        $test_id = $params->{"test_id"};
+    }
 
     my $result = 0;
 
@@ -327,8 +394,13 @@ sub get_test_params {
     return $result;
 }
 
+$json_schemas{get_test_results} = joi->object->strict->props(
+    id => $zm_validator->test_id->required,
+    language => $zm_validator->translation_language->required
+);
 sub get_test_results {
     my ( $self, $params ) = @_;
+
     my $result;
 
     my $translator;
@@ -391,21 +463,48 @@ sub get_test_results {
     return $result;
 }
 
+$json_schemas{get_test_history} = joi->object->strict->props(
+    offset => joi->integer->min(0),
+    limit => joi->integer->min(0),
+    frontend_params => joi->object->strict->props(
+        domain => $zm_validator->domain_name->required,
+        ipv4 => joi->boolean,
+        ipv6 => joi->boolean,
+        nameservers => joi->boolean,
+        ds_info => joi->array->strict->items(
+            $zm_validator->ds_info
+        ),
+        advanced => joi->boolean,
+        profile => $zm_validator->profile_name,
+        client_id => $zm_validator->client_id,
+        client_version => $zm_validator->client_version,
+        config => joi->string,
+    )->required
+);
 sub get_test_history {
     my ( $self, $p ) = @_;
 
     my $results;
+
+    $p->{offset} //= 0;
+    $p->{limit} //= 200;
+    $p->{filter} //= "old_behavior";
     
     # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
     return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
-    
+
     $results = $self->{db}->get_test_history( $p );
 
     return $results;
 }
 
+$json_schemas{add_api_user} = joi->object->strict->props(
+    username => $zm_validator->username->required,
+    api_key => $zm_validator->api_key->required,
+);
 sub add_api_user {
     my ( $self, $p, undef, $remote_ip ) = @_;
+
     my $result = 0;
 
     my $allow = 0;
@@ -419,50 +518,111 @@ sub add_api_user {
     if ( $allow ) {
         $result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
     }
-    
+
     return $result;
 }
 
-=coment
+$json_schemas{add_batch_job} = joi->object->strict->props(
+    username => $zm_validator->username->required,
+    api_key => $zm_validator->api_key->required,
+    domains => joi->array->strict->items(
+        $zm_validator->domain_name->required
+    )->required,
+    test_params => joi->object->strict->props(
+        ipv4 => joi->boolean,
+        ipv6 => joi->boolean,
+        nameservers => joi->array->strict->items(
+            $zm_validator->nameserver
+        ),
+        ds_info => joi->array->strict->items(
+            $zm_validator->ds_info
+        ),
+        advanced => joi->boolean,
+        profile => $zm_validator->profile_name,
+        client_id => $zm_validator->client_id,
+        client_version => $zm_validator->client_version,
+        config => joi->string,
+        user_ip => $zm_validator->ip_address,
+        user_location_info => $zm_validator->location,
+        priority => $zm_validator->priority,
+        queue => $zm_validator->queue
+    )
+);
 sub add_batch_job {
     my ( $self, $params ) = @_;
-    my $batch_id;
 
-    if ( $self->{db}->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
-        $params->{test_params}->{client_version} = '1.0';
-        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
-
-        $batch_id = $self->{db}->create_new_batch_job( $params->{username} );
-
-        my $minutes_between_tests_with_same_params = 5;
-#        $self->{db}->dbhandle->begin_work();
-        foreach my $domain ( @{$params->{domains}} ) {
-            $self->{db}
-              ->create_new_test( $domain, $params->{test_params}, 5, $batch_id );
-        }
-#        $self->{db}->dbhandle->commit();
-    }
-    else {
-        die "User $params->{username} not authorized to use batch mode\n";
-    }
-
-    return $batch_id;
-}
-=cut
-
-sub add_batch_job {
-    my ( $self, $params ) = @_;
+    $params->{test_params}->{user_ip} = '';
+    $params->{test_params}->{user_location_info} = '';
 
     my $results = $self->{db}->add_batch_job( $params );
 
     return $results;
 }
 
-
+$json_schemas{get_batch_job_result} = joi->object->strict->props(
+    batch_id => $zm_validator->batch_id->required
+);
 sub get_batch_job_result {
-    my ( $self, $batch_id ) = @_;
-
+    my ( $self, $params ) = @_;
+    my $batch_id = "";
+    if (ref \$params eq "SCALAR") {
+        $batch_id = $params;
+    } else {
+        $batch_id = $params->{"batch_id"};
+    }
     return $self->{db}->get_batch_job_result($batch_id);
+}
+
+my $rpc_request = joi->object->props(
+    jsonrpc => joi->string->required,
+    method => $zm_validator->jsonrpc_method()->required);
+sub jsonrpc_validate {
+    my ( $self, $jsonrpc_request) = @_;
+
+    my @error_rpc = $rpc_request->validate($jsonrpc_request);
+    if (!exists $jsonrpc_request->{"id"} || @error_rpc) {
+        return {
+            jsonrpc => '2.0',
+            id => undef,
+            error => {
+                code => '-32600',
+                message=> 'The JSON sent is not a valid request object.',
+                data => "@error_rpc\n"
+            }
+        }
+    }
+
+    if (exists $jsonrpc_request->{"params"}) {
+        if ($jsonrpc_request->{"method"} eq "get_ns_ips") {
+            warn "[DEPRECATED] - 'get_ns_ips' is deprecated. Please use 'get_host_by_name' \n";
+        }
+        if (($jsonrpc_request->{"method"} eq "get_host_by_name" || $jsonrpc_request->{"method"} eq "get_ns_ips") && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { hostname => $jsonrpc_request->{"params"}};
+            warn "[DEPRECATED] - 'get_host_by_name' method using scalar is deprecated. Please update to {\"hostname\"} \n";
+        } elsif ($jsonrpc_request->{"method"} eq "test_progress" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
+            warn "[DEPRECATED] - 'test_progress' method using scalar is deprecated. Please update to {\"test_id\"} \n";
+        } elsif ($jsonrpc_request->{"method"} eq "get_test_params" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
+            warn "[DEPRECATED] - 'get_test_params' method using scalar is deprecated. Please update to {\"test_id\"} \n";
+        } elsif ($jsonrpc_request->{"method"} eq "get_batch_job_result" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { batch_id => $jsonrpc_request->{"params"} };
+            warn "[DEPRECATED] - 'get_batch_job_result' method using scalar is deprecated. Please update to {\"batch_id\"} \n";
+        } elsif ($jsonrpc_request->{"method"} eq "get_data_from_parent_zone" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+            $jsonrpc_request->{"params"} = { domain => $jsonrpc_request->{"params"} };
+            warn "[DEPRECATED] - 'get_data_from_parent_zone' method using scalar is deprecated. Please update to {\"domain\"} \n";
+        }
+        my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});
+        return {
+                jsonrpc => '2.0',
+                id => undef,
+                error => {
+                    code => '-32602',
+                    message=> 'Invalid method parameter(s).',
+                    data => "@error\n"
+                }
+            } if @error;
+    }
+    return '';
 }
 1;

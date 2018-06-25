@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# PROVIDE: zm_testagent
+# REQUIRE: mysql postgresql
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="zm_testagent"
+rcvar="${name}_enable"
+
+load_rc_config $name
+: ${zm_testagent_enable="NO"}
+: ${zm_testagent_user="zonemaster"}
+: ${zm_testagent_group="zonemaster"}
+: ${zm_testagent_pidfile="/var/run/zonemaster/${name}.pid"}
+
+export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini"
+
+command="/usr/local/bin/zonemaster_backend_testagent"
+command_args="--user=${zm_testagent_user} --group=${zm_testagent_group} --pidfile=${zm_testagent_pidfile}"
+pidfile="${zm_testagent_pidfile}"
+procname="/usr/local/bin/perl"
+required_files="/usr/local/etc/zonemaster/backend_config.ini"
+
+start_precmd="${name}_prestart"
+stop_precmd="${name}_prestop"
+
+zm_testagent_prestart()
+{
+    rc_flags="${rc_flags} start"
+}
+
+zm_testagent_prestop()
+{
+    rc_flags="${rc_flags} stop"
+}
+
+run_rc_command "$1"

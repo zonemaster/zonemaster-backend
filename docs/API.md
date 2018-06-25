@@ -73,13 +73,39 @@ This sections describes a number of data types used in this API. Each data type
 is based on a JSON data type, but additionally imposes its own restrictions.
 
 
+### API key
+
+Basic data type: string
+
+This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
 ### Batch id
 
 Basic data type: number
 
-An positive integer.
+A positive integer.
 
 The unique id of a *batch*.
+
+
+### Client id
+
+Basic data type: string
+
+This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
+
+> Note: Currently there are no restrictions on what characters that are allowed.
+
+
+### Client version
+
+Basic data type: string
+
+This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
+
+> Note: Currently there are no restrictions on what characters that are allowed.
 
 
 ### Domain name
@@ -100,15 +126,42 @@ Basic data type: string
 
 Basic data type: object
 
-Properties:
+DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
 
+Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
-* `"algorithm"`: An integer, optional.
-* `"digtype"`: An integer, optional.
-* `"keytag"`: An integer, optional.
+* `"algorithm"`: An non negative integer, optional.
+* `"digtype"`: An non negative integer, optional.
+* `"keytag"`: An non negative integer, optional.
 
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
+
+### IP address
+
+Basic data type: string
+
+This parameter is a string that are an IPv4 or IPv6. It's validate with the following regexes:
+ - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
+ - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
+
+
+### Location - **Deprecated** 
+
+Basic data type: object
+
+The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"latitude"`.
+
+
+* `"isp"`: a string. The Internet Service Provider of the user.
+* `"country"`: a string. The country of the user.
+* `"city"`: a string. The city of the user.
+* `"longitude"`: a string. The longtitude of the user. Validate with `^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$`.
+* `"latitude"`: a string. The latitude of the user. Validate with `^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$`.
+
+>
+> TODO Add regex
+>
 
 ### Name server
 
@@ -117,24 +170,16 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An IPv4 or IPv6 address, required.
+* `"ip"`: An *IP address*, IPv4 or IPv6 , optional.
 
 
 ### Priority
 
-Basic data type: number
-
+Basic data type: number (integer)
+ 
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
-
-### Queue
-
-Basic data type: number
-
-This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
-The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
-
 
 ### Profile name
 
@@ -150,16 +195,31 @@ One of the strings:
 
 The `"test_profile_2"` *profile* is identical to `"default_profile"`.
 
->
-> TODO: What is the expected behavior when a *profile* other than the ones listed above is requested?
->
-
+When a *profile* other than the ones listed above is requested the user receives the following error message :
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "message": "Invalid profile option format",
+        "status": "nok"
+    }
+}
+```
 
 ### Progress percentage
 
-Basic data type: number
+Basic data type: number (integer)
 
 An integer ranging from 0 (not started) to 100 (finished).
+
+
+### Queue
+
+Basic data type: number (integer)
+
+This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
+The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
 
 
 ### Severity level
@@ -195,22 +255,16 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*.
-
->
-> TODO: Can other extra keys in addition to `"ns"` occur here? Can something be said
-> about when each extra key is present?
->
+* `"ns"`: a *domain name*. The name server used by the *test module*. 
+This key is added when the module name is `"NAMESERVER"`.
 
 
 ### Timestamp
 
 Basic data type: string
 
->
-> TODO: Specify date format
->
-
+Default database timestamp format: "Y-M-D H:M:S.ms"
+Example: "2017-12-18 07:56:17.156939"
 
 ### Translation language
 
@@ -218,7 +272,24 @@ Basic data type: string
 
 * Any string starting with `"fr"` is interpreted as French.
 * Any string starting with `"sv"` is interpreted as Swedish.
+* Any string starting with `"da"` is interpreted as Danish.
 * Any other string is interpreted as English.
+
+
+### Unsigned integer
+
+ Basic data type: number (integer)
+ 
+ An unsigned integer is either positive or zero.
+ 
+
+### Username
+
+Basic data type: string
+ 
+This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
+
+> Note: Currently there are no restrictions on what characters that are allowed.
 
 
 ## API method: `version_info`
@@ -262,11 +333,28 @@ An object with the following properties:
 >
 
 
-## API method: `get_ns_ips`
+## API method: `get_host_by_name` (formerly `get_ns_ips`)
 
-Looks up the A and AAAA records for a *domain name* on the public Internet.
+>
+> We renamed `get_ns_ips` into `get_host_by_name` to be more explicit. 
+> The method `get_ns_ips` is deprecated, please use `get_host_by_name` instead.
+>
+
+Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "get_host_by_name",
+  "params": {"hostname": "zonemaster.net"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
   "jsonrpc": "2.0",
@@ -274,7 +362,8 @@ Example request:
   "method": "get_ns_ips",
   "params": "zonemaster.net"
 }
-```
+``` 
+
 
 Example response:
 ```json
@@ -295,7 +384,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The *domain name* whose IP addresses are to be resolved.
+An object with the property:
+
+`"hostname"`: A *domain name*. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -322,7 +413,19 @@ Returns all the NS/IP and DS/DNSKEY/ALGORITHM pairs of the domain from the
 parent zone.
 
 Example request:
+*Valid syntax:*
 ```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "get_data_from_parent_zone",
+  "params": {"domain": "zonemaster.net"}
+}
+```
+
+*Deprecated syntax:*
+```json
+
 {
   "jsonrpc": "2.0",
   "id": 3,
@@ -375,7 +478,9 @@ Example response:
 
 #### `"params"`
 
-A *domain name*. The domain whose DNS records are requested.
+An object with the property:
+
+`"domain"`: A *domain name*. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -383,12 +488,7 @@ A *domain name*. The domain whose DNS records are requested.
 An object with the following properties:
 
 * `"ns_list"`: A list of *name server* objects representing the nameservers of the given *domain name*.
-* `"ds_list"`: A list of *DS info* objects.
-
-
->
-> TODO: Add wording about what the `"ds_list"` objects represent.
->
+* `"ds_list"`: A list of *DS info* objects representing delegated signer of the given *domain name*.
 
 
 #### `"error"`
@@ -430,7 +530,6 @@ Example request:
       }
     ],
     "ds_info": [],
-    "advanced": true,
     "ipv6": true,
     "ipv4": true
   }
@@ -451,43 +550,29 @@ Example response:
 
 An object with the following properties:
 
-* `"client_id"`: A free-form string, optional.
-* `"domain"`: A *domain name*, required.
-* `"profile"`: A *profile name*, optional.
-* `"client_version"`: A free-form string, optional.
-* `"nameservers"`: A list of *name server* objects, optional.
-* `"ds_info"`: A list of *DS info* objects, optional.
+* `"domain"`: A *domain name*, required. The zone to test.
+* `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
+* `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
+* `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
+* `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
-* `"ipv6"`: A boolean, optional. (default `false`)
-* `"ipv4"`: A boolean, optional. (default `false`)
-* `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: A ..., optional.
-* `"user_location_info"`: A ..., optional.
-* `"priority"`: A *priority*, optional
-* `"queue"`: A *queue*, optional
-
->
-> TODO: Clarify the data type of the following `"params"` properties:
-> `"user_ip"` and `"user_location_info"`.
->
-> TODO: Clarify the purpose of each `"params"` property.
->
-> TODO: Clarify the default value of each optional `"params"` property.
->
+* `"profile"`: A *profile name*, optional. Used to perform the test with a specific set of parameters and tests.
+* `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
+* `"client_version"`: A *client version*, optional. Used to monitor which client use the API
+* `"config"`: A string, optional. The name of a config profile.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
+* `"user_location_info"`: **Deprecated**. An *location* object, optional. Used to monitor information about the user. 
+* `"priority"`: A *priority*, optional.
+* `"queue"`: A *queue*, optional.
 
 
 #### `"result"`
 
-A *test id*. The newly started *test*, or a recently run *test* with the same
-parameters.
-started within the recent configurable short time.
+A *test id*. 
 
->
-> TODO: Specify which configuration option controls the duration of the window
-> of *test* reuse.
->
-
-
+If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
+then the new request does not trigger a new test, but returns with the results of the last test
+ 
 #### `"error"`
 
 >
@@ -500,6 +585,18 @@ started within the recent configurable short time.
 Reports on the progress of a *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "test_progress",
+  "params": {"test_id": "c45a3f8256c4a155"}
+}
+```
+
+*Deprecated syntax:*
 ```json
 {
   "jsonrpc": "2.0",
@@ -521,7 +618,9 @@ Example response:
 
 #### `"params"`
 
-A *test id*. The *test* to report on.
+An object with the property:
+
+`"test_id"`: A *test id*. The *test* to report on.
 
 
 #### `"result"`
@@ -616,23 +715,28 @@ An object with the following properties:
 
 #### `"result"`
 
-An object with a the following properties:
+There are two different results depending on the test creation method:
+
+In the case of a test created with `start_domain_test`:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A string.
+* `"hash_id"`: A *test id*. The *test* in question. 
 * `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
   was started.
 * `"results"`: A list of *test result* objects.
 
+
+In the case of a test created with `add_batch_job`:
+* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
+* `"id"`: An integer.
+* `"hash_id"`: A *test id*. The *test* in question. 
+* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
+  was started.
+* `"results"`: the result is a list of *test id* corresponding to each tested domain.
+
 >
-> TODO: Specify the MD5 hash format.
->
-> TODO: What about if the Test was created with `add_batch_job` or something
-> else?
->
-> TODO: It's confusing that the method is named `"start_domain_test"`, when
-> it doesn't actually start the *test*.
+> TODO: Change name in the API of `"hash_id"` to `"test_id"`
 >
 
 
@@ -657,11 +761,9 @@ Example request:
   "params": {
     "offset": 0,
     "limit": 200,
+    "filter": "all",
     "frontend_params": {
-      "client_id": "Zonemaster Dancer Frontend",
-      "domain": "zonemaster.net",
-      "profile": "default_profile",
-      "client_version": "1.0.1",
+      "domain": "zonemaster.net",      
       "nameservers": [
         {
           "ns": "ns3.nic.se",
@@ -671,11 +773,7 @@ Example request:
           "ns": "ns2.nic.fr",
           "ip": "192.93.0.4"
         }
-      ],
-      "ds_info": [],
-      "advanced": true,
-      "ipv6": true,
-      "ipv4": true
+      ]
     }
   }
 }
@@ -715,29 +813,26 @@ Example response:
 
 An object with the following properties:
 
-* `"offset"`: An integer, optional. (default: 0).
-* `"limit"`: An integer, optional. (default: 200).
-* `"frontend_params"`: As described below.
+* `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
+* `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
+* `"frontend_params"`: An object.
 
-The value of `"frontend_params"` is an object in turn, with the
-keys `"domain"` and `"nameservers"`. `"domain"` and `"nameservers"`
-will be used to look up all tests for the given domain, separated
-according to if they were started with a `"nameservers"` parameter or
-not.
+The value of "frontend_params" is an object with the following properties:
 
->
-> TODO: Do we have an SQL injection opportunity here?
->
-> TODO: Describe the remaining keys in the example
->
-> TODO: Describe the purpose of `"offset"` and `"limit"`
->
-> TODO: Is the `"nameservers"` value a boolean in disguise?
->
-> TODO: The description of `"frontend_params"` is clearly not up to date. Can it
-> be described in a better way?
->
+* `"domain"`: A *domain name*, required.
+* `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
+* `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
+* `"nameservers"`: **Deprecated**. A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
+* `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
+* `"profile"`: **Deprecated**. A *profile name*, optional.
+* `"client_id"`: **Deprecated**. A *client id*, optional.
+* `"client_version"`: **Deprecated**. A *client version*, optional.
+* `"config"`: **Deprecated**. A string, optional. The name of a *config profile*.
 
+Please, use a non-deprecated value for `"filter"` property: "all", "delegated" and "undelegated".
+The default filter value, "old_behavior", will be removed and replaced by the value "all".
 
 #### `"result"`
 
@@ -749,14 +844,14 @@ An object with the following properties:
   `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
   In some future release this property will no longer be included in the result.
 * `"overall_result"`: A string. The most severe problem level logged in the test results.
+It could be:
+    * `"ok"`, all is normal
+    * `"warning"`, equivalent to the `"WARNING"` *severity level*.
+    * `"error"`, equivalent to the `"ERROR"` *severity level*.
+    * `"critical"`, equivalent to the `"CRITICAL"` *severity level*.
 
->
-> TODO: Describe the format of `"overall_result"`.
->
+
 > TODO: What about if the *test* was created with `add_batch_job` or something else?
->
-> TODO: What about if the *test* was created with `"advanced"` set to `false` in `start_domain_test`?
->
 
 
 #### `"error"`
@@ -768,9 +863,11 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
->
-> TODO: Method description.
->
+In order to use advanced api features such as the *batch test*, it's necessaire to previously create an api key.
+This key can be obtained with the creation of a user in the system.
+This function allow the creation of a new user and so, the creation of a new api key.
+
+Add a new *user* 
 
 This method requires the *administrative* *privilege level*.
 
@@ -792,7 +889,7 @@ Example response:
 {
   "id": 4711,
   "jsonrpc": "2.0",
-  "result": 0
+  "result": 1
 }
 ```
 
@@ -801,38 +898,38 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A string, optional. The name of the user to add.
-* `"api_key"`: A string, optional. The API key (in effect, password) for the user to add.
-
->
-> TODO: Are `"username"` and `"api_key"` really supposed to be optional? Because
-> they are now, is that a bug? I get `"result": 0` when I omit them. I would
-> have expected parameter validation errors.
->
-
+* `"username"`: An *username*, required. The name of the user to add.
+* `"api_key"`: An *api key*, required. The API key for the user to add.
 
 #### `"result"`
 
-An integer.
-
->
-> TODO: Describe the possible values of the result and what they mean.
->
-
+An integer. The value is equal to 1 if the registration is a success, or 0 if it failed.
 
 #### `"error"`
-
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
+Trying to add a already existing user:
+```json
+{
+  "code": -32603,
+  "message": "User already exists\n"
+}
+```
+
+Ommitting params:
+```json 
+{
+  "message": "username or api_key not provided to the method add_api_user\n",
+  "code": -32603
+}
+```
+
 
 ## API method: `add_batch_job`
 
->
-> TODO: Method description.
->
-
+Add a run a new *batch test* composed by a set of *domain name* and a *params* object.
 All the domains will be tested using identical parameters.
 
 An *api user* can only have one un-finished *batch* at a time.
@@ -876,41 +973,29 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A string. The username of this batch.
-* `"api_key"`: A string. The api_key associated with the username username of this *batch*.
+* `"username"`: An *username*. The name of the account of an authorized user.
+* `"api_key"`: An *api key*. The api_key associated with the username.
 * `"domains"`: A list of *domain names*. The domains to be tested.
 * `"test_params"`: As described below.
 
 The value of `"test_params"` is an object with the following properties:
 
-* `"client_id"`: A free-form string, optional.
+* `"client_id"`: A *client id*, optional.
 * `"profile"`: A *profile name*, optional.
-* `"client_version"`: A free-form string, optional.
+* `"client_version"`: A *client version*, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: A ..., optional.
-* `"user_location_info"`: A ..., optional.
-* `"priority"`: A *priorty*, optional
+* `"user_ip"`: **Deprecated**. An *IP address*, optional.
+* `"user_location_info"`: **Deprecated**. An *location* object, optional.
+* `"priority"`: A *priority*, optional
 * `"queue"`: A *queue*, optional
 
-
 >
-> TODO: Clarify the data type of the following `"frontend_params"` properties:
-> `"user_ip"` and `"user_location_info"`.
->
-> TODO: Clarify which `"params"` and `"frontend_params"` properties are optional
-> and which are required.
->
-> TODO: Clarify the default value of each optional `"params"` and
-> `"frontend_params"` property.
->
-> TODO: Clarify the purpose of each `"params"` and `"frontend_params"` property.
->
-> TODO: Are domain names actually validated in practice?
+> TODO: Are domain names actually validated in practice? Can you explain ? => There are some security tests (look postgres.pm).
 >
 
 
@@ -931,11 +1016,20 @@ A *batch id*.
 
 ## API method: `get_batch_job_result`
 
->
-> TODO: Method description.
->
+Return all *test id* objects of a *batch test*, with the number of finshed *test*.
 
 Example request:
+
+*Valid syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 147559211994909,
+    "method": "get_batch_job_result",
+    "params": {"batch_id": "8"}
+}
+```
+*Deprecated syntax:*
 ```json
 {
     "jsonrpc": "2.0",
@@ -967,15 +1061,17 @@ Example response:
 
 #### `"params"`
 
-A *batch id*.
+An object with the property:
+
+* `"batch_id"`: A *batch id*.
 
 
 #### `"result"`
 
 An object with the following properties:
 
-* `"nb_finished"`: an integer. The number of finished tests.
-* `"nb_running"`: an integer. The number of running tests.
+* `"nb_finished"`: an *unsigned integer*. The number of finished tests.
+* `"nb_running"`: an *unsigned integer*. The number of running tests.
 * `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
 
 
@@ -986,7 +1082,9 @@ An object with the following properties:
 >
 
 
-## API method: `validate_syntax`
+## API method: `validate_syntax` - **Deprecated**
+
+*This API method is Deprecated. Use directly `start_domain_test`*
 
 Checks the `"params"` structure for syntax coherence. It is very strict on what
 is allowed and what is not to avoid any SQL injection and cross site scripting
@@ -1034,18 +1132,18 @@ Example response:
 
 An object with the following properties:
 
-* `"domain"`: a *domain name*.
-* `"ipv4"`: an optional `1`, `0`, `true` or `false`.
-* `"ipv6"`: an optional `1`, `0`, `true` or `false`.
-* `"ds_info"`: an optional list of *DS info* objects.
-* `"nameservers"`: an optional list of objects each of *name server* objects.
-* `"profile"`: an optional *profile name*.
-* `"advanced"`: an optional `true` or `false`.
-* `"client_id"`: ...
-* `"client_version"`: ...
-* `"user_ip"`: ...
-* `"user_location_info"`: ...
-* `"config"`: ...
+* `"domain"`: A *domain name*, required.
+* `"ipv6"`: A boolean, optional. (default `false`)
+* `"ipv4"`: A boolean, optional. (default `false`)
+* `"ds_info"`: A list of *DS info* objects, optional.
+* `"nameservers"`: A list of *name server* objects, optional.
+* `"profile"`: A *profile name*, optional.
+* `"advanced"`: **Deprecated**. A boolean, optional.
+* `"client_id"`: A *client id*, optional.
+* `"client_version"`: A *client version*, optional.
+* `"config"`: A string, optional. The name of a *config profile*.
+* `"user_ip"`: **Deprecated**. An *IP address*, optional.
+* `"user_location_info"`: **Deprecated**. A *location* object, optional.
 
 If the `"nameservers"` key is _not_ set, a recursive query made by the
 server to its locally configured resolver for NS records for the
@@ -1053,15 +1151,6 @@ value of the `"domain"` key must return a reply with at least one
 resource record in the Answer Section.
 
 At least one of `"ipv4"` and `"ipv6"` must be present and either `1` or `true`.
-
->
-> TODO: Clarify the data type of the following `"params"` properties:
-> `"client_id"`, `"client_version"`, `"user_ip"`, `"user_location_info"` and
-> `"config"`.
->
-> TODO: Clarify the purpose of each `"params"` property.
->
-
 
 #### `"result"`
 
@@ -1079,27 +1168,68 @@ An object with the following properties:
 
 ## API method: `get_test_params`
 
->
-> TODO: Method description
->
-> TODO: Example request
->
-> TODO: Example response
->
+Return all *params* objects of a *test*.
 
+Example request:
+
+*Valid syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "method": "get_test_params",
+    "params": {"test_id": "6814584dc820354a"}
+}
+```
+
+*Deprecated syntax:*
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "method": "get_test_params",
+    "params": "6814584dc820354a"
+}
+```
+
+Example response:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 143014426992009,
+    "result": {
+         "domain": "zonemaster.net",
+         "profile": "default_profile",
+         "client_id": "Zonemaster Dancer Frontend",
+         "advanced": true,
+         "nameservers": [
+            {
+                "ns": "ns3.nic.se",
+                "ip": "2001:67c:124c:2007::45"
+            },
+            {
+                "ip": "192.93.0.4",
+                "ns": "ns2.nic.fr"
+            }
+         ],
+         "ipv4": true,
+         "ipv6": true,
+         "client_version": "1.0.1",
+         "ds_info": []
+    }
+}
+```
 
 #### `"params"`
 
-A *test id*.
+An object with the property:
+
+* `"test_id"`: A *test id*, required.
 
 
 #### `"result"`
 
-The `"params"` object sent to `start_domain_test` when the *test* was started.
-
->
-> TODO: What about if the *test* was created with `add_batch_job` or something else?
->
+The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *test* was started.
 
 
 #### `"error"`

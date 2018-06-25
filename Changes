@@ -25,7 +25,7 @@ v2.1.0 2018-06-25
      * Allow null, string, number as id in json rpc request (#431, #432)
      * Update sed commands on FreeBSD in installation instructions (#435)
      * Editorial updates of installation instructions (#438)
-     * Remove unsed file and its entry in MANIFEST (#437)
+     * Removed unused file and its entry in MANIFEST (#437)
      * Updates for FreeBSD consistently making /usr/local/etc/zonemaster
        its directory for Zonemaster-Backend configuration file (#436)
 

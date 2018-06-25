@@ -402,22 +402,30 @@ Install dependencies available from binary packages:
 pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
 ```
 
+Optionally install Curl (only needed for the post-installation smoke test)
+
+```sh
+pkg install curl
+```
+
+
 Install dependencies not available from binary packages:
 
 ```sh
-cpan -i Net::IP::XS
+cpanm Net::IP::XS
 ```
 
 Install Zonemaster::Backend:
 
 ```sh
-cpan -i Zonemaster::Backend
+cpanm Zonemaster::Backend
 ```
 
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add `zonemaster` user and group:
+
 ```sh
 pw groupadd zonemaster
 pw useradd zonemaster -g zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
@@ -427,8 +435,8 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -m 755 -d /etc/zonemaster
-install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+install -m 755 -d /usr/local/etc/zonemaster
+install -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
 install -m 775 -g zonemaster -d /var/log/zonemaster
 install -m 775 -g zonemaster -d /var/run/zonemaster
 install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
@@ -542,7 +550,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to:
 
 ```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
+{"id":"1","jsonrpc":"2.0","result":{"zonemaster_backend":"2.0.2","zonemaster_engine":"v2.0.6"}}
 ```
 
 

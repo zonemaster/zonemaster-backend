@@ -39,7 +39,9 @@ Follow the detailed [installation instructions](docs/Installation.md).
 
 ### Configuration 
 
-Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`.
+Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`
+(CentOS, Debian and Ubuntu) or `/usr/local/etc/zonemaster/backend_config.ini`
+(FreeBSD).
 
 >
 > At this time there is no documentation for `backend_config.ini`.

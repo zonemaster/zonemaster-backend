@@ -332,7 +332,7 @@ sudo apt-get install libdbd-pg-perl postgresql
 ```
 
 Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database
-engine version depending on OS found in [Zonemaster/README](https://github.com/dotse/zonemaster/blob/master/README.md).
+engine version depending on OS found in [Zonemaster/README](https://github.com/zonemaster/zonemaster/blob/master/README.md).
 
 ```sh
 psql --version
@@ -588,15 +588,15 @@ sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 
 -------
 
-[Declaration of prerequisites]: https://github.com/dotse/zonemaster#prerequisites
+[Declaration of prerequisites]: https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]: API.md
-[Main Zonemaster repository]: https://github.com/dotse/zonemaster/blob/master/README.md
+[Main Zonemaster repository]: https://github.com/zonemaster/zonemaster/blob/master/README.md
 [Post-installation]: #7-post-installation
-[Zonemaster::CLI installation]: https://github.com/dotse/zonemaster-cli/blob/master/docs/Installation.md
-[Zonemaster::GUI installation]: https://github.com/dotse/zonemaster-gui/blob/master/docs/Installation.md
-[Zonemaster::Engine installation]: https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md
-[Zonemaster::Engine]: https://github.com/dotse/zonemaster-engine/blob/master/README.md
-[Zonemaster::LDNS]: https://github.com/dotse/zonemaster-ldns/blob/master/README.md
+[Zonemaster::CLI installation]: https://github.com/zonemaster/zonemaster-cli/blob/master/docs/Installation.md
+[Zonemaster::GUI installation]: https://github.com/zonemaster/zonemaster-gui/blob/master/docs/Installation.md
+[Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md
+[Zonemaster::Engine]: https://github.com/zonemaster/zonemaster-engine/blob/master/README.md
+[Zonemaster::LDNS]: https://github.com/zonemaster/zonemaster-ldns/blob/master/README.md
 
 Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
 Copyright (c) 2013 - 2017, AFNIC \

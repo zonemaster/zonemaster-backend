@@ -87,4 +87,4 @@ soon as it can, and all of the real work will be done as that user.
 ### Engine
 
 The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
-own repository](https://github.com/dotse/zonemaster-engine/).
+own repository](https://github.com/zonemaster/zonemaster-engine/).

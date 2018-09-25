@@ -466,6 +466,7 @@ sub get_test_results {
 $json_schemas{get_test_history} = joi->object->strict->props(
     offset => joi->integer->min(0),
     limit => joi->integer->min(0),
+    filter => joi->string->regex('^(?:old_behavior|all|delegated|undelegated)$'),
     frontend_params => joi->object->strict->props(
         domain => $zm_validator->domain_name->required,
         ipv4 => joi->boolean,

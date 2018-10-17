@@ -86,7 +86,7 @@ The [RPC-API] contains several methods that accept profile name arguments.
 ### Engine
 
 The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
-own repository](https://github.com/dotse/zonemaster-engine/).
+own repository](https://github.com/zonemaster/zonemaster-engine/).
 
 --------
 [Configure the set of available profiles]: Configuration.md#profiles-section

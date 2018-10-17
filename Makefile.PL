@@ -2,8 +2,8 @@ use inc::Module::Install;
 
 name 'Zonemaster-Backend';
 all_from 'lib/Zonemaster/Backend.pm';
-repository 'https://github.com/dotse/zonemaster-backend';
-bugtracker 'https://github.com/dotse/zonemaster-backend/issues';
+repository 'https://github.com/zonemaster/zonemaster-backend';
+bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 
 requires
   'Class::Method::Modifiers' => 1.09,

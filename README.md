@@ -1,12 +1,11 @@
 # Zonemaster Backend
-
-[![Build Status](https://travis-ci.org/dotse/zonemaster-backend.svg?branch=master)](https://travis-ci.org/dotse/zonemaster-backend)
+[![Build Status](https://travis-ci.org/zonemaster/zonemaster-backend.svg?branch=master)](https://travis-ci.org/zonemaster/zonemaster-backend)
 
 
 ### Purpose
 This repository is one of the components of the Zonemaster software. For an
 overview of the Zonemaster software, please see the
-[Zonemaster repository](https://github.com/dotse/zonemaster).
+[Zonemaster repository](https://github.com/zonemaster/zonemaster).
 
 This module is the Backend JSON/RPC weservice for the Web Interface part of
 the Zonemaster project. It offers a JSON/RPC api to run tests one by one
@@ -23,7 +22,7 @@ analysing.
 Before you install the Zonemaster Backend, you need the
 Zonemaster Engine installed. Please see the
 [Zonemaster Engine installation
-instructions](https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md).
+instructions](https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md).
 
 
 ### Upgrade 

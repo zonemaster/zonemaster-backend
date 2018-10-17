@@ -65,13 +65,14 @@ sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuot
 Install dependencies not available from binary packages:
 
 ```sh 
-sudo cpan -i Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
+sudo cpanm Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
 ```
 
 Install Zonemaster::Backend: 
 ```sh
-sudo cpan -i Zonemaster::Backend
+sudo cpanm Zonemaster::Backend
 ```
+
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
@@ -215,6 +216,8 @@ Check that the service has started:
 ```sh
 sudo /etc/init.d/zm-backend.sh status
 ```
+*Does not return any status as of now*
+
 
 ### 3.4 Post-installation (CentOS)
 
@@ -237,13 +240,13 @@ sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libd
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpan -i Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
+sudo cpanm Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
 ```
 
 Install Zonemaster::Backend:
 
 ```sh
-sudo cpan -i Zonemaster::Backend
+sudo cpanm Zonemaster::Backend
 ```
 
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
@@ -291,6 +294,20 @@ Initialize the database:
 mysql --user=root --password < ./initial-mysql.sql
 ```
 
+For latest versions of MySQL, wherein the root password is blank and you get an
+error "Access denied for the above command" on running the above command ,
+follow the below procedure: 
+
+```sh
+If you know the root password
+        mysql -u root 
+In MySQL prompt type the following 
+        SET PASSWORD FOR 'root'@'localhost' =PASSWORD("root-password");
+        flush privileges;
+        quit;
+Run again 
+	mysql --user=root --password < ./initial-mysql.sql
+```
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
@@ -308,24 +325,14 @@ Configure Zonemaster::Backend to use the correct database engine:
 sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
-The following block of commands is for **Debian 7** only. For all others, go to the step of installing
-database engine. First create or edit Debian 7 sources list file. Then fetch and import the repository signing key.
-And finally update the package lists.
-
-```sh
-echo -e "\ndeb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" | sudo tee -a /etc/apt/sources.list.d/pgdg.list
-wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
-```
-
-For all versions of Debian and Ubuntu, install, configure and start database engine (and Perl bindings):
+Install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt-get install libdbd-pg-perl postgresql
 ```
 
 Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database
-engine version depending on OS found in [Zonemaster/README](https://github.com/dotse/zonemaster/blob/master/README.md).
+engine version depending on OS found in [Zonemaster/README](https://github.com/zonemaster/zonemaster/blob/master/README.md).
 
 ```sh
 psql --version
@@ -363,7 +370,9 @@ Start the service:
 sudo service zm-backend.sh start
 ```
 
-Check that the service has started:
+If the `start` command did not give any output (depends on OS and version) then
+check that the service has started with the following command (if you get output
+with the `start` command, you probably do not get it with the `status` command).
 
 ```sh
 sudo service zm-backend.sh status
@@ -393,22 +402,30 @@ Install dependencies available from binary packages:
 pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
 ```
 
+Optionally install Curl (only needed for the post-installation smoke test)
+
+```sh
+pkg install curl
+```
+
+
 Install dependencies not available from binary packages:
 
 ```sh
-cpan -i Net::IP::XS
+cpanm Net::IP::XS
 ```
 
 Install Zonemaster::Backend:
 
 ```sh
-cpan -i Zonemaster::Backend
+cpanm Zonemaster::Backend
 ```
 
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add `zonemaster` user and group:
+
 ```sh
 pw groupadd zonemaster
 pw useradd zonemaster -g zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
@@ -418,8 +435,8 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -m 755 -d /etc/zonemaster
-install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+install -m 755 -d /usr/local/etc/zonemaster
+install -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
 install -m 775 -g zonemaster -d /var/log/zonemaster
 install -m 775 -g zonemaster -d /var/run/zonemaster
 install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
@@ -436,7 +453,7 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '/\bengine\b/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -467,7 +484,7 @@ mysql < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -533,7 +550,7 @@ curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"versi
 The command is expected to give an immediate JSON response similiar to:
 
 ```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "zonemaster_backend": "1.0.7", "zonemaster_engine": "v1.0.14" } }
+{"id":"1","jsonrpc":"2.0","result":{"zonemaster_backend":"2.0.2","zonemaster_engine":"v2.0.6"}}
 ```
 
 
@@ -571,15 +588,15 @@ sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 
 -------
 
-[Declaration of prerequisites]: https://github.com/dotse/zonemaster#prerequisites
+[Declaration of prerequisites]: https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]: API.md
-[Main Zonemaster repository]: https://github.com/dotse/zonemaster/blob/master/README.md
+[Main Zonemaster repository]: https://github.com/zonemaster/zonemaster/blob/master/README.md
 [Post-installation]: #7-post-installation
-[Zonemaster::CLI installation]: https://github.com/dotse/zonemaster-cli/blob/master/docs/Installation.md
-[Zonemaster::GUI installation]: https://github.com/dotse/zonemaster-gui/blob/master/docs/Installation.md
-[Zonemaster::Engine installation]: https://github.com/dotse/zonemaster-engine/blob/master/docs/Installation.md
-[Zonemaster::Engine]: https://github.com/dotse/zonemaster-engine/blob/master/README.md
-[Zonemaster::LDNS]: https://github.com/dotse/zonemaster-ldns/blob/master/README.md
+[Zonemaster::CLI installation]: https://github.com/zonemaster/zonemaster-cli/blob/master/docs/Installation.md
+[Zonemaster::GUI installation]: https://github.com/zonemaster/zonemaster-gui/blob/master/docs/Installation.md
+[Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md
+[Zonemaster::Engine]: https://github.com/zonemaster/zonemaster-engine/blob/master/README.md
+[Zonemaster::LDNS]: https://github.com/zonemaster/zonemaster-ldns/blob/master/README.md
 
 Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
 Copyright (c) 2013 - 2017, AFNIC \

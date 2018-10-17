@@ -466,6 +466,7 @@ sub get_test_results {
 $json_schemas{get_test_history} = joi->object->strict->props(
     offset => joi->integer->min(0),
     limit => joi->integer->min(0),
+    filter => joi->string->regex('^(?:old_behavior|all|delegated|undelegated)$'),
     frontend_params => joi->object->strict->props(
         domain => $zm_validator->domain_name->required,
         ipv4 => joi->boolean,
@@ -575,13 +576,13 @@ sub get_batch_job_result {
 
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
-    id => $zm_validator->jsonrpc_id()->required,
     method => $zm_validator->jsonrpc_method()->required);
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
-    return {
+    if (!exists $jsonrpc_request->{"id"} || @error_rpc) {
+        return {
             jsonrpc => '2.0',
             id => undef,
             error => {
@@ -589,7 +590,8 @@ sub jsonrpc_validate {
                 message=> 'The JSON sent is not a valid request object.',
                 data => "@error_rpc\n"
             }
-        } if @error_rpc;
+        }
+    }
 
     if (exists $jsonrpc_request->{"params"}) {
         if ($jsonrpc_request->{"method"} eq "get_ns_ips") {

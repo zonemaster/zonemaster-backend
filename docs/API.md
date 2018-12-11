@@ -168,10 +168,7 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 
 Basic data type: string
 
-* Must consist entirely of letters A-Z and a-z, digits 0-9, hyphen '-'
-  and underscore '_'.
-  Must not start or end with hyphen or underscore.
-* Length must be between 1 and 32 characters inclusive.
+This parameter is a case-insensitive string validated with the regexp `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/`.
 
 The name of a [*profile*](Architecture.md#profile).
 

@@ -141,7 +141,7 @@ Extra properties in *DS info* objects are ignored when present in RPC method arg
 
 Basic data type: string
 
-This parameter is a string that are an IPv4 or IPv6. It's validate with the following regexes:
+This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
  - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 

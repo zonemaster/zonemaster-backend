@@ -312,6 +312,37 @@ An object with the following properties:
 >
 
 
+## API method: `profile_names`
+
+Returns the names of the public subset of the [available profiles].
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "profile_names"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "default",
+    "another-profile"
+  ]
+}
+```
+
+
+#### `"result"`
+
+An array of *Profile names* in lower case. `"default"` is always included.
+
+
 ## API method: `get_host_by_name`
 
 Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.

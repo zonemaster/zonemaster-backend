@@ -386,7 +386,7 @@ Example response:
 
 An object with the property:
 
-`"hostname"`: A *domain name*. The hostname whose IP addresses are to be resolved.
+`"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -480,7 +480,7 @@ Example response:
 
 An object with the property:
 
-`"domain"`: A *domain name*. The domain whose DNS records are requested.
+`"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -620,7 +620,7 @@ Example response:
 
 An object with the property:
 
-`"test_id"`: A *test id*. The *test* to report on.
+`"test_id"`: A *test id*, required. The *test* to report on.
 
 
 #### `"result"`
@@ -979,9 +979,9 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*. The name of the account of an authorized user.
-* `"api_key"`: An *api key*. The api_key associated with the username.
-* `"domains"`: A list of *domain names*. The domains to be tested.
+* `"username"`: An *username*, required. The name of the account of an authorized user.
+* `"api_key"`: An *api key*, required. The api_key associated with the username.
+* `"domains"`: A list of *domain names*, required. The domains to be tested.
 * `"test_params"`: As described below.
 
 The value of `"test_params"` is an object with the following properties:
@@ -1069,7 +1069,7 @@ Example response:
 
 An object with the property:
 
-* `"batch_id"`: A *batch id*.
+* `"batch_id"`: A *batch id*, required.
 
 
 #### `"result"`

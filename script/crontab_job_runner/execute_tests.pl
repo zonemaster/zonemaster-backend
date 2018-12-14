@@ -40,15 +40,15 @@ unshift(@INC, $PROJECT_BASE_DIR);
 ###################################################################
 
 my $JOB_RUNNER_DIR = $PROD_DIR."zonemaster-backend/script/crontab_job_runner/";
-my $LOG_DIR = Zonemaster::Backend::Config->LogDir();
-my $perl_command = Zonemaster::Backend::Config->PerlIntereter();
-my $polling_interval = Zonemaster::Backend::Config->PollingInterval();
-my $zonemaster_timeout_interval = Zonemaster::Backend::Config->MaxZonemasterExecutionTime();
-my $frontend_slots = Zonemaster::Backend::Config->NumberOfProcessesForFrontendTesting();
-my $batch_slots = Zonemaster::Backend::Config->NumberOfProcessesForBatchTesting();
+my $LOG_DIR = Zonemaster::Backend::Config->new()->LogDir();
+my $perl_command = Zonemaster::Backend::Config->new()->PerlIntereter();
+my $polling_interval = Zonemaster::Backend::Config->new()->PollingInterval();
+my $zonemaster_timeout_interval = Zonemaster::Backend::Config->new()->MaxZonemasterExecutionTime();
+my $frontend_slots = Zonemaster::Backend::Config->new()->NumberOfProcessesForFrontendTesting();
+my $batch_slots = Zonemaster::Backend::Config->new()->NumberOfProcessesForBatchTesting();
 
-my $connection_string = Zonemaster::Backend::Config->DB_connection_string();
-my $dbh = DBI->connect($connection_string, Zonemaster::Backend::Config->DB_user(), Zonemaster::Backend::Config->DB_password(), {RaiseError => 1, AutoCommit => 1});
+my $connection_string = Zonemaster::Backend::Config->new()->DB_connection_string();
+my $dbh = DBI->connect($connection_string, Zonemaster::Backend::Config->new()->DB_user(), Zonemaster::Backend::Config->new()->DB_password(), {RaiseError => 1, AutoCommit => 1});
 
 
 sub clean_hung_processes {

@@ -13,7 +13,7 @@ use Zonemaster::Backend::Config;
 
 with 'Zonemaster::Backend::DB';
 
-my $connection_string = Zonemaster::Backend::Config->DB_connection_string( 'sqlite' );
+my $connection_string = Zonemaster::Backend::Config->new()->DB_connection_string( 'sqlite' );
 
 has 'dbh' => (
     is      => 'ro',

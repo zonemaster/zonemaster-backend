@@ -45,7 +45,7 @@ sub new {
     }
     else {
         eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
+            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->new()->BackendDBType();
             eval "require $backend_module";
             die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
@@ -348,7 +348,7 @@ sub start_domain_test {
 
     if ($params->{config}) {
         $params->{config} =~ s/[^\w_]//isg;
-        die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+        die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->new()->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );

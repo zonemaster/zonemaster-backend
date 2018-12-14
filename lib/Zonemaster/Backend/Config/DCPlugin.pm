@@ -95,7 +95,7 @@ Loads, validates and sanity-checks the backend configuration.
 =cut
 
 sub _do_load_config {
-    %config = ( db => Zonemaster::Backend::Config->new_DB() );
+    %config = ( db => Zonemaster::Backend::Config->new()->new_DB() );
 }
 
 1;

@@ -20,10 +20,10 @@ has 'dbhandle' => (
     isa => 'DBI::db',
 );
 
-my $connection_string   = Zonemaster::Backend::Config->DB_connection_string( 'postgresql' );
+my $connection_string   = Zonemaster::Backend::Config->new()->DB_connection_string( 'postgresql' );
 my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-my $connection_user     = Zonemaster::Backend::Config->DB_user();
-my $connection_password = Zonemaster::Backend::Config->DB_password();
+my $connection_user     = Zonemaster::Backend::Config->new()->DB_user();
+my $connection_password = Zonemaster::Backend::Config->new()->DB_password();
 
 sub dbh {
     my ( $self ) = @_;
@@ -34,6 +34,7 @@ sub dbh {
     }
     else {
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
+        $dbh->{InactiveDestroy} = 1;
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;
@@ -144,7 +145,7 @@ sub create_new_test {
     my ( $id, $hash_id ) = $dbh->selectrow_array(
         "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
         
-    if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+    if ( $id > Zonemaster::Backend::Config->new()->force_hash_id_use_in_API_starting_from_id() ) {
         $result = $hash_id;
     }
     else {
@@ -194,7 +195,7 @@ sub get_test_history {
 
     my $dbh = $self->dbh;
 
-    my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
+    my $use_hash_id_from_id = Zonemaster::Backend::Config->new()->force_hash_id_use_in_API_starting_from_id();
     my $undelegated = "";
     if ($p->{filter} eq "old_behavior" ) {
         $undelegated = (defined $p->{frontend_params}->{nameservers})

@@ -527,12 +527,9 @@ $json_schemas{get_batch_job_result} = joi->object->strict->props(
 );
 sub get_batch_job_result {
     my ( $self, $params ) = @_;
-    my $batch_id = "";
-    if (ref \$params eq "SCALAR") {
-        $batch_id = $params;
-    } else {
-        $batch_id = $params->{"batch_id"};
-    }
+
+    my $batch_id = $params->{"batch_id"};
+
     return $self->{db}->get_batch_job_result($batch_id);
 }
 
@@ -563,10 +560,6 @@ sub jsonrpc_validate {
         elsif ($jsonrpc_request->{"method"} eq "get_test_params" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_test_params' method using scalar is deprecated. Please update to {\"test_id\"} \n";
-        } elsif ($jsonrpc_request->{"method"} eq "get_batch_job_result" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
-            $jsonrpc_request->{"params"} = { batch_id => $jsonrpc_request->{"params"} };
-            warn "[DEPRECATED] - 'get_batch_job_result' method using scalar is deprecated. Please update to {\"batch_id\"} \n";
-
         }
 
         my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});

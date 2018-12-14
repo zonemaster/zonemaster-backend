@@ -957,15 +957,7 @@ Example request:
     "method": "get_batch_job_result",
     "params": {"batch_id": "8"}
 }
-```
-*Deprecated syntax:*
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 147559211994909,
-    "method": "get_batch_job_result",
-    "params": "8"
-}
+
 ```
 
 Example response:

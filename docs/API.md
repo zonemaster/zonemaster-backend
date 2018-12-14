@@ -168,7 +168,8 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 
 Basic data type: string
 
-This parameter is a case-insensitive string validated with the regexp `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/`.
+This parameter is a case-insensitive string validated with the case-insensitive
+regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/`.
 
 The name of a [*profile*](Architecture.md#profile).
 

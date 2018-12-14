@@ -182,30 +182,12 @@ sub _check_domain {
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
 }
 
-$json_schemas{validate_syntax} = joi->object->strict->props(
-    domain => $zm_validator->domain_name->required,
-    ipv4 => joi->boolean,
-    ipv6 => joi->boolean,
-    nameservers => joi->array->strict->items(
-        $zm_validator->nameserver
-    ),
-    ds_info => joi->array->strict->items(
-        $zm_validator->ds_info
-    ),
-    profile => $zm_validator->profile_name,
-    advanced => joi->boolean,
-    client_id => $zm_validator->client_id,
-    client_version => $zm_validator->client_version,
-    config => joi->string,
-    user_ip => $zm_validator->ip_address,
-    user_location_info => $zm_validator->location
-);
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
     my @allowed_params_keys = (
         'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
-        'advanced', 'client_id', 'client_version', 'user_ip', 'user_location_info', 'config', 'priority', 'queue'
+        'client_id', 'client_version', 'config', 'priority', 'queue'
     );
 
     foreach my $k ( keys %$syntax_input ) {
@@ -227,11 +209,6 @@ sub validate_syntax {
                 delete( $ds_digest->{$k} ) unless ( $k eq 'algorithm' || $k eq 'digest' || $k eq 'digtype' || $k eq 'keytag' );
             }
         }
-    }
-
-    if ( defined $syntax_input->{advanced} ) {
-        return { status => 'nok', message => encode_entities( "Invalid 'advanced' option format" ) }
-          unless ( $syntax_input->{advanced} eq JSON::PP::false || $syntax_input->{advanced} eq JSON::PP::true );
     }
 
     if ( defined $syntax_input->{ipv4} ) {

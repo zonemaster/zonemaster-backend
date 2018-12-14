@@ -723,17 +723,7 @@ Example request:
     "limit": 200,
     "filter": "all",
     "frontend_params": {
-      "domain": "zonemaster.net",      
-      "nameservers": [
-        {
-          "ns": "ns3.nic.se",
-          "ip": "2001:67c:124c:2007::45"
-        },
-        {
-          "ns": "ns2.nic.fr",
-          "ip": "192.93.0.4"
-        }
-      ]
+      "domain": "zonemaster.net"
     }
   }
 }
@@ -768,12 +758,6 @@ Example response:
 > symbol.
 >
 
->
-> In order to keep backward compatibility with the old GUI, we deprecate to send 
-> an empty string as value for the domain parameter.
-> It will continue to return without error an empty array.
->
-
 
 #### `"params"`
 
@@ -781,24 +765,12 @@ An object with the following properties:
 
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
-* `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
+* `"filter"`: A string ["all", "delegated" and "undelegated"], optional. (default: `all`)
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:
 
 * `"domain"`: A *domain name*, required.
-* `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
-* `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
-* `"nameservers"`: **Deprecated**. A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
-* `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
-* `"advanced"`: **Deprecated**. A boolean, optional.
-* `"profile"`: **Deprecated**. A *profile name*, optional.
-* `"client_id"`: **Deprecated**. A *client id*, optional.
-* `"client_version"`: **Deprecated**. A *client version*, optional.
-* `"config"`: **Deprecated**. A string, optional. The name of a *config profile*.
-
-Please, use a non-deprecated value for `"filter"` property: "all", "delegated" and "undelegated".
-The default filter value, "old_behavior", will be removed and replaced by the value "all".
 
 #### `"result"`
 
@@ -806,9 +778,6 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
-* `"advanced_options"`: **Deprecated**. A string or `null`.
-  `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
-  In some future release this property will no longer be included in the result.
 * `"overall_result"`: A string. The most severe problem level logged in the test results.
 It could be:
     * `"ok"`, all is normal

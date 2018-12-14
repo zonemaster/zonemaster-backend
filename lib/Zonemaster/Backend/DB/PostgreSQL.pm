@@ -196,11 +196,7 @@ sub get_test_history {
 
     my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
     my $undelegated = "";
-    if ($p->{filter} eq "old_behavior" ) {
-        $undelegated = (defined $p->{frontend_params}->{nameservers})
-            ? ("AND (params->'nameservers') IS NOT NULL")
-            : ("AND (params->'nameservers') IS NULL");
-    } elsif ($p->{filter} eq "undelegated") {
+    if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
     } elsif ($p->{filter} eq "delegated") {
         $undelegated = "AND (params->'nameservers') IS NULL";
@@ -214,9 +210,8 @@ sub get_test_history {
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
             id,
             hash_id,
-            creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, 
-            params->>'advanced_options' AS advanced_options 
-        FROM test_results 
+            creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
+        FROM test_results
         WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
         ORDER BY id DESC 
         OFFSET $p->{offset} LIMIT $p->{limit}";
@@ -239,7 +234,6 @@ sub get_test_history {
             {
                 id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
                 creation_time    => $h->{creation_time},
-                advanced_options => $h->{advanced_options},
                 overall_result   => $overall_result
             }
         );

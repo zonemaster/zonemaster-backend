@@ -448,20 +448,9 @@ sub get_test_results {
 $json_schemas{get_test_history} = joi->object->strict->props(
     offset => joi->integer->min(0),
     limit => joi->integer->min(0),
-    filter => joi->string->regex('^(?:old_behavior|all|delegated|undelegated)$'),
+    filter => joi->string->regex('^(?:all|delegated|undelegated)$'),
     frontend_params => joi->object->strict->props(
-        domain => $zm_validator->domain_name->required,
-        ipv4 => joi->boolean,
-        ipv6 => joi->boolean,
-        nameservers => joi->boolean,
-        ds_info => joi->array->strict->items(
-            $zm_validator->ds_info
-        ),
-        advanced => joi->boolean,
-        profile => $zm_validator->profile_name,
-        client_id => $zm_validator->client_id,
-        client_version => $zm_validator->client_version,
-        config => joi->string,
+        domain => $zm_validator->domain_name->required
     )->required
 );
 sub get_test_history {
@@ -471,10 +460,7 @@ sub get_test_history {
 
     $p->{offset} //= 0;
     $p->{limit} //= 200;
-    $p->{filter} //= "old_behavior";
-    
-    # Temporary fix to avoid compatibility issues with the existing GUI, should be converted to and error when the new GUI is ready
-    return $results unless ($p->{frontend_params} && $p->{frontend_params}{domain});
+    $p->{filter} //= "all";
 
     $results = $self->{db}->get_test_history( $p );
 

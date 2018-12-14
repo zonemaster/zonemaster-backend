@@ -225,9 +225,7 @@ sub get_test_history {
     my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
 
     my $undelegated = "";
-    if ($p->{filter} eq "old_behavior" ) {
-        $undelegated = (defined $p->{frontend_params}->{nameservers}) ? 1:0;
-    } elsif ($p->{filter} eq "undelegated") {
+    if ($p->{filter} eq "undelegated") {
         $undelegated = 1;
     } elsif ($p->{filter} eq "delegated") {
         $undelegated = 0;
@@ -286,8 +284,7 @@ sub get_test_history {
             {
                 id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
                 creation_time    => $h->{creation_time},
-                advanced_options => $h->{params}{advanced_options},
-                overall_result   => $overall,
+                overall_result   => $overall
             }
         );
     }

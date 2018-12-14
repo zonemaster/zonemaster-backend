@@ -103,7 +103,7 @@ sub LogDir {
     return $self->{cfg}->val( 'LOG', 'log_dir' );
 }
 
-sub PerlIntereter {
+sub PerlInterpreter {
     my ($self) = @_;
 
     return $self->{cfg}->val( 'PERL', 'interpreter' );

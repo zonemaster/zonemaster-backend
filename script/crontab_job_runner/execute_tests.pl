@@ -41,7 +41,7 @@ unshift(@INC, $PROJECT_BASE_DIR);
 
 my $JOB_RUNNER_DIR = $PROD_DIR."zonemaster-backend/script/crontab_job_runner/";
 my $LOG_DIR = Zonemaster::Backend::Config->new()->LogDir();
-my $perl_command = Zonemaster::Backend::Config->new()->PerlIntereter();
+my $perl_command = Zonemaster::Backend::Config->new()->PerlInterpreter();
 my $polling_interval = Zonemaster::Backend::Config->new()->PollingInterval();
 my $zonemaster_timeout_interval = Zonemaster::Backend::Config->new()->MaxZonemasterExecutionTime();
 my $frontend_slots = Zonemaster::Backend::Config->new()->NumberOfProcessesForFrontendTesting();

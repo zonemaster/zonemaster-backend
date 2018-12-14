@@ -73,7 +73,7 @@ sub run {
 
     if (defined $params->{ipv4} || defined $params->{ipv6}) {
         Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
+        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
     else {
         Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, 1 );
@@ -143,7 +143,7 @@ sub run {
             Zonemaster::Engine::Profile->effective->merge( $profile );
         }
         else {
-            die "Can't load prfile: [$params->{profile}]" if ($params->{profile} ne 'default')
+            die "Can't load profile: [$params->{profile}]" if ($params->{profile} ne 'default')
         }
     }
 

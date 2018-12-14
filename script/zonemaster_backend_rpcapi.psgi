@@ -31,6 +31,11 @@ my $router = router {
 		action => "version_info"
 	};
 
+ 	connect "profiles_names" => {
+        handler => "+Zonemaster::Backend::RPCAPI",
+        action => "profiles_names"
+    };
+
 	connect "get_ns_ips" => {
 		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_ns_ips"

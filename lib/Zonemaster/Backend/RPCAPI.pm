@@ -72,13 +72,7 @@ $json_schemas{get_host_by_name} = joi->object->strict->props(
 );
 sub get_host_by_name {
     my ( $self, $params ) = @_;
-    my $ns_name = "";
-
-    if (ref \$params eq "SCALAR") {
-        $ns_name = $params;
-    } else {
-        $ns_name = $params->{"hostname"};
-    }
+    my $ns_name  = $params->{"hostname"};
 
     my @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
     @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
@@ -525,10 +519,6 @@ sub jsonrpc_validate {
     }
 
     if (exists $jsonrpc_request->{"params"}) {
-        if (($jsonrpc_request->{"method"} eq "get_host_by_name") && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
-            $jsonrpc_request->{"params"} = { hostname => $jsonrpc_request->{"params"}};
-            warn "[DEPRECATED] - 'get_host_by_name' method using scalar is deprecated. Please update to {\"hostname\"} \n";
-        }
 
         my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});
         return {

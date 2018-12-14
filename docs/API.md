@@ -146,23 +146,6 @@ This parameter is a string that are an IPv4 or IPv6. It's validate with the foll
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
 
-### Location - **Deprecated** 
-
-Basic data type: object
-
-The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"latitude"`.
-
-
-* `"isp"`: a string. The Internet Service Provider of the user.
-* `"country"`: a string. The country of the user.
-* `"city"`: a string. The city of the user.
-* `"longitude"`: a string. The longtitude of the user. Validate with `^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$`.
-* `"latitude"`: a string. The latitude of the user. Validate with `^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$`.
-
->
-> TODO Add regex
->
-
 ### Name server
 
 Basic data type: object

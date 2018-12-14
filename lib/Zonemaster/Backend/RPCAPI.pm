@@ -310,13 +310,10 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     ds_info => joi->array->items(
         $zm_validator->ds_info
     ),
-    advanced => joi->boolean,
     profile => $zm_validator->profile_name,
     client_id => $zm_validator->client_id,
     client_version => $zm_validator->client_version,
     config => joi->string,
-    user_ip => $zm_validator->ip_address,
-    user_location_info => $zm_validator->location,
     priority => $zm_validator->priority,
     queue => $zm_validator->queue
 );
@@ -324,13 +321,6 @@ sub start_domain_test {
     my ( $self, $params ) = @_;
 
     my $result = 0;
-
-    if ($params->{user_ip}){
-        delete $params->{user_ip};
-    }
-    if ($params->{user_location_info}){
-        delete $params->{user_location_info};
-    }
 
     $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
     my $syntax_result = $self->validate_syntax( $params );
@@ -598,10 +588,9 @@ sub jsonrpc_validate {
         } elsif ($jsonrpc_request->{"method"} eq "get_batch_job_result" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { batch_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_batch_job_result' method using scalar is deprecated. Please update to {\"batch_id\"} \n";
-        } elsif ($jsonrpc_request->{"method"} eq "get_data_from_parent_zone" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
-            $jsonrpc_request->{"params"} = { domain => $jsonrpc_request->{"params"} };
-            warn "[DEPRECATED] - 'get_data_from_parent_zone' method using scalar is deprecated. Please update to {\"domain\"} \n";
+
         }
+
         my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});
         return {
                 jsonrpc => '2.0',

@@ -407,17 +407,6 @@ Example request:
 }
 ```
 
-*Deprecated syntax:*
-```json
-
-{
-  "jsonrpc": "2.0",
-  "id": 3,
-  "method": "get_data_from_parent_zone",
-  "params": "zonemaster.net"
-}
-```
-
 Example response:
 ```json
 {
@@ -539,13 +528,10 @@ An object with the following properties:
 * `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
 * `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
-* `"advanced"`: **Deprecated**. A boolean, optional.
 * `"profile"`: A *profile name*, optional. Used to perform the test with a specific set of parameters and tests.
 * `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. Used to monitor which client use the API
 * `"config"`: A string, optional. The name of a config profile.
-* `"user_ip"`: **Deprecated**. An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
-* `"user_location_info"`: **Deprecated**. An *location* object, optional. Used to monitor information about the user. 
 * `"priority"`: A *priority*, optional.
 * `"queue"`: A *queue*, optional.
 

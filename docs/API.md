@@ -920,18 +920,12 @@ The value of `"test_params"` is an object with the following properties:
 * `"client_version"`: A *client version*, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
-* `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: A string, optional. The name of a *config profile*.
-* `"user_ip"`: **Deprecated**. An *IP address*, optional.
-* `"user_location_info"`: **Deprecated**. An *location* object, optional.
 * `"priority"`: A *priority*, optional
 * `"queue"`: A *queue*, optional
 
->
-> TODO: Are domain names actually validated in practice? Can you explain ? => There are some security tests (look postgres.pm).
->
 
 
 #### `"result"`

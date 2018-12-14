@@ -506,22 +506,16 @@ $json_schemas{add_batch_job} = joi->object->strict->props(
         ds_info => joi->array->strict->items(
             $zm_validator->ds_info
         ),
-        advanced => joi->boolean,
         profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id,
         client_version => $zm_validator->client_version,
         config => joi->string,
-        user_ip => $zm_validator->ip_address,
-        user_location_info => $zm_validator->location,
         priority => $zm_validator->priority,
         queue => $zm_validator->queue
     )
 );
 sub add_batch_job {
     my ( $self, $params ) = @_;
-
-    $params->{test_params}->{user_ip} = '';
-    $params->{test_params}->{user_location_info} = '';
 
     my $results = $self->{db}->add_batch_job( $params );
 

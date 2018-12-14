@@ -339,12 +339,7 @@ $json_schemas{get_test_params} = joi->object->strict->props(
 );
 sub get_test_params {
     my ( $self, $params ) = @_;
-    my $test_id = "";
-    if (ref \$params eq "SCALAR") {
-        $test_id = $params;
-    } else {
-        $test_id = $params->{"test_id"};
-    }
+    my $test_id = $params->{"test_id"};
 
     my $result = 0;
 
@@ -533,10 +528,6 @@ sub jsonrpc_validate {
         if (($jsonrpc_request->{"method"} eq "get_host_by_name") && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { hostname => $jsonrpc_request->{"params"}};
             warn "[DEPRECATED] - 'get_host_by_name' method using scalar is deprecated. Please update to {\"hostname\"} \n";
-        }
-        elsif ($jsonrpc_request->{"method"} eq "get_test_params" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
-            $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
-            warn "[DEPRECATED] - 'get_test_params' method using scalar is deprecated. Please update to {\"test_id\"} \n";
         }
 
         my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});

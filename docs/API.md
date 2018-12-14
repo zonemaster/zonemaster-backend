@@ -1019,16 +1019,6 @@ Example request:
 }
 ```
 
-*Deprecated syntax:*
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 143014426992009,
-    "method": "get_test_params",
-    "params": "6814584dc820354a"
-}
-```
-
 Example response:
 ```json
 {

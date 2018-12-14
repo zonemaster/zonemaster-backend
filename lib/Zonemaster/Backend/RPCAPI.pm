@@ -579,10 +579,8 @@ sub jsonrpc_validate {
         if (($jsonrpc_request->{"method"} eq "get_host_by_name") && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { hostname => $jsonrpc_request->{"params"}};
             warn "[DEPRECATED] - 'get_host_by_name' method using scalar is deprecated. Please update to {\"hostname\"} \n";
-        } elsif ($jsonrpc_request->{"method"} eq "test_progress" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
-            $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
-            warn "[DEPRECATED] - 'test_progress' method using scalar is deprecated. Please update to {\"test_id\"} \n";
-        } elsif ($jsonrpc_request->{"method"} eq "get_test_params" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
+        }
+        elsif ($jsonrpc_request->{"method"} eq "get_test_params" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {
             $jsonrpc_request->{"params"} = { test_id => $jsonrpc_request->{"params"} };
             warn "[DEPRECATED] - 'get_test_params' method using scalar is deprecated. Please update to {\"test_id\"} \n";
         } elsif ($jsonrpc_request->{"method"} eq "get_batch_job_result" && ref \$jsonrpc_request->{"params"} eq "SCALAR") {

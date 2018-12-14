@@ -566,16 +566,6 @@ Example request:
 }
 ```
 
-*Deprecated syntax:*
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 5,
-  "method": "test_progress",
-  "params": "c45a3f8256c4a155"
-}
-```
-
 Example response:
 ```json
 {

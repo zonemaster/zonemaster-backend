@@ -67,8 +67,8 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{profiles_names} = joi->object->strict;
-sub profiles_names {
+$json_schemas{profile_names} = joi->object->strict;
+sub profile_names {
     my ($self) = @_;
 
     my @profiles = Zonemaster::Backend::Config->ListPublicProfiles();

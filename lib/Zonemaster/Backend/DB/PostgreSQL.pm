@@ -252,8 +252,8 @@ sub add_batch_job {
 
         my $test_params = $params->{test_params};
 
-        my $priority = $params->{priority};
-        my $queue = $params->{queue};
+        my $priority = $test_params->{priority};
+        my $queue = $test_params->{queue};
 
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );

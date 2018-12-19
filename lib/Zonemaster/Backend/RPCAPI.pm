@@ -304,8 +304,8 @@ sub start_domain_test {
         die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
 
-    $params->{test_params}->{priority}  //= 10;
-    $params->{test_params}->{queue}     //= 0;
+    $params->{priority}  //= 10;
+    $params->{queue}     //= 0;
     my $minutes_between_tests_with_same_params = 10;
 
     $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );

@@ -31,7 +31,7 @@ my $router = router {
 		action => "version_info"
 	};
 
- 	connect "profiles_names" => {
+ 	connect "profile_names" => {
         handler => "+Zonemaster::Backend::RPCAPI",
         action => "profile_names"
     };

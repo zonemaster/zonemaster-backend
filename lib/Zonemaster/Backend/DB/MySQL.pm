@@ -106,6 +106,9 @@ sub create_new_test {
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
     my $result_id;
 
+    my $priority = $test_params->{priority};
+    my $queue = $test_params->{queue};
+
     eval {
         $dbh->do( q[LOCK TABLES test_results WRITE] );
         my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
@@ -293,11 +296,13 @@ sub add_batch_job {
     my $dbh = $self->dbh;
     my $js = JSON::PP->new;
     $js->canonical( 1 );
-            
+
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
+        my $priority = $test_params->{priority};
+        my $queue = $test_params->{queue};
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};

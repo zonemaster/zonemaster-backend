@@ -124,6 +124,9 @@ sub create_new_test {
     my $encoded_params                 = $js->encode( $test_params );
     my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
+    my $priority = $test_params->{priority};
+    my $queue = $test_params->{queue};
+
     my $query =
         "INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
       . $dbh->quote( $batch_id ) . ", "
@@ -243,11 +246,14 @@ sub add_batch_job {
     my $dbh = $self->dbh;
     my $js = JSON::PP->new;
     $js->canonical( 1 );
-            
+
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
+
+        my $priority = $test_params->{priority};
+        my $queue = $test_params->{queue};
 
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );

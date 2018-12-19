@@ -257,8 +257,6 @@ sub add_batch_job {
     $js->canonical( 1 );
             
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
-        $params->{test_params}->{client_version} = '1.0';
         $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
 
         $batch_id = $self->create_new_batch_job( $params->{username} );

@@ -234,7 +234,7 @@ sub get_test_history {
             {
                 id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
                 creation_time    => $h->{creation_time},
-                overall_result   => $overall_result
+                overall_result   => $overall_result,
             }
         );
     }

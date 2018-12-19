@@ -33,7 +33,7 @@ sub client_version {
     return joi->string;
 }
 sub domain_name {
-    return joi->string->regex('^[\.]{1}$|.{2,}')->min(1)->max(254);
+    return joi->string->regex('^[.]$|^.{2,254}$');
 }
 sub ds_info {
     return joi->object->strict->props(

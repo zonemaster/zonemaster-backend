@@ -748,7 +748,7 @@ An object with the following properties:
 
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
-* `"filter"`: A string ["all", "delegated" and "undelegated"], optional. (default: `all`)
+* `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:

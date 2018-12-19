@@ -11,7 +11,6 @@ my $frontend_params_1 = {
 	client_id      => "$db_backend Unit Test",         # free string
 	client_version => '1.0',               # free version like string
 	domain         => 'afnic.fr',          # content of the domain text field
-	advanced       => 1,                   # 0 or 1, is the advanced options checkbox checked
 	ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
 	ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
 	profile        => 'default_profile',    # the id if the Test profile listbox

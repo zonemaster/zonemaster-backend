@@ -31,25 +31,16 @@ my $router = router {
 		action => "version_info"
 	};
 
-	connect "get_ns_ips" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_ns_ips"
-	};
-
     connect "get_host_by_name" => {
 		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_host_by_name"
 	};
+
 	connect "get_data_from_parent_zone" => {
 		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_data_from_parent_zone"
 	};
 
-	connect "validate_syntax" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "validate_syntax"
-	};
-	
 	connect "start_domain_test" => {
 		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "start_domain_test"

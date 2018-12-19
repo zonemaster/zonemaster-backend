@@ -235,11 +235,7 @@ sub get_test_history {
     my @results;
 
     my $undelegated = "";
-    if ($p->{filter} eq "old_behavior" ) {
-        $undelegated = (defined $p->{frontend_params}->{nameservers})
-            ? ("AND (params->'nameservers') IS NOT NULL")
-            : ("AND (params->'nameservers') IS NULL");
-    } elsif ($p->{filter} eq "undelegated") {
+    if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
     } elsif ($p->{filter} eq "delegated") {
         $undelegated = "AND (params->'nameservers') IS NULL";
@@ -261,7 +257,7 @@ sub get_test_history {
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {
         push( @results,
-            { id => $h->{id}, creation_time => $h->{creation_time}, advanced_options => $h->{advanced_options} } );
+            { id => $h->{id}, creation_time => $h->{creation_time} } );
     }
     $sth1->finish;
 

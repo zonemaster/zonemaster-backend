@@ -24,21 +24,14 @@ else {
 
 =cut
 
-sub new {
+sub load_config {
     my ( $class, $params ) = @_;
     my $self = {};
     
-    $self->{cfg} = _load_config();
+    $self->{cfg} = Config::IniFiles->new( -file => $path );
+    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
     bless( $self, $class );
     return $self;
-}
-
-
-sub _load_config {
-    my $cfg = Config::IniFiles->new( -file => $path );
-    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $cfg );
-
-    return $cfg;
 }
 
 sub BackendDBType {
@@ -160,17 +153,17 @@ sub force_hash_id_use_in_API_starting_from_id {
 }
 
 sub ReadProfilesInfo {
-	my ($self) = @_;
-	
-	my $profiles;
-	foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
-		$profiles->{lc($public_profile)}->{type} = 'public';
-		$profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
+    my ($self) = @_;
+    
+    my $profiles;
+    foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
+        $profiles->{lc($public_profile)}->{type} = 'public';
+        $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
     }
 
-	foreach my $public_profile ($self->{cfg}->Parameters('PRIVATE PROFILES')) {
-		$profiles->{lc($public_profile)}->{type} = 'private';
-		$profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PRIVATE PROFILES', $public_profile);
+    foreach my $private_profile ($self->{cfg}->Parameters('PRIVATE PROFILES')) {
+        $profiles->{lc($private_profile)}->{type} = 'private';
+        $profiles->{lc($private_profile)}->{profile_file_name} = $self->{cfg}->val('PRIVATE PROFILES', $private_profile);
     }
     
     return $profiles;
@@ -193,7 +186,7 @@ The adapter connects to the database before it is returned.
 =head3 INPUT
 
 The database adapter class is selected based on the return value
-of L<Zonemaster::Backend::Config->new()->BackendDBType()>. The database
+of L<Zonemaster::Backend::Config->load_config()->BackendDBType()>. The database
 adapter class constructor is called without arguments and is expected
 to configure itself according to available global configuration.
 
@@ -219,7 +212,7 @@ A configured L<Zonemaster::Backend::DB> object.
 
 sub new_DB {
     # Get DB type from config
-    my $dbtype = Zonemaster::Backend::Config->new()->BackendDBType();
+    my $dbtype = Zonemaster::Backend::Config->load_config()->BackendDBType();
     if (!defined $dbtype) {
         die "Unrecognized DB.engine in backend config";
     }

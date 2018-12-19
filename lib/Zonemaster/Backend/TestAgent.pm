@@ -71,13 +71,12 @@ sub run {
     }
     $domain = $self->to_idn( $domain );
 
-    if (defined $params->{ipv4} || defined $params->{ipv6}) {
+    if (defined $params->{ipv4}) {
         Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
-    else {
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, 1 );
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, 1 );
+
+    if (defined $params->{ipv6}) {
+        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
 
     # used for progress indicator
@@ -143,7 +142,7 @@ sub run {
             Zonemaster::Engine::Profile->effective->merge( $profile );
         }
         else {
-            die "Can't load profile: [$params->{profile}]" if ($params->{profile} ne 'default')
+            die "The profile [$params->{profile}] is not defined in the backend_config ini file" if ($params->{profile} ne 'default')
         }
     }
 

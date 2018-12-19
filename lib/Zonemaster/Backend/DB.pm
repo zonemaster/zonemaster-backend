@@ -42,7 +42,7 @@ sub _get_allowed_id_field_name {
 		$id_field = 'hash_id';
     }
     else {
-		if ($test_id <= Zonemaster::Backend::Config->new()->force_hash_id_use_in_API_starting_from_id()) {
+		if ($test_id <= Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id()) {
 			$id_field = 'id';
 		}
 		else {
@@ -60,7 +60,7 @@ sub get_test_request {
     
     
     my ( $id, $hash_id );
-    my $lock_on_queue = Zonemaster::Backend::Config->new()->lock_on_queue();
+    my $lock_on_queue = Zonemaster::Backend::Config->load_config()->lock_on_queue();
 	if ( defined $lock_on_queue ) {
 		( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $lock_on_queue );
 	}
@@ -71,7 +71,7 @@ sub get_test_request {
     if ($id) {
 		$dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
 
-		if ( $id > Zonemaster::Backend::Config->new()->force_hash_id_use_in_API_starting_from_id() ) {
+		if ( $id > Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id() ) {
 			$result_id = $hash_id;
 		}
 		else {

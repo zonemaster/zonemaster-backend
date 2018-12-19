@@ -20,6 +20,7 @@ BEGIN {
 	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
 }
 
+# Enable immediate flush to stdout and stderr
 $|++;
 
 ###
@@ -37,7 +38,7 @@ GetOptions(
 $pidfile //= '/tmp/zonemaster_backend_testagent.pid';
 
 # Yes, the method names are spelled like that.
-my $config = Zonemaster::Backend::Config->new();
+my $config = Zonemaster::Backend::Config->load_config();
 my $maximum_processes = 
   $config->NumberOfProcessesForFrontendTesting() +
   $config->NumberOfProcessesForBatchTesting();
@@ -87,6 +88,8 @@ sub main {
     my $self = shift;
 
     my $db = $self->config->{db};
+    
+    # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
     Zonemaster::Backend::TestAgent->new({ config => $config });
 
     while ( 1 ) {

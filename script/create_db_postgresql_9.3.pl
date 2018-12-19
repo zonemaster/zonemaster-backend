@@ -8,10 +8,10 @@ use DBI qw(:utils);
 
 use Zonemaster::Backend::Config;
 
-die "The configuration file does not contain the PostgreSQL backend" unless (lc(Zonemaster::Backend::Config->new()->BackendDBType()) eq 'postgresql');
-my $db_user = Zonemaster::Backend::Config->new()->DB_user();
-my $db_password = Zonemaster::Backend::Config->new()->DB_password();
-my $connection_string = Zonemaster::Backend::Config->new()->DB_connection_string();
+die "The configuration file does not contain the PostgreSQL backend" unless (lc(Zonemaster::Backend::Config->load_config()->BackendDBType()) eq 'postgresql');
+my $db_user = Zonemaster::Backend::Config->load_config()->DB_user();
+my $db_password = Zonemaster::Backend::Config->load_config()->DB_password();
+my $connection_string = Zonemaster::Backend::Config->load_config()->DB_connection_string();
 
 my $dbh = DBI->connect( $connection_string, $db_user, $db_password, { RaiseError => 1, AutoCommit => 1 } );
 

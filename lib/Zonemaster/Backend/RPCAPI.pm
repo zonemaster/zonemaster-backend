@@ -304,7 +304,11 @@ sub start_domain_test {
         die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
 
-    $result = $self->{db}->create_new_test( $params->{domain}, $params, 10 );
+    $params->{test_params}->{priority}  //= 10;
+    $params->{test_params}->{queue}     //= 0;
+    my $minutes_between_tests_with_same_params = 10;
+
+    $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
 
     return $result;
 }
@@ -482,6 +486,9 @@ $json_schemas{add_batch_job} = joi->object->strict->props(
 );
 sub add_batch_job {
     my ( $self, $params ) = @_;
+
+    $params->{test_params}->{priority}  //= 5;
+    $params->{test_params}->{queue}     //= 0;
 
     my $results = $self->{db}->add_batch_job( $params );
 

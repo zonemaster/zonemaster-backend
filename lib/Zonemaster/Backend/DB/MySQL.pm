@@ -97,14 +97,8 @@ sub create_new_batch_job {
 
 sub create_new_test {
     my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
-    my $result;
-    my $dbh = $self->dbh;
 
-    my $priority = 10;
-    $priority = $test_params->{priority} if (defined $test_params->{priority});
-    
-    my $queue = 0;
-    $queue = $test_params->{queue} if (defined $test_params->{queue});
+    my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
     my $js                             = JSON::PP->new->canonical;
@@ -301,21 +295,10 @@ sub add_batch_job {
     $js->canonical( 1 );
             
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{test_params}->{client_id}      //= 'Zonemaster Batch Scheduler';
-        $params->{test_params}->{client_version} //= '1.0';
-        $params->{test_params}->{priority}       //= 5;
-
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
-        my $minutes_between_tests_with_same_params = 5;
         my $test_params = $params->{test_params};
-        
-        my $priority = 10;
-        $priority = $test_params->{priority} if (defined $test_params->{priority});
-        
-        my $queue = 0;
-        $queue = $test_params->{queue} if (defined $test_params->{queue});
-        
+
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__params_deterministic_hash ON test_results" );};

@@ -170,7 +170,7 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An *IP address* (IPv4 or IPv6) or null, optional. (default: `null`)
+* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: `null`)
 
 
 ### Priority
@@ -551,8 +551,8 @@ Example response:
 An object with the following properties:
 
 * `"domain"`: A *domain name*, required. The zone to test.
-* `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
-* `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
+* `"ipv6"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv4 tests.
+* `"ipv4"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv6 tests.
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
@@ -822,7 +822,7 @@ An object with the following properties:
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
 * `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
-* `"frontend_params"`: An object.
+* `"frontend_params"`: An object, required.
 
 The value of "frontend_params" is an object with the following properties:
 
@@ -982,7 +982,7 @@ An object with the following properties:
 * `"username"`: An *username*, required. The name of the account of an authorized user.
 * `"api_key"`: An *api key*, required. The api_key associated with the username.
 * `"domains"`: A list of *domain names*, required. The domains to be tested.
-* `"test_params"`: As described below.
+* `"test_params"`: As described below, optional. (default with default value as below)
 
 The value of `"test_params"` is an object with the following properties:
 
@@ -992,8 +992,8 @@ The value of `"test_params"` is an object with the following properties:
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
 * `"advanced"`: **Deprecated**. A boolean, optional.
-* `"ipv6"`: A boolean, optional. (default: `false`)
-* `"ipv4"`: A boolean, optional. (default: `false`)
+* `"ipv6"`: A boolean, optional. (default: `true`)
+* `"ipv4"`: A boolean, optional. (default: `true`)
 * `"config"`: A string, optional. The name of a *config profile*. 
 * `"user_ip"`: **Deprecated**. An *IP address*, optional.
 * `"user_location_info"`: **Deprecated**. An *location* object, optional.
@@ -1139,8 +1139,8 @@ Example response:
 An object with the following properties:
 
 * `"domain"`: A *domain name*, required.
-* `"ipv6"`: A boolean, optional. (default `false`)
-* `"ipv4"`: A boolean, optional. (default `false`)
+* `"ipv6"`: A boolean, optional. (default `true`)
+* `"ipv4"`: A boolean, optional. (default `true`)
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"profile"`: A *profile name*, optional. (default: `"default"`)

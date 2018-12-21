@@ -172,13 +172,13 @@ sub ReadProfilesInfo {
 sub ListPublicProfiles {
     my ($self) = @_;
     
-    my $profiles = [];
+    my $profiles;
     foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
         $profiles->{lc($public_profile)}->{type} = 'public';
         $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
     }
 
-    return @$profiles;
+    return keys %$profiles;
 }
 
 sub lock_on_queue {

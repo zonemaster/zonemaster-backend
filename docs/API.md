@@ -146,23 +146,6 @@ This parameter is a string that are an IPv4 or IPv6. It's validate with the foll
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
 
-### Location - **Deprecated** 
-
-Basic data type: object
-
-The object has five keys, `"isp"`, `"country"`, `"city"`, `"longitude"`  and `"latitude"`.
-
-
-* `"isp"`: a string. The Internet Service Provider of the user.
-* `"country"`: a string. The country of the user.
-* `"city"`: a string. The city of the user.
-* `"longitude"`: a string. The longtitude of the user. Validate with `^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$`.
-* `"latitude"`: a string. The latitude of the user. Validate with `^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$`.
-
->
-> TODO Add regex
->
-
 ### Name server
 
 Basic data type: object
@@ -332,12 +315,7 @@ An object with the following properties:
 >
 
 
-## API method: `get_host_by_name` (formerly `get_ns_ips`)
-
->
-> We renamed `get_ns_ips` into `get_host_by_name` to be more explicit. 
-> The method `get_ns_ips` is deprecated, please use `get_host_by_name` instead.
->
+## API method: `get_host_by_name`
 
 Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
 
@@ -352,17 +330,6 @@ Example request:
   "params": {"hostname": "zonemaster.net"}
 }
 ```
-
-*Deprecated syntax:*
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 2,
-  "method": "get_ns_ips",
-  "params": "zonemaster.net"
-}
-``` 
-
 
 Example response:
 ```json
@@ -419,17 +386,6 @@ Example request:
   "id": 3,
   "method": "get_data_from_parent_zone",
   "params": {"domain": "zonemaster.net"}
-}
-```
-
-*Deprecated syntax:*
-```json
-
-{
-  "jsonrpc": "2.0",
-  "id": 3,
-  "method": "get_data_from_parent_zone",
-  "params": "zonemaster.net"
 }
 ```
 
@@ -554,13 +510,10 @@ An object with the following properties:
 * `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
 * `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
-* `"advanced"`: **Deprecated**. A boolean, optional.
-* `"profile"`: A *profile name*, optional (default `"default"`). Run
+* `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
 * `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
-* `"client_version"`: A *client version*, optional. Used to monitor which client use the API
+* `"client_version"`: A *client version*, optional. Used to monitor which client use the API.
 * `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
-* `"user_ip"`: **Deprecated**. An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
-* `"user_location_info"`: **Deprecated**. An *location* object, optional. Used to monitor information about the user. 
 * `"priority"`: A *priority*, optional.
 * `"queue"`: A *queue*, optional.
 
@@ -601,16 +554,6 @@ Example request:
   "id": 5,
   "method": "test_progress",
   "params": {"test_id": "c45a3f8256c4a155"}
-}
-```
-
-*Deprecated syntax:*
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 5,
-  "method": "test_progress",
-  "params": "c45a3f8256c4a155"
 }
 ```
 
@@ -771,17 +714,7 @@ Example request:
     "limit": 200,
     "filter": "all",
     "frontend_params": {
-      "domain": "zonemaster.net",      
-      "nameservers": [
-        {
-          "ns": "ns3.nic.se",
-          "ip": "2001:67c:124c:2007::45"
-        },
-        {
-          "ns": "ns2.nic.fr",
-          "ip": "192.93.0.4"
-        }
-      ]
+      "domain": "zonemaster.net"
     }
   }
 }
@@ -823,24 +756,13 @@ An object with the following properties:
 
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
-* `"filter"`: A string ["old_behavior" - *Deprecated*, "all", "delegated" and "undelegated"], optional. (default: `old_behavior`)
+* `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
 * `"frontend_params"`: An object.
 
 The value of "frontend_params" is an object with the following properties:
 
 * `"domain"`: A *domain name*, required.
-* `"ipv6"`: **Deprecated**. A boolean, optional. (default: `false`)
-* `"ipv4"`: **Deprecated**. A boolean, optional. (default: `false`)
-* `"nameservers"`: **Deprecated**. A boolean in order to return either "regular" (false) or "undelegated" (true), optional.
-* `"ds_info"`: **Deprecated**. A list of *DS info* objects, optional.
-* `"advanced"`: **Deprecated**. A boolean, optional.
-* `"profile"`: **Deprecated**. A *profile name*, optional.
-* `"client_id"`: **Deprecated**. A *client id*, optional.
-* `"client_version"`: **Deprecated**. A *client version*, optional.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
 
-Please, use a non-deprecated value for `"filter"` property: "all", "delegated" and "undelegated".
-The default filter value, "old_behavior", will be removed and replaced by the value "all".
 
 #### `"result"`
 
@@ -848,9 +770,6 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
-* `"advanced_options"`: **Deprecated**. A string or `null`.
-  `"1"` if the `"advanced"` flag was set in the method call to `start_domain_test` that created this Test.
-  In some future release this property will no longer be included in the result.
 * `"overall_result"`: A string. The most severe problem level logged in the test results.
 It could be:
     * `"ok"`, all is normal
@@ -994,18 +913,12 @@ The value of `"test_params"` is an object with the following properties:
 * `"client_version"`: A *client version*, optional.
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"ds_info"`: A list of *DS info* objects, optional.
-* `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `false`)
 * `"ipv4"`: A boolean, optional. (default: `false`)
 * `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
-* `"user_ip"`: **Deprecated**. An *IP address*, optional.
-* `"user_location_info"`: **Deprecated**. An *location* object, optional.
 * `"priority"`: A *priority*, optional
 * `"queue"`: A *queue*, optional
 
->
-> TODO: Are domain names actually validated in practice? Can you explain ? => There are some security tests (look postgres.pm).
->
 
 
 #### `"result"`
@@ -1039,15 +952,6 @@ Example request:
     "id": 147559211994909,
     "method": "get_batch_job_result",
     "params": {"batch_id": "8"}
-}
-```
-*Deprecated syntax:*
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 147559211994909,
-    "method": "get_batch_job_result",
-    "params": "8"
 }
 ```
 
@@ -1094,97 +998,6 @@ An object with the following properties:
 >
 
 
-## API method: `validate_syntax` - **Deprecated**
-
-*This API method is Deprecated. Use directly `start_domain_test`*
-
-Checks the `"params"` structure for syntax coherence. It is very strict on what
-is allowed and what is not to avoid any SQL injection and cross site scripting
-attempts. It also checks the domain name for syntax to ensure the domain name
-seems to be a valid domain name and a test by the *Zonemaster Engine* can be started.
-
-Example request:
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 143014426992009,
-    "method": "validate_syntax",
-    "params": {
-        "domain": "zonemaster.net",
-        "ipv6": 1,
-        "ipv4": 1,
-        "nameservers": [
-            {
-                "ns": "ns1.nic.fr",
-                "ip": "1.2.3.4"
-            },
-            {
-                "ns": "ns2.nic.fr",
-                "ip": "192.134.4.1"
-            }
-        ]
-    }
-}
-```
-
-Example response:
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 143014426992009,
-    "result": {
-        "status": "ok",
-        "message": "Syntax ok"
-    }
-}
-```
-
-
-#### `"params"`
-
-An object with the following properties:
-
-* `"domain"`: A *domain name*, required.
-* `"ipv6"`: A boolean, optional. (default `false`)
-* `"ipv4"`: A boolean, optional. (default `false`)
-* `"ds_info"`: A list of *DS info* objects, optional.
-* `"nameservers"`: A list of *name server* objects, optional.
-* `"profile"`: A *profile name*, optional (default `"default"`).
-* `"advanced"`: **Deprecated**. A boolean, optional.  * `"client_id"`: A *client id*, optional.
-* `"client_version"`: A *client version*, optional.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
-* `"user_ip"`: **Deprecated**. An *IP address*, optional.
-* `"user_location_info"`: **Deprecated**. A *location* object, optional.
-
-If the `"nameservers"` key is _not_ set, a recursive query made by the
-server to its locally configured resolver for NS records for the
-value of the `"domain"` key must return a reply with at least one
-resource record in the Answer Section.
-
-At least one of `"ipv4"` and `"ipv6"` must be present and either `1` or `true`.
-
->
-> TODO: Clarify the purpose of each `"params"` property.
->
-
-
-#### `"result"`
-
-An object with the following properties:
-
-* `"status"`: either `"ok"` or `"nok"`.
-* `"message"`: a string. Human-readable details about the status.
-
-#### `"error"`
-
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
-
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
-
-
 ## API method: `get_test_params`
 
 Return all *params* objects of a *test*.
@@ -1198,16 +1011,6 @@ Example request:
     "id": 143014426992009,
     "method": "get_test_params",
     "params": {"test_id": "6814584dc820354a"}
-}
-```
-
-*Deprecated syntax:*
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 143014426992009,
-    "method": "get_test_params",
-    "params": "6814584dc820354a"
 }
 ```
 

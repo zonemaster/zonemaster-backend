@@ -24,25 +24,28 @@ else {
 
 =cut
 
-sub _load_config {
-    my $cfg = Config::IniFiles->new( -file => $path );
-    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $cfg );
-
-    return $cfg;
+sub load_config {
+    my ( $class, $params ) = @_;
+    my $self = {};
+    
+    $self->{cfg} = Config::IniFiles->new( -file => $path );
+    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
+    bless( $self, $class );
+    return $self;
 }
 
 sub BackendDBType {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
     my $result;
 
-    if ( lc( $cfg->val( 'DB', 'engine' ) ) eq 'sqlite' ) {
+    if ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'sqlite' ) {
         $result = 'SQLite';
     }
-    elsif ( lc( $cfg->val( 'DB', 'engine' ) ) eq 'postgresql' ) {
+    elsif ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'postgresql' ) {
         $result = 'PostgreSQL';
     }
-    elsif ( lc( $cfg->val( 'DB', 'engine' ) ) eq 'mysql' ) {
+    elsif ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'mysql' ) {
         $result = 'MySQL';
     }
 
@@ -50,125 +53,126 @@ sub BackendDBType {
 }
 
 sub DB_user {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    return $cfg->val( 'DB', 'user' );
+    return $self->{cfg}->val( 'DB', 'user' );
 }
 
 sub DB_password {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    return $cfg->val( 'DB', 'password' );
+    return $self->{cfg}->val( 'DB', 'password' );
 }
 
 sub DB_name {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    return $cfg->val( 'DB', 'database_name' );
+    return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
 sub DB_connection_string {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    my $db_engine = $_[1] || $cfg->val( 'DB', 'engine' );
+    my $db_engine = $_[1] || $self->{cfg}->val( 'DB', 'engine' );
 
     my $result;
 
     if ( lc( $db_engine ) eq 'sqlite' ) {
-        $result = sprintf('DBI:SQLite:dbname=%s', $cfg->val( 'DB', 'database_name' ));
+        $result = sprintf('DBI:SQLite:dbname=%s', $self->{cfg}->val( 'DB', 'database_name' ));
     }
     elsif ( lc( $db_engine ) eq 'postgresql' ) {
-        $result = sprintf('DBI:Pg:database=%s;host=%s', $cfg->val( 'DB', 'database_name' ), $cfg->val( 'DB', 'database_host' ));
+        $result = sprintf('DBI:Pg:database=%s;host=%s', $self->{cfg}->val( 'DB', 'database_name' ), $self->{cfg}->val( 'DB', 'database_host' ));
     }
     elsif ( lc( $db_engine ) eq 'mysql' ) {
-        $result = sprintf('DBI:mysql:database=%s;host=%s', $cfg->val( 'DB', 'database_name' ), $cfg->val( 'DB', 'database_host' ));
+        $result = sprintf('DBI:mysql:database=%s;host=%s', $self->{cfg}->val( 'DB', 'database_name' ), $self->{cfg}->val( 'DB', 'database_host' ));
     }
 
     return $result;
 }
 
 sub LogDir {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    return $cfg->val( 'LOG', 'log_dir' );
+    return $self->{cfg}->val( 'LOG', 'log_dir' );
 }
 
-sub PerlIntereter {
-    my $cfg = _load_config();
+sub PerlInterpreter {
+    my ($self) = @_;
 
-    return $cfg->val( 'PERL', 'interpreter' );
+    return $self->{cfg}->val( 'PERL', 'interpreter' );
 }
 
 sub PollingInterval {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    return $cfg->val( 'DB', 'polling_interval' );
+    return $self->{cfg}->val( 'DB', 'polling_interval' );
 }
 
 sub MaxZonemasterExecutionTime {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    return $cfg->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    return $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
 }
 
 sub NumberOfProcessesForFrontendTesting {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    my $nb = $cfg->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' );
-    $nb = $cfg->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) unless ($nb);
+    my $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' );
+    $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) unless ($nb);
     
     return $nb;
 }
 
 sub NumberOfProcessesForBatchTesting {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    my $nb = $cfg->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
-    $nb = $cfg->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) unless ($nb);
+    my $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
+    $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) unless ($nb);
     
     return $nb;
 }
 
-sub Maxmind_ISP_DB_File {
-    my $cfg = _load_config();
-
-    return $cfg->val( 'GEOLOCATION', 'maxmind_isp_db_file' );
-}
-
-sub Maxmind_City_DB_File {
-    my $cfg = _load_config();
-
-    return $cfg->val( 'GEOLOCATION', 'maxmind_city_db_file' );
-}
-
 sub force_hash_id_use_in_API_starting_from_id {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    my $val = $cfg->val( 'ZONEMASTER', 'force_hash_id_use_in_API_starting_from_id' );
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'force_hash_id_use_in_API_starting_from_id' );
 
     return ($val)?($val):(0);
 }
 
-sub CustomProfilesPath {
-    my $cfg = _load_config();
+sub ReadProfilesInfo {
+    my ($self) = @_;
+    
+    my $profiles;
+    foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
+        $profiles->{lc($public_profile)}->{type} = 'public';
+        $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
+    }
 
-    my $value  = $cfg->val( 'ZONEMASTER', 'cutom_profiles_path' );
-    $value  = $cfg->val( 'ZONEMASTER', 'custom_profiles_path' ) unless ($value);
-    return $value;
+    foreach my $private_profile ($self->{cfg}->Parameters('PRIVATE PROFILES')) {
+        $profiles->{lc($private_profile)}->{type} = 'private';
+        $profiles->{lc($private_profile)}->{profile_file_name} = $self->{cfg}->val('PRIVATE PROFILES', $private_profile);
+    }
+    
+    return $profiles;
 }
 
-sub GetCustomConfigParameter {
-	my ($slef, $section, $param_name) = @_;
-	
-    my $cfg = _load_config();
+sub ListPublicProfiles {
+    my ($self) = @_;
+    
+    my $profiles;
+    foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
+        $profiles->{lc($public_profile)}->{type} = 'public';
+        $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
+    }
 
-    return $cfg->val( $section, $param_name );
+    return keys %$profiles;
 }
 
 sub lock_on_queue {
-    my $cfg = _load_config();
+    my ($self) = @_;
 
-    my $val = $cfg->val( 'ZONEMASTER', 'lock_on_queue' );
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'lock_on_queue' );
 
     return $val;
 }
@@ -182,7 +186,7 @@ The adapter connects to the database before it is returned.
 =head3 INPUT
 
 The database adapter class is selected based on the return value
-of L<Zonemaster::Backend::Config->BackendDBType()>. The database
+of L<Zonemaster::Backend::Config->load_config()->BackendDBType()>. The database
 adapter class constructor is called without arguments and is expected
 to configure itself according to available global configuration.
 
@@ -208,7 +212,7 @@ A configured L<Zonemaster::Backend::DB> object.
 
 sub new_DB {
     # Get DB type from config
-    my $dbtype = Zonemaster::Backend::Config->BackendDBType();
+    my $dbtype = Zonemaster::Backend::Config->load_config()->BackendDBType();
     if (!defined $dbtype) {
         die "Unrecognized DB.engine in backend config";
     }

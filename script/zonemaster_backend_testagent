@@ -20,6 +20,9 @@ BEGIN {
 	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
 }
 
+# Enable immediate flush to stdout and stderr
+$|++;
+
 ###
 ### More global variables, and initialization.
 ###
@@ -35,12 +38,13 @@ GetOptions(
 $pidfile //= '/tmp/zonemaster_backend_testagent.pid';
 
 # Yes, the method names are spelled like that.
-my $maximum_processes =
-  Zonemaster::Backend::Config->NumberOfProcessesForFrontendTesting() +
-  Zonemaster::Backend::Config->NumberOfProcessesForBatchTesting();
+my $config = Zonemaster::Backend::Config->load_config();
+my $maximum_processes = 
+  $config->NumberOfProcessesForFrontendTesting() +
+  $config->NumberOfProcessesForBatchTesting();
 
-my $delay   = Zonemaster::Backend::Config->PollingInterval();
-my $timeout = Zonemaster::Backend::Config->MaxZonemasterExecutionTime();
+my $delay   = $config->PollingInterval();
+my $timeout = $config->MaxZonemasterExecutionTime();
 
 my $pm = Parallel::ForkManager->new( $maximum_processes );
 $pm->set_waitpid_blocking_sleep( 0 ) if $pm->can('set_waitpid_blocking_sleep');
@@ -84,6 +88,9 @@ sub main {
     my $self = shift;
 
     my $db = $self->config->{db};
+    
+    # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
+    Zonemaster::Backend::TestAgent->new({ config => $config });
 
     while ( 1 ) {
         my $id = $db->get_test_request();
@@ -91,7 +98,7 @@ sub main {
         if ( $id ) {
             $pm->wait_for_available_procs();
             if ( $pm->start( $id ) == 0 ) {    # Child process
-                Zonemaster::Backend::TestAgent->new->run( $id );
+                Zonemaster::Backend::TestAgent->new({ config => $config })->run( $id );
                 $pm->finish;
             }
         }

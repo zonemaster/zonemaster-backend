@@ -97,20 +97,17 @@ sub create_new_batch_job {
 
 sub create_new_test {
     my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
-    my $result;
-    my $dbh = $self->dbh;
 
-    my $priority = 10;
-    $priority = $test_params->{priority} if (defined $test_params->{priority});
-    
-    my $queue = 0;
-    $queue = $test_params->{queue} if (defined $test_params->{queue});
+    my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
     my $js                             = JSON::PP->new->canonical;
     my $encoded_params                 = $js->encode( $test_params );
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
     my $result_id;
+
+    my $priority = $test_params->{priority};
+    my $queue = $test_params->{queue};
 
     eval {
         $dbh->do( q[LOCK TABLES test_results WRITE] );
@@ -225,9 +222,7 @@ sub get_test_history {
     my $use_hash_id_from_id = Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id();
 
     my $undelegated = "";
-    if ($p->{filter} eq "old_behavior" ) {
-        $undelegated = (defined $p->{frontend_params}->{nameservers}) ? 1:0;
-    } elsif ($p->{filter} eq "undelegated") {
+    if ($p->{filter} eq "undelegated") {
         $undelegated = 1;
     } elsif ($p->{filter} eq "delegated") {
         $undelegated = 0;
@@ -286,7 +281,6 @@ sub get_test_history {
             {
                 id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
                 creation_time    => $h->{creation_time},
-                advanced_options => $h->{params}{advanced_options},
                 overall_result   => $overall,
             }
         );
@@ -302,23 +296,14 @@ sub add_batch_job {
     my $dbh = $self->dbh;
     my $js = JSON::PP->new;
     $js->canonical( 1 );
-            
-    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $params->{test_params}->{client_id}      = 'Zonemaster Batch Scheduler';
-        $params->{test_params}->{client_version} = '1.0';
-        $params->{test_params}->{priority} = 5 unless (defined $params->{test_params}->{priority});
 
+    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
-        my $minutes_between_tests_with_same_params = 5;
         my $test_params = $params->{test_params};
-        
-        my $priority = 10;
-        $priority = $test_params->{priority} if (defined $test_params->{priority});
-        
-        my $queue = 0;
-        $queue = $test_params->{queue} if (defined $test_params->{queue});
-        
+        my $priority = $test_params->{priority};
+        my $queue = $test_params->{queue};
+
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__params_deterministic_hash ON test_results" );};

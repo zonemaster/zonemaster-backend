@@ -132,18 +132,6 @@ sub NumberOfProcessesForBatchTesting {
     return $nb;
 }
 
-sub Maxmind_ISP_DB_File {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'GEOLOCATION', 'maxmind_isp_db_file' );
-}
-
-sub Maxmind_City_DB_File {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'GEOLOCATION', 'maxmind_city_db_file' );
-}
-
 sub force_hash_id_use_in_API_starting_from_id {
     my ($self) = @_;
 

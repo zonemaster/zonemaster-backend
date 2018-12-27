@@ -222,7 +222,7 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{profile} ) {
-        my @profiles = map lc, Zonemaster::Backend::Config->ListPublicProfiles();
+        my @profiles = map lc, Zonemaster::Backend::Config->new()->ListPublicProfiles();
         return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
           unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
     }

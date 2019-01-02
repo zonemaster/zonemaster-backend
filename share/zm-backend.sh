@@ -31,7 +31,7 @@ STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
 start() {
     $STARMAN --user=$USER --group=$GROUP --error-log=$LOGDIR/zm-starman-error.log --pid=$PIDDIR/zm-starman.pid --listen=$LISTENIP:5000 --daemonize $BASEDIR/bin/zonemaster_backend_rpcapi.psgi
-    $BASEDIR/bin/zonemaster_backend_testagent --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
+    $BASEDIR/bin/zonemaster_backend_testagent --logfile=$LOGDIR/zonemaster_backend_testagent.log --user=$USER --group=$GROUP --pidfile=$PIDDIR/zonemaster_backend_testagent.pid start
 }
 
 stop() {

@@ -13,6 +13,7 @@ use Log::Any::Adapter;
 use Log::Dispatch;
 
 use English;
+use Pod::Usage;
 use Getopt::Long;
 use POSIX;
 use Time::HiRes qw[time sleep];
@@ -35,13 +36,18 @@ my $user;
 my $group;
 my $logfile;
 my $loglevel;
+my $opt_help;
 GetOptions(
-    'pidfile=s' => \$pidfile,
-    'user=s' => \$user,
-    'group=s' => \$group,
-    'logfile=s' => \$logfile,
+    'help!'      => \$opt_help,
+    'pidfile=s'  => \$pidfile,
+    'user=s'     => \$user,
+    'group=s'    => \$group,
+    'logfile=s'  => \$logfile,
     'loglevel=s' => \$loglevel,
-);
+) or pod2usage( "Try '$0 --help' for more information." );
+
+pod2usage( -verbose => 1 ) if $opt_help;
+
 $pidfile //= '/tmp/zonemaster_backend_testagent.pid';
 $logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
 $loglevel //= 'info';
@@ -163,3 +169,65 @@ $daemon->user($user) if $user;
 $daemon->group($group) if $group;
 
 exit $daemon->run;
+
+=head1 NAME
+
+zonemaster_backend_testagent - Init script for Zonemaster Test Agent.
+
+=head1 SYNOPSIS
+
+    zonemaster_backend_testagent [OPTIONS] [COMMAND]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Print a brief help message and exits.
+
+=item B<--user=USER>
+
+When specified the daemon will drop to the user with this username when forked.
+
+=item B<--group=GROUP>
+
+When specified the daemon will drop to the group with this groupname when forked.
+
+=item B<--pidfile=FILE>
+
+The location of the PID file to use.
+
+=item B<--logfile=FILE>
+
+The location of the log file to use.
+
+=item B<--loglevel=LEVEL>
+
+The location of the log level to use.
+
+The allowed values are specified at L<Log::Any/LOG-LEVELS>.
+
+=item B<COMMAND>
+
+One of the following:
+
+=over 4
+
+=item start
+
+=item foreground
+
+=item stop
+
+=item restart
+
+=item reload
+
+=item status
+
+=item get_init_file
+
+=back
+
+=cut

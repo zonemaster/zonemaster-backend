@@ -8,6 +8,7 @@ use 5.14.2;
 use DBI qw(:utils);
 use JSON::PP;
 use Digest::MD5 qw(md5_hex);
+use Log::Any qw( $log );
 
 use Zonemaster::Backend::Config;
 
@@ -18,7 +19,18 @@ my $connection_string = Zonemaster::Backend::Config->load_config()->DB_connectio
 has 'dbh' => (
     is      => 'ro',
     isa     => 'DBI::db',
-    default => sub { DBI->connect( $connection_string, { RaiseError => 1, AutoCommit => 1 } ) },
+    default => sub {
+        $log->debug( "Connection string: " . $connection_string );
+        my $dbh = DBI->connect(
+            $connection_string,
+            {
+                AutoCommit => 1,
+                RaiseError => 1,
+            }
+        ) or die $DBI::errstr;
+        $log->debug( "Database filename: " . $dbh->sqlite_db_filename );
+        $dbh
+    },
 );
 
 sub DEMOLISH {

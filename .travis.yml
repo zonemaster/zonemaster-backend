@@ -19,6 +19,14 @@ perl:
     - "5.16"
     - "5.14"
 
+before_install:
+    - eval $(curl https://travis-perl.github.io/init) --auto
+    - local-lib
+    - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
+    - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
+    - cpan-install --deps ./zonemaster-ldns
+    - cpan-install --deps ./zonemaster-engine
+
 before_script:
     - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi
     - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi

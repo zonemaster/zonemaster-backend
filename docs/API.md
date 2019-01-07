@@ -170,7 +170,7 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: `null`)
+* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (no default value)
 
 
 ### Priority
@@ -557,8 +557,8 @@ An object with the following properties:
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"profile"`: A *profile name*, optional. (default: `"default"`).  Used to perform the test with a specific set of parameters and tests.
-* `"client_id"`: A *client id*, optional. (default: `null`). Used to monitor which client uses the API.
-* `"client_version"`: A *client version*, optional. (default: `null`). Used to monitor which client use the API
+* `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
+* `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"config"`: A string, optional. The name of a config profile.
 * `"user_ip"`: **Deprecated**. An *IP address*, optional. Used to monitor information about the user. (We only keep the location of the IP).
 * `"user_location_info"`: **Deprecated**. An *location* object, optional. Used to monitor information about the user. 
@@ -986,9 +986,9 @@ An object with the following properties:
 
 The value of `"test_params"` is an object with the following properties:
 
-* `"client_id"`: A *client id*, optional. (default: `null`)
+* `"client_id"`: A *client id*, optional. (default: unset)
 * `"profile"`: A *profile name*, optional. (default: `"default"`)
-* `"client_version"`: A *client version*, optional. (default: `null`)
+* `"client_version"`: A *client version*, optional. (default: unset)
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
 * `"advanced"`: **Deprecated**. A boolean, optional.
@@ -1144,9 +1144,9 @@ An object with the following properties:
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
 * `"nameservers"`: A list of *name server* objects, optional.
 * `"profile"`: A *profile name*, optional. (default: `"default"`)
-* `"advanced"`: **Deprecated**. A boolean, optional. (default: `null`)
-* `"client_id"`: A *client id*, optional. (default: `null`)
-* `"client_version"`: A *client version*, optional. (default: `null`)
+* `"advanced"`: **Deprecated**. A boolean, optional. (default: unset)
+* `"client_id"`: A *client id*, optional. (default: unset)
+* `"client_version"`: A *client version*, optional. (default: unset)
 * `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: **Deprecated**. An *IP address*, optional.
 * `"user_location_info"`: **Deprecated**. A *location* object, optional.

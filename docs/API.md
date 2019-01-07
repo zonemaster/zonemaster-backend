@@ -141,7 +141,7 @@ Extra properties in *DS info* objects are ignored when present in RPC method arg
 
 Basic data type: string
 
-This parameter is a string that are an IPv4 or IPv6. It's validate with the following regexes:
+This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
  - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
@@ -168,10 +168,8 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 
 Basic data type: string
 
-* Must consist entirely of letters A-Z and a-z, digits 0-9, hyphen '-'
-  and underscore '_'.
-  Must not start or end with hyphen or underscore.
-* Length must be between 1 and 32 characters inclusive.
+This parameter is a case-insensitive string validated with the case-insensitive
+regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i`.
 
 The name of a [*profile*](Architecture.md#profile).
 
@@ -313,6 +311,37 @@ An object with the following properties:
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
+
+
+## API method: `profile_names`
+
+Returns the names of the public subset of the [available profiles].
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "profile_names"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "default",
+    "another-profile"
+  ]
+}
+```
+
+
+#### `"result"`
+
+An array of *Profile names* in lower case. `"default"` is always included.
 
 
 ## API method: `get_host_by_name`

@@ -26,12 +26,14 @@ TBD
 TBD
 
 
-## PROFILES section
+## PUBLIC PROFILES and PRIVATE PROFILES sections
 
-The PROFILES section defines the available [profiles].
+The PUBLIC PROFILES and PRIVATE PROFILES sections together define the available [profiles].
 
-Keys are [profile names], and values are absolute file system paths to
-[profile JSON files].
+Keys in both sections are [profile names], and values are absolute file system paths to
+[profile JSON files]. Keys must not be duplicated between the sections, and the
+key `default` must not be present in the PRIVATE PROFILES sections.
+
 Each profile JSON file contains a (possibly empty) set of overrides to
 the [Zonemaster Engine default profile].
 

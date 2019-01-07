@@ -170,7 +170,7 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (no default value)
+* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: unset)
 
 
 ### Priority
@@ -982,7 +982,7 @@ An object with the following properties:
 * `"username"`: An *username*, required. The name of the account of an authorized user.
 * `"api_key"`: An *api key*, required. The api_key associated with the username.
 * `"domains"`: A list of *domain names*, required. The domains to be tested.
-* `"test_params"`: As described below, optional. (default with default value as below)
+* `"test_params"`: As described below, optional. (default: `{}`)
 
 The value of `"test_params"` is an object with the following properties:
 
@@ -994,7 +994,7 @@ The value of `"test_params"` is an object with the following properties:
 * `"advanced"`: **Deprecated**. A boolean, optional.
 * `"ipv6"`: A boolean, optional. (default: `true`)
 * `"ipv4"`: A boolean, optional. (default: `true`)
-* `"config"`: A string, optional. The name of a *config profile*. 
+* `"config"`: A string, optional. The name of a *config profile*.
 * `"user_ip"`: **Deprecated**. An *IP address*, optional.
 * `"user_location_info"`: **Deprecated**. An *location* object, optional.
 * `"priority"`: A *priority*, optional. (default: `5`)

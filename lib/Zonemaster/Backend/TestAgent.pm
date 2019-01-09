@@ -15,6 +15,7 @@ use Zonemaster::LDNS;
 use Zonemaster::Engine;
 use Zonemaster::Engine::Translator;
 use Zonemaster::Backend::Config;
+use Zonemaster::Engine::Profile;
 
 sub new {
     my ( $class, $params ) = @_;

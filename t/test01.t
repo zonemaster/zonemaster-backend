@@ -55,8 +55,11 @@ sub run_zonemaster_test_with_backend_API {
 	# test test_progress API
 	ok( $engine->test_progress( $test_id ) == 0 );
 
+	use_ok( 'Zonemaster::Backend::Config' );
+	my $config = Zonemaster::Backend::Config->load_config();
+
 	use_ok( 'Zonemaster::Backend::TestAgent' );
-	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite" } )->run( $test_id );
+	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $test_id );
 
 	ok( $engine->test_progress( $test_id ) > 0 );
 

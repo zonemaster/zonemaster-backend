@@ -145,6 +145,8 @@ sub ReadProfilesInfo {
     my ($self) = @_;
     
     my $profiles;
+    $profiles->{'default'}->{type} = 'public';
+    $profiles->{'default'}->{profile_file_name} = undef;
     foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
         $profiles->{lc($public_profile)}->{type} = 'public';
         $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
@@ -162,6 +164,7 @@ sub ListPublicProfiles {
     my ($self) = @_;
     
     my $profiles;
+    $profiles->{'default'}->{type} = 'public';
     foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
         $profiles->{lc($public_profile)}->{type} = 'public';
         $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);

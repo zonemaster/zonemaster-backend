@@ -24,6 +24,7 @@ before_install:
     - local-lib
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
+    - cpan-install --deps Devel::CheckLib
     - cpan-install --deps ./zonemaster-ldns
     - cpan-install --deps ./zonemaster-engine
 

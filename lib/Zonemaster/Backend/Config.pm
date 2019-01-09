@@ -7,6 +7,7 @@ use 5.14.2;
 
 use Config::IniFiles;
 use File::ShareDir qw[dist_file];
+use Log::Any qw( $log );
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -129,18 +130,6 @@ sub NumberOfProcessesForBatchTesting {
     return $nb;
 }
 
-sub Maxmind_ISP_DB_File {
-    my $cfg = _load_config();
-
-    return $cfg->val( 'GEOLOCATION', 'maxmind_isp_db_file' );
-}
-
-sub Maxmind_City_DB_File {
-    my $cfg = _load_config();
-
-    return $cfg->val( 'GEOLOCATION', 'maxmind_city_db_file' );
-}
-
 sub force_hash_id_use_in_API_starting_from_id {
     my $cfg = _load_config();
 
@@ -217,6 +206,8 @@ sub new_DB {
     my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
     require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
     $dbclass->import();
+    $log->notice("Constructing database adapter: $dbclass");
+
     my $db = $dbclass->new;
 
     # Connect or die

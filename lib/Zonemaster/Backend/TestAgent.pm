@@ -36,7 +36,7 @@ sub new {
         
     $self->{profiles} = $self->{config}->ReadProfilesInfo();
     foreach my $profile (keys %{$self->{profiles}}) {
-        die "default profile cannot be private" if ($profile eq 'default' && $self->{profiles}->{$profile}->{type} eq 'private')
+        die "default profile cannot be private" if ($profile eq 'default' && $self->{profiles}->{$profile}->{type} eq 'private');
         if ( -e $self->{profiles}->{$profile}->{profile_file_name} ) {
             my $json = read_file( $self->{profiles}->{$profile}->{profile_file_name}, err_mode => 'croak' );
             $self->{profiles}->{$profile}->{zm_profile} = Zonemaster::Engine::Profile->from_json( $json );

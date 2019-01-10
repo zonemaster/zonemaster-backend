@@ -222,10 +222,9 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{profile} ) {
+        my @profiles = map lc, Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
         return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
-          unless ( $syntax_input->{profile} eq 'default_profile'
-            || $syntax_input->{profile} eq 'test_profile_1'
-            || $syntax_input->{profile} eq 'test_profile_2' );
+          unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
     }
 
     my ( $dn, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );

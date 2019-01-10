@@ -35,7 +35,7 @@ my $frontend_params_1 = {
     domain         => 'afnic.fr',          # content of the domain text field
     ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
     ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
-    profile        => 'default_profile',    # the id if the Test profile listbox
+    profile        => 'default',    # the id if the Test profile listbox
 
     nameservers => [                       # list of the nameserves up to 32
         { ns => 'ns1.nic.fr' },       # key values pairs representing nameserver => namesterver_ip

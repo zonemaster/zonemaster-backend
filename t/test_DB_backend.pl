@@ -3,6 +3,7 @@ use warnings;
 use 5.14.2;
 
 use Test::More;    # see done_testing()
+use JSON::PP;
 
 my $db_backend = $ARGV[0];
 ok( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' , "Testing a supported database backend: $db_backend" );
@@ -11,8 +12,8 @@ my $frontend_params_1 = {
 	client_id      => "$db_backend Unit Test",         # free string
 	client_version => '1.0',               # free version like string
 	domain         => 'afnic.fr',          # content of the domain text field
-	ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
-	ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
+	ipv4           => JSON::PP::true,                   # 0 or 1, is the ipv4 checkbox checked
+	ipv6           => JSON::PP::true,                   # 0 or 1, is the ipv6 checkbox checked
 	profile        => 'default',    # the id if the Test profile listbox
 
 	nameservers => [                       # list of the nameserves up to 32

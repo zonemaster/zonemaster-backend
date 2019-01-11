@@ -31,7 +31,12 @@ my $router = router {
 		action => "version_info"
 	};
 
-    connect "get_host_by_name" => {
+	connect "profile_names" => {
+        handler => "+Zonemaster::Backend::RPCAPI",
+        action => "profile_names"
+  };
+  
+  connect "get_host_by_name" => {
 		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_host_by_name"
 	};

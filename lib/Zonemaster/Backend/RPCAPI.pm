@@ -67,6 +67,15 @@ sub version_info {
     return \%ver;
 }
 
+$json_schemas{profile_names} = joi->object->strict;
+sub profile_names {
+    my ($self) = @_;
+
+    my @profiles = Zonemaster::Backend::Config->ListPublicProfiles();
+
+    return \@profiles;
+}
+
 $json_schemas{get_host_by_name} = joi->object->strict->props(
     hostname   => $zm_validator->domain_name->required
 );

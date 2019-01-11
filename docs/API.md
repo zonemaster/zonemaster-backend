@@ -153,7 +153,7 @@ Basic data type: object
 Properties:
 
 * `"ns"`: A *domain name*, required.
-* `"ip"`: An *IP address*, IPv4 or IPv6 , optional.
+* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: unset)
 
 
 ### Priority
@@ -381,7 +381,7 @@ Example response:
 
 An object with the property:
 
-`"hostname"`: A *domain name*. The hostname whose IP addresses are to be resolved.
+`"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -464,7 +464,7 @@ Example response:
 
 An object with the property:
 
-`"domain"`: A *domain name*. The domain whose DNS records are requested.
+`"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 
 
 #### `"result"`
@@ -535,23 +535,20 @@ Example response:
 An object with the following properties:
 
 * `"domain"`: A *domain name*, required. The zone to test.
-* `"ipv4"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv6 tests.
-* `"ipv6"`: A boolean, optional. (default `false`). Used to configure the test and enable IPv4 tests.
-* `"nameservers"`: A list of *name server* objects, optional. Used to perform un-delegated test.
-* `"ds_info"`: A list of *DS info* objects, optional. Used to perform un-delegated test.
+* `"ipv6"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv4 tests.
+* `"ipv4"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv6 tests.
+* `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
+* `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
-* `"client_id"`: A *client id*, optional. Used to monitor which client uses the API.
-* `"client_version"`: A *client version*, optional. Used to monitor which client use the API.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify profile instead.
-* `"priority"`: A *priority*, optional.
-* `"queue"`: A *queue*, optional.
+* `"config"`: **Deprecated**. A string, optional. Ignored. Specify `"profile"` instead.
+* `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
+* `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
+* `"priority"`: A *priority*, optional. (default: `10`)
+* `"queue"`: A *queue*, optional. (default: `0`)
 
 >
 > TODO: Clarify the purpose of each `"params"` property.
 >
-> TODO: Clarify the default value of each optional `"params"` property.
->
-
 
 #### `"result"`
 
@@ -600,7 +597,7 @@ Example response:
 
 An object with the property:
 
-`"test_id"`: A *test id*. The *test* to report on.
+`"test_id"`: A *test id*, required. The *test* to report on.
 
 
 #### `"result"`
@@ -786,7 +783,7 @@ An object with the following properties:
 * `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
 * `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
 * `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
-* `"frontend_params"`: An object.
+* `"frontend_params"`: An object, required.
 
 The value of "frontend_params" is an object with the following properties:
 
@@ -929,25 +926,23 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*. The name of the account of an authorized user.
-* `"api_key"`: An *api key*. The api_key associated with the username.
-* `"domains"`: A list of *domain names*. The domains to be tested.
-* `"test_params"`: As described below.
+* `"username"`: An *username*, required. The name of the account of an authorized user.
+* `"api_key"`: An *api key*, required. The api_key associated with the username.
+* `"domains"`: A list of *domain names*, required. The domains to be tested.
+* `"test_params"`: As described below, optional. (default: `{}`)
 
 The value of `"test_params"` is an object with the following properties:
 
-* `"client_id"`: A *client id*, optional.
-* `"profile"`: A *profile name*, optional (default `"default"`). Run
-  the tests using the given profile.
-* `"client_version"`: A *client version*, optional.
-* `"nameservers"`: A list of *name server* objects, optional.
-* `"ds_info"`: A list of *DS info* objects, optional.
-* `"ipv6"`: A boolean, optional. (default: `false`)
-* `"ipv4"`: A boolean, optional. (default: `false`)
+* `"client_id"`: A *client id*, optional. (default: unset)
+* `"profile"`: A *profile name*, optional (default `"default"`). Run the tests using the given profile.
 * `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
-* `"priority"`: A *priority*, optional
-* `"queue"`: A *queue*, optional
-
+* `"client_version"`: A *client version*, optional. (default: unset)
+* `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
+* `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
+* `"ipv4"`: A boolean, optional. (default: `true`)
+* `"ipv6"`: A boolean, optional. (default: `true`)
+* `"priority"`: A *priority*, optional. (default: `5`)
+* `"queue"`: A *queue*, optional. (default: `0`)
 
 
 #### `"result"`
@@ -1008,7 +1003,7 @@ Example response:
 
 An object with the property:
 
-* `"batch_id"`: A *batch id*.
+* `"batch_id"`: A *batch id*, required.
 
 
 #### `"result"`
@@ -1025,7 +1020,6 @@ An object with the following properties:
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
-
 
 ## API method: `get_test_params`
 

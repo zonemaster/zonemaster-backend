@@ -45,7 +45,7 @@ sub new {
     }
     else {
         eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->BackendDBType();
+            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->load_config()->BackendDBType();
             eval "require $backend_module";
             die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
@@ -65,6 +65,15 @@ sub version_info {
     $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
 
     return \%ver;
+}
+
+$json_schemas{profile_names} = joi->object->strict;
+sub profile_names {
+    my ($self) = @_;
+
+    my @profiles = Zonemaster::Backend::Config->ListPublicProfiles();
+
+    return \@profiles;
 }
 
 $json_schemas{get_host_by_name} = joi->object->strict->props(
@@ -222,10 +231,9 @@ sub validate_syntax {
     }
 
     if ( defined $syntax_input->{profile} ) {
+        my @profiles = map lc, Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
         return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
-          unless ( $syntax_input->{profile} eq 'default_profile'
-            || $syntax_input->{profile} eq 'test_profile_1'
-            || $syntax_input->{profile} eq 'test_profile_2' );
+          unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
     }
 
     my ( $dn, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );
@@ -301,7 +309,7 @@ sub start_domain_test {
 
     if ($params->{config}) {
         $params->{config} =~ s/[^\w_]//isg;
-        die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+        die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->load_config()->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
     }
 
     $params->{priority}  //= 10;

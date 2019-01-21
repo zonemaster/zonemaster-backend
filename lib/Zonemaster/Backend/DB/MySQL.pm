@@ -19,10 +19,10 @@ has 'dbhandle' => (
     isa => 'DBI::db',
 );
 
-my $connection_string   = Zonemaster::Backend::Config->DB_connection_string( 'mysql' );
+my $connection_string   = Zonemaster::Backend::Config->load_config()->DB_connection_string( 'mysql' );
 my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-my $connection_user     = Zonemaster::Backend::Config->DB_user();
-my $connection_password = Zonemaster::Backend::Config->DB_password();
+my $connection_user     = Zonemaster::Backend::Config->load_config()->DB_user();
+my $connection_password = Zonemaster::Backend::Config->load_config()->DB_password();
 
 sub dbh {
     my ( $self ) = @_;
@@ -120,7 +120,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
 
         if ( $recent_id ) {
             # A recent entry exists, so return its id
-            if ( $recent_id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+            if ( $recent_id > Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id() ) {
                 $result_id = $recent_hash_id;
             }
             else {
@@ -145,7 +145,7 @@ SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO
             my ( $id, $hash_id ) = $dbh->selectrow_array(
                 "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
                 
-            if ( $id > Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id() ) {
+            if ( $id > Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id() ) {
                 $result_id = $hash_id;
             }
             else {
@@ -219,7 +219,7 @@ sub get_test_history {
     my @results;
     my $sth = {};
 
-    my $use_hash_id_from_id = Zonemaster::Backend::Config->force_hash_id_use_in_API_starting_from_id();
+    my $use_hash_id_from_id = Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id();
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {

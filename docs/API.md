@@ -141,7 +141,7 @@ Extra properties in *DS info* objects are ignored when present in RPC method arg
 
 Basic data type: string
 
-This parameter is a string that are an IPv4 or IPv6. It's validate with the following regexes:
+This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
  - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
@@ -168,17 +168,13 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 
 Basic data type: string
 
+This parameter is a case-insensitive string validated with the case-insensitive
+regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i`.
+
 The name of a [*profile*](Architecture.md#profile).
 
-One of the strings:
+When a method received an unknown *profile name* value for in parameter with this type, it returns the following error message:
 
-* `"default_profile"`
-* `"test_profile_1"`
-* `"test_profile_2"`
-
-The `"test_profile_2"` *profile* is identical to `"default_profile"`.
-
-When a *profile* other than the ones listed above is requested the user receives the following error message :
 ```json
 {
     "jsonrpc": "2.0",
@@ -189,6 +185,7 @@ When a *profile* other than the ones listed above is requested the user receives
     }
 }
 ```
+
 
 ### Progress percentage
 
@@ -316,7 +313,38 @@ An object with the following properties:
 >
 
 
-## API method: `get_host_by_name` 
+## API method: `profile_names`
+
+Returns the names of the public subset of the [available profiles].
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "profile_names"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "default",
+    "another-profile"
+  ]
+}
+```
+
+
+#### `"result"`
+
+An array of *Profile names* in lower case. `"default"` is always included.
+
+
+## API method: `get_host_by_name`
 
 Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
 
@@ -511,12 +539,16 @@ An object with the following properties:
 * `"ipv4"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv6 tests.
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"profile"`: A *profile name*, optional. (default: `"default"`).  Used to perform the test with a specific set of parameters and tests.
+* `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
+* `"config"`: **Deprecated**. A string, optional. Ignored. Specify `"profile"` instead.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
-* `"config"`: A string, optional. The name of a config profile.
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
+
+>
+> TODO: Clarify the purpose of each `"params"` property.
+>
 
 #### `"result"`
 
@@ -526,6 +558,9 @@ If the test has been run with the same domain name within an interval of 10 mins
 then the new request does not trigger a new test, but returns with the results of the last test
  
 #### `"error"`
+
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -754,6 +789,7 @@ The value of "frontend_params" is an object with the following properties:
 
 * `"domain"`: A *domain name*, required.
 
+
 #### `"result"`
 
 An object with the following properties:
@@ -898,13 +934,13 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
-* `"profile"`: A *profile name*, optional. (default: `"default"`)
+* `"profile"`: A *profile name*, optional (default `"default"`). Run the tests using the given profile.
+* `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
 * `"client_version"`: A *client version*, optional. (default: unset)
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
-* `"ipv6"`: A boolean, optional. (default: `true`)
 * `"ipv4"`: A boolean, optional. (default: `true`)
-* `"config"`: A string, optional. The name of a *config profile*.
+* `"ipv6"`: A boolean, optional. (default: `true`)
 * `"priority"`: A *priority*, optional. (default: `5`)
 * `"queue"`: A *queue*, optional. (default: `0`)
 
@@ -918,6 +954,9 @@ A *batch id*.
 
 * You can't create a new batch job.
   A *batch* with unfinished *tests* already exists for this *api user*.
+* If the given `profile` is not among the [available profiles], a user
+  error is returned.
+
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -938,7 +977,6 @@ Example request:
     "method": "get_batch_job_result",
     "params": {"batch_id": "8"}
 }
-
 ```
 
 Example response:
@@ -1044,3 +1082,5 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
+
+[Available profiles]: Configuration.md#profiles-section

@@ -3,6 +3,7 @@ use warnings;
 use 5.14.2;
 
 use Test::More;    # see done_testing()
+use JSON::PP;
 
 my $db_backend = $ARGV[0];
 ok( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' , "Testing a supported database backend: $db_backend" );
@@ -11,9 +12,9 @@ my $frontend_params_1 = {
 	client_id      => "$db_backend Unit Test",         # free string
 	client_version => '1.0',               # free version like string
 	domain         => 'afnic.fr',          # content of the domain text field
-	ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
-	ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
-	profile        => 'default_profile',    # the id if the Test profile listbox
+	ipv4           => JSON::PP::true,                   # 0 or 1, is the ipv4 checkbox checked
+	ipv6           => JSON::PP::true,                   # 0 or 1, is the ipv6 checkbox checked
+	profile        => 'default',    # the id if the Test profile listbox
 
 	nameservers => [                       # list of the nameserves up to 32
 		{ ns => 'ns1.nic.fr', ip => '1.1.1.1' },       # key values pairs representing nameserver => namesterver_ip
@@ -42,8 +43,11 @@ sub run_zonemaster_test_with_backend_API {
     # test test_progress API
     ok( $engine->test_progress( $api_test_id ) == 0 , 'API test_progress -> OK');
 
+	use_ok( 'Zonemaster::Backend::Config' );
+	my $config = Zonemaster::Backend::Config->load_config();
+	
     use_ok( 'Zonemaster::Backend::TestAgent' );
-	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::$db_backend" } )->run( $api_test_id );
+	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::$db_backend", config => $config } )->run( $api_test_id );
 
     sleep( 5 );
     ok( $engine->test_progress( $api_test_id ) > 0 , 'API test_progress -> Test started');

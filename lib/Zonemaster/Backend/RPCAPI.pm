@@ -71,7 +71,7 @@ $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
     my ($self) = @_;
 
-    my @profiles = Zonemaster::Backend::Config->ListPublicProfiles();
+    my @profiles = Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
 
     return \@profiles;
 }

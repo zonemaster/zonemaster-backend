@@ -1,6 +1,6 @@
-Zonemaster Backend
-==================
+# Zonemaster Backend
 [![Build Status](https://travis-ci.org/zonemaster/zonemaster-backend.svg?branch=master)](https://travis-ci.org/zonemaster/zonemaster-backend)
+
 
 ### Purpose
 This repository is one of the components of the Zonemaster software. For an
@@ -14,7 +14,7 @@ run the Zonemaster engine on many domains)
 
 A Zonemaster user needs to install the backend only in the case where there is a
 need of logging the Zonemaster test runs in one's own respective database for
-analysing.  
+analysing.
 
 
 ### Prerequisites
@@ -23,6 +23,7 @@ Before you install the Zonemaster Backend, you need the
 Zonemaster Engine installed. Please see the
 [Zonemaster Engine installation
 instructions](https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md).
+
 
 ### Upgrade 
 
@@ -33,19 +34,15 @@ relevant parts of the installation instructions below.
 For all other upgrades follow the relevant parts of the installation
 instructions below.
 
+
 ### Installation
 
 Follow the detailed [installation instructions](docs/Installation.md).
 
-### Configuration 
 
-Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`
-(CentOS, Debian and Ubuntu) or `/usr/local/etc/zonemaster/backend_config.ini`
-(FreeBSD).
+### Configuration
 
->
-> At this time there is no documentation for `backend_config.ini`.
->
+See the [configuration documentation].
 
 
 ### Documentation
@@ -68,8 +65,10 @@ The [docs](docs/) directory also contains the SQL commands for manipulating the
 database. 
 
 
-License
-=======
+## License
 
 The software is released under the 2-clause BSD license. See separate
 [LICENSE](LICENSE) file.
+
+
+[Configuration documentation]: docs/Configuration.md

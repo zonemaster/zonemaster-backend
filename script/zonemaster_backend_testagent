@@ -8,9 +8,16 @@ use Zonemaster::Backend::Config;
 
 use Parallel::ForkManager;
 use Daemon::Control;
+use Log::Any qw( $log );
+use Log::Any::Adapter;
+use Log::Dispatch;
 
-use Time::HiRes qw[time sleep];
+use English;
+use Pod::Usage;
 use Getopt::Long;
+use POSIX;
+use Time::HiRes qw[time sleep];
+use sigtrap qw(die normal-signals);
 
 ###
 ### Compile-time stuff.
@@ -20,6 +27,9 @@ BEGIN {
 	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
 }
 
+# Enable immediate flush to stdout and stderr
+$|++;
+
 ###
 ### More global variables, and initialization.
 ###
@@ -27,20 +37,53 @@ BEGIN {
 my $pidfile;
 my $user;
 my $group;
+my $logfile;
+my $loglevel;
+my $opt_help;
 GetOptions(
-    'pidfile=s' => \$pidfile,
-    'user=s' => \$user,
-    'group=s' => \$group,
-);
+    'help!'      => \$opt_help,
+    'pidfile=s'  => \$pidfile,
+    'user=s'     => \$user,
+    'group=s'    => \$group,
+    'logfile=s'  => \$logfile,
+    'loglevel=s' => \$loglevel,
+) or pod2usage( "Try '$0 --help' for more information." );
+
+pod2usage( -verbose => 1 ) if $opt_help;
+
 $pidfile //= '/tmp/zonemaster_backend_testagent.pid';
+$logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
+$loglevel //= 'info';
+$loglevel = lc $loglevel;
+
+$loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
+
+print STDERR "Logging to $logfile\n";
+
+{
+    my $dispatcher = Log::Dispatch->new(outputs => [
+        [
+            'File',
+            min_level => $loglevel,
+            filename => $logfile,
+            mode => '>>',
+            callbacks => sub {
+                my %args = @_;
+                $args{message} = sprintf "%s [%d] %s - %s\n", strftime("%FT%TZ", gmtime), $PID, uc $args{level}, $args{message};
+            },
+        ]
+    ]);
+    Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
+}
 
 # Yes, the method names are spelled like that.
-my $maximum_processes =
-  Zonemaster::Backend::Config->NumberOfProcessesForFrontendTesting() +
-  Zonemaster::Backend::Config->NumberOfProcessesForBatchTesting();
+my $config = Zonemaster::Backend::Config->load_config();
+my $maximum_processes = 
+  $config->NumberOfProcessesForFrontendTesting() +
+  $config->NumberOfProcessesForBatchTesting();
 
-my $delay   = Zonemaster::Backend::Config->PollingInterval();
-my $timeout = Zonemaster::Backend::Config->MaxZonemasterExecutionTime();
+my $delay   = $config->PollingInterval();
+my $timeout = $config->MaxZonemasterExecutionTime();
 
 my $pm = Parallel::ForkManager->new( $maximum_processes );
 $pm->set_waitpid_blocking_sleep( 0 ) if $pm->can('set_waitpid_blocking_sleep');
@@ -84,14 +127,20 @@ sub main {
     my $self = shift;
 
     my $db = $self->config->{db};
+    
+    # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
+    Zonemaster::Backend::TestAgent->new({ config => $config });
 
     while ( 1 ) {
         my $id = $db->get_test_request();
 
         if ( $id ) {
+            $log->info("Test found: $id");
             $pm->wait_for_available_procs();
             if ( $pm->start( $id ) == 0 ) {    # Child process
-                Zonemaster::Backend::TestAgent->new->run( $id );
+                $log->info("Test starting: $id");
+                Zonemaster::Backend::TestAgent->new({ config => $config })->run( $id );
+                $log->info("Test completed: $id");
                 $pm->finish;
             }
         }
@@ -105,14 +154,87 @@ sub main {
 ### Daemon Control stuff.
 ###
 
-my $daemon = Daemon::Control->with_plugins(qw( +Zonemaster::Backend::Config::DCPlugin ))->new({
-    name     => 'zonemaster-testagent',
-    program  => \&main,
-    pid_file => $pidfile,
-});
+my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DCPlugin ) )->new(
+    {
+        name    => 'zonemaster-testagent',
+        program => sub {
+            my $self = shift;
+            $log->notice( "Daemon spawned" );
+            eval { main( $self ) };
+            if ( $@ ) {
+                chomp $@;
+                $log->critical( $@ );
+            }
+            $log->notice( "Daemon terminating" );
+        },
+        pid_file => $pidfile,
+    }
+);
 
 $daemon->init_config( $ENV{PERLBREW_ROOT} . '/etc/bashrc' ) if ( $ENV{PERLBREW_ROOT} );
 $daemon->user($user) if $user;
 $daemon->group($group) if $group;
 
 exit $daemon->run;
+
+=head1 NAME
+
+zonemaster_backend_testagent - Init script for Zonemaster Test Agent.
+
+=head1 SYNOPSIS
+
+    zonemaster_backend_testagent [OPTIONS] [COMMAND]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Print a brief help message and exits.
+
+=item B<--user=USER>
+
+When specified the daemon will drop to the user with this username when forked.
+
+=item B<--group=GROUP>
+
+When specified the daemon will drop to the group with this groupname when forked.
+
+=item B<--pidfile=FILE>
+
+The location of the PID file to use.
+
+=item B<--logfile=FILE>
+
+The location of the log file to use.
+
+=item B<--loglevel=LEVEL>
+
+The location of the log level to use.
+
+The allowed values are specified at L<Log::Any/LOG-LEVELS>.
+
+=item B<COMMAND>
+
+One of the following:
+
+=over 4
+
+=item start
+
+=item foreground
+
+=item stop
+
+=item restart
+
+=item reload
+
+=item status
+
+=item get_init_file
+
+=back
+
+=cut

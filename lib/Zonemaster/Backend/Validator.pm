@@ -33,7 +33,7 @@ sub client_version {
     return joi->string;
 }
 sub domain_name {
-    return joi->string->max(254);
+    return joi->string->regex('^[.]$|^.{2,254}$');
 }
 sub ds_info {
     return joi->object->strict->props(
@@ -65,7 +65,7 @@ sub priority {
     return joi->integer;
 }
 sub profile_name {
-    return joi->string->regex("^(?![-_])[a-zA-Z0-9-_]{1,32}(?<![-_])\$")->min(1)->max(32);
+    return joi->string->regex('^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9_-]{0,30}[a-zA-Z0-9]$');
 }
 sub queue {
     return joi->integer;

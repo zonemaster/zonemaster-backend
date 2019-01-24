@@ -11,6 +11,7 @@ docs/Architecture.md
 docs/files-description.md
 docs/GettingStarted.md
 docs/Installation.md
+docs/Configuration.md
 docs/TypographicConventions.md
 docs/upgrade-from-1.0.x-to-1.1.x.md
 inc/Module/Install.pm

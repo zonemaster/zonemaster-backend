@@ -1,5 +1,41 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v3.0.0 2019-01-27 (pre-release version)
+
+ * Status
+   * This is a pre-release version not fully tested on all supported
+     OS's and Perl versions. This version will not be available on
+     CPAN.
+ * API change
+   * The RPC-API has been updated (see below)
+ * Features
+   * Make file locations overridable #442
+   * Update of RPC-API
+     * Change to unsensitive profile name check in the API #458
+     * Create an API method to get the list of public profile name #457
+     * Remove deprecated code, key/param and documentation #459
+     * Complete specification of API input parameter formats 460
+     * Also see adoption of new profile
+   * Adopt to the new profile in Zonemaster-Engine
+     * Use the new profiles feature of the Zonemaster-Engine #461
+     * Profile documentation updates #455
+     * Various fixes of new feature #466, #467
+     * Fixed old 'default_profile' syntax and changed to 'default' #469
+   * Added logging in Test Agent #398
+ * Fixes
+   * All link references on Github now to zonemaster/zonemaster instead
+     of old dotse/zonemaster #443
+   * Added missing support for "filter" in "get_test_history" #446
+   * Add a note about the empty string, stating that it's 
+     allowed but deprecated. #413
+   * Fixed invalid Zonemaster::Backend::Config call #472
+   * Remove geolocation code #462
+   * Updated .travis.yml with supported versions of Perl #464
+   * Updated .travis.yml to build against Engine develop branch #463
+   * Fixed an issue with the JSON boolean type #470
+   * Add docs/Configuration.md to MANIFEST #475
+
+
 v2.1.0 2018-06-25
     Updates
      * Updated API specification (#320)
@@ -9,7 +45,6 @@ v2.1.0 2018-06-25
      * "get_ns_ips" should have an alias to "get_host_by_name" (#421)
      * Remove personnal information (GDPR) (#420)
      * delete user info from start_domain request (#425)
-     
 
     Fixed
      * Update paths and permissions in installation doc and startup script (#383)

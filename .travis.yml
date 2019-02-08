@@ -25,9 +25,7 @@ before_install:
     - local-lib
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
-    - cpan-install --deps Devel::CheckLib
-    - cpan-install --deps ./zonemaster-ldns
-    - cpan-install --deps ./zonemaster-engine
+    - cpan-install --deps Devel::CheckLib Module::Install Module::Install::XSUtil ./zonemaster-ldns ./zonemaster-engine
 
 before_script:
     - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi

@@ -34,7 +34,7 @@ sub dbh {
     }
     else {
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
-        $dbh->{InactiveDestroy} = 1;
+#        $dbh->{InactiveDestroy} = 1;
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;

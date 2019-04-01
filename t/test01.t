@@ -35,7 +35,7 @@ my $frontend_params_1 = {
     client_version => '1.0',               # free version like string
     domain         => 'afnic.fr',          # content of the domain text field
     ipv4           => JSON::PP::true,                   # 0 or 1, is the ipv4 checkbox checked
-    ipv6           => JSON::PP::true,                   # 0 or 1, is the ipv6 checkbox checked
+    ipv6           => 0,                   # 0 or 1, is the ipv6 checkbox checked
     profile        => 'default',    # the id if the Test profile listbox
 
     nameservers => [                       # list of the nameserves up to 32
@@ -79,7 +79,7 @@ sub run_zonemaster_test_with_backend_API {
 }
 
 run_zonemaster_test_with_backend_API(1);
-$frontend_params_1->{ipv6} = 0;
+$frontend_params_1->{ipv6} = JSON::PP::true;
 run_zonemaster_test_with_backend_API(2);
 
 if ( $ENV{ZONEMASTER_RECORD} ) {

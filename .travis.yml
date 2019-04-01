@@ -24,7 +24,7 @@ before_install:
     - eval $(curl https://travis-perl.github.io/init) --auto
     - local-lib
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
-    - git clone --depth=1 --branch=test-backend-fix-issue-486 https://github.com/mtoma/zonemaster-engine.git
+    - git clone --depth=1 --branch=develop https://github.com/mtoma/zonemaster-engine.git
     - cpan-install --deps Devel::CheckLib Module::Install::XSUtil
     - cpan-install --deps ./zonemaster-ldns
     - cpan-install --deps ./zonemaster-engine

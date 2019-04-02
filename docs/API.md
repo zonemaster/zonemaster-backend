@@ -77,9 +77,12 @@ is based on a JSON data type, but additionally imposes its own restrictions.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
+A string of alphanumerics, hyphens (`-`) and underscores (`_`), of at least 1
+and at most 512 characters.
+I.e. a string matching `/^[a-zA-Z0-9-_]{1,512}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the password of an authenticated account (see *[Privilege levels]*)
+
 
 ### Batch id
 
@@ -266,10 +269,12 @@ Basic data type: string
 ### Username
 
 Basic data type: string
- 
-This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+A string of alphanumerics, dashes, full stops and at-signs, of at least 1 and at
+most 50 characters.
+I.e. a string matching `/^[a-zA-Z0-9]{1,50}$/`.
+
+Represents the name of an authenticated account (see *[Privilege levels]*)
 
 
 ## API method: `version_info`
@@ -1084,3 +1089,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 >
 
 [Available profiles]: Configuration.md#profiles-section
+[Privilege levels]: #privilege-levels

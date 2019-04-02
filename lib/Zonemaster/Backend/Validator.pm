@@ -21,7 +21,7 @@ my $ipv4_regex = "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\$";
 my $ipv6_regex = "^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)\$|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\$";
 
 sub api_key {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-_]{1,512}$');
 }
 sub batch_id {
     return joi->integer->positive;
@@ -77,7 +77,7 @@ sub translation_language {
     return joi->string->length(2);
 }
 sub username {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-.@]{1,50}$');
 }
 sub jsonrpc_method {
     return joi->string->regex("[a-zA-Z0-9_-]*");

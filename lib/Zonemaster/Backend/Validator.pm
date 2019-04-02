@@ -71,7 +71,7 @@ sub queue {
     return joi->integer;
 }
 sub test_id {
-    return joi->string;
+    return joi->string->regex('^[0-9]$|^[1-9][0-9]{1,8}$|^[0-9a-f]{16}$');
 }
 sub translation_language {
     return joi->string->length(2);

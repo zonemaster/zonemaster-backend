@@ -71,5 +71,5 @@ sub username {
     return joi->string->regex('^[a-zA-Z0-9-.@]{1,50}$');
 }
 sub jsonrpc_method {
-    return joi->string->regex("[a-zA-Z0-9_-]*");
+    return joi->string->regex('^[a-zA-Z0-9_-]*$');
 }

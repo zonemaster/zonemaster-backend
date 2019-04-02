@@ -169,7 +169,7 @@ Properties:
 ### Priority
 
 Basic data type: number (integer)
- 
+
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
@@ -259,8 +259,9 @@ This key is added when the module name is `"NAMESERVER"`.
 
 Basic data type: string
 
-Default database timestamp format: "Y-M-D H:M:S.ms"
+Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
+
 
 ### Translation language
 

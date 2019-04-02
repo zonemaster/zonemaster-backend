@@ -266,6 +266,10 @@ Example: "2017-12-18 07:56:17.156939"
 
 Basic data type: string
 
+A string of alphanumeric, hyphens, underscores, full stops and at-signs (`@`),
+of at least 1 and at most 30 characters.
+I.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`.
+
 * Any string starting with `"fr"` is interpreted as French.
 * Any string starting with `"sv"` is interpreted as Swedish.
 * Any string starting with `"da"` is interpreted as Danish.

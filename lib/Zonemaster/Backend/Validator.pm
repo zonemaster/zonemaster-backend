@@ -38,10 +38,10 @@ sub domain_name {
 sub ds_info {
     return joi->object->strict->props(
         digest => joi->string->regex("^[A-Fa-f0-9]{40}\$|^[A-Fa-f0-9]{64}\$")->required,
-        algorithm => joi->integer->min(0),
-        digtype => joi->integer->min(0),
-        keytag => joi->integer->min(0)
-);
+        algorithm => joi->integer->min(0)->required,
+        digtype => joi->integer->min(0)->required,
+        keytag => joi->integer->min(0)->required,
+    );
 }
 sub ip_address {
     return joi->string->regex($ipv4_regex."|".$ipv6_regex);

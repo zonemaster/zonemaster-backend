@@ -140,9 +140,9 @@ DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKE
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
-* `"algorithm"`: An non negative integer, optional.
-* `"digtype"`: An non negative integer, optional.
-* `"keytag"`: An non negative integer, optional.
+* `"algorithm"`: An non negative integer, required.
+* `"digtype"`: An non negative integer, required.
+* `"keytag"`: An non negative integer, required.
 
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 

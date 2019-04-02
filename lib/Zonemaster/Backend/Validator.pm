@@ -46,15 +46,6 @@ sub ds_info {
 sub ip_address {
     return joi->string->regex($ipv4_regex."|".$ipv6_regex);
 }
-sub location {
-    return joi->object->strict->props(
-    isp => joi->string,
-    country => joi->string,
-    city => joi->string,
-    longitude => joi->string->regex("^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))\$"),
-    latitude => joi->string->regex("^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))\$"),
-);
-}
 sub nameserver {
     return joi->object->strict->props(
             ns => joi->string->required,

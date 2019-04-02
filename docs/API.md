@@ -97,18 +97,25 @@ The unique id of a *batch*.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
+A string of alphanumerics, hyphens, underscores, pluses (`+`), tildes (`~`),
+full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 512
+characters.
+I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the name of the client.
+Used for monitoring which client (GUI) uses the API.
 
 
 ### Client version
 
 Basic data type: string
 
-This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
+A string of alphanumerics, hyphens, pluses, tildes, underscores, full stops,
+colons and spaces, of at least 1 and at most 512 characters.
+I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the version of the client.
+Used for monitoring which client (GUI) uses the API.
 
 
 ### Domain name

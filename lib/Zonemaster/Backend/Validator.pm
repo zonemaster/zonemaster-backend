@@ -27,10 +27,10 @@ sub batch_id {
     return joi->integer->positive;
 }
 sub client_id {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-+~_.: ]{1,50}$');
 }
 sub client_version {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-+~_.: ]{1,50}$');
 }
 sub domain_name {
     return joi->string->regex('^[.]$|^.{2,254}$');

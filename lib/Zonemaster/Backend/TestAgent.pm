@@ -168,7 +168,6 @@ sub run {
 
     $progress = $self->{db}->test_progress( $test_id );
 
-    Zonemaster::Engine->reset();
     return;
 } ## end sub run
 

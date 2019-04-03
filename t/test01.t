@@ -59,11 +59,6 @@ sub run_zonemaster_test_with_backend_API {
 	use_ok( 'Zonemaster::Backend::Config' );
 	my $config = Zonemaster::Backend::Config->load_config();
 
-	if ( not $ENV{ZONEMASTER_RECORD} ) {
-		Zonemaster::Engine->preload_cache( $datafile );
-		Zonemaster::Engine->profile->set( q{no_network}, 1 );
-	}
-	
 	use_ok( 'Zonemaster::Backend::TestAgent' );
 	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $test_id );
 

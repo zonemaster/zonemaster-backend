@@ -130,7 +130,8 @@ sub main {
     
     # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
     Zonemaster::Backend::TestAgent->new({ config => $config });
-
+	
+	my $ta;
     while ( 1 ) {
         my $id = $db->get_test_request();
 
@@ -139,7 +140,10 @@ sub main {
             $pm->wait_for_available_procs();
             if ( $pm->start( $id ) == 0 ) {    # Child process
                 $log->info("Test starting: $id");
-                Zonemaster::Backend::TestAgent->new({ config => $config })->run( $id );
+                $ta = Zonemaster::Backend::TestAgent->new({ config => $config });
+                $ta->run( $id );
+                $ta->reset();
+                
                 $log->info("Test completed: $id");
                 $pm->finish;
             }

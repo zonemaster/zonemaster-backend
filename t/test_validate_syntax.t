@@ -70,7 +70,7 @@ ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok',
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # 64 characters long domain label
-$frontend_params->{domain} = '012345678901234567890123456789012345678901234567890123456789-64-.fr';
+$frontend_params->{domain} = '012345678901234567890123456789012345678901234567890123456789--64.fr';
 ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
 	encode_utf8( '64 characters long domain label' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );

@@ -168,9 +168,13 @@ sub run {
 
     $progress = $self->{db}->test_progress( $test_id );
 
-    Zonemaster::Engine->reset();
     return;
 } ## end sub run
+
+sub reset {
+    my ( $self ) = @_;
+    Zonemaster::Engine->reset();
+}
 
 sub add_fake_delegation {
     my ( $self, $domain, $nameservers ) = @_;

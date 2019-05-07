@@ -524,7 +524,7 @@ Example request:
   "params": {
     "client_id": "Zonemaster Dancer Frontend",
     "domain": "zonemaster.net",
-    "profile": "default_profile",
+    "profile": "default",
     "client_version": "1.0.1",
     "nameservers": [
       {
@@ -665,7 +665,7 @@ Example response:
       "ds_info": [],
       "client_version": "1.0.1",
       "domain": "zonemaster.net",
-      "profile": "default_profile",
+      "profile": "default",
       "ipv6": true,
       "advanced": true,
       "nameservers": [
@@ -1067,7 +1067,7 @@ Example response:
     "id": 143014426992009,
     "result": {
          "domain": "zonemaster.net",
-         "profile": "default_profile",
+         "profile": "default",
          "client_id": "Zonemaster Dancer Frontend",
          "advanced": true,
          "nameservers": [

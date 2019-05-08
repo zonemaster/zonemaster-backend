@@ -88,11 +88,11 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -m 755 -d /etc/zonemaster
-sudo install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
-sudo install -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -m 775 -g zonemaster -d /var/run/zonemaster
-sudo install -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 -d /etc/zonemaster
+sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
+sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
+sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
 ```
 
 ### 3.2 Database engine installation and configuration (CentOS)
@@ -265,11 +265,11 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -m 755 -d /etc/zonemaster
-sudo install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
-sudo install -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -m 775 -g zonemaster -d /var/run/zonemaster
-sudo install -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 -d /etc/zonemaster
+sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
+sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
+sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
 ```
 
 ### 4.2 Database engine installation and configuration (Debian)
@@ -423,12 +423,12 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -m 755 -d /usr/local/etc/zonemaster
-install -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
-install -m 775 -g zonemaster -d /var/log/zonemaster
-install -m 775 -g zonemaster -d /var/run/zonemaster
-install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
-install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
+install -v -m 755 -d /usr/local/etc/zonemaster
+install -v -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
+install -v -m 775 -g zonemaster -d /var/log/zonemaster
+install -v -m 775 -g zonemaster -d /var/run/zonemaster
+install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 ```
 
 ### 5.2 Database engine installation and configuration (FreeBSD)
@@ -532,7 +532,7 @@ you should be able to use the
 API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+curl -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
 ```
 
 The command is expected to give an immediate JSON response similiar to:

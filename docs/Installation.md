@@ -291,23 +291,9 @@ sudo apt-get install mysql-server libdbd-mysql-perl
 Initialize the database:
 
 ```sh
-mysql --user=root --password < ./initial-mysql.sql
+sudo mysql --password < ./initial-mysql.sql
 ```
 
-For latest versions of MySQL, wherein the root password is blank and you get an
-error "Access denied for the above command" on running the above command ,
-follow the below procedure: 
-
-```sh
-If you know the root password
-        mysql -u root 
-In MySQL prompt type the following 
-        SET PASSWORD FOR 'root'@'localhost' =PASSWORD("root-password");
-        flush privileges;
-        quit;
-Run again 
-	mysql --user=root --password < ./initial-mysql.sql
-```
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.

@@ -410,11 +410,10 @@ cpanm Zonemaster::Backend
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
-Add `zonemaster` user and group:
+Add `zonemaster` user and `zonemaster` group (the group is created automatically): 
 
 ```sh
-pw groupadd zonemaster
-pw useradd zonemaster -g zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
+pw useradd zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
 ```
 
 Install files to their proper locations:

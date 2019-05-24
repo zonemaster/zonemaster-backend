@@ -171,6 +171,11 @@ sub run {
     return;
 } ## end sub run
 
+sub reset {
+    my ( $self ) = @_;
+    Zonemaster::Engine->reset();
+}
+
 sub add_fake_delegation {
     my ( $self, $domain, $nameservers ) = @_;
     my @ns_with_no_ip;

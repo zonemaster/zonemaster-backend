@@ -1,5 +1,7 @@
 package Zonemaster::Backend;
 
+# Just a meaningless comment.
+
 our $VERSION = '4.0.0';
 
 use strict;

@@ -31,8 +31,8 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.30,
-  'Zonemaster::Engine'          => 2.0,
-  'Zonemaster::LDNS'            => 1.0,
+  'Zonemaster::Engine'          => 3.0,
+  'Zonemaster::LDNS'            => 2.0,
   ;
 
 test_requires 'DBD::SQLite';

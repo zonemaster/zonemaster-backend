@@ -1,5 +1,12 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v4.0.1 2019-05-31 (public fix version)
+
+ [Fixes]
+ - Corrects in Makefile.PL the versions of Zonemaster::Engine
+ and Zonemaster::LDNS that this version of Zonemaster::Backend
+ depends on (#518, #519)
+
 v4.0.0 2019-05-22 (public release version)
 
  [Status]

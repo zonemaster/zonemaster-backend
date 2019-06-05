@@ -127,10 +127,7 @@ sub main {
     my $self = shift;
 
     my $db = $self->config->{db};
-    
-    # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
-    Zonemaster::Backend::TestAgent->new({ config => $config });
-	
+
 	my $ta;
     while ( 1 ) {
         my $id = $db->get_test_request();
@@ -152,6 +149,20 @@ sub main {
             sleep $delay;
         }
     }
+}
+
+
+# Make sure the environment is alright before forking
+eval {
+    # Validate the Zonemaster-Engine profile
+    Zonemaster::Backend::TestAgent->new( { config => $config } );
+
+    # Connect to the database
+    Zonemaster::Backend::Config->new_DB();
+};
+if ( $@ ) {
+    print STDERR "Aborting startup: $@";
+    exit 1;
 }
 
 ###

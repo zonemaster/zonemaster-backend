@@ -39,6 +39,7 @@ my $user;
 my $group;
 my $logfile;
 my $loglevel;
+my $opt_outfile;
 my $opt_help;
 GetOptions(
     'help!'      => \$opt_help,
@@ -47,13 +48,15 @@ GetOptions(
     'group=s'    => \$group,
     'logfile=s'  => \$logfile,
     'loglevel=s' => \$loglevel,
+    'outfile=s'  => \$opt_outfile,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
 pod2usage( -verbose => 1 ) if $opt_help;
 
-$pidfile //= '/tmp/zonemaster_backend_testagent.pid';
-$logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
-$loglevel //= 'info';
+$pidfile     //= '/tmp/zonemaster_backend_testagent.pid';
+$logfile     //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
+$opt_outfile //= '/var/log/zonemaster/zonemaster_backend_testagent.out';
+$loglevel    //= 'info';
 $loglevel = lc $loglevel;
 
 $loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
@@ -182,7 +185,9 @@ my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DC
             }
             $log->notice( "Daemon terminating" );
         },
-        pid_file => $pidfile,
+        pid_file    => $pidfile,
+        stderr_file => $opt_outfile,
+        stdout_file => $opt_outfile,
     }
 );
 

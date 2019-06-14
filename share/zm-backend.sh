@@ -13,13 +13,6 @@
 #                    make up the Zonemaster Backend.
 ### END INIT INFO
 
-# Unset potentially conflicting locale, setting the default
-unset LANGUAGE
-unset LANG
-unset LC_MESSAGES
-unset LC_ALL
-export LC_CTYPE="en_US.UTF-8"
-
 BASEDIR=${ZM_BACKEND_BASEDIR:-/usr/local}
 LOGDIR=${ZM_BACKEND_LOGDIR:-/var/log/zonemaster}
 PIDDIR=${ZM_BACKEND_PIDDIR:-/var/run/zonemaster}

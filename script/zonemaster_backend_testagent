@@ -161,7 +161,7 @@ eval {
     Zonemaster::Backend::TestAgent->new( { config => $config } );
 
     # Connect to the database
-    Zonemaster::Backend::Config->new_DB();
+    $config->new_DB();
 };
 if ( $@ ) {
     print STDERR "Aborting startup: $@";

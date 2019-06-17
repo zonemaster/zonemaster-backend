@@ -28,7 +28,7 @@ builder {
         my $app = shift;
 
         # Make sure we can connect to the database
-        Zonemaster::Backend::Config->new_DB();
+        Zonemaster::Backend::Config->load_config()->new_DB();
 
         return $app;
     };

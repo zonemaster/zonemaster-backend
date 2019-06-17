@@ -197,10 +197,10 @@ The adapter connects to the database before it is returned.
 
 =head3 INPUT
 
-The database adapter class is selected based on the return value
-of L<Zonemaster::Backend::Config->load_config()->BackendDBType()>. The database
-adapter class constructor is called without arguments and is expected
-to configure itself according to available global configuration.
+The database adapter class is selected based on the return value of
+BackendDBType().
+The database adapter class constructor is called without arguments and is
+expected to configure itself according to available global configuration.
 
 =back
 
@@ -223,8 +223,10 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
+    my ($self) = @_;
+
     # Get DB type from config
-    my $dbtype = Zonemaster::Backend::Config->load_config()->BackendDBType();
+    my $dbtype = $self->BackendDBType();
     if (!defined $dbtype) {
         die "Unrecognized DB.engine in backend config";
     }

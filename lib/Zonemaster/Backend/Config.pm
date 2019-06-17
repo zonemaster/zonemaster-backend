@@ -245,4 +245,48 @@ sub new_DB {
     return $db;
 }
 
+sub new_PM {
+    my $self = shift;
+
+    my $maximum_processes = $self->NumberOfProcessesForFrontendTesting() + $self->NumberOfProcessesForBatchTesting();
+
+    my $timeout = $self->MaxZonemasterExecutionTime();
+
+    my %times;
+
+    my $pm = Parallel::ForkManager->new( $maximum_processes );
+    $pm->set_waitpid_blocking_sleep( 0 ) if $pm->can( 'set_waitpid_blocking_sleep' );
+
+    $pm->run_on_wait(
+        sub {
+            foreach my $pid ( $pm->running_procs ) {
+                my $diff = time() - $times{$pid};
+
+                if ( $diff > $timeout ) {
+                    kill 9, $pid;
+                }
+            }
+        },
+        1
+    );
+
+    $pm->run_on_start(
+        sub {
+            my ( $pid, $id ) = @_;
+
+            $times{$pid} = time();
+        }
+    );
+
+    $pm->run_on_finish(
+        sub {
+            my ( $pid, $exitcode, $id ) = @_;
+
+            delete $times{$pid};
+        }
+    );
+
+    return $pm;
+}
+
 1;

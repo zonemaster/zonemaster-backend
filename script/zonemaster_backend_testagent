@@ -39,6 +39,7 @@ my $user;
 my $group;
 my $logfile;
 my $loglevel;
+my $opt_outfile;
 my $opt_help;
 GetOptions(
     'help!'      => \$opt_help,
@@ -47,13 +48,15 @@ GetOptions(
     'group=s'    => \$group,
     'logfile=s'  => \$logfile,
     'loglevel=s' => \$loglevel,
+    'outfile=s'  => \$opt_outfile,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
 pod2usage( -verbose => 1 ) if $opt_help;
 
-$pidfile //= '/tmp/zonemaster_backend_testagent.pid';
-$logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
-$loglevel //= 'info';
+$pidfile     //= '/tmp/zonemaster_backend_testagent.pid';
+$logfile     //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
+$opt_outfile //= '/var/log/zonemaster/zonemaster_backend_testagent.out';
+$loglevel    //= 'info';
 $loglevel = lc $loglevel;
 
 $loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
@@ -127,10 +130,7 @@ sub main {
     my $self = shift;
 
     my $db = $self->config->{db};
-    
-    # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
-    Zonemaster::Backend::TestAgent->new({ config => $config });
-	
+
 	my $ta;
     while ( 1 ) {
         my $id = $db->get_test_request();
@@ -154,6 +154,20 @@ sub main {
     }
 }
 
+
+# Make sure the environment is alright before forking
+eval {
+    # Validate the Zonemaster-Engine profile
+    Zonemaster::Backend::TestAgent->new( { config => $config } );
+
+    # Connect to the database
+    Zonemaster::Backend::Config->new_DB();
+};
+if ( $@ ) {
+    print STDERR "Aborting startup: $@";
+    exit 1;
+}
+
 ###
 ### Daemon Control stuff.
 ###
@@ -171,7 +185,9 @@ my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DC
             }
             $log->notice( "Daemon terminating" );
         },
-        pid_file => $pidfile,
+        pid_file    => $pidfile,
+        stderr_file => $opt_outfile,
+        stdout_file => $opt_outfile,
     }
 );
 

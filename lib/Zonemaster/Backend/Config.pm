@@ -38,19 +38,19 @@ sub load_config {
 sub BackendDBType {
     my ($self) = @_;
 
-    my $result;
-
-    if ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'sqlite' ) {
-        $result = 'SQLite';
+    my $engine = $self->{cfg}->val( 'DB', 'engine' );
+    if ( lc $engine eq 'sqlite' ) {
+        return 'SQLite';
     }
-    elsif ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'postgresql' ) {
-        $result = 'PostgreSQL';
+    elsif ( lc $engine eq 'postgresql' ) {
+        return 'PostgreSQL';
     }
-    elsif ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'mysql' ) {
-        $result = 'MySQL';
+    elsif ( lc $engine eq 'mysql' ) {
+        return 'MySQL';
     }
-
-    return $result;
+    else {
+        die "Unknown config value DB.engine: $engine\n";
+    }
 }
 
 sub DB_user {
@@ -180,6 +180,14 @@ sub lock_on_queue {
 
     return $val;
 }
+
+=head2 BackendDBType
+
+Returns a normalized string based on the DB.engine value in the config.
+
+=head3 EXCEPTION
+
+Dies if the value of DB.engine is unrecognized.
 
 =head2 new_DB
 

@@ -239,7 +239,7 @@ sub new_DB {
     $dbclass->import();
     $log->notice("Constructing database adapter: $dbclass");
 
-    my $db = $dbclass->new;
+    my $db = $dbclass->new({ config => $self });
 
     # Connect or die
     $db->dbh;

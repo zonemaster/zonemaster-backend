@@ -113,6 +113,7 @@ sub main {
 # Make sure the environment is alright before forking
 my $initial_config;
 eval {
+    $log->debug("Starting pre-flight check");
     $initial_config = Zonemaster::Backend::Config->load_config();
 
     # Validate the Zonemaster-Engine profile
@@ -120,6 +121,7 @@ eval {
 
     # Connect to the database
     $initial_config->new_DB();
+    $log->debug("Completed pre-flight check");
 };
 if ( $@ ) {
     print STDERR "Aborting startup: $@";

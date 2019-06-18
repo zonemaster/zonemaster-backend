@@ -29,7 +29,7 @@ sub add_api_user {
 
     my $result = $self->add_api_user_to_db( $username, $api_key );
 
-    die "add_api_user_to_db not successfull\n" unless ( $result );
+    die "add_api_user_to_db not successful\n" unless ( $result );
 
     return $result;
 }

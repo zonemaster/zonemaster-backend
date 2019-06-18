@@ -28,6 +28,8 @@ else {
 sub load_config {
     my ( $class, $params ) = @_;
     my $self = {};
+
+    $log->notice( "Loading config: $path" );
     
     $self->{cfg} = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );

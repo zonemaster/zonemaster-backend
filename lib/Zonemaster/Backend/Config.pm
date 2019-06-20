@@ -253,7 +253,7 @@ Create a new processing manager object according to configuration.
 
 =head3 INPUT
 
-The values of the following attributes affect the consturction of the returned object:
+The values of the following attributes affect the construction of the returned object:
 
 =over
 

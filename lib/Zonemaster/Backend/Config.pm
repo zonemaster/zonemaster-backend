@@ -247,6 +247,30 @@ sub new_DB {
     return $db;
 }
 
+=head2 new_PM
+
+Create a new processing manager object according to configuration.
+
+=head3 INPUT
+
+The values of the following attributes affect the consturction of the returned object:
+
+=over
+
+=item MaxZonemasterExecutionTime
+
+=item NumberOfProcessesForBatchTesting
+
+=item NumberOfProcessesForFrontendTesting
+
+=back
+
+=head3 RETURNS
+
+A configured L<Parallel::ForkManager> object.
+
+=cut
+
 sub new_PM {
     my $self = shift;
 

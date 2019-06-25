@@ -14,13 +14,24 @@ use Zonemaster::Backend::Config;
 
 with 'Zonemaster::Backend::DB';
 
-my $connection_string = Zonemaster::Backend::Config->load_config()->DB_connection_string( 'sqlite' );
+has 'config' => (
+    is       => 'ro',
+    isa      => 'Zonemaster::Backend::Config',
+    required => 1,
+);
 
 has 'dbh' => (
-    is      => 'ro',
-    isa     => 'DBI::db',
-    default => sub {
+    is  => 'rw',
+    isa => 'DBI::db',
+);
+
+sub BUILD {
+    my ( $self ) = @_;
+
+    if ( !defined $self->dbh ) {
+        my $connection_string = $self->config->DB_connection_string( 'sqlite' );
         $log->debug( "Connection string: " . $connection_string );
+
         my $dbh = DBI->connect(
             $connection_string,
             {
@@ -29,9 +40,12 @@ has 'dbh' => (
             }
         ) or die $DBI::errstr;
         $log->debug( "Database filename: " . $dbh->sqlite_db_filename );
-        $dbh
-    },
-);
+
+        $self->dbh( $dbh );
+    }
+
+    return $self;
+}
 
 sub DEMOLISH {
     my ( $self ) = @_;

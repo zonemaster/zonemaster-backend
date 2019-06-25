@@ -28,6 +28,8 @@ else {
 sub load_config {
     my ( $class, $params ) = @_;
     my $self = {};
+
+    $log->notice( "Loading config: $path" );
     
     $self->{cfg} = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
@@ -197,10 +199,10 @@ The adapter connects to the database before it is returned.
 
 =head3 INPUT
 
-The database adapter class is selected based on the return value
-of L<Zonemaster::Backend::Config->load_config()->BackendDBType()>. The database
-adapter class constructor is called without arguments and is expected
-to configure itself according to available global configuration.
+The database adapter class is selected based on the return value of
+BackendDBType().
+The database adapter class constructor is called without arguments and is
+expected to configure itself according to available global configuration.
 
 =back
 
@@ -223,8 +225,10 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
+    my ($self) = @_;
+
     # Get DB type from config
-    my $dbtype = Zonemaster::Backend::Config->load_config()->BackendDBType();
+    my $dbtype = $self->BackendDBType();
     if (!defined $dbtype) {
         die "Unrecognized DB.engine in backend config";
     }
@@ -235,12 +239,80 @@ sub new_DB {
     $dbclass->import();
     $log->notice("Constructing database adapter: $dbclass");
 
-    my $db = $dbclass->new;
+    my $db = $dbclass->new({ config => $self });
 
     # Connect or die
     $db->dbh;
 
     return $db;
+}
+
+=head2 new_PM
+
+Create a new processing manager object according to configuration.
+
+=head3 INPUT
+
+The values of the following attributes affect the construction of the returned object:
+
+=over
+
+=item MaxZonemasterExecutionTime
+
+=item NumberOfProcessesForBatchTesting
+
+=item NumberOfProcessesForFrontendTesting
+
+=back
+
+=head3 RETURNS
+
+A configured L<Parallel::ForkManager> object.
+
+=cut
+
+sub new_PM {
+    my $self = shift;
+
+    my $maximum_processes = $self->NumberOfProcessesForFrontendTesting() + $self->NumberOfProcessesForBatchTesting();
+
+    my $timeout = $self->MaxZonemasterExecutionTime();
+
+    my %times;
+
+    my $pm = Parallel::ForkManager->new( $maximum_processes );
+    $pm->set_waitpid_blocking_sleep( 0 ) if $pm->can( 'set_waitpid_blocking_sleep' );
+
+    $pm->run_on_wait(
+        sub {
+            foreach my $pid ( $pm->running_procs ) {
+                my $diff = time() - $times{$pid};
+
+                if ( $diff > $timeout ) {
+                    kill 9, $pid;
+                }
+            }
+        },
+        1
+    );
+
+    $pm->run_on_start(
+        sub {
+            my ( $pid, $id ) = @_;
+
+            $times{$pid} = time();
+        }
+    );
+
+    $pm->run_on_finish(
+        sub {
+            my ( $pid, $exitcode, $id ) = @_;
+
+            delete $times{$pid};
+        }
+    );
+
+    return $pm;
 }
 
 1;

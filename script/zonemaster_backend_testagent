@@ -88,19 +88,20 @@ sub main {
 
 	my $ta;
     while ( 1 ) {
+        $self->pm->reap_finished_children();    # Reaps terminated child processes
+        $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
+
         my $id = $self->db->get_test_request();
 
         if ( $id ) {
             $log->info("Test found: $id");
-            $self->pm->wait_for_available_procs();
-            if ( $self->pm->start( $id ) == 0 ) {    # Child process
+            if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
                 $log->info("Test starting: $id");
                 $ta = Zonemaster::Backend::TestAgent->new({ config => $self->config });
                 $ta->run( $id );
                 $ta->reset();
-                
                 $log->info("Test completed: $id");
-                $self->pm->finish;
+                $self->pm->finish;                   # Terminates child process
             }
         }
         else {

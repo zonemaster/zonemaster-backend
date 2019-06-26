@@ -286,9 +286,11 @@ sub new_PM {
     $pm->run_on_wait(
         sub {
             foreach my $pid ( $pm->running_procs ) {
-                my $diff = time() - $times{$pid};
+                my $diff = time() - $times{$pid}[0];
+                my $id   = $times{$pid}[1];
 
                 if ( $diff > $timeout ) {
+                    $log->warning( "Worker process (pid $pid, testid $id): Timeout, sending SIGKILL" );
                     kill 9, $pid;
                 }
             }
@@ -300,7 +302,7 @@ sub new_PM {
         sub {
             my ( $pid, $id ) = @_;
 
-            $times{$pid} = time();
+            $times{$pid} = [ time(), $id ];
         }
     );
 

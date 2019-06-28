@@ -6,6 +6,10 @@ maint
 ^.*\.swp$
 ^MANIFEST\.SKIP$
 
+# Avoid experimental tools
+script/zmb
+script/zmtest
+
 #!start included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.
 \bRCS\b

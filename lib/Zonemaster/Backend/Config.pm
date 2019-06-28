@@ -5,9 +5,11 @@ use strict;
 use warnings;
 use 5.14.2;
 
+use Config;
 use Config::IniFiles;
 use File::ShareDir qw[dist_file];
 use Log::Any qw( $log );
+use Readonly;
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -20,6 +22,7 @@ else {
     $path = dist_file('Zonemaster-Backend', "backend_config.ini");
 }
 
+Readonly my @SIG_NAME => split ' ', $Config{sig_name};
 
 =head1 SUBROUTINES
 
@@ -286,9 +289,11 @@ sub new_PM {
     $pm->run_on_wait(
         sub {
             foreach my $pid ( $pm->running_procs ) {
-                my $diff = time() - $times{$pid};
+                my $diff = time() - $times{$pid}[0];
+                my $id   = $times{$pid}[1];
 
                 if ( $diff > $timeout ) {
+                    $log->warning( "Worker process (pid $pid, testid $id): Timeout, sending SIGKILL" );
                     kill 9, $pid;
                 }
             }
@@ -300,15 +305,22 @@ sub new_PM {
         sub {
             my ( $pid, $id ) = @_;
 
-            $times{$pid} = time();
+            $times{$pid} = [ time(), $id ];
         }
     );
 
     $pm->run_on_finish(
         sub {
-            my ( $pid, $exitcode, $id ) = @_;
+            my ( $pid, $exitcode, $id, $signal ) = @_;
 
             delete $times{$pid};
+
+            my $message =
+              ( $signal )
+              ? "Terminated by signal $signal (SIG$SIG_NAME[$signal])"
+              : "Terminated with exit code $exitcode";
+
+            $log->notice( "Worker process (pid $pid, testid $id): $message" );
         }
     );
 

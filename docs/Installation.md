@@ -452,20 +452,29 @@ sysrc mysql_enable="YES"
 service mysql-server start
 ```
 
-MySQl requires that the password for root is reset before any operations can be run. The
-current root password for MySQL is found in `/root/.mysql_secret` after installation of
-mysql-server. Connect to MySQL interactively with the following command and use password
-from file when prompted:
+Read the current root password for MySQL:
+
+```sh
+cat /root/.mysql_secret
+```
+
+Connect to MySQL interactively:
 
 ```sh
 mysql -u root -h localhost -p
 ```
 
-Set password for root in MySQL in interactive mode with the following command where
-`ROOTPASSWORD` is the same root password from the file above (or another one).
+Reset root password in MySQL (required by MySQL) where
+`ROOTPASSWORD` is the password from the file above (or another one).
 
 ```sql
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'ROOTPASSWORD';
+```
+
+Logout from database:
+
+```sql
+exit;
 ```
 
 Initialize the database (and give the root password when prompted):

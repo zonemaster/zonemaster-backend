@@ -522,7 +522,13 @@ my $rpc_request = joi->object->props(
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 
-    my @error_rpc = $rpc_request->validate($jsonrpc_request);
+    # FIXME: This is an inlined version of JSON::Validator::Joi::validate() that
+    # has been fixed to not emit deprecation warnings.
+    # Once the method itself is fixed on all supported platforms to not emit
+    # deprecation warnings, the call to it can be reinstated.
+    state $jv = JSON::Validator->new->coerce( { booleans => 1, numbers => 1, strings => 1 } );
+    my @error_rpc = $jv->validate( $jsonrpc_request, $jv->compile );
+
     if (!exists $jsonrpc_request->{"id"} || @error_rpc) {
         return {
             jsonrpc => '2.0',

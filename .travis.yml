@@ -2,7 +2,7 @@ services:
   - mysql
 
 addons:
-  postgresql: "9.3"
+  postgresql: "9.4"
   
 env:
     - TARGET=PostreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini

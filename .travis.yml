@@ -13,7 +13,6 @@ perl:
     - "5.28"
 
 before_install:
-    - sudo systemctl
     - sudo apt-get install -y libidn11-dev
     - eval $(curl https://travis-perl.github.io/init) --auto
     - local-lib

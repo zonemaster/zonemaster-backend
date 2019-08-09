@@ -20,7 +20,9 @@ before_install:
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
     - cpan-install --deps Devel::CheckLib Module::Install::XSUtil
     - cpan-install --deps ./zonemaster-ldns
+    - echo Zonemaster::LDNS: `git --git-dir zonemaster-ldns/.git describe --tags`
     - cpan-install --deps ./zonemaster-engine
+    - echo Zonemaster::Engine: `git --git-dir zonemaster-engine/.git describe --tags`
 
 before_script:
     - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi

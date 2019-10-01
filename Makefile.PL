@@ -17,7 +17,6 @@ requires
   'JSON::PP'                    => 0,
   'JSON::RPC'                   => 1.01,
   'JSON::Validator'             => 2.07,
-  'Locale::TextDomain'          => 0,
   'Log::Any'                    => 0,
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,
@@ -31,8 +30,8 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.30,
-  'Zonemaster::Engine'          => 2.0,
-  'Zonemaster::LDNS'            => 1.0,
+  'Zonemaster::Engine'          => 3.0,
+  'Zonemaster::LDNS'            => 2.0,
   ;
 
 test_requires 'DBD::SQLite';

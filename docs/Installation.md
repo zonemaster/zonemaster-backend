@@ -43,6 +43,9 @@ Zonemaster::Engine installation].
 > install from your operating system distribution (rather than CPAN).
 > We recommend following the Zonemaster::Engine installation instruction.
 
+Prerequisite for FreeBSD is that the package system is upadated and activated
+(see the FreeBSD section of [Zonemaster::Engine installation]).
+
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
@@ -85,11 +88,11 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -m 755 -d /etc/zonemaster
-sudo install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
-sudo install -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -m 775 -g zonemaster -d /var/run/zonemaster
-sudo install -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 -d /etc/zonemaster
+sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
+sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
+sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
 ```
 
 ### 3.2 Database engine installation and configuration (CentOS)
@@ -234,13 +237,13 @@ See the [post-installation] section for post-installation matters.
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdata-dump-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libintl-perl libio-captureoutput-perl libjson-pp-perl libmoose-perl libplack-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-requires-perl libtest-warn-perl libtext-microtemplate-perl libtie-simple-perl starman
+sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control JSON::RPC Net::IP::XS Parallel::ForkManager Plack::Middleware::Debug
+sudo cpanm Daemon::Control JSON::Validator Net::IP::XS Parallel::ForkManager Try::Tiny
 ```
 
 Install Zonemaster::Backend:
@@ -262,11 +265,11 @@ Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -m 755 -d /etc/zonemaster
-sudo install -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
-sudo install -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -m 775 -g zonemaster -d /var/run/zonemaster
-sudo install -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 -d /etc/zonemaster
+sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
+sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
+sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
+sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
 ```
 
 ### 4.2 Database engine installation and configuration (Debian)
@@ -291,23 +294,9 @@ sudo apt-get install mysql-server libdbd-mysql-perl
 Initialize the database:
 
 ```sh
-mysql --user=root --password < ./initial-mysql.sql
+sudo mysql --password < ./initial-mysql.sql
 ```
 
-For latest versions of MySQL, wherein the root password is blank and you get an
-error "Access denied for the above command" on running the above command ,
-follow the below procedure: 
-
-```sh
-If you know the root password
-        mysql -u root 
-In MySQL prompt type the following 
-        SET PASSWORD FOR 'root'@'localhost' =PASSWORD("root-password");
-        flush privileges;
-        quit;
-Run again 
-	mysql --user=root --password < ./initial-mysql.sql
-```
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
@@ -399,7 +388,7 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Locale-libintl p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
+pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
 ```
 
 Optionally install Curl (only needed for the post-installation smoke test)
@@ -424,23 +413,22 @@ cpanm Zonemaster::Backend
 > The command above might try to install "DBD::Pg" and "DBD::mysql".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
-Add `zonemaster` user and group:
+Add `zonemaster` user and `zonemaster` group (the group is created automatically): 
 
 ```sh
-pw groupadd zonemaster
-pw useradd zonemaster -g zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
+pw useradd zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
 ```
 
 Install files to their proper locations:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -m 755 -d /usr/local/etc/zonemaster
-install -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
-install -m 775 -g zonemaster -d /var/log/zonemaster
-install -m 775 -g zonemaster -d /var/run/zonemaster
-install -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
-install -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
+install -v -m 755 -d /usr/local/etc/zonemaster
+install -v -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
+install -v -m 775 -g zonemaster -d /var/log/zonemaster
+install -v -m 775 -g zonemaster -d /var/run/zonemaster
+install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 ```
 
 ### 5.2 Database engine installation and configuration (FreeBSD)
@@ -544,7 +532,7 @@ you should be able to use the
 API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh
-curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+curl -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
 ```
 
 The command is expected to give an immediate JSON response similiar to:

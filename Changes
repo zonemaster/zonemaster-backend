@@ -1,5 +1,33 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v4.0.1 2019-05-31 (public fix version)
+
+ [Fixes]
+ - Corrects in Makefile.PL the versions of Zonemaster::Engine
+ and Zonemaster::LDNS that this version of Zonemaster::Backend
+ depends on (#518, #519)
+
+v4.0.0 2019-05-22 (public release version)
+
+ [Status]
+ - This a public release fully tested before release. This version
+   will be available on CPAN.
+
+ [Fixes]
+ - Updated installation instructions (#502, #510, #511)
+ - Updated initial sql script for postgres (#504)
+ - Correction in API document (#501)
+ - Corrected unit test (#491)
+ - Fixed memory leak issue (#481, #489, #482)
+ - Updated recorded data for unit tests (#486, #492)
+ - Dropped support for Ubuntu 14.04 (#495)
+ - Added dependency (#483)
+ - Configuration for Travis (#484)
+
+ [API change]
+ - Stricter API (#494, #317)
+
+
 v3.0.0 2019-01-27 (pre-release version)
 
  * Status

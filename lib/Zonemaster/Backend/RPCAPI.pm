@@ -35,20 +35,22 @@ sub new {
     my $self = {};
     bless( $self, $type );
 
+    my $config = Zonemaster::Backend::Config->load_config();
+
     if ( $params && $params->{db} ) {
         eval {
             eval "require $params->{db}";
             die "$@ \n" if $@;
-            $self->{db} = "$params->{db}"->new();
+            $self->{db} = "$params->{db}"->new( { config => $config } );
         };
         die "$@ \n" if $@;
     }
     else {
         eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->load_config()->BackendDBType();
+            my $backend_module = "Zonemaster::Backend::DB::" . $config->BackendDBType();
             eval "require $backend_module";
             die "$@ \n" if $@;
-            $self->{db} = $backend_module->new();
+            $self->{db} = $backend_module->new( { config => $config } );
         };
         die "$@ \n" if $@;
     }

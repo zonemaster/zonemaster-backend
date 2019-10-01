@@ -1,11 +1,9 @@
 services: 
   - mysql
+  - postgresql
 
-addons:
-  postgresql: "9.3"
-  
 env:
-    - TARGET=PostreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
     - TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     - TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
     
@@ -13,35 +11,34 @@ language: perl
 
 perl:
     - "5.28"
-    - "5.26"
-    - "5.24"
-    - "5.22"
-    - "5.20"
-    - "5.18"
-    - "5.16"
 
 before_install:
+    - sudo apt-get install -y libidn11-dev
     - eval $(curl https://travis-perl.github.io/init) --auto
     - local-lib
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
+    - git --git-dir ./zonemaster-ldns/.git rev-parse --short HEAD
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
-    - cpan-install --deps Devel::CheckLib Module::Install Module::Install::XSUtil ./zonemaster-ldns ./zonemaster-engine
+    - git --git-dir ./zonemaster-engine/.git rev-parse --short HEAD
+    - cpan-install --deps Devel::CheckLib Module::Install::XSUtil
+    - cpan-install --deps ./zonemaster-ldns
+    - cpan-install --deps ./zonemaster-engine
 
 before_script:
-    - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi
-    - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi
-    - if [[ "$TARGET" == "PostreSQL" ]]; then cpanm DBD::Pg; fi
-    - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./script/create_db_postgresql_9.3.pl; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then cpanm DBD::Pg; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then perl -I./lib ./script/create_db_postgresql_9.3.pl; fi
     
     - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';" -u root; fi
     - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "CREATE DATABASE travis_zonemaster CHARACTER SET utf8 COLLATE utf8_bin;" -u root; fi
-    - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'%';" -u root; fi
+    - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'localhost';" -u root; fi
     - if [[ "$TARGET" == "MySQL" ]]; then mysql -e "FLUSH PRIVILEGES;" -u root; fi
     - if [[ "$TARGET" == "MySQL" ]]; then cpanm --force DBD::mysql; fi
     - if [[ "$TARGET" == "MySQL" ]]; then perl -I./lib ./script/create_db_mysql.pl; fi
     
 script:
     - if [[ "$TARGET" == "SQLite" ]]; then perl Makefile.PL && make test; fi
-    - if [[ "$TARGET" == "PostreSQL" ]]; then perl -I./lib ./t/test_DB_backend.pl PostgreSQL; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then perl -I./lib ./t/test_DB_backend.pl PostgreSQL; fi
     - if [[ "$TARGET" == "MySQL" ]]; then perl -I./lib ./t/test_DB_backend.pl MySQL; fi
     

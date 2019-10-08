@@ -41,7 +41,7 @@ sub new {
             die "$@ \n" if $@;
             $self->{db} = "$params->{db}"->new();
         };
-        die "$@ \n" if $@;
+        die "Failed to initialize the SQLite database backend module \n" if $@;
     }
     else {
         eval {
@@ -50,7 +50,7 @@ sub new {
             die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
         };
-        die "$@ \n" if $@;
+        die "Failed to initialize the database backend module \n" if $@;
     }
 
     return ( $self );

@@ -17,7 +17,6 @@ perl:
     - "5.24"
     - "5.22"
     - "5.20"
-    - "5.18"
     - "5.16"
 
 before_install:
@@ -25,7 +24,9 @@ before_install:
     - local-lib
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
     - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
-    - cpan-install --deps Devel::CheckLib Module::Install Module::Install::XSUtil ./zonemaster-ldns ./zonemaster-engine
+    - cpan-install --deps Devel::CheckLib Module::Install::XSUtil
+    - cpan-install --deps ./zonemaster-ldns
+    - cpan-install --deps ./zonemaster-engine
 
 before_script:
     - if [[ "$TARGET" == "PostreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi

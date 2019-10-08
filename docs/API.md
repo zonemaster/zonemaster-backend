@@ -77,9 +77,12 @@ is based on a JSON data type, but additionally imposes its own restrictions.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
+A string of alphanumerics, hyphens (`-`) and underscores (`_`), of at least 1
+and at most 512 characters.
+I.e. a string matching `/^[a-zA-Z0-9-_]{1,512}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the password of an authenticated account (see *[Privilege levels]*)
+
 
 ### Batch id
 
@@ -94,18 +97,25 @@ The unique id of a *batch*.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
+A string of alphanumerics, hyphens, underscores, pluses (`+`), tildes (`~`),
+full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 512
+characters.
+I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the name of the client.
+Used for monitoring which client (GUI) uses the API.
 
 
 ### Client version
 
 Basic data type: string
 
-This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
+A string of alphanumerics, hyphens, pluses, tildes, underscores, full stops,
+colons and spaces, of at least 1 and at most 512 characters.
+I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the version of the client.
+Used for monitoring which client (GUI) uses the API.
 
 
 ### Domain name
@@ -130,9 +140,9 @@ DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKE
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
-* `"algorithm"`: An non negative integer, optional.
-* `"digtype"`: An non negative integer, optional.
-* `"keytag"`: An non negative integer, optional.
+* `"algorithm"`: An non negative integer, required.
+* `"digtype"`: An non negative integer, required.
+* `"keytag"`: An non negative integer, required.
 
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
@@ -159,7 +169,7 @@ Properties:
 ### Priority
 
 Basic data type: number (integer)
- 
+
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
@@ -220,6 +230,12 @@ One of the strings (in order from least to most severe):
 
 Basic data type: string
 
+Either:
+ * A string of at least 1 and at most 9 digits where the first digit is not a zero, or
+ * a string of exactly 16 lower-case hex-digits.
+
+I.e. a string matching `/^([0-9]|[1-9][0-9]{1,8}|[0-9a-f]{16})$/`.
+
 Each *test* has a unique *test id*.
 
 
@@ -243,12 +259,17 @@ This key is added when the module name is `"NAMESERVER"`.
 
 Basic data type: string
 
-Default database timestamp format: "Y-M-D H:M:S.ms"
+Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
+
 
 ### Translation language
 
 Basic data type: string
+
+A string of alphanumeric, hyphens, underscores, full stops and at-signs (`@`),
+of at least 1 and at most 30 characters.
+I.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`.
 
 * Any string starting with `"fr"` is interpreted as French.
 * Any string starting with `"sv"` is interpreted as Swedish.
@@ -266,10 +287,12 @@ Basic data type: string
 ### Username
 
 Basic data type: string
- 
-This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+A string of alphanumerics, dashes, full stops and at-signs, of at least 1 and at
+most 50 characters.
+I.e. a string matching `/^[a-zA-Z0-9]{1,50}$/`.
+
+Represents the name of an authenticated account (see *[Privilege levels]*)
 
 
 ## API method: `version_info`
@@ -501,7 +524,7 @@ Example request:
   "params": {
     "client_id": "Zonemaster Dancer Frontend",
     "domain": "zonemaster.net",
-    "profile": "default_profile",
+    "profile": "default",
     "client_version": "1.0.1",
     "nameservers": [
       {
@@ -642,7 +665,7 @@ Example response:
       "ds_info": [],
       "client_version": "1.0.1",
       "domain": "zonemaster.net",
-      "profile": "default_profile",
+      "profile": "default",
       "ipv6": true,
       "advanced": true,
       "nameservers": [
@@ -1044,7 +1067,7 @@ Example response:
     "id": 143014426992009,
     "result": {
          "domain": "zonemaster.net",
-         "profile": "default_profile",
+         "profile": "default",
          "client_id": "Zonemaster Dancer Frontend",
          "advanced": true,
          "nameservers": [
@@ -1084,3 +1107,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 >
 
 [Available profiles]: Configuration.md#profiles-section
+[Privilege levels]: #privilege-levels

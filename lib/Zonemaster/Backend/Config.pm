@@ -186,6 +186,22 @@ sub lock_on_queue {
     return $val;
 }
 
+sub timeout_before_retrying_test_in_minutes {
+    my ($self) = @_;
+
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'timeout_before_retrying_test_in_minutes' );
+
+    return ($val)?($val):(10);
+}
+
+sub maximal_number_of_retries {
+    my ($self) = @_;
+
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'maximal_number_of_retries' );
+
+    return ($val)?($val):(0);
+}
+
 =head2 BackendDBType
 
 Returns a normalized string based on the DB.engine value in the config.

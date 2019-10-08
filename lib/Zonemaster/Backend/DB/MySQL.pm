@@ -340,6 +340,39 @@ sub add_batch_job {
     return $batch_id;
 }
 
+sub process_unifinished_tests {
+	my ( $self ) = @_;
+	
+	my $dbh = $self->dbh;
+	
+	my $query = "
+		SELECT hash_id, results, nb_retries
+		FROM test_results 
+		WHERE test_start_time < DATE_ADD(NOW(), INTERVAL -".$self->config->timeout_before_retrying_test_in_minutes()." MINUTE) 
+		AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+		AND progress > 0
+		AND progress < 100";
+		
+	my $sth1 = $dbh->prepare( $query );
+	$sth1->execute( );
+	while ( my $h = $sth1->fetchrow_hashref ) {
+		if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
+			$dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0 WHERE hash_id=?", undef, $h->{hash_id});
+		}
+		else {
+			my $result;
+			if ($h->{results} =~ /^\[/) {
+				$result = decode_json( $h->{results} );
+			}
+			else {
+				$result = [];
+			}
+			push(@$result, {"level" => "CRITICAL", "module" => "BACKEND_TEST_AGENT", "tag" => "UNABLE_TO_FINISH_TEST", "timestamp" => $self->config->timeout_before_retrying_test_in_minutes()*60});
+			$dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $h->{hash_id});
+		}
+	}
+}
+
 
 no Moose;
 __PACKAGE__->meta()->make_immutable();

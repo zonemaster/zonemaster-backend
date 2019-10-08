@@ -91,6 +91,7 @@ sub main {
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
 
         my $id = $self->db->get_test_request();
+        $self->db->process_unifinished_tests();
 
         if ( $id ) {
             $log->info( "Test found: $id" );

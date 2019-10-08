@@ -16,7 +16,8 @@ CREATE TABLE test_results (
 	progress integer DEFAULT 0,
 	params_deterministic_hash varchar(32),
 	params json NOT NULL,
-	results json
+	results json,
+    nb_retries integer NOT NULL DEFAULT 0
 );
 
 CREATE INDEX test_results__hash_id ON test_results (hash_id);

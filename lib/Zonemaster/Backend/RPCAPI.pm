@@ -41,7 +41,7 @@ sub new {
             die "$@ \n" if $@;
             $self->{db} = "$params->{db}"->new();
         };
-        if $@ {
+        if ($@) {
             warn "Failed to initialize the [$params->{db}] database backend module: [$@] \n";
             die "Failed to initialize the [$params->{db}] database backend module \n";
         }
@@ -53,7 +53,7 @@ sub new {
             die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
         };
-        if $@ {
+        if ($@) {
             warn "Failed to initialize the database backend module: [$@] \n";
             die "Failed to initialize the database backend module \n" if $@;
     }

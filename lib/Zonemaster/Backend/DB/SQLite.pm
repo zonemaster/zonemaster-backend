@@ -64,19 +64,19 @@ sub create_db {
 
     $self->dbh->do(
         'CREATE TABLE test_results (
-					id integer PRIMARY KEY AUTOINCREMENT,
-					batch_id integer NULL,
-					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					priority integer DEFAULT 10,
-					queue integer DEFAULT 0,
-					progress integer DEFAULT 0,
-					params_deterministic_hash character varying(32),
-					params text NOT NULL,
-					results text DEFAULT NULL
-			)
-	'
+                         id integer PRIMARY KEY AUTOINCREMENT,
+                         batch_id integer NULL,
+                         creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                         test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                         test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                         priority integer DEFAULT 10,
+                         queue integer DEFAULT 0,
+                         progress integer DEFAULT 0,
+                         params_deterministic_hash character varying(32),
+                         params text NOT NULL,
+                         results text DEFAULT NULL
+               )
+     '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
@@ -86,11 +86,11 @@ sub create_db {
 
     $self->dbh->do(
         'CREATE TABLE batch_jobs (
-					id integer PRIMARY KEY,
-					username character varying(50) NOT NULL,
-					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-			)
-	'
+                         id integer PRIMARY KEY,
+                         username character varying(50) NOT NULL,
+                         creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+               )
+     '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
@@ -99,10 +99,10 @@ sub create_db {
     $self->dbh->do( 'DROP TABLE IF EXISTS users' );
     $self->dbh->do(
         'CREATE TABLE users (
-					id integer primary key,
-					user_info json DEFAULT NULL
-			)
-	'
+                         id integer primary key,
+                         user_info json DEFAULT NULL
+               )
+     '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     return 1;
@@ -150,17 +150,17 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
-			SELECT 
-				batch_id, 
-				batch_jobs.creation_time AS batch_creation_time 
-			FROM 
-				test_results 
-			JOIN batch_jobs 
-				ON batch_id=batch_jobs.id 
-				AND username=" . $self->dbh->quote( $username ) . " WHERE 
-				test_results.progress<>100
-			LIMIT 1
-			" );
+               SELECT 
+                    batch_id, 
+                    batch_jobs.creation_time AS batch_creation_time 
+               FROM 
+                    test_results 
+               JOIN batch_jobs 
+                    ON batch_id=batch_jobs.id 
+                    AND username=" . $self->dbh->quote( $username ) . " WHERE 
+                    test_results.progress<>100
+               LIMIT 1
+               " );
 
     die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
 
@@ -294,40 +294,35 @@ sub add_batch_job {
     my ( $self, $params ) = @_;
 }
 
-sub process_unifinished_tests {
-	my ( $self ) = @_;
-	
-	my $dbh = $self->dbh;
-	
-	my $query = "
-		SELECT hash_id, results, nb_retries
-		FROM test_results 
-		WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->timeout_before_retrying_test_in_minutes()." minutes')
-		AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
-		AND progress > 0
-		AND progress < 100";
-		
-	my $sth1 = $dbh->prepare( $query );
-	$sth1->execute( );
-	while ( my $h = $sth1->fetchrow_hashref ) {
-		if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
-			$dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0 WHERE hash_id=?", undef, $h->{hash_id});
-		}
-		else {
-			my $result;
-			if ($h->{results} =~ /^\[/) {
-				$result = decode_json( $h->{results} );
-			}
-			else {
-				$result = [];
-			}
-			push(@$result, {"level" => "CRITICAL", "module" => "BACKEND_TEST_AGENT", "tag" => "UNABLE_TO_FINISH_TEST", "timestamp" => $self->config->timeout_before_retrying_test_in_minutes()*60});
-			$dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $h->{hash_id});
-		}
-	}
+sub build_process_unfinished_tests_select_query {
+     my ( $self ) = @_;
+     
+     if ($self->config->lock_on_queue()) {
+          return "
+               SELECT hash_id, results, nb_retries
+               FROM test_results 
+               WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->timeout_before_retrying_test_in_minutes()." minutes')
+               AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+               AND progress > 0
+               AND progress < 100
+               AND queue=".$self->config->lock_on_queue();
+     }
+     else {
+          return "
+               SELECT hash_id, results, nb_retries
+               FROM test_results 
+               WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->timeout_before_retrying_test_in_minutes()." minutes')
+               AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+               AND progress > 0
+               AND progress < 100";
+     }
 }
 
+sub process_unfinished_tests_give_up {
+     my ( $self, $result, $hash_id ) = @_;
 
+     $dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+}
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

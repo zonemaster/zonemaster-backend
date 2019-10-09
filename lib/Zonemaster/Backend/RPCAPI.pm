@@ -41,7 +41,10 @@ sub new {
             die "$@ \n" if $@;
             $self->{db} = "$params->{db}"->new();
         };
-        die "Failed to initialize the SQLite database backend module \n" if $@;
+        if $@ {
+            warn "Failed to initialize the [$params->{db}] database backend module: [$@] \n";
+            die "Failed to initialize the [$params->{db}] database backend module \n";
+        }
     }
     else {
         eval {
@@ -50,7 +53,9 @@ sub new {
             die "$@ \n" if $@;
             $self->{db} = $backend_module->new();
         };
-        die "Failed to initialize the database backend module \n" if $@;
+        if $@ {
+            warn "Failed to initialize the database backend module: [$@] \n";
+            die "Failed to initialize the database backend module \n" if $@;
     }
 
     return ( $self );
@@ -167,13 +172,13 @@ sub _check_domain {
     }
 
     if( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
-	    return (
-		   $dn,
-		   {
-			   status  => 'nok',
-			   message => encode_entities( "The domain name contains unauthorized character(s)")
-                   }
-            );
+        return (
+            $dn,
+            {
+               status  => 'nok',
+               message => encode_entities( "The domain name contains unauthorized character(s)")
+            }
+        );
     }
 
     my @res;

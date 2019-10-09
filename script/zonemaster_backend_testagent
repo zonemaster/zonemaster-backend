@@ -86,7 +86,16 @@ print STDERR "Logging to $logfile\n";
 sub main {
     my $self = shift;
 
-    while ( 1 ) {
+    my $caught_sigterm = 0;
+    local $SIG{TERM} = \&catch_sigterm;
+    sub catch_sigterm {
+        $SIG{TERM} = \&catch_sigterm;
+        $caught_sigterm = 1;
+        $log->notice( "Daemon caught SIGTERM" );
+        return;
+    }
+
+    while ( !$caught_sigterm ) {
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
 
@@ -113,6 +122,12 @@ sub main {
             sleep $self->config->PollingInterval();
         }
     }
+
+    $log->notice( "Daemon entered graceful shutdown" );
+
+    $self->pm->wait_all_children();    # Includes SIGKILLing overdue child processes
+
+    return;
 }
 
 

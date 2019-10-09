@@ -321,7 +321,7 @@ sub build_process_unfinished_tests_select_query {
 sub process_unfinished_tests_give_up {
      my ( $self, $result, $hash_id ) = @_;
 
-     $dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+     $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
 }
 no Moose;
 __PACKAGE__->meta()->make_immutable();

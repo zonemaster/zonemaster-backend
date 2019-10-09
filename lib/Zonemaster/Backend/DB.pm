@@ -117,7 +117,7 @@ sub process_unfinished_tests {
     
     my $dbh = $self->dbh;
     
-    my $query = self->build_process_unfinished_tests_select_query();
+    my $query = $self->build_process_unfinished_tests_select_query();
         
     my $sth1 = $dbh->prepare( $query );
     $sth1->execute( );

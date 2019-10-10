@@ -208,7 +208,7 @@ sub test_progress {
 
     $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=$test_id AND progress <> 100" ) if ( $progress );
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=$test_id AND progress <> 100" );
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=$test_id" );
 
     return $result;
 }

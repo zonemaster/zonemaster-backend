@@ -188,28 +188,6 @@ sub lock_on_queue {
     return $val;
 }
 
-=head2 timeout_before_retrying_test_in_minutes
-
-An optionnal parameter that allows to customize the period of time in minutes after which an unfinished test will be automatically terminated by the backend with a critical error.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-A scalar value of the timeout in minutes or the default 10 minutes value if no value is defined in the backend_config.ini file.
-
-=cut
-
-sub timeout_before_retrying_test_in_minutes {
-    my ($self) = @_;
-
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'timeout_before_retrying_test_in_minutes' );
-
-    return ($val)?($val):(10);
-}
-
 =head2 maximal_number_of_retries
 
 This option allow to customize the number of retries of a test if it is not finished aftert timeout_before_retrying_test_in_minutes minutes.

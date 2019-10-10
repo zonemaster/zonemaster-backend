@@ -206,9 +206,9 @@ sub create_new_test {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=$test_id" ) if ( $progress );
+    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=$test_id AND progress <> 100" ) if ( $progress );
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=$test_id" );
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=$test_id AND progress <> 100" );
 
     return $result;
 }
@@ -230,7 +230,7 @@ sub test_results {
 
     $self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = "
           . $self->dbh->quote( $results )
-          . " WHERE id=$test_id " )
+          . " WHERE id=$test_id  AND progress < 100" )
       if ( $results );
 
     my $result;

@@ -171,10 +171,10 @@ sub test_progress {
     my $dbh = $self->dbh;
     if ( $progress ) {
         if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
 
@@ -205,7 +205,7 @@ sub test_results {
     my $id_field = $self->_get_allowed_id_field_name($test_id);
     
     if ( $new_results ) {
-        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?],
+        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND progress < 100],
             undef, $new_results, $test_id );
     }
 

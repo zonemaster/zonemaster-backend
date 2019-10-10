@@ -18,7 +18,6 @@ perl:
     - "5.16"
     
 before_install:
-    - sudo apt-get install -y libidn11-dev
     - eval $(curl https://travis-perl.github.io/init) --auto
 
     - sudo apt-get install -y libidn11-dev

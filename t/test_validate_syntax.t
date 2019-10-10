@@ -12,7 +12,12 @@ my $can_use_threads = eval 'use threads; 1';
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
 # Create Zonemaster::Backend::RPCAPI object
-my $engine = Zonemaster::Backend::RPCAPI->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
+my $engine = Zonemaster::Backend::RPCAPI->new(
+    {
+        db     => 'Zonemaster::Backend::DB::SQLite',
+        config => Zonemaster::Backend::Config->load_config(),
+    }
+);
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 my $frontend_params = {

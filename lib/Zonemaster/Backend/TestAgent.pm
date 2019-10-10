@@ -27,12 +27,12 @@ sub new {
 
     if ( $params && $params->{db} ) {
         eval "require $params->{db}";
-        $self->{db} = "$params->{db}"->new();
+        $self->{db} = "$params->{db}"->new( { config => $self->{config} } );
     }
     else {
         my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
         eval "require $backend_module";
-        $self->{db} = $backend_module->new();
+        $self->{db} = $backend_module->new( { config => $self->{config} } );
     }
         
     $self->{profiles} = $self->{config}->ReadProfilesInfo();

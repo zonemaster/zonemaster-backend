@@ -15,15 +15,16 @@ use Zonemaster::Backend::Config;
 
 with 'Zonemaster::Backend::DB';
 
+has 'config' => (
+    is       => 'ro',
+    isa      => 'Zonemaster::Backend::Config',
+    required => 1,
+);
+
 has 'dbhandle' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
-
-my $connection_string   = Zonemaster::Backend::Config->load_config()->DB_connection_string( 'postgresql' );
-my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-my $connection_user     = Zonemaster::Backend::Config->load_config()->DB_user();
-my $connection_password = Zonemaster::Backend::Config->load_config()->DB_password();
 
 sub dbh {
     my ( $self ) = @_;
@@ -33,6 +34,10 @@ sub dbh {
         return $dbh;
     }
     else {
+        my $connection_string   = $self->config->DB_connection_string( 'postgresql' );
+        my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
+        my $connection_user     = $self->config->DB_user();
+        my $connection_password = $self->config->DB_password();
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
 #        $dbh->{InactiveDestroy} = 1;
 # This line vas introduced to fix a non-trivial, hard to reproduce problem, it is causing giant memory leaks. It is kept here commented out for a while in case the initial problem occurs again.
@@ -143,7 +148,7 @@ sub create_new_test {
     my ( $id, $hash_id ) = $dbh->selectrow_array(
         "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
         
-    if ( $id > Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id() ) {
+    if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
         $result = $hash_id;
     }
     else {
@@ -193,7 +198,7 @@ sub get_test_history {
 
     my $dbh = $self->dbh;
 
-    my $use_hash_id_from_id = Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id();
+    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";

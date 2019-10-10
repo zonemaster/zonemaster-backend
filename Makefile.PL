@@ -17,7 +17,6 @@ requires
   'JSON::PP'                    => 0,
   'JSON::RPC'                   => 1.01,
   'JSON::Validator'             => 2.07,
-  'Locale::TextDomain'          => 0,
   'Log::Any'                    => 0,
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,

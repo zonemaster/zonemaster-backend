@@ -39,6 +39,7 @@ my $user;
 my $group;
 my $logfile;
 my $loglevel;
+my $opt_outfile;
 my $opt_help;
 GetOptions(
     'help!'      => \$opt_help,
@@ -47,13 +48,15 @@ GetOptions(
     'group=s'    => \$group,
     'logfile=s'  => \$logfile,
     'loglevel=s' => \$loglevel,
+    'outfile=s'  => \$opt_outfile,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
 pod2usage( -verbose => 1 ) if $opt_help;
 
-$pidfile //= '/tmp/zonemaster_backend_testagent.pid';
-$logfile //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
-$loglevel //= 'info';
+$pidfile     //= '/tmp/zonemaster_backend_testagent.pid';
+$logfile     //= '/var/log/zonemaster/zonemaster_backend_testagent.log';
+$opt_outfile //= '/var/log/zonemaster/zonemaster_backend_testagent.out';
+$loglevel    //= 'info';
 $loglevel = lc $loglevel;
 
 $loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
@@ -76,82 +79,74 @@ print STDERR "Logging to $logfile\n";
     Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
 }
 
-# Yes, the method names are spelled like that.
-my $config = Zonemaster::Backend::Config->load_config();
-my $maximum_processes = 
-  $config->NumberOfProcessesForFrontendTesting() +
-  $config->NumberOfProcessesForBatchTesting();
-
-my $delay   = $config->PollingInterval();
-my $timeout = $config->MaxZonemasterExecutionTime();
-
-my $pm = Parallel::ForkManager->new( $maximum_processes );
-$pm->set_waitpid_blocking_sleep( 0 ) if $pm->can('set_waitpid_blocking_sleep');
-
-my %times;
-
 ###
 ### Actual functionality
 ###
 
-$pm->run_on_wait(
-    sub {
-        foreach my $pid ( $pm->running_procs ) {
-            my $diff = time() - $times{$pid};
-
-            if ( $diff > $timeout ) {
-                kill 9, $pid;
-            }
-        }
-    },
-    1
-);
-
-$pm->run_on_start(
-    sub {
-        my ( $pid, $id ) = @_;
-
-        $times{$pid} = time();
-    }
-);
-
-$pm->run_on_finish(
-    sub {
-        my ( $pid, $exitcode, $id ) = @_;
-
-        delete $times{$pid};
-    }
-);
-
 sub main {
     my $self = shift;
 
-    my $db = $self->config->{db};
-    
-    # Atempt a creation of a dummy instance of a TestAgent to catch possible Zonemaster-Engine profile files misconfigurations early
-    Zonemaster::Backend::TestAgent->new({ config => $config });
-	
-	my $ta;
-    while ( 1 ) {
-        my $id = $db->get_test_request();
+    my $caught_sigterm = 0;
+    local $SIG{TERM} = \&catch_sigterm;
+    sub catch_sigterm {
+        $SIG{TERM} = \&catch_sigterm;
+        $caught_sigterm = 1;
+        $log->notice( "Daemon caught SIGTERM" );
+        return;
+    }
+
+    while ( !$caught_sigterm ) {
+        $self->pm->reap_finished_children();    # Reaps terminated child processes
+        $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
+
+        my $id = $self->db->get_test_request();
 
         if ( $id ) {
-            $log->info("Test found: $id");
-            $pm->wait_for_available_procs();
-            if ( $pm->start( $id ) == 0 ) {    # Child process
-                $log->info("Test starting: $id");
-                $ta = Zonemaster::Backend::TestAgent->new({ config => $config });
-                $ta->run( $id );
+            $log->info( "Test found: $id" );
+            if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
+                $log->info( "Test starting: $id" );
+                my $ta = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
+                eval { $ta->run( $id ) };
+                if ( $@ ) {
+                    chomp $@;
+                    $log->error( "Test died: $id: $@" );
+                }
+                else {
+                    $log->info( "Test completed: $id" );
+                }
                 $ta->reset();
-                
-                $log->info("Test completed: $id");
-                $pm->finish;
+                $self->pm->finish;                   # Terminates child process
             }
         }
         else {
-            sleep $delay;
+            sleep $self->config->PollingInterval();
         }
     }
+
+    $log->notice( "Daemon entered graceful shutdown" );
+
+    $self->pm->wait_all_children();    # Includes SIGKILLing overdue child processes
+
+    return;
+}
+
+
+# Make sure the environment is alright before forking
+my $initial_config;
+eval {
+    $log->debug("Starting pre-flight check");
+    $initial_config = Zonemaster::Backend::Config->load_config();
+
+    # Validate the Zonemaster-Engine profile
+    Zonemaster::Backend::TestAgent->new( { config => $initial_config } );
+
+    # Connect to the database
+    $initial_config->new_DB();
+    $log->debug("Completed pre-flight check");
+};
+if ( $@ ) {
+    print STDERR "Aborting startup: $@";
+    exit 1;
 }
 
 ###
@@ -164,6 +159,10 @@ my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DC
         program => sub {
             my $self = shift;
             $log->notice( "Daemon spawned" );
+
+            $self->init_backend_config( $initial_config );
+            undef $initial_config;
+
             eval { main( $self ) };
             if ( $@ ) {
                 chomp $@;
@@ -171,7 +170,9 @@ my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DC
             }
             $log->notice( "Daemon terminating" );
         },
-        pid_file => $pidfile,
+        pid_file    => $pidfile,
+        stderr_file => $opt_outfile,
+        stdout_file => $opt_outfile,
     }
 );
 

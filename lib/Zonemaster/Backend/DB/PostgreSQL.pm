@@ -177,7 +177,7 @@ sub test_results {
 
     my $dbh = $self->dbh;
     my $id_field = $self->_get_allowed_id_field_name($test_id);
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND progress < 100",
+    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND results IS NULL",
         undef, $results, $test_id )
       if ( $results );
 

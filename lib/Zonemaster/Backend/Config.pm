@@ -190,7 +190,7 @@ sub lock_on_queue {
 
 =head2 maximal_number_of_retries
 
-This option allow to customize the number of retries of a test if it is not finished aftert timeout_before_retrying_test_in_minutes minutes.
+This option allow to customize the number of retries of a test if it is not finished after max_zonemaster_execution_time seconds.
 
 =head3 INPUT
 
@@ -198,7 +198,7 @@ None
 
 =head3 RETURNS
 
-A scalar value of the number of retries or the default 0 if no value is defined in the backend_config..ini file.
+A scalar value of the number of retries or the default 0 if no value is defined in the backend_config.ini file.
 
 =cut
 

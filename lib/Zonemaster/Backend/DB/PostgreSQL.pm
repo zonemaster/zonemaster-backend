@@ -302,7 +302,7 @@ sub build_process_unfinished_tests_select_query {
         return "
             SELECT hash_id, results, nb_retries
             FROM test_results 
-            WHERE test_start_time < NOW() - '".$self->config->timeout_before_retrying_test_in_minutes()." minutes'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
             AND progress > 0
             AND progress < 100
             AND queue=".$self->config->lock_on_queue();
@@ -311,7 +311,7 @@ sub build_process_unfinished_tests_select_query {
         return "
             SELECT hash_id, results, nb_retries
             FROM test_results 
-            WHERE test_start_time < NOW() - '".$self->config->timeout_before_retrying_test_in_minutes()." minutes'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
             AND progress > 0
             AND progress < 100";
     }

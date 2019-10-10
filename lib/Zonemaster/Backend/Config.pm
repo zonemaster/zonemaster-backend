@@ -117,7 +117,9 @@ sub PollingInterval {
 sub MaxZonemasterExecutionTime {
     my ($self) = @_;
 
-    return $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    
+    return ($val)?($val):(10*60);
 }
 
 sub NumberOfProcessesForFrontendTesting {

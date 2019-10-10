@@ -323,6 +323,13 @@ sub process_unfinished_tests_give_up {
 
      $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
 }
+
+sub schedule_for_retry {
+    my ( $self, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = DATETIME('now', 'localtime') WHERE hash_id=?", undef, $hash_id);
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

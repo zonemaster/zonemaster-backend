@@ -123,7 +123,7 @@ sub process_unfinished_tests {
     $sth1->execute( );
     while ( my $h = $sth1->fetchrow_hashref ) {
         if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
-            $dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0 WHERE hash_id=?", undef, $h->{hash_id});
+            $self->schedule_for_retry($h->{hash_id});
         }
         else {
             my $result;

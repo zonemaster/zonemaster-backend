@@ -190,6 +190,7 @@ sub lock_on_queue {
 
 =head2 maximal_number_of_retries
 
+WARNING: This option is experimental and all edge cases are not fully tested, don't use, or use with care.
 This option allow to customize the number of retries of a test if it is not finished after max_zonemaster_execution_time seconds.
 
 =head3 INPUT

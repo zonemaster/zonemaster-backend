@@ -117,7 +117,9 @@ sub PollingInterval {
 sub MaxZonemasterExecutionTime {
     my ($self) = @_;
 
-    return $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    
+    return ($val)?($val):(10*60);
 }
 
 sub NumberOfProcessesForFrontendTesting {
@@ -184,6 +186,29 @@ sub lock_on_queue {
     my $val = $self->{cfg}->val( 'ZONEMASTER', 'lock_on_queue' );
 
     return $val;
+}
+
+=head2 maximal_number_of_retries
+
+WARNING: This option is experimental and all edge cases are not fully tested.
+Do not use it (keep the default value "0"), or use it with care.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+A scalar value of the number of retries or the default 0 if no value is defined in the backend_config.ini file.
+
+=cut
+
+sub maximal_number_of_retries {
+    my ($self) = @_;
+
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'maximal_number_of_retries' );
+
+    return ($val)?($val):(0);
 }
 
 =head2 BackendDBType

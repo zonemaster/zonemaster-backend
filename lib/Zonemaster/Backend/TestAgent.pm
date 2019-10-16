@@ -113,7 +113,7 @@ sub run {
                         if ( $previous_method ne $module_method ) {
                             $percent_progress = sprintf(
                                 "%.0f",
-                                100 * (
+                                99 * (
                                     scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
                                       scalar( keys %{ $counter_for_progress_indicator{planned} } )
                                 )

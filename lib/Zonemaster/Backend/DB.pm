@@ -9,7 +9,7 @@ use 5.14.2;
 use Data::Dumper;
 
 requires 'add_api_user_to_db', 'user_exists_in_db', 'user_authorized', 'test_progress', 'test_results',
-  'create_new_batch_job', 'create_new_test', 'get_test_params', 'get_test_history', 'add_batch_job';
+  'create_new_batch_job', 'create_new_test', 'get_test_params', 'get_test_history', 'add_batch_job', 'build_process_unfinished_tests_select_query', 'process_unfinished_tests_give_up';
 
 sub user_exists {
     my ( $self, $user ) = @_;
@@ -111,6 +111,34 @@ sub get_batch_job_result {
 	
 	return \%result;
 }
+
+sub process_unfinished_tests {
+    my ( $self ) = @_;
+    
+    my $dbh = $self->dbh;
+    
+    my $query = $self->build_process_unfinished_tests_select_query();
+        
+    my $sth1 = $dbh->prepare( $query );
+    $sth1->execute( );
+    while ( my $h = $sth1->fetchrow_hashref ) {
+        if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
+            $self->schedule_for_retry($h->{hash_id});
+        }
+        else {
+            my $result;
+            if ($h->{results} =~ /^\[/) {
+                $result = decode_json( $h->{results} );
+            }
+            else {
+                $result = [];
+            }
+            push(@$result, {"level" => "CRITICAL", "module" => "BACKEND_TEST_AGENT", "tag" => "UNABLE_TO_FINISH_TEST", "timestamp" => $self->config->MaxZonemasterExecutionTime()});
+            $self->process_unfinished_tests_give_up($result, $h->{hash_id});
+        }
+    }
+}
+
 
 no Moose::Role;
 

@@ -40,7 +40,8 @@ sub create_db {
             params_deterministic_hash character varying(32),
             params blob NOT NULL,
             results blob DEFAULT NULL,
-            undelegated boolean NOT NULL DEFAULT false
+            undelegated boolean NOT NULL DEFAULT false,
+            nb_retries integer NOT NULL DEFAULT 0
         ) ENGINE=InnoDB
         '
     );

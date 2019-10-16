@@ -64,19 +64,19 @@ sub create_db {
 
     $self->dbh->do(
         'CREATE TABLE test_results (
-					id integer PRIMARY KEY AUTOINCREMENT,
-					batch_id integer NULL,
-					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-					priority integer DEFAULT 10,
-					queue integer DEFAULT 0,
-					progress integer DEFAULT 0,
-					params_deterministic_hash character varying(32),
-					params text NOT NULL,
-					results text DEFAULT NULL
-			)
-	'
+                         id integer PRIMARY KEY AUTOINCREMENT,
+                         batch_id integer NULL,
+                         creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                         test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                         test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                         priority integer DEFAULT 10,
+                         queue integer DEFAULT 0,
+                         progress integer DEFAULT 0,
+                         params_deterministic_hash character varying(32),
+                         params text NOT NULL,
+                         results text DEFAULT NULL
+               )
+     '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
@@ -86,11 +86,11 @@ sub create_db {
 
     $self->dbh->do(
         'CREATE TABLE batch_jobs (
-					id integer PRIMARY KEY,
-					username character varying(50) NOT NULL,
-					creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-			)
-	'
+                         id integer PRIMARY KEY,
+                         username character varying(50) NOT NULL,
+                         creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+               )
+     '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
@@ -99,10 +99,10 @@ sub create_db {
     $self->dbh->do( 'DROP TABLE IF EXISTS users' );
     $self->dbh->do(
         'CREATE TABLE users (
-					id integer primary key,
-					user_info json DEFAULT NULL
-			)
-	'
+                         id integer primary key,
+                         user_info json DEFAULT NULL
+               )
+     '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     return 1;
@@ -150,17 +150,17 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
-			SELECT 
-				batch_id, 
-				batch_jobs.creation_time AS batch_creation_time 
-			FROM 
-				test_results 
-			JOIN batch_jobs 
-				ON batch_id=batch_jobs.id 
-				AND username=" . $self->dbh->quote( $username ) . " WHERE 
-				test_results.progress<>100
-			LIMIT 1
-			" );
+               SELECT 
+                    batch_id, 
+                    batch_jobs.creation_time AS batch_creation_time 
+               FROM 
+                    test_results 
+               JOIN batch_jobs 
+                    ON batch_id=batch_jobs.id 
+                    AND username=" . $self->dbh->quote( $username ) . " WHERE 
+                    test_results.progress<>100
+               LIMIT 1
+               " );
 
     die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
 
@@ -206,7 +206,7 @@ sub create_new_test {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=$test_id" ) if ( $progress );
+    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=$test_id AND progress <> 100" ) if ( $progress );
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=$test_id" );
 
@@ -230,7 +230,7 @@ sub test_results {
 
     $self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = "
           . $self->dbh->quote( $results )
-          . " WHERE id=$test_id " )
+          . " WHERE id=$test_id  AND progress < 100" )
       if ( $results );
 
     my $result;
@@ -292,6 +292,42 @@ sub get_test_history {
 
 sub add_batch_job {
     my ( $self, $params ) = @_;
+}
+
+sub build_process_unfinished_tests_select_query {
+     my ( $self ) = @_;
+     
+     if ($self->config->lock_on_queue()) {
+          return "
+               SELECT hash_id, results, nb_retries
+               FROM test_results 
+               WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->MaxZonemasterExecutionTime()." seconds')
+               AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+               AND progress > 0
+               AND progress < 100
+               AND queue=".$self->config->lock_on_queue();
+     }
+     else {
+          return "
+               SELECT hash_id, results, nb_retries
+               FROM test_results 
+               WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->MaxZonemasterExecutionTime()." seconds')
+               AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+               AND progress > 0
+               AND progress < 100";
+     }
+}
+
+sub process_unfinished_tests_give_up {
+     my ( $self, $result, $hash_id ) = @_;
+
+     $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+}
+
+sub schedule_for_retry {
+    my ( $self, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = DATETIME('now', 'localtime') WHERE hash_id=?", undef, $hash_id);
 }
 
 no Moose;

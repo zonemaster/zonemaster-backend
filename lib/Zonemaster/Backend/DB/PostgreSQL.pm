@@ -83,10 +83,10 @@ sub test_progress {
     my $dbh = $self->dbh;
     if ( $progress ) {
         if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
     
@@ -177,7 +177,7 @@ sub test_results {
 
     my $dbh = $self->dbh;
     my $id_field = $self->_get_allowed_id_field_name($test_id);
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?",
+    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND progress < 100",
         undef, $results, $test_id )
       if ( $results );
 
@@ -295,6 +295,39 @@ sub add_batch_job {
     return $batch_id;
 }
 
+sub build_process_unfinished_tests_select_query {
+    my ( $self ) = @_;
+    
+    if ($self->config->lock_on_queue()) {
+        return "
+            SELECT hash_id, results, nb_retries
+            FROM test_results 
+            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            AND progress > 0
+            AND progress < 100
+            AND queue=".$self->config->lock_on_queue();
+    }
+    else {
+        return "
+            SELECT hash_id, results, nb_retries
+            FROM test_results 
+            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            AND progress > 0
+            AND progress < 100";
+    }
+}
+
+sub process_unfinished_tests_give_up {
+    my ( $self, $result, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+}
+
+sub schedule_for_retry {
+    my ( $self, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
+}
 
 no Moose;
 __PACKAGE__->meta()->make_immutable();

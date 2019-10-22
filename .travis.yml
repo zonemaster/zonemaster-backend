@@ -3,9 +3,9 @@ services:
   - postgresql
 
 env:
-    - TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini PERL5LIB=/usr/share/perl5
-    - TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini PERL5LIB=/usr/share/perl5
-    - TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini PERL5LIB=/usr/share/perl5
+    - TARGET=PostgreSQL ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - TARGET=SQLite ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - TARGET=MySQL ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
     
 language: perl
 
@@ -70,6 +70,9 @@ addons:
     - starman
 
 before_install:
+    # Help Perl find modules installed from OS packages
+  - export PERL5LIB=/usr/share/perl5
+
     # Provide cpanm helper
   - eval $(curl https://travis-perl.github.io/init) --auto
 
@@ -107,7 +110,6 @@ before_script:
     - if [[ "$TARGET" == "MySQL" ]]; then perl -I./lib ./script/create_db_mysql.pl; fi
     
 script:
-    - export PERL5LIB=/usr/share/perl5
     - if [[ "$TARGET" == "SQLite" ]]; then perl Makefile.PL && make test; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then perl -I./lib ./t/test_DB_backend.pl PostgreSQL; fi
     - if [[ "$TARGET" == "MySQL" ]]; then perl -I./lib ./t/test_DB_backend.pl MySQL; fi

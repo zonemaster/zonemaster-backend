@@ -71,6 +71,7 @@ addons:
 
 before_install:
   - env | sort
+  - find $TRAVIS_HOME -type f
 
     # Help Perl find modules installed from OS packages
   - export PERL5LIB=/usr/share/perl5

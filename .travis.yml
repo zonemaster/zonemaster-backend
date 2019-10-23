@@ -70,6 +70,8 @@ addons:
     - starman
 
 before_install:
+  - env | sort
+
     # Help Perl find modules installed from OS packages
   - export PERL5LIB=/usr/share/perl5
 

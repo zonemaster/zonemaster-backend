@@ -82,8 +82,8 @@ before_install:
     # Zonemaster Backend transitively needs a newer version of Devel::CheckLib
   - cpan-install Devel::CheckLib
 
-    # Moose transitively needs a newer version of some of its dependencies
-  - cpan-install Moose
+    # Moose installed from OS packages depend on a newer version of Devel::OverloadInfo
+  - cpan-install Devel::OverloadInfo Moose
 
     # IO::Socket::INET6 can't find Socket6 unless it's installed from CPAN
   - cpan-install Socket6

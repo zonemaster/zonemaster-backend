@@ -10,12 +10,12 @@ env:
 language: perl
 
 perl:
+    - "5.16"
     - "5.28"
       #- "5.26"
       #- "5.24"
       #- "5.22"
       #- "5.20"
-      #- "5.16"
     
 addons:
   apt:
@@ -70,19 +70,16 @@ addons:
     - starman
 
 before_install:
-  - env | sort
-  - find $TRAVIS_HOME -name zonemaster-backend
-
     # Help Perl find modules installed from OS packages
   - export PERL5LIB=/usr/share/perl5
 
     # Provide cpanm helper
   - eval $(curl https://travis-perl.github.io/init) --auto
 
-    # Zonemaster LDNS needs a newer version of Module::Install (xenial)
+    # Zonemaster LDNS needs a newer version of Module::Install
   - cpan-install Module::Install Module::Install::XSUtil
 
-    # Zonemaster Backend transitively needs a newer version of Devel::CheckLib (xenial)
+    # Zonemaster Backend transitively needs a newer version of Devel::CheckLib
   - cpan-install Devel::CheckLib
 
     # Moose installed from OS packages depend on a newer version of Devel::OverloadInfo

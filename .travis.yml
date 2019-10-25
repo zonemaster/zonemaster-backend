@@ -15,7 +15,7 @@ perl:
     - "5.24"
     - "5.22"
     - "5.20"
-      # Perl 5.16 is temporarily excluded because Travis fails
+    - "5.16"
     
 addons:
   apt:
@@ -72,6 +72,9 @@ addons:
 before_install:
     # Help Perl find modules installed from OS packages
   - export PERL5LIB=/usr/share/perl5
+
+    # Help Perl 5.16 find modules installed from CPAN
+  - 'export PERL5LIB=$PERL5LIB:$HOME/perl5/lib/perl5'
 
     # Provide cpanm helper
   - eval $(curl https://travis-perl.github.io/init) --auto

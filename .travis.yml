@@ -15,19 +15,86 @@ perl:
     - "5.24"
     - "5.22"
     - "5.20"
-    - "5.16"
+      # Perl 5.16 is temporarily excluded because Travis fails
     
+addons:
+  apt:
+    packages:
+      # From Zonemaster Engine installation instruction
+    - autoconf
+    - automake
+    - build-essential
+    - cpanminus
+    - libclone-perl
+    - libfile-sharedir-perl
+    - libfile-slurp-perl
+    - libidn11-dev
+    - libintl-perl
+    - libio-socket-inet6-perl
+    - libjson-pp-perl
+    - liblist-moreutils-perl
+    - liblocale-msgfmt-perl
+    - libmail-rfc822-address-perl
+    - libmodule-find-perl
+    - libnet-ip-perl
+    - libpod-coverage-perl
+    - libreadonly-perl
+    - libreadonly-xs-perl
+    - libssl-dev
+    - libtest-differences-perl
+    - libtest-exception-perl
+    - libtest-fatal-perl
+    - libtest-pod-perl
+    - libtext-csv-perl
+    - libtool
+    - m4
+      # From Zonemaster Backend installation instruction
+    - libclass-method-modifiers-perl
+    - libconfig-inifiles-perl
+    - libdbd-sqlite3-perl
+    - libdbi-perl
+    - libfile-sharedir-perl
+    - libfile-slurp-perl
+    - libhtml-parser-perl
+    - libio-captureoutput-perl
+    - libjson-pp-perl
+    - libjson-rpc-perl
+    - liblog-any-adapter-dispatch-perl
+    - liblog-any-perl
+    - liblog-dispatch-perl
+    - libplack-perl
+    - libplack-middleware-debug-perl
+    - librole-tiny-perl
+    - librouter-simple-perl
+    - libstring-shellquote-perl
+    - starman
+
 before_install:
-    - sudo apt-get install -y libidn11-dev
-    - eval $(curl https://travis-perl.github.io/init) --auto
-    - local-lib
-    - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-ldns.git
-    - git --git-dir ./zonemaster-ldns/.git rev-parse --short HEAD
-    - git clone --depth=1 --branch=develop https://github.com/zonemaster/zonemaster-engine.git
-    - git --git-dir ./zonemaster-engine/.git rev-parse --short HEAD
-    - cpan-install --deps Devel::CheckLib Module::Install::XSUtil
-    - cpan-install --deps ./zonemaster-ldns
-    - cpan-install --deps ./zonemaster-engine
+    # Help Perl find modules installed from OS packages
+  - export PERL5LIB=/usr/share/perl5
+
+    # Provide cpanm helper
+  - eval $(curl https://travis-perl.github.io/init) --auto
+
+    # Zonemaster LDNS needs a newer version of Module::Install
+  - cpan-install Module::Install Module::Install::XSUtil
+
+    # Zonemaster Backend transitively needs a newer version of Devel::CheckLib
+  - cpan-install Devel::CheckLib
+
+    # Moose installed from OS packages depend on a newer version of Devel::OverloadInfo
+  - cpan-install Devel::OverloadInfo Moose
+
+    # IO::Socket::INET6 can't find Socket6 unless it's installed from CPAN
+  - cpan-install Socket6
+
+    # Install Zonemaster LDNS
+  - git clone --depth=1 --branch=$TRAVIS_BRANCH https://github.com/zonemaster/zonemaster-ldns.git
+  - ( cd zonemaster-ldns && cpanm --verbose --notest --configure-args="--no-ed25519" . ) && rm -rf zonemaster-ldns
+
+    # Install Zonemaster Engine
+  - git clone --depth=1 --branch=$TRAVIS_BRANCH https://github.com/zonemaster/zonemaster-engine.git
+  - ( cd zonemaster-engine && cpanm --verbose --notest . ) && rm -rf zonemaster-engine
 
 before_script:
     - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi

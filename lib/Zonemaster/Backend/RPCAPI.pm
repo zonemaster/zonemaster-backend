@@ -57,15 +57,16 @@ sub new {
             warn "Failed to initialize the database backend module: [$@] \n";
             die "Failed to initialize the database backend module \n" if $@;
         }
+    }
 
     return ( $self );
 }
 
 sub handle_exception {
-    my ( $method ) = @_;
+    my ( $method, $exception ) = @_;
 
-    warn "Unexpected error in the $method API call: [$@] \n";
-    die "Unexpected error in the $method API call \n" if $@;
+    warn "Unexpected error in the $method API call: [$exception] \n";
+    die "Unexpected error in the $method API call \n";
 }
 
 $json_schemas{version_info} = joi->object->strict;
@@ -79,7 +80,7 @@ sub version_info {
 
     };
     if ($@) {
-        handle_exception('version_info');
+        handle_exception('version_info', $@);
     }
     
     return \%ver;
@@ -95,7 +96,7 @@ sub profile_names {
 
     };
     if ($@) {
-        handle_exception('profile_names');
+        handle_exception('profile_names', $@);
     }
     
     return \@profiles;
@@ -115,7 +116,7 @@ sub get_host_by_name {
 
     };
     if ($@) {
-        handle_exception('get_host_by_name');
+        handle_exception('get_host_by_name', $@);
     }
     
     return \@adresses;
@@ -163,7 +164,7 @@ sub get_data_from_parent_zone {
 
     };
     if ($@) {
-        handle_exception('get_data_from_parent_zone');
+        handle_exception('get_data_from_parent_zone', $@);
     }
     
     return \%result;
@@ -220,7 +221,7 @@ sub _check_domain {
         }
     };
     if ($@) {
-        handle_exception('_check_domain');
+        handle_exception('_check_domain', $@);
     }
 
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
@@ -322,7 +323,7 @@ sub validate_syntax {
         $message = encode_entities( 'Syntax ok' );
     };
     if ($@) {
-        handle_exception('validate_syntax');
+        handle_exception('validate_syntax', $@);
     }
 
     return { status => 'ok', message =>  $message };
@@ -369,7 +370,7 @@ sub start_domain_test {
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
     };
     if ($@) {
-        handle_exception('start_domain_test');
+        handle_exception('start_domain_test', $@);
     }
 
     return $result;
@@ -394,7 +395,7 @@ sub test_progress {
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
-        handle_exception('test_progress');
+        handle_exception('test_progress', $@);
     }
 
     return $result;
@@ -413,7 +414,7 @@ sub get_test_params {
         $result = $self->{db}->get_test_params( $test_id );
     };
     if ($@) {
-        handle_exception('get_test_params');
+        handle_exception('get_test_params', $@);
     }
 
     return $result;
@@ -487,7 +488,7 @@ sub get_test_results {
         $result->{results} = \@zm_results;
     };
     if ($@) {
-        handle_exception('get_test_results');
+        handle_exception('get_test_results', $@);
     }
 
     return $result;
@@ -514,7 +515,7 @@ sub get_test_history {
         $results = $self->{db}->get_test_history( $p );
     };
     if ($@) {
-        handle_exception('get_test_history');
+        handle_exception('get_test_history', $@);
     }
 
     return $results;
@@ -543,7 +544,7 @@ sub add_api_user {
         }
     };
     if ($@) {
-        handle_exception('add_api_user');
+        handle_exception('add_api_user', $@);
     }
 
     return $result;
@@ -583,7 +584,7 @@ sub add_batch_job {
         $results = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
-        handle_exception('add_batch_job');
+        handle_exception('add_batch_job', $@);
     }
 
     return $results;
@@ -603,7 +604,7 @@ sub get_batch_job_result {
         $result = $self->{db}->get_batch_job_result($batch_id);
     };
     if ($@) {
-        handle_exception('get_batch_job_result');
+        handle_exception('get_batch_job_result', $@);
     }
     
     return $result;

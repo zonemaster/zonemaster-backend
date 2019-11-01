@@ -1,5 +1,31 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+
+v5.0.0 2019-11-15
+
+ [API change]
+ - The database schema has been changed (#544). Create a new
+   database or migrate it will tool found in scripts folder
+
+ [Changes]
+ - Update instructions after dropping Debian 8 (#556)
+ - Updated Travis config after update of zonemaster-ldns (#541)
+ - Added garbage collector for unfinished tests (#544, #525)
+ - Updating installation instructions for FreeBSD (#535)
+ - Added graceful shutdown for TestAgent (#533, #532
+ - Log details of terminated tests (#531, #341)
+ - Avoid reloading configuration in Test Agent (#529, #528, #214)
+ - Give more feedback to the user in case something goes wrong (#524)
+
+ [Fixes]
+ - Work around deprecation warning (#537, #507)
+ - Fixing Travis issues (#542)
+ - Partial fix for translation on FreeBSD 11 (#526, #353, #512)
+ - Fixing error handling and logging (#527)
+
+
+
+
 v4.0.1 2019-05-31 (public fix version)
 
  [Fixes]

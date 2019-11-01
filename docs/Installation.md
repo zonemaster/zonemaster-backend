@@ -237,13 +237,13 @@ See the [post-installation] section for post-installation matters.
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt-get install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl starman
+sudo apt install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control JSON::Validator Net::IP::XS Parallel::ForkManager Try::Tiny
+sudo cpanm Daemon::Control JSON::Validator Net::IP::XS Try::Tiny
 ```
 
 Install Zonemaster::Backend:
@@ -288,7 +288,7 @@ sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
 Install the database engine and its dependencies:
 
 ```sh
-sudo apt-get install mysql-server libdbd-mysql-perl
+sudo apt install mysql-server libdbd-mysql-perl
 ```
 
 Initialize the database:
@@ -317,7 +317,7 @@ sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-sudo apt-get install libdbd-pg-perl postgresql
+sudo apt install libdbd-pg-perl postgresql
 ```
 
 Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database

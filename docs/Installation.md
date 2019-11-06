@@ -320,13 +320,6 @@ Install, configure and start database engine (and Perl bindings):
 sudo apt install libdbd-pg-perl postgresql
 ```
 
-Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database
-engine version depending on OS found in [Zonemaster/README](https://github.com/zonemaster/zonemaster/blob/master/README.md).
-
-```sh
-psql --version
-```
-
 Initialize the database:
 
 ```sh

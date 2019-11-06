@@ -277,7 +277,7 @@ sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-#### 4.2.1 Instructions for MySQL (Debian)
+#### 4.2.1 Instructions for MariaDB (Debian)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -288,7 +288,7 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 Install the database engine and its dependencies:
 
 ```sh
-sudo apt install mysql-server libdbd-mysql-perl
+sudo apt install mariadb-server libdbd-mysql-perl
 ```
 
 Initialize the database:

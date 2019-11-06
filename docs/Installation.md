@@ -267,9 +267,9 @@ Install files to their proper locations:
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
 sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
 ### 4.2 Database engine installation and configuration (Debian)
@@ -346,6 +346,12 @@ sudo -u postgres psql -f ./initial-postgres.sql
 
 
 ### 4.3 Service configuration and startup (Debian)
+
+Make sure our tmpfiles configuration takes effect:
+
+```sh
+sudo systemd-tmpfiles --create
+```
 
 Add `zm-backend.sh` to start up script:
 

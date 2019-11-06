@@ -56,6 +56,7 @@ share/cleanup-postgres.sql
 share/initial-mysql.sql
 share/initial-postgres.sql
 share/starman-zm-backend-RPC-API.conf
+share/tmpfiles.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini

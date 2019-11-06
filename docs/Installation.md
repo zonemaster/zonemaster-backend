@@ -106,7 +106,7 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -142,7 +142,7 @@ mysql --user=root --password < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL
@@ -282,7 +282,7 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
 Install the database engine and its dependencies:
@@ -311,7 +311,7 @@ sudo mysql --password < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -441,7 +441,7 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -497,7 +497,7 @@ mysql -u root -p < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):

@@ -87,13 +87,14 @@ sub main {
     my $self = shift;
 
     my $caught_sigterm = 0;
-    local $SIG{TERM} = \&catch_sigterm;
-    sub catch_sigterm {
-        $SIG{TERM} = \&catch_sigterm;
+    my $catch_sigterm;
+    $catch_sigterm = sub {
+        $SIG{TERM} = $catch_sigterm;
         $caught_sigterm = 1;
         $log->notice( "Daemon caught SIGTERM" );
         return;
-    }
+    };
+    local $SIG{TERM} = $catch_sigterm;
 
     while ( !$caught_sigterm ) {
         $self->pm->reap_finished_children();    # Reaps terminated child processes

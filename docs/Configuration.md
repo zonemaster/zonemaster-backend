@@ -55,7 +55,7 @@ TBD
 
 --------
 
-[Profile JSON files]: https://metacpan.org/pod/Zonemaster::Engine::Config#PROFILE-DATA
+[Profile JSON files]: https://metacpan.org/pod/Zonemaster::Backend::Config
 [Profile names]: API.md#profile-name
 [Profiles]: Architecture.md#profile
-[Zonemaster Engine default profile]: https://metacpan.org/pod/Zonemaster::Engine::Config#DESCRIPTION
+[Zonemaster Engine default profile]: https://metacpan.org/pod/Zonemaster::Backend::Config

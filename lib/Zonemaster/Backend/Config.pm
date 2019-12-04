@@ -232,8 +232,6 @@ BackendDBType().
 The database adapter class constructor is called without arguments and is
 expected to configure itself according to available global configuration.
 
-=back
-
 =head3 RETURNS
 
 A configured L<Zonemaster::Backend::DB> object.

@@ -185,8 +185,20 @@ sub test_results {
     eval {
         my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
         $result            = $hrefs->{$test_id};
-        $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
-        $result->{results} = decode_json( encode_utf8( $result->{results} ) );
+        
+        if (utf8::is_utf8($result->{params}) ) {
+                $result->{params}  = decode_json( encode_utf8($result->{params}) );
+        }
+        else {
+                $result->{params}  = decode_json( $result->{params} );
+        }
+        
+        if (utf8::is_utf8($result->{results} ) ) {
+                $result->{results}  = decode_json( encode_utf8($result->{results}) );
+        }
+        else {
+                $result->{results}  = decode_json( $result->{results} );
+        }
     };
     die "$@ \n" if $@;
 

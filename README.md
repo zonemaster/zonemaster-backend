@@ -27,13 +27,22 @@ instructions](https://github.com/zonemaster/zonemaster-engine/blob/master/docs/I
 
 ### Upgrade 
 
-If you are upgrading Zonemaster Backend from 1.0.X to 1.1.X please follow the
-[upgrade instructions from 1.0.X to 1.1.X](docs/upgrade-from-1.0.x-to-1.1.x.md) and then follow the
-relevant parts of the installation instructions below.
+If you upgrade Zonemaster-Backend and want to keep the content of the database
+(MySQL/MariaDB or PostgrSQL) then you should not reset the database when you
+follow the installation instructions. In some cases you need to patch the
+database when you update Zonemaster-Backend.
 
-For all other upgrades follow the relevant parts of the installation
-instructions below.
+Always take a backup if the database is valuable.
 
+Current version                     | Upgrade to version | Link to instructions
+------------------------------------|--------------------|--------------------------------------
+Older than 1.0.3                    | 1.0.3 or newer     | [docs/upgrade-to-1.0.3.md]
+At least 1.0.3 but older than 1.1.0 | 1.1.0 or newer     | [docs/upgrade-from-1.0.x-to-1.1.x.md]
+At least 1.1.0 but older than 5.0.0 | 5.5.0 or newer     | [docs/upgrade-from-4.0.x-to-5.0.x.md]
+
+To complete the upgrade follow the installation instructions below, except for creating
+the database. If you instead want to start from an empty database, then you remove the database
+and create a new database using the installations instructions.
 
 ### Installation
 

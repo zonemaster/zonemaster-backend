@@ -611,7 +611,7 @@ sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 
 -------
 
-[Backend configuration]: https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md
+[Backend configuration]: Configuration.md
 [Declaration of prerequisites]: https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]: API.md
 [Main Zonemaster repository]: https://github.com/zonemaster/zonemaster/blob/master/README.md

@@ -22,10 +22,10 @@ This table declares what value to use for each supported database engine.
 
 Database Engine   | Value
 ------------------|------
-MariaDB           | MySQL
-MySQL             | MySQL
-PostgreSQL        | PostgreSQL
-SQLite            | SQLite
+MariaDB           | `MySQL`
+MySQL             | `MySQL`
+PostgreSQL        | `PostgreSQL`
+SQLite            | `SQLite`
 
 
 ## GEOLOCATION section

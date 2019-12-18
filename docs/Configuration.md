@@ -8,7 +8,24 @@ Each section in `backend_config.ini` is documented below.
 
 ## DB section
 
-TBD
+The DB section has a number of keys.
+At this time the only documented key is `engine`.
+
+### engine
+
+Specifies what database engine to use.
+
+The value must be one of the following, case-insensitively: `MySQL`,
+`PostgreSQL` and `SQLite`.
+
+This table declares what value to use for each supported database engine.
+
+Database Engine   | Value
+------------------|------
+MariaDB           | MySQL
+MySQL             | MySQL
+PostgreSQL        | PostgreSQL
+SQLite            | SQLite
 
 
 ## GEOLOCATION section

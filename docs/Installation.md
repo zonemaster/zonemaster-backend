@@ -109,6 +109,8 @@ Configure Zonemaster::Backend to use the correct database engine:
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
+> **Note:** See the [backend configuration] documentation for details.
+
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
@@ -144,6 +146,8 @@ Configure Zonemaster::Backend to use the correct database engine:
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
+
+> **Note:** See the [backend configuration] documentation for details.
 
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL
 binary package
@@ -285,6 +289,8 @@ Configure Zonemaster::Backend to use the correct database engine:
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
+> **Note:** See the [backend configuration] documentation for details.
+
 Install the database engine and its dependencies:
 
 ```sh
@@ -313,6 +319,8 @@ Configure Zonemaster::Backend to use the correct database engine:
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
+
+> **Note:** See the [backend configuration] documentation for details.
 
 Install, configure and start database engine (and Perl bindings):
 
@@ -603,6 +611,7 @@ sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 
 -------
 
+[Backend configuration]: https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md
 [Declaration of prerequisites]: https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]: API.md
 [Main Zonemaster repository]: https://github.com/zonemaster/zonemaster/blob/master/README.md

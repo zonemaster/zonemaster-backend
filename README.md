@@ -34,11 +34,11 @@ database when you update Zonemaster-Backend.
 
 Always take a backup if the database is valuable.
 
-Current version                     | Upgrade to version | Link to instructions
-------------------------------------|--------------------|--------------------------------------
-Older than 1.0.3                    | 1.0.3 or newer     | [upgrade-to-1.0.3]
-At least 1.0.3 but older than 1.1.0 | 1.1.0 or newer     | [upgrade-from-1.0.x-to-1.1.x]
-At least 1.1.0 but older than 5.0.0 | 5.5.0 or newer     | [upgrade-from-4.0.x-to-5.0.x]
+Current version                     | Upgrade to version                     | Link to instructions
+------------------------------------|----------------------------------------|--------------------------------------
+Older than 1.0.3                    | 1.0.3 or newer, but older than 1.1.0   | [upgrade-to-1.0.3]
+At least 1.0.3 but older than 1.1.0 | 1.1.0 or newer, but older than 5.0.0   | [upgrade-from-1.0.x-to-1.1.x]
+At least 1.1.0 but older than 5.0.0 | 5.0.0 or newer                         | [upgrade-from-4.0.x-to-5.0.x]
 
 To complete the upgrade follow the installation instructions below, except for creating
 the database. If you instead want to start from an empty database, then you remove the database

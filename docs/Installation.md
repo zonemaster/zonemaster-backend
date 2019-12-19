@@ -106,8 +106,10 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
+
+> **Note:** See the [backend configuration] documentation for details.
 
 Install, configure and start database engine (and Perl bindings):
 
@@ -142,8 +144,10 @@ mysql --user=root --password < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
+
+> **Note:** See the [backend configuration] documentation for details.
 
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL
 binary package
@@ -277,18 +281,20 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-#### 4.2.1 Instructions for MySQL (Debian)
+#### 4.2.1 Instructions for MariaDB (Debian)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
+
+> **Note:** See the [backend configuration] documentation for details.
 
 Install the database engine and its dependencies:
 
 ```sh
-sudo apt install mysql-server libdbd-mysql-perl
+sudo apt install mariadb-server libdbd-mysql-perl
 ```
 
 Initialize the database:
@@ -311,20 +317,15 @@ sudo mysql --password < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sudo sed -i '/\bengine\b/ s/=.*/=PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
 ```
+
+> **Note:** See the [backend configuration] documentation for details.
 
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
 sudo apt install libdbd-pg-perl postgresql
-```
-
-Check that you have a PostgreSQL installation 9.2 or later. The version should also match the supported database
-engine version depending on OS found in [Zonemaster/README](https://github.com/zonemaster/zonemaster/blob/master/README.md).
-
-```sh
-psql --version
 ```
 
 Initialize the database:
@@ -447,7 +448,7 @@ of operating system version and database engine version is supported.
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=MySQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -503,7 +504,7 @@ mysql -u root -p < ./initial-mysql.sql
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
-sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/=PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Install, configure and start database engine (and Perl bindings):
@@ -616,6 +617,7 @@ sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 
 -------
 
+[Backend configuration]: Configuration.md
 [Declaration of prerequisites]: https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]: API.md
 [Main Zonemaster repository]: https://github.com/zonemaster/zonemaster/blob/master/README.md

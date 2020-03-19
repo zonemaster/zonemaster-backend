@@ -60,7 +60,8 @@ share/tmpfiles.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini
-share/zm-backend.sh
+share/zm-rpcapi.sysv
+share/zm-testagent.sysv
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
 share/zonemaster_backend_testagent.conf

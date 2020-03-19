@@ -92,7 +92,8 @@ sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
 sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
-sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 ./zm-rpcapi.sysv /etc/init.d/zm-rpcapi
+sudo install -v -m 755 ./zm-testagent.sysv /etc/init.d/zm-testagent
 ```
 
 ### 3.2 Database engine installation and configuration (CentOS)
@@ -212,16 +213,18 @@ sudo -u postgres psql -f ./initial-postgres.sql
 
 ### 3.3 Service configuration and startup (CentOS)
 
-Start the service:
+Start the services:
 
 ```sh
-sudo /etc/init.d/zm-backend.sh start
+sudo /etc/init.d/zm-rpcapi start
+sudo /etc/init.d/zm-testagent start
 ```
 
 Check that the service has started:
 
 ```sh
-sudo /etc/init.d/zm-backend.sh status
+sudo /etc/init.d/zm-rpcapi status
+sudo /etc/init.d/zm-testagent status
 ```
 *Does not return any status as of now*
 
@@ -272,7 +275,8 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
-sudo install -v -m 755 ./zm-backend.sh /etc/init.d/
+sudo install -v -m 755 ./zm-rpcapi.sysv /etc/init.d/zm-rpcapi
+sudo install -v -m 755 ./zm-testagent.sysv /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
@@ -354,16 +358,18 @@ Make sure our tmpfiles configuration takes effect:
 sudo systemd-tmpfiles --create
 ```
 
-Add `zm-backend.sh` to start up script:
+Add services to the default runlevel:
 
 ```sh
-sudo update-rc.d zm-backend.sh defaults
+sudo update-rc.d zm-rpcapi defaults
+sudo update-rc.d zm-testagent defaults
 ```
 
-Start the service:
+Start the services:
 
 ```sh
-sudo service zm-backend.sh start
+sudo service zm-rpcapi start
+sudo service zm-testagent start
 ```
 
 If the `start` command did not give any output (depends on OS and version) then
@@ -371,7 +377,8 @@ check that the service has started with the following command (if you get output
 with the `start` command, you probably do not get it with the `status` command).
 
 ```sh
-sudo service zm-backend.sh status
+sudo service zm-rpcapi status
+sudo service zm-testagent status
 ```
 
 ### 4.4 Post-installation (Debian)

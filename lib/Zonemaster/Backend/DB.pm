@@ -6,6 +6,7 @@ use Moose::Role;
 
 use 5.14.2;
 
+use JSON::PP;
 use Data::Dumper;
 
 requires 'add_api_user_to_db', 'user_exists_in_db', 'user_authorized', 'test_progress', 'test_results',

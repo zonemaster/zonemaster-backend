@@ -40,14 +40,14 @@ the [Zonemaster Engine default profile].
 There is a `default` profile that is special.
 It is always available.
 If it is not explicitly mapped to a profile JSON file, it is implicitly
-mapped to the Zonemaster Engine default profile.
+mapped to the [Zonemaster Engine default profile].
 
 Specifying a profile JSON file that contains a complete set of profile
 data is equivalent to specifying a profile JSON file with only the parts
-that differ from the Zonemaster Engine default profile.
+that differ from the [Zonemaster Engine default profile].
 Specifying a profile JSON file that contains no profile data is equivalent
-to specifying a profile JSON file containing the entire Zonemaster Engine
-default profile.
+to specifying a profile JSON file containing the entire
+[Zonemaster Engine default profile.]
 
 ## ZONEMASTER section
 
@@ -55,7 +55,7 @@ TBD
 
 --------
 
-[Profile JSON files]: https://metacpan.org/pod/Zonemaster::Backend::Config
+[Profile JSON files]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile names]: API.md#profile-name
 [Profiles]: Architecture.md#profile
-[Zonemaster Engine default profile]: https://metacpan.org/pod/Zonemaster::Backend::Config
+[Zonemaster Engine default profile]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md

@@ -17,13 +17,14 @@ BINDIR=${ZM_BACKEND_BINDIR:-/usr/local/bin}
 LOGFILE=${ZM_BACKEND_LOGDIR:-/var/log/zonemaster}/zm-starman-error.log
 PIDFILE=${ZM_BACKEND_PIDDIR:-/var/run/zonemaster}/zm-starman.pid
 LISTENIP=${ZM_BACKEND_LISTENIP:-127.0.0.1}
+LISTENPORT=${ZM_BACKEND_LISTENPORT:-5000}
 USER=${ZM_BACKEND_USER:-zonemaster}
 GROUP=${ZM_BACKEND_GROUP:-zonemaster}
 
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
 start () {
-    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGFILE --pid=$PIDFILE --listen=$LISTENIP:5000 --preload-app --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi
+    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGFILE --pid=$PIDFILE --listen=$LISTENIP:$LISTENPORT --preload-app --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi
 }
 
 stop () {

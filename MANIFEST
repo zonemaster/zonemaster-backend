@@ -48,6 +48,8 @@ script/crontab_job_runner/execute_zonemaster_P10.pl
 script/crontab_job_runner/execute_zonemaster_P5.pl
 script/patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl
 script/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
+script/patch_db_mysql_for_backend_DB_version_lower_than_5.0.0.pl
+script/patch_db_postgresq_for_backend_DB_version_lower_than_5.0.0.pl
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
 share/backend_config.ini

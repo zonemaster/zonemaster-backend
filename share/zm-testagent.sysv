@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          zm-testagent
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Should-Start:      mysql postgresql
+# Should-Stop:       mysql postgresql
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: An asynchronous execution backend for Zonemaster Backend
+# Description:       zm-testagent checks the Zonemaster Backend database for new
+#                    tests, executes them and writes back progress and results.
+### END INIT INFO
+
+BINDIR=${ZM_BACKEND_BINDIR:-/usr/local/bin}
+LOGFILE=${ZM_BACKEND_LOGDIR:-/var/log/zonemaster}/zm-testagent.log
+OUTFILE=${ZM_BACKEND_LOGDIR:-/var/log/zonemaster}/zm-testagent.out
+PIDFILE=${ZM_BACKEND_PIDDIR:-/var/run/zonemaster}/zm-testagent.pid
+USER=${ZM_BACKEND_USER:-zonemaster}
+GROUP=${ZM_BACKEND_GROUP:-zonemaster}
+
+testagent_args="--logfile=$LOGFILE --outfile=$OUTFILE --pidfile=$PIDFILE --user=$USER --group=$GROUP"
+
+start () {
+    $BINDIR/zonemaster_backend_testagent $testagent_args start
+}
+
+stop () {
+    $BINDIR/zonemaster_backend_testagent $testagent_args stop
+}
+
+status () {
+    $BINDIR/zonemaster_backend_testagent $testagent_args status
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart|force-reload)
+        stop
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "usage: $0 [start|stop|restart|status]"
+        exit 1
+esac
+exit 0

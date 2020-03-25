@@ -223,7 +223,6 @@ sudo /etc/init.d/zm-testagent start
 Check that the service has started:
 
 ```sh
-sudo /etc/init.d/zm-rpcapi status
 sudo /etc/init.d/zm-testagent status
 ```
 *Does not return any status as of now*
@@ -377,7 +376,6 @@ check that the service has started with the following command (if you get output
 with the `start` command, you probably do not get it with the `status` command).
 
 ```sh
-sudo service zm-rpcapi status
 sudo service zm-testagent status
 ```
 

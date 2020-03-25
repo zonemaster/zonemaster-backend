@@ -402,20 +402,13 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
+pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote net-mgmt/p5-Net-IP-XS
 ```
 
 Optionally install Curl (only needed for the post-installation smoke test)
 
 ```sh
 pkg install curl
-```
-
-
-Install dependencies not available from binary packages:
-
-```sh
-cpanm Net::IP::XS
 ```
 
 Install Zonemaster::Backend:

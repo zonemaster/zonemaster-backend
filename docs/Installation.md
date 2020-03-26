@@ -402,16 +402,16 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote net-mgmt/p5-Net-IP-XS databases/p5-DBD-SQLite devel/p5-Log-Dispatch devel/p5-Params-ValidationCompiler devel/p5-Log-Any devel/p5-Log-Any-Adapter-Dispatch
+pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote net-mgmt/p5-Net-IP-XS databases/p5-DBD-SQLite devel/p5-Log-Dispatch devel/p5-Log-Any devel/p5-Log-Any-Adapter-Dispatch
 ```
 
-Optionally install Curl (only needed for the post-installation smoke test)
+Optionally install Curl (only needed for the post-installation smoke test):
 
 ```sh
 pkg install curl
 ```
 
-Verify remaining dependencies.
+Verify remaining dependencies:
 
 > This step is not needed for installation. It is only here for the developers of Zonemaster.
 

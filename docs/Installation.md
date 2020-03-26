@@ -501,6 +501,7 @@ exit;
 Initialize the database (and give the root password when prompted):
 
 ```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql -u root -p < ./initial-mysql.sql
 ```
 
@@ -533,6 +534,7 @@ service postgresql start
 Initialize the database:
 
 ```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 psql -U pgsql -f ./initial-postgres.sql template1
 ```
 

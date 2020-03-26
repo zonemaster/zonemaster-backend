@@ -23,6 +23,8 @@ GROUP=${ZM_BACKEND_GROUP:-zonemaster}
 
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 
+. /lib/lsb/init-functions
+
 start () {
     $STARMAN --user=$USER --group=$GROUP --error-log=$LOGFILE --pid=$PIDFILE --listen=$LISTENIP:$LISTENPORT --preload-app --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi
 }
@@ -44,6 +46,9 @@ case "$1" in
     restart|force-reload)
         stop
         start
+        ;;
+    status)
+        status_of_proc -p "$PIDFILE" starman zm-rpcapi
         ;;
     *)
         echo "usage: $0 [start|stop|restart]"

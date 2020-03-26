@@ -51,7 +51,7 @@ case "$1" in
         status_of_proc -p "$PIDFILE" starman zm-rpcapi
         ;;
     *)
-        echo "usage: $0 [start|stop|restart]"
+        echo "usage: $0 [start|stop|restart|force-reload|status]"
         exit 1
 esac
 exit 0

@@ -485,11 +485,12 @@ Connect to MySQL interactively:
 mysql -u root -h localhost -p
 ```
 
-Reset root password in MySQL (required by MySQL) where
-`ROOTPASSWORD` is the password from the file above (or another one).
+Reset root password in MySQL (required by MySQL). Replace
+`<selected root password>` with the password from the file above
+(or another one of your choice):
 
 ```sql
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'ROOTPASSWORD';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '<selected root password>';
 ```
 
 Logout from database:

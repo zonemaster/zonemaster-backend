@@ -62,7 +62,7 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote
+sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote redhat-lsb-core
 ```
 
 Install dependencies not available from binary packages:

@@ -94,6 +94,7 @@ sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
 sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
 sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
+sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
 ### 3.2 Database engine installation and configuration (CentOS)
@@ -212,6 +213,12 @@ sudo -u postgres psql -f ./initial-postgres.sql
 >
 
 ### 3.3 Service configuration and startup (CentOS)
+
+Make sure our tmpfiles configuration takes effect:
+
+```sh
+sudo systemd-tmpfiles --create
+```
 
 Start the services:
 

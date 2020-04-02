@@ -274,7 +274,8 @@ I.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`.
 * Any string starting with `"fr"` is interpreted as French.
 * Any string starting with `"sv"` is interpreted as Swedish.
 * Any string starting with `"da"` is interpreted as Danish.
-* Any other string is interpreted as English.
+* Any string starting with `"en"` is interpreted as English.
+* Any other string is an error.
 
 
 ### Unsigned integer
@@ -651,6 +652,10 @@ Example request:
   }
 }
 ```
+
+Both `id` and `language` are mandatory parameters. The `id` parameter must match the `result` in
+the response to a `start_domain_test` call, and that test must have been completed. The `language`
+parameter must match a language string defined above.
 
 Example response:
 ```json

@@ -17,6 +17,9 @@ sub translate_tag {
     my ( $self, $entry, $browser_lang ) = @_;
 
     my $previous_locale = $self->locale;
+
+    # $browser_lang is set to the first two characters of the string in
+    # "language" in "get_test_results" call.
     if ( $browser_lang eq 'fr' ) {
         $self->locale( "fr_FR.UTF-8" );
     }
@@ -26,9 +29,13 @@ sub translate_tag {
     elsif ( $browser_lang eq 'da' ) {
         $self->locale( "da_DK.UTF-8" );
     }
-    else {
+    elsif ( $browser_lang eq 'en' ) {
         $self->locale( "en_US.UTF-8" );
     }
+    else {
+	die "Invalid language string: '$browser_lang' ";
+    }
+
     my $string = $self->data->{ $entry->{module} }{ $entry->{tag} };
 
     if ( not $string ) {

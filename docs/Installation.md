@@ -217,7 +217,7 @@ sudo -u postgres psql -f ./initial-postgres.sql
 Make sure our tmpfiles configuration takes effect:
 
 ```sh
-sudo systemd-tmpfiles --create
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
 Start the services:
@@ -362,7 +362,7 @@ sudo -u postgres psql -f ./initial-postgres.sql
 Make sure our tmpfiles configuration takes effect:
 
 ```sh
-sudo systemd-tmpfiles --create
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
 Add services to the default runlevel:

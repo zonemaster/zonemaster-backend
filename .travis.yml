@@ -67,6 +67,7 @@ addons:
     - librole-tiny-perl
     - librouter-simple-perl
     - libstring-shellquote-perl
+    - libtry-tiny-perl
     - starman
 
 before_install:

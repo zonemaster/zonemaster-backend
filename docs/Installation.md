@@ -327,13 +327,13 @@ sudo locale-gen
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl starman
+sudo apt install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtry-tiny-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control JSON::Validator Net::IP::XS Try::Tiny
+sudo cpanm Daemon::Control JSON::Validator Net::IP::XS
 ```
 
 Install Zonemaster::Backend:

@@ -369,12 +369,6 @@ sudo -u postgres psql -f ./initial-postgres.sql
 
 ### 4.3 Service configuration and startup (Debian)
 
-Make sure our tmpfiles configuration takes effect:
-
-```sh
-sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
-```
-
 Add services to the default runlevel:
 
 ```sh
@@ -385,6 +379,7 @@ sudo update-rc.d zm-testagent defaults
 Start the services:
 
 ```sh
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 sudo service zm-rpcapi start
 sudo service zm-testagent start
 ```

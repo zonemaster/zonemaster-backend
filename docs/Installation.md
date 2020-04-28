@@ -409,20 +409,19 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote
+pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote net-mgmt/p5-Net-IP-XS databases/p5-DBD-SQLite devel/p5-Log-Dispatch devel/p5-Log-Any devel/p5-Log-Any-Adapter-Dispatch
 ```
 
-Optionally install Curl (only needed for the post-installation smoke test)
+Optionally install Curl (only needed for the post-installation smoke test):
 
 ```sh
 pkg install curl
 ```
 
-
 Install dependencies not available from binary packages:
 
 ```sh
-cpanm Net::IP::XS
+cpanm JSON::Validator
 ```
 
 Install Zonemaster::Backend:
@@ -485,11 +484,12 @@ Connect to MySQL interactively:
 mysql -u root -h localhost -p
 ```
 
-Reset root password in MySQL (required by MySQL) where
-`ROOTPASSWORD` is the password from the file above (or another one).
+Reset root password in MySQL (required by MySQL). Replace
+`<selected root password>` with the password from the file above
+(or another one of your choice):
 
 ```sql
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'ROOTPASSWORD';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '<selected root password>';
 ```
 
 Logout from database:
@@ -501,6 +501,7 @@ exit;
 Initialize the database (and give the root password when prompted):
 
 ```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql -u root -p < ./initial-mysql.sql
 ```
 
@@ -524,7 +525,7 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install postgresql95-server p5-DBD-Pg
+pkg install databases/postgresql11-server databases/p5-DBD-Pg
 sysrc postgresql_enable="YES"
 service postgresql initdb
 service postgresql start
@@ -533,7 +534,8 @@ service postgresql start
 Initialize the database:
 
 ```sh
-psql -U pgsql -f ./initial-postgres.sql template1
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+psql -U postgres -f ./initial-postgres.sql
 ```
 
 #### 5.2.3 Instructions for SQLite (FreeBSD)

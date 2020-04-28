@@ -248,6 +248,16 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
+Install required locales:
+
+```sh
+locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+sudo locale-gen
+```
+
 Install dependencies available from binary packages:
 
 ```sh

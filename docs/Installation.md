@@ -395,8 +395,8 @@ check that the service has started with the following command (if you get output
 with the `start` command, you probably do not get it with the `status` command).
 
 ```sh
-sudo service zm-rpcapi status
-sudo service zm-testagent status
+sudo service zm-rpcapi status | cat
+sudo service zm-testagent status | cat
 ```
 
 ### 4.4 Post-installation (Debian)

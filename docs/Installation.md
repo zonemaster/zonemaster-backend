@@ -411,14 +411,6 @@ Optionally install Curl (only needed for the post-installation smoke test):
 pkg install curl
 ```
 
-Verify remaining dependencies:
-
-> This step is not needed for installation. It is only here for the developers of Zonemaster.
-
-```sh
-cpanm --scandeps Zonemaster-Backend-x.y.z.tar.gz # Normally you skip this step.
-```
-
 Install dependencies not available from binary packages:
 
 ```sh
@@ -536,7 +528,7 @@ Initialize the database:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-psql -U pgsql -f ./initial-postgres.sql template1
+psql -U postgres -f ./initial-postgres.sql
 ```
 
 #### 5.2.3 Instructions for SQLite (FreeBSD)

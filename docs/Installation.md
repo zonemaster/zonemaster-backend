@@ -248,6 +248,12 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
+Optionally install Curl (only needed for the post-installation smoke test):
+
+```sh
+sudo apt install curl
+```
+
 Install required locales:
 
 ```sh

@@ -377,7 +377,7 @@ sudo apt install mariadb-server libdbd-mysql-perl
 Initialize the database:
 
 ```sh
-sudo mysql --password < ./initial-mysql.sql
+sudo mysql < $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/initial-mysql.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user

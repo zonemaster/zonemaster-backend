@@ -248,6 +248,22 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
+Optionally install Curl (only needed for the post-installation smoke test):
+
+```sh
+sudo apt install curl
+```
+
+Install required locales:
+
+```sh
+locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+sudo locale-gen
+```
+
 Install dependencies available from binary packages:
 
 ```sh
@@ -359,12 +375,6 @@ sudo -u postgres psql -f ./initial-postgres.sql
 
 ### 4.3 Service configuration and startup (Debian)
 
-Make sure our tmpfiles configuration takes effect:
-
-```sh
-sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
-```
-
 Add services to the default runlevel:
 
 ```sh
@@ -375,6 +385,7 @@ sudo update-rc.d zm-testagent defaults
 Start the services:
 
 ```sh
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 sudo service zm-rpcapi start
 sudo service zm-testagent start
 ```
@@ -384,8 +395,8 @@ check that the service has started with the following command (if you get output
 with the `start` command, you probably do not get it with the `status` command).
 
 ```sh
-sudo service zm-rpcapi status
-sudo service zm-testagent status
+sudo service zm-rpcapi status | cat
+sudo service zm-testagent status | cat
 ```
 
 ### 4.4 Post-installation (Debian)

@@ -62,7 +62,7 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote redhat-lsb-core
+sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote perl-Net-Server redhat-lsb-core
 ```
 
 Install dependencies not available from binary packages:
@@ -129,6 +129,9 @@ service mysqld status
 
 Initialize the database:
 
+> **Note:** If MySQL is newly installed, then one *may* have to set the root
+> password for the following command to work
+
 ```sh
 mysql --user=root --password < ./initial-mysql.sql
 ```
@@ -153,6 +156,12 @@ sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.in
 
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL
 binary package
+
+##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
+
+> **Note:** PostgreSQL version should be equal or greater than 9.3. If
+> PostgreSQL is already installed and is greater than 9.3 ignore the following
+> commands   
 
 ```sh
 sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
@@ -195,6 +204,56 @@ Verify PostgreSQL has started:
 sudo systemctl status postgresql-9.3
 ```
 
+##### 3.2.2.2 PostgreSQL installation instructions for CentOS8
+
+> **Note:** Following commands are required only if PostgreSQL is not installed
+> and is not greater or equal to version 9.3 
+
+Install the PostgreSQL packages:
+
+```sh
+sudo yum -y install postgresql-server perl-DBD-Pg
+```
+
+Initialise PostgreSQL:
+
+```sh
+sudo postgresql-setup --initdb --unit postgresql
+```
+
+Configure:
+
+```sh
+# In the below file modify all instances of "ident" to "md5"
+sudoedit /var/lib/pgsql/data/pg_hba.conf
+```
+
+To enable PostgreSQL from boot:
+
+```sh
+sudo systemctl enable postgresql
+```
+
+Start PostgreSQL:
+
+```sh
+sudo systemctl start postgresql
+```
+
+Verify PostgreSQL has started:
+
+```sh
+sudo systemctl status postgresql
+```
+
+#### 3.2.3 Instructions for SQLite (CentOS)
+
+>
+> At this time there is no instruction for using SQLite on CentOS.
+>
+
+### 3.3 Service configuration and startup (CentOS)
+
 Initialize Zonemaster database:
 
 ```sh
@@ -204,15 +263,6 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > **Note:** This creates a database called `zonemaster`, as well as a user called
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
-
-
-#### 3.2.3 Instructions for SQLite (CentOS)
-
->
-> At this time there is no instruction for using SQLite on CentOS.
->
-
-### 3.3 Service configuration and startup (CentOS)
 
 Make sure our tmpfiles configuration takes effect:
 

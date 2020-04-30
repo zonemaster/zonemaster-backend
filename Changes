@@ -3,11 +3,12 @@ Release history for Zonemaster component Zonemaster-Backend
 
 v5.0.0 2020-04-30
 
- [API change]
- - The database schema has been changed (#544). Create a new
+ [High light]
+ - The database schema has been changed. Create a new
    database or migrate it with tool found in scripts folder
 
  [Changes]
+ - The database schema has been changed (#544).
  - Adds inline Ubuntu implementation of status_of_proc (#592, #591)
  - Extends compatibility with systemd-tmpfiles on CentOS (#588, #574)
  - Implement status command for RPCAPI daemon on LSB (#586, #582, #580)

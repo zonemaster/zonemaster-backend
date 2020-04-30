@@ -1,15 +1,18 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
-v5.0.0 2019-11-15
+v5.0.0 2020-04-30
 
  [API change]
  - The database schema has been changed (#544). Create a new
-   database or migrate it will tool found in scripts folder
+   database or migrate it with tool found in scripts folder
 
  [Changes]
+ - Adds inline Ubuntu implementation of status_of_proc (#592, #591)
+ - Extends compatibility with systemd-tmpfiles on CentOS (#588, #574)
+ - Implement status command for RPCAPI daemon on LSB (#586, #582, #580)
+ - Use one service script per daemon on System V (#579, #576)
  - Update instructions after dropping Debian 8 (#556)
- - Updated Travis config after update of zonemaster-ldns (#541)
  - Added garbage collector for unfinished tests (#544, #525)
  - Updating installation instructions for FreeBSD (#535)
  - Added graceful shutdown for TestAgent (#533, #532
@@ -18,8 +21,20 @@ v5.0.0 2019-11-15
  - Give more feedback to the user in case something goes wrong (#524)
 
  [Fixes]
+ - Avoid rerunning unrelated tmpfiles configs (#601, #600)
+ - Fix for translation on FreeBSD 12.1 (#594, #593)
+ - Missing files in MANIFEST added (#585)
+ - Add forgotten dependency on CentOS (#590, #589)
+ - Corrected config documentation (#568)
+ - Added missing use JSON::PP (#577)
+ - Updated the upgrade instructions (#555, #558, #572)
+ - Update of installation instructions (#564, #604, #584, #606, #608)
+ - Fixes UTF-8 issue for domain names with U-label (#570, #571)
+ - Fixed Backend not starting after reboot on Debian/Ubuntu
+   (#513, #565)
+ - Fix warning in test agent daemon (#563, #557)
+ - Fix crash in RPCAPI (#562, #559)
  - Work around deprecation warning (#537, #507)
- - Fixing Travis issues (#542)
  - Partial fix for translation on FreeBSD 11 (#526, #353, #512)
  - Fixing error handling and logging (#527)
 

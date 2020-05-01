@@ -10,22 +10,28 @@ loads the backend configuration.
 
 =head1 SYNOPSIS
 
-Provides validated and sanity-checked backend configuration through the L<config> property.
+Provides validated and sanity-checked backend configuration through the
+L<config>, L<db> and L<pm> properties.
 
     my $daemon = Daemon::Control
         ->with_plugins('+Zonemaster::Backend::Config::DCPlugin')
         ->new({
             program => sub {
                 my $self = shift;
-                my $db   = $self->config->{db};
+
+                $self->init_backend_config();
+
+                my $config = $self->config;
+                my $db     = $self->db;
+                my $pm     = $self->pm;
                 ...
             },
         });
 
-The configuration is loaded on start and restart. The start/restart
-is aborted if the configuration fails the validity- and sanity check.
-In case of the database configuration, sanity is checked by actually
-connecting to the database.
+No configuration is loaded automatically.
+Instead a successful call to init_backend_config() is required.
+
+On restart the reload_config() method is called automatically.
 
 =head1 AUTHOR
 
@@ -34,68 +40,116 @@ Mattias P, C<< <mattias.paivarinta@iis.se> >>
 =cut
 
 use parent 'Daemon::Control';
+use Role::Tiny;    # Must be loaded before Class::Method::Modifiers or it will warn
 
-use Role::Tiny;
+use Carp;
 use Class::Method::Modifiers;
+use Hash::Util::FieldHash qw( fieldhash );
+use Log::Any qw( $log );
 use Zonemaster::Backend::Config;
 
-before do_start   => \&_load_config;
-before do_restart => \&_load_config;
+before do_restart => \&init_backend_config;
 
-=head1 CLASS VARIABLES
+# Using the inside-out technique to avoid collisions with other instance
+# variables.
+fieldhash my %config;
+fieldhash my %db;
+fieldhash my %pm;
 
-=head2 %config
+=head1 INSTANCE METHODS
 
-The loaded configuration.
+=head2 init_backend_config
+
+Initializes or reinitializes the L<config>, L<db> and L<pm> properties.
+
+A candidate for the L<config> property is either accepted as an argument,
+or L<Zonemaster::Backend::Config::load_config> is invoked to provide one.
+Candidates for the L<db> and L<pm> properties are constructed according to the
+L<config> candidate.
+
+Returns 1 if all candidates are successfully constructed.
+In this case all properties are assigned their respective candidate values.
+
+Returns 0 if the construction of any one of the candidates fails.
+Details about the construction failure are logged.
+None of the properties are updated.
 
 =cut
 
-our %config;
+sub init_backend_config {
+    my ( $self, $config_candidate ) = @_;
+
+    eval {
+        $config_candidate //= Zonemaster::Backend::Config->load_config();
+        my $db_candidate = $config_candidate->new_DB();
+        my $pm_candidate = $config_candidate->new_PM();
+
+        $config{$self} = $config_candidate;
+        $db{$self}     = $db_candidate;
+        $pm{$self}     = $pm_candidate;
+    };
+
+    if ( $@ ) {
+        $log->warn( "Failed to load the configuration: $@" );
+        return 0;
+    }
+
+    return 1;
+}
 
 =head1 PROPERTIES
 
 =head2 config
 
-The loaded configuration.
+Getter for the currently loaded configuration.
 
-A hashref with the following keys.
-
-=over 4
-
-=item db
-
-A L<Zonemaster::Backned::DB> object. It's been able to connect to
-the database at least once.
-
-=back
+Throws an exception if no successful call to init_backend_config() has been
+made prior to this call.
 
 =cut
 
 sub config {
-    return { %config };
-};
+    my ( $self ) = @_;
 
-=head1 PRIVATE METHODS
+    exists $config{$self} or croak "Not initialized";
 
-=head2 _load_config
-
-Checks if the configuration has been loaded before, and delegates
-to _load_config otherwise.
-
-=cut
-
-sub _load_config {
-    _do_load_config() if !%config;
+    return $config{$self};
 }
 
-=head2 _do_load_config
+=head2 db
 
-Loads, validates and sanity-checks the backend configuration.
+Getter for a database adapter constructed according to the current
+configuration.
+
+Throws an exception if no successful call to init_backend_config() has been
+made prior to this call.
 
 =cut
 
-sub _do_load_config {
-    %config = ( db => Zonemaster::Backend::Config->load_config()->new_DB() );
+sub db {
+    my ( $self ) = @_;
+
+    exists $db{$self} or croak "Not initialized";
+
+    return $db{$self};
+}
+
+=head2 pm
+
+Getter for a processing manager constructed according to the current
+configuration.
+
+Throws an exception if no successful call to init_backend_config() has been
+made prior to this call.
+
+=cut
+
+sub pm {
+    my ( $self ) = @_;
+
+    exists $pm{$self} or croak "Not initialized";
+
+    return $pm{$self};
 }
 
 1;

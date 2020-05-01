@@ -16,8 +16,15 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
+my $config = Zonemaster::Backend::Config->load_config();
+
 # Create Zonemaster::Backend::RPCAPI object
-my $engine = Zonemaster::Backend::RPCAPI->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
+my $engine = Zonemaster::Backend::RPCAPI->new(
+    {
+        db     => 'Zonemaster::Backend::DB::SQLite',
+        config => $config,
+    }
+);
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 # create a new memory SQLite database
@@ -57,7 +64,6 @@ sub run_zonemaster_test_with_backend_API {
 	ok( $engine->test_progress( $test_id ) == 0 );
 
 	use_ok( 'Zonemaster::Backend::Config' );
-	my $config = Zonemaster::Backend::Config->load_config();
 
 	use_ok( 'Zonemaster::Backend::TestAgent' );
 

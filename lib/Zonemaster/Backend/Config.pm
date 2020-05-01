@@ -5,9 +5,11 @@ use strict;
 use warnings;
 use 5.14.2;
 
+use Config;
 use Config::IniFiles;
 use File::ShareDir qw[dist_file];
 use Log::Any qw( $log );
+use Readonly;
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -20,6 +22,7 @@ else {
     $path = dist_file('Zonemaster-Backend', "backend_config.ini");
 }
 
+Readonly my @SIG_NAME => split ' ', $Config{sig_name};
 
 =head1 SUBROUTINES
 
@@ -28,6 +31,8 @@ else {
 sub load_config {
     my ( $class, $params ) = @_;
     my $self = {};
+
+    $log->notice( "Loading config: $path" );
     
     $self->{cfg} = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
@@ -38,19 +43,19 @@ sub load_config {
 sub BackendDBType {
     my ($self) = @_;
 
-    my $result;
-
-    if ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'sqlite' ) {
-        $result = 'SQLite';
+    my $engine = $self->{cfg}->val( 'DB', 'engine' );
+    if ( lc $engine eq 'sqlite' ) {
+        return 'SQLite';
     }
-    elsif ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'postgresql' ) {
-        $result = 'PostgreSQL';
+    elsif ( lc $engine eq 'postgresql' ) {
+        return 'PostgreSQL';
     }
-    elsif ( lc( $self->{cfg}->val( 'DB', 'engine' ) ) eq 'mysql' ) {
-        $result = 'MySQL';
+    elsif ( lc $engine eq 'mysql' ) {
+        return 'MySQL';
     }
-
-    return $result;
+    else {
+        die "Unknown config value DB.engine: $engine\n";
+    }
 }
 
 sub DB_user {
@@ -112,7 +117,9 @@ sub PollingInterval {
 sub MaxZonemasterExecutionTime {
     my ($self) = @_;
 
-    return $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
+    
+    return ($val)?($val):(10*60);
 }
 
 sub NumberOfProcessesForFrontendTesting {
@@ -181,6 +188,37 @@ sub lock_on_queue {
     return $val;
 }
 
+=head2 maximal_number_of_retries
+
+WARNING: This option is experimental and all edge cases are not fully tested.
+Do not use it (keep the default value "0"), or use it with care.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+A scalar value of the number of retries or the default 0 if no value is defined in the backend_config.ini file.
+
+=cut
+
+sub maximal_number_of_retries {
+    my ($self) = @_;
+
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'maximal_number_of_retries' );
+
+    return ($val)?($val):(0);
+}
+
+=head2 BackendDBType
+
+Returns a normalized string based on the DB.engine value in the config.
+
+=head3 EXCEPTION
+
+Dies if the value of DB.engine is unrecognized.
+
 =head2 new_DB
 
 Create a new database adapter object according to configuration.
@@ -189,12 +227,10 @@ The adapter connects to the database before it is returned.
 
 =head3 INPUT
 
-The database adapter class is selected based on the return value
-of L<Zonemaster::Backend::Config->load_config()->BackendDBType()>. The database
-adapter class constructor is called without arguments and is expected
-to configure itself according to available global configuration.
-
-=back
+The database adapter class is selected based on the return value of
+BackendDBType().
+The database adapter class constructor is called without arguments and is
+expected to configure itself according to available global configuration.
 
 =head3 RETURNS
 
@@ -215,8 +251,10 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
+    my ($self) = @_;
+
     # Get DB type from config
-    my $dbtype = Zonemaster::Backend::Config->load_config()->BackendDBType();
+    my $dbtype = $self->BackendDBType();
     if (!defined $dbtype) {
         die "Unrecognized DB.engine in backend config";
     }
@@ -227,12 +265,89 @@ sub new_DB {
     $dbclass->import();
     $log->notice("Constructing database adapter: $dbclass");
 
-    my $db = $dbclass->new;
+    my $db = $dbclass->new({ config => $self });
 
     # Connect or die
     $db->dbh;
 
     return $db;
+}
+
+=head2 new_PM
+
+Create a new processing manager object according to configuration.
+
+=head3 INPUT
+
+The values of the following attributes affect the construction of the returned object:
+
+=over
+
+=item MaxZonemasterExecutionTime
+
+=item NumberOfProcessesForBatchTesting
+
+=item NumberOfProcessesForFrontendTesting
+
+=back
+
+=head3 RETURNS
+
+A configured L<Parallel::ForkManager> object.
+
+=cut
+
+sub new_PM {
+    my $self = shift;
+
+    my $maximum_processes = $self->NumberOfProcessesForFrontendTesting() + $self->NumberOfProcessesForBatchTesting();
+
+    my $timeout = $self->MaxZonemasterExecutionTime();
+
+    my %times;
+
+    my $pm = Parallel::ForkManager->new( $maximum_processes );
+    $pm->set_waitpid_blocking_sleep( 0 ) if $pm->can( 'set_waitpid_blocking_sleep' );
+
+    $pm->run_on_wait(
+        sub {
+            foreach my $pid ( $pm->running_procs ) {
+                my $diff = time() - $times{$pid}[0];
+                my $id   = $times{$pid}[1];
+
+                if ( $diff > $timeout ) {
+                    $log->warning( "Worker process (pid $pid, testid $id): Timeout, sending SIGKILL" );
+                    kill 9, $pid;
+                }
+            }
+        },
+        1
+    );
+
+    $pm->run_on_start(
+        sub {
+            my ( $pid, $id ) = @_;
+
+            $times{$pid} = [ time(), $id ];
+        }
+    );
+
+    $pm->run_on_finish(
+        sub {
+            my ( $pid, $exitcode, $id, $signal ) = @_;
+
+            delete $times{$pid};
+
+            my $message =
+              ( $signal )
+              ? "Terminated by signal $signal (SIG$SIG_NAME[$signal])"
+              : "Terminated with exit code $exitcode";
+
+            $log->notice( "Worker process (pid $pid, testid $id): $message" );
+        }
+    );
+
+    return $pm;
 }
 
 1;

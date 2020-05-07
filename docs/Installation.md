@@ -544,6 +544,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
+> **Note:** See the [backend configuration] documentation for details.
 
 Install, configure and start database engine (and Perl bindings):
 
@@ -598,6 +599,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
 ```
+> **Note:** See the [backend configuration] documentation for details.
 
 Install, configure and start database engine (and Perl bindings):
 

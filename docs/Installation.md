@@ -147,10 +147,6 @@ mysql --user=root --password < ./initial-mysql.sql
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
->
-> Only run this command during an initial installation of the Zonemaster
-> backend. If you do this on an existing system, you will wipe out the data in
-> your database.
 
 #### 3.2.2 Instructions for PostgreSQL (CentOS)
 
@@ -162,10 +158,10 @@ sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.in
 
 > **Note:** See the [backend configuration] documentation for details.
 
+##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
+
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL
 binary package
-
-##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
 
 > **Note:** PostgreSQL version should be equal or greater than 9.3. If
 > PostgreSQL is already installed and is greater than 9.3 ignore the following
@@ -254,13 +250,7 @@ Verify PostgreSQL has started:
 sudo systemctl status postgresql
 ```
 
-#### 3.2.3 Instructions for SQLite (CentOS)
-
->
-> At this time there is no instruction for using SQLite on CentOS.
->
-
-### 3.3 Service configuration and startup (CentOS)
+##### 3.2.2.3 PostgreSQL installation instructions (common for CentOS7 and CentOS8)
 
 Initialize Zonemaster database (unless you keep an old database):
 
@@ -271,6 +261,14 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > **Note:** This creates a database called `zonemaster`, as well as a user called
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
+
+#### 3.2.3 Instructions for SQLite (CentOS)
+
+>
+> At this time there is no instruction for using SQLite on CentOS.
+>
+
+### 3.3 Service configuration and startup (CentOS)
 
 Make sure our tmpfiles configuration takes effect:
 

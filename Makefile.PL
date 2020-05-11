@@ -45,6 +45,11 @@ install_share;
 install_script 'zonemaster_backend_rpcapi.psgi';
 install_script 'zonemaster_backend_testagent';
 
+install_script 'patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl';
+install_script 'patch_db_mysql_for_backend_DB_version_lower_than_5.0.0.pl';
+install_script 'patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl';
+install_script 'patch_db_postgresq_for_backend_DB_version_lower_than_5.0.0.pl';
+
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';
 

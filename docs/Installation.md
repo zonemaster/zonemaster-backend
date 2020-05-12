@@ -97,9 +97,9 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemster-Backend, you should remove any script from older
-> version of Zonemaster-Backend in `/etc/init.d`, i.e. any for Zonemaster except for
-> the ones just installed.
+> If this is an update of Zonemster-Backend, you should remove any
+> `/etc/init.d/zm-backend.sh` and `/etc/init.d/zm-centos.sh` (scripts from
+> previous version of Zonemaster-Backend).
 
 ### 3.2 Database engine installation and configuration (CentOS)
 
@@ -363,9 +363,8 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemster-Backend, you should remove any script from older
-> version of Zonemaster-Backend in `/etc/init.d`, i.e. any for Zonemaster except for
-> the ones just installed.
+> If this is an update of Zonemster-Backend, you should remove any
+> `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
 
 ### 4.2 Database engine installation and configuration (Debian)
 
@@ -530,10 +529,6 @@ install -v -m 775 -g zonemaster -d /var/run/zonemaster
 install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 ```
-
-> If this is an update of Zonemster-Backend, you should remove any script from older
-> version of Zonemaster-Backend in `/usr/local/etc/rc.d`, i.e. any for Zonemaster except for
-> the ones just installed.
 
 ### 5.2 Database engine installation and configuration (FreeBSD)
 

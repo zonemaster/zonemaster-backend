@@ -106,14 +106,14 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-The installation instructions below assums that this is a new installation.
+The installation instructions below assumes that this is a new installation.
 If you upgrade and want to keep the database, go to section
 [7.4](#74-upgrade-zonemaster-database) first. If you instead want to start
 from afresh, then go to section [7.3](#73-cleaning-up-the-database) and remove
 the old database first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
-but if you have removed the old Zonemaster database, then do the inialization.
+but if you have removed the old Zonemaster database, then do the initialization.
 
 #### 3.2.1 Instructions for MySQL (CentOS)
 
@@ -371,14 +371,14 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-The installation instructions below assums that this is a new installation.
+The installation instructions below assumes that this is a new installation.
 If you upgrade and want to keep the database, go to section
 [7.4](#74-upgrade-zonemaster-database) first. If you instead want to start
 from afresh, then go to section [7.3](#73-cleaning-up-the-database) and remove
 the old database first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
-but if you have removed the old Zonemaster database, then do the inialization.
+but if you have removed the old Zonemaster database, then do the initialization.
 
 #### 4.2.1 Instructions for MariaDB (Debian)
 
@@ -535,14 +535,14 @@ install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
-The installation instructions below assums that this is a new installation.
+The installation instructions below assumes that this is a new installation.
 If you upgrade and want to keep the database, go to section
 [7.4](#74-upgrade-zonemaster-database) first. If you instead want to start
 from afresh, then go to section [7.3](#73-cleaning-up-the-database) and remove
 the old database first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
-but if you have removed the old Zonemaster database, then do the inialization.
+but if you have removed the old Zonemaster database, then do the initialization.
 
 #### 5.2.1 Instructions for MySQL (FreeBSD)
 

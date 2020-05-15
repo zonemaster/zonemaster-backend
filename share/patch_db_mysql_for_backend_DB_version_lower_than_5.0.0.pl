@@ -20,7 +20,7 @@ sub patch_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $dbh->do( 'ALTER TABLE test_results ADD COLUMN nb_retries INTEGER NOTNULL DEFAULT 0' );
+    $dbh->do( 'ALTER TABLE test_results ADD COLUMN nb_retries INTEGER NOT NULL DEFAULT 0' );
 }
 
 patch_db();

@@ -48,10 +48,6 @@ script/create_db_postgresql_9.3.pl
 script/crontab_job_runner/execute_tests.pl
 script/crontab_job_runner/execute_zonemaster_P10.pl
 script/crontab_job_runner/execute_zonemaster_P5.pl
-script/patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl
-script/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
-script/patch_db_mysql_for_backend_DB_version_lower_than_5.0.0.pl
-script/patch_db_postgresq_for_backend_DB_version_lower_than_5.0.0.pl
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
 share/backend_config.ini
@@ -59,6 +55,10 @@ share/cleanup-mysql.sql
 share/cleanup-postgres.sql
 share/initial-mysql.sql
 share/initial-postgres.sql
+share/patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl
+share/patch_db_mysql_for_backend_DB_version_lower_than_5.0.0.pl
+share/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
+share/patch_db_postgresq_for_backend_DB_version_lower_than_5.0.0.pl
 share/starman-zm-backend-RPC-API.conf
 share/tmpfiles.conf
 share/travis_mysql_backend_config.ini

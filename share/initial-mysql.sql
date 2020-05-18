@@ -17,7 +17,7 @@ CREATE TABLE test_results (
     progress integer DEFAULT 0,
     params_deterministic_hash character varying(32),
     params blob NOT NULL,
-    results blob DEFAULT NULL,
+    results mediumblob DEFAULT NULL,
     undelegated boolean NOT NULL DEFAULT false,
     nb_retries integer NOT NULL DEFAULT 0
 ) Engine=InnoDB;

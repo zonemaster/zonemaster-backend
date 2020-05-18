@@ -1,5 +1,18 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v5.0.2 2020-05-22
+
+ [Fixes]
+ - Some zones create too large result to fit into the zonemaster
+   database which made the Test Agent crasch (only MySQL or
+   MariaDB, not PostgreSQL, database was affected). This version
+   increases the database size (#616, #617).
+ - Use instructions on Zonemaster-Backend main README for
+   upgrading the zonemaster database.
+ - This release does not introduce any changes to neither
+   RPC-API nor Test Agents.
+
+
 v5.0.1 2020-05-15
 
  [Fixes]

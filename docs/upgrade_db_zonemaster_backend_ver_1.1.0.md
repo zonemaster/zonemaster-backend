@@ -1,4 +1,5 @@
-To upgrade Zonemaster-Backend from versions 1.0.x to versions 1.1.x the column 'queue' needs to be added to the database:
+If your zonemaster database was created by a Zonemaster-Backend version smaller than
+v1.1.0, and not upgraded, use the instructions in this file.
 
 MySQL
 

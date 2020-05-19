@@ -13,9 +13,10 @@ docs/GettingStarted.md
 docs/Installation.md
 docs/Configuration.md
 docs/TypographicConventions.md
-docs/upgrade-from-1.0.x-to-1.1.x.md
-docs/upgrade-from-4.0.x-to-5.0.x.md
-docs/upgrade-to-1.0.3.md
+docs/upgrade_db_zonemaster_backend_ver_1.0.3.md
+docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
+docs/upgrade_db_zonemaster_backend_ver_5.0.0.md
+docs/upgrade_db_zonemaster_backend_ver_5.0.2.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -55,10 +56,12 @@ share/cleanup-mysql.sql
 share/cleanup-postgres.sql
 share/initial-mysql.sql
 share/initial-postgres.sql
-share/patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl
-share/patch_db_mysql_for_backend_DB_version_lower_than_5.0.0.pl
-share/patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
-share/patch_db_postgresq_for_backend_DB_version_lower_than_5.0.0.pl
+share/patch_db_README.txt
+share/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
+share/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
+share/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
+share/patch_postgresql_db_zonemaster_backend_ver_1.0.3.pl
+share/patch_postgresql_db_zonemaster_backend_ver_5.0.0.pl
 share/starman-zm-backend-RPC-API.conf
 share/tmpfiles.conf
 share/travis_mysql_backend_config.ini
@@ -74,3 +77,5 @@ t/test01.t
 t/test_DB_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t
+
+

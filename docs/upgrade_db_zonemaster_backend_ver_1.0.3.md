@@ -1,4 +1,5 @@
-To upgrade Zonemaster-Backend from Zonemaster-Backend versions smaller than 1.0.3 you have to upgrade the database.
+If your zonemaster database was created by a Zonemaster-Backend version smaller than
+v1.0.3, and not upgraded, use the instructions in this file.
 
 ### FreeBSD
 
@@ -14,16 +15,13 @@ export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.
 Run
 ```sh
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
-perl patch_db_mysql_for_backend_DB_version_lower_than_1.0.3.pl
+perl patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 ```
-
 
 ### PostgreSQL
 
 Run
 ```sh
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
-perl patch_db_postgresq_for_backend_DB_version_lower_than_1.0.3.pl
+perl patch_postgresql_db_zonemaster_backend_ver_1.0.3.pl
 ```
-
-

@@ -515,7 +515,8 @@ Unless they already exist, add `zonemaster` user and `zonemaster` group
 (the group is created automatically):
 
 ```sh
-pw useradd zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+pw useradd zonemaster -C freebsd-pwd.conf -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
 ```
 
 Install files to their proper locations:

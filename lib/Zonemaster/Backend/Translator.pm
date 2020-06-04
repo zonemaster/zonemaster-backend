@@ -27,6 +27,9 @@ sub translate_tag {
     elsif ( $browser_lang eq 'da' ) {
         $self->locale( "da_DK.UTF-8" );
     }
+    elsif ( $browser_lang eq 'nb' ) {
+        $self->locale( "nb_NO.UTF-8" );
+    }
     else {
         $self->locale( "en_US.UTF-8" );
     }

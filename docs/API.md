@@ -268,13 +268,19 @@ Example: "2017-12-18 07:56:17.156939"
 Basic data type: string
 
 A string of alphanumeric, hyphens, underscores, full stops and at-signs (`@`),
-of at least 1 and at most 30 characters.
-I.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`.
+of at least 2 and at most 30 characters,
+i.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`, where only the first 2
+characters are used.
 
-* Any string starting with `"fr"` is interpreted as French.
-* Any string starting with `"sv"` is interpreted as Swedish.
-* Any string starting with `"da"` is interpreted as Danish.
-* Any other string is interpreted as English.
+The 2 first characters must match the list of language
+codes defined in the configuration file. Any other string
+is an error.
+
+A default installation will will accept:
+* Any string starting with `"da"` (Danish).
+* Any string starting with `"en"` (English).
+* Any string starting with `"fr"` (French).
+* Any string starting with `"sv"` (Swedish).
 
 
 ### Unsigned integer
@@ -651,6 +657,10 @@ Example request:
   }
 }
 ```
+
+Both `id` and `language` are mandatory parameters. The `id` parameter must match the `result` in
+the response to a `start_domain_test` call, and that test must have been completed. The `language`
+parameter must match a language string defined above.
 
 Example response:
 ```json

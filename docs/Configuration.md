@@ -32,6 +32,45 @@ SQLite            | `SQLite`
 
 TBD
 
+## LANGUAGES
+
+The LANGUAGE section has one key, `lang`.
+
+The value must be a space separated list of locale setting
+for the available translation of messages without ".UTF-8"
+which is assumed.
+
+Adding a new language to the configuration requires that the
+equivalent MO file is added to Zonemaster-Engine at the correct
+place so that getext get retreive it. Removing a lanugage from
+the configuration file just blocks that language to be displayed.
+
+English is the Zonemaster default language, but can be blocked
+from being displayed by RPC-API by not including it in the
+configuration.
+
+The default installation and configuration supports the
+following languages.
+
+Language | Code in RPC-API* | Value in .ini file | Locale value
+---------|------------------|--------------------|-------------
+Danish   | da               | da_DK              | da_DK.UTF-8
+English  | en               | en_US              | en_US.UTF-8
+French   | fr               | fr_FR              | fr_FR.UTF-8
+Swedish  | sv               | sv_SE              | sv_SE.UTF-8
+
+*) RPC-API just considers the two first characters of the language
+string and disregards the remaining.
+
+The same language code may not be used more than once.
+
+Default setting in the configuration file:
+
+```
+lang = da_DK en_US fr_FR sv_SE
+```
+
+If the section is empty, "en_US" is set by default.
 
 ## LOG section
 

@@ -76,6 +76,21 @@ sub DB_name {
     return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
+sub LANG_hash {
+    my ($self) = @_;
+    my $lang = $self->{cfg}->val( 'LANGUAGES', 'lang' );
+    $lang = 'en_US' unless $lang;
+    my @langs = split (/\s+/,$lang);
+    my %locale;
+    foreach my $l (@langs) {
+        die "Incorrect config value in LANGUAGES.lang: $lang\n" unless $l =~ /^[a-z]{2}_[A-Z]{2}$/;
+        (my $a) = split (/_/,$l);
+        die "Language code used twice in LANGUAGES.lang: $lang\n" if $locale{$a};
+        $locale{$a} = "$l.UTF-8";
+    }
+    return %locale;
+}
+
 sub DB_connection_string {
     my ($self) = @_;
 

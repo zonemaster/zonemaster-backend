@@ -267,20 +267,28 @@ Example: "2017-12-18 07:56:17.156939"
 
 Basic data type: string
 
-A string of alphanumeric, hyphens, underscores, full stops and at-signs (`@`),
-of at least 2 and at most 30 characters,
-i.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`, where only the first 2
-characters are used.
+A string of A-Z, a-z and underscores matching the regular expression
+`/^[a-z]{2}(_[A-Z]{2})?$/`.
 
-The 2 first characters must match the list of language
-codes defined in the configuration file. Any other string
-is an error.
+The two first characters of the translation language string are
+expected to be an [ISO 639-1] two-character language code and the
+optional two last characters are expected to be an [ISO 3166-1 alpha-2]
+two-character country code.
 
-A default installation will will accept:
-* Any string starting with `"da"` (Danish).
-* Any string starting with `"en"` (English).
-* Any string starting with `"fr"` (French).
-* Any string starting with `"sv"` (Swedish).
+The translation language string must match a language tag in the
+configuration file. If the language translation string is a
+two-character string (language code only), it only need to match
+the first two characters of the language tag in the configuration file,
+if that is unique (there is only one language tag starting with the same
+language code), else it is an error.
+
+Any other string is an error.
+
+A default installation will will accept the following strings:
+* `"da"` or `"da_DK"` for Danish language.
+* `"en"` or `"en_US"` for English language.
+* `"fr"` or `"fr_FR"` for French language.
+* `"sv"` or `"sv_SE"` for Swedish language.
 
 
 ### Unsigned integer
@@ -326,7 +334,6 @@ Example response:
 }
 ```
 
-
 #### `"result"`
 
 An object with the following properties:
@@ -367,10 +374,53 @@ Example response:
 }
 ```
 
-
 #### `"result"`
 
 An array of *Profile names* in lower case. `"default"` is always included.
+
+
+## API method: `translation_language_strings`
+
+Returns valid [translation language strings] given the setting in the
+configuration file.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "translation_language_strings"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "en",
+    "en_US",
+    "fr",
+    "fr_FR",
+    "sv",
+    "sv_SE"
+  ]
+}
+```
+
+#### `"result"`
+
+An array of *translation language strings*. It is never empty.
+
+#### `"error"`
+
+>
+> TODO: List all possible error codes and describe what they mean enough for
+> clients to know how react to them. Or prevent RPCAPI from starting with
+> errors in the configuration file and make it not to reread the configuration
+> file while running.
+>
 
 
 ## API method: `get_host_by_name`
@@ -658,9 +708,8 @@ Example request:
 }
 ```
 
-Both `id` and `language` are mandatory parameters. The `id` parameter must match the `result` in
-the response to a `start_domain_test` call, and that test must have been completed. The `language`
-parameter must match a language string defined above.
+The `id` parameter must match the `result` in the response to a `start_domain_test` call,
+and that test must have been completed.
 
 Example response:
 ```json
@@ -1116,5 +1165,8 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Available profiles]: Configuration.md#profiles-section
-[Privilege levels]: #privilege-levels
+[Available profiles]:           Configuration.md#profiles-section
+[ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
+[Privilege levels]:             #privilege-levels
+[Translation language strings]: #translation-language

@@ -65,7 +65,7 @@ sub test_id {
     return joi->string->regex('^[0-9]$|^[1-9][0-9]{1,8}$|^[0-9a-f]{16}$');
 }
 sub translation_language {
-    return joi->string->regex('^[a-zA-Z0-9-_.@]{1,30}$');
+    return joi->string->regex('^[a-z]{2}(_[A-Z]{2})?$');
 }
 sub username {
     return joi->string->regex('^[a-zA-Z0-9-.@]{1,50}$');

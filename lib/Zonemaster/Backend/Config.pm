@@ -76,20 +76,48 @@ sub DB_name {
     return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
-sub LANG_hash {
+# Read LANGUAGE.lang from the configuration (.ini) file and return a
+# hash of translation language strings as keys and locale setting as
+# values. There is one special value to capture ambiguous (and
+# therefore not permitted) translation language strings. The hash
+# is never empty.
+sub Translation_Locale_hash {
     my ($self) = @_;
-    my $lang = $self->{cfg}->val( 'LANGUAGES', 'lang' );
+    my $lang = $self->{cfg}->val( 'LANGUAGE', 'lang' );
     $lang = 'en_US' unless $lang;
     my @langs = split (/\s+/,$lang);
     my %locale;
-    foreach my $l (@langs) {
-        die "Incorrect config value in LANGUAGES.lang: $lang\n" unless $l =~ /^[a-z]{2}_[A-Z]{2}$/;
-        (my $a) = split (/_/,$l);
-        die "Language code used twice in LANGUAGES.lang: $lang\n" if $locale{$a};
-        $locale{$a} = "$l.UTF-8";
+    foreach my $la (@langs) {
+        die "Incorrect language tag in LANGUAGE.lang: $lang\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
+        (my $a) = split (/_/,$la); # $a is the language code only
+        my $lo = "$la.UTF-8";
+        # Set special value if the same language code is used more than once
+        # with different country codes.
+        if ( $locale{$a} and $locale{$a} ne $lo ) {
+            $locale{$a} = 'NOT-UNIQUE';
+        }
+        else {
+            $locale{$a} = $lo;
+        }
+        $locale{$la} = $lo;
     }
     return %locale;
 }
+
+# Read LANGUAGE.lang from the configuration (.ini) file and
+# return an array of translation language strings that are valid for the
+# language parameter in a get_test_results() call. The array is never empty.
+# Order of elements has no meaning.
+sub ListTranslationLanguageStrings {
+    my ($self) = @_;
+    my %locale = &Translation_Locale_hash($self);
+    my @lang;
+    foreach my $key (keys %locale) {
+        push @lang, $key unless $locale{$key} eq 'NOT-UNIQUE';
+    }
+    return @lang;
+}
+
 
 sub DB_connection_string {
     my ($self) = @_;

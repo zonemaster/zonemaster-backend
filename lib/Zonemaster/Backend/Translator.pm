@@ -17,11 +17,16 @@ extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
     my ( $self, $entry, $browser_lang ) = @_;
-    my %locale = Zonemaster::Backend::Config->load_config()->LANG_hash();
+    my %locale = Zonemaster::Backend::Config->load_config()->Translation_Locale_hash();
     my $previous_locale = $self->locale;
 
     if ( $locale{$browser_lang} ) {
-        $self->locale( $locale{$browser_lang} );
+        if ( $locale{$browser_lang} eq 'NOT-UNIQUE') {
+            die "Language string not unique: '$browser_lang'\n";
+        }
+        else {
+            $self->locale( $locale{$browser_lang} );
+        }
     }
     else {
         die "Undefined language string: '$browser_lang'\n";

@@ -82,7 +82,7 @@ sub run_zonemaster_test_with_backend_API {
 		last if ( $progress == 100 );
 	}
 	ok( $engine->test_progress( $test_id ) == 100 );
-	my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr-FR' } );
+	my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr_FR' } );
 	ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
 	ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
 	ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );

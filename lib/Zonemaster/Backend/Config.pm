@@ -76,12 +76,26 @@ sub DB_name {
     return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
-# Read LANGUAGE.lang from the configuration (.ini) file and return a
-# hash of translation language strings as keys and locale setting as
-# values. There is one special value to capture ambiguous (and
-# therefore not permitted) translation language strings. The hash
-# is never empty.
+=head2 Translation_Locale_hash
+
+Read LANGUAGE.lang from the configuration (.ini) file and returns
+the valid translation language strings for RPCAPI. The incoming
+language string from RPCAPI is compared to those.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+A hash of valid language translation strings as keys with set
+locale value as value. The hash is never empty.
+
+=cut
+
 sub Translation_Locale_hash {
+    # There is one special value to capture ambiguous (and therefore
+    # not permitted) translation language strings.
     my ($self) = @_;
     my $lang = $self->{cfg}->val( 'LANGUAGE', 'lang' );
     $lang = 'en_US' unless $lang;
@@ -104,10 +118,23 @@ sub Translation_Locale_hash {
     return %locale;
 }
 
-# Read LANGUAGE.lang from the configuration (.ini) file and
-# return an array of translation language strings that are valid for the
-# language parameter in a get_test_results() call. The array is never empty.
-# Order of elements has no meaning.
+=head2 ListTranslationLanguageStrings
+
+Read indirectly LANGUAGE.lang from the configuration (.ini) file
+and returns a list of valid translation language strings for RPCAPI.
+The list can be retrieved via an RPCAPI method.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+An array of valid language translation strings. The array is never
+empty.
+
+=cut
+
 sub ListTranslationLanguageStrings {
     my ($self) = @_;
     my %locale = &Translation_Locale_hash($self);

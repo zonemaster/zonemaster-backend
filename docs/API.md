@@ -270,19 +270,19 @@ Basic data type: string
 A string of A-Z, a-z and underscores matching the regular expression
 `/^[a-z]{2}(_[A-Z]{2})?$/`.
 
-The two first characters of the translation language string are
-expected to be an [ISO 639-1] two-character language code and the
-optional two last characters are expected to be an [ISO 3166-1 alpha-2]
-two-character country code.
-
 The translation language string must match a language tag in the
 configuration file. If the language translation string is a
-two-character string (language code only), it only need to match
-the first two characters of the language tag in the configuration file,
-if that is unique (there is only one language tag starting with the same
-language code), else it is an error.
+two-character string, it only needs to match the first two characters
+of the language tag in the configuration file, if that is unique (there
+is only one language tag starting with the same two characters), else
+it is an error.
 
 Any other string is an error.
+
+The two first characters of the translation language string are
+intended to be an [ISO 639-1] two-character language code and the
+optional two last characters are intended to be an [ISO 3166-1 alpha-2]
+two-character country code.
 
 A default installation will will accept the following strings:
 * `"da"` or `"da_DK"` for Danish language.
@@ -293,9 +293,9 @@ A default installation will will accept the following strings:
 
 ### Unsigned integer
 
- Basic data type: number (integer)
+Basic data type: number (integer)
  
- An unsigned integer is either positive or zero.
+An unsigned integer is either positive or zero.
  
 
 ### Username
@@ -381,7 +381,7 @@ An array of *Profile names* in lower case. `"default"` is always included.
 
 ## API method: `translation_language_strings`
 
-Returns valid [translation language strings] given the setting in the
+Returns valid strings for [translation language] based on the setting in the
 configuration file.
 
 Example request:
@@ -411,7 +411,7 @@ Example response:
 
 #### `"result"`
 
-An array of *translation language strings*. It is never empty.
+An array of strings for *translation language*. It is never empty.
 
 #### `"error"`
 
@@ -1169,4 +1169,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [Privilege levels]:             #privilege-levels
-[Translation language strings]: #translation-language
+[Translation language]:         #translation-language

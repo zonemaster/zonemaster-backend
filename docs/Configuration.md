@@ -40,19 +40,25 @@ The value of the `lang` key is a space separated list of
 language tags where each tag must match the regular expression
 `/^[a-z]{2}_[A-Z]{2}$/`.
 
-The two first characters of a language tag are expected to be an
+The two first characters of a language tag are intended to be an
 [ISO 639-1] two-character language code and the two last characters
-are expected to be an [ISO 3166-1 alpha-2] two-character country code.
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 A language tag is a locale setting for the available translation
-of messages without ".UTF-8", which is assumed.
+of messages without ".UTF-8", which is implied.
 
-Adding a new language to the configuration requires that the
-equivalent MO file is added to Zonemaster-Engine at the correct
-place so that gettext get retrieve it. Removing a language from
-the configuration file just blocks that language from being
-allowed.
+Adding a new language tag to the configuration requires that the
+equivalent .mo file is added to Zonemaster-Engine at the correct
+place so that gettext get retrieve it. See the
+[Zonemaster-Engine share directory] for the existing .po files
+that are converted to .mo files. (Here we should have a link
+to documentation instead.)
 
-English is the Zonemaster default language, but can be blocked
+Removing a language from the configuration file just blocks that
+language from being allowed. If there are more than one language
+tag (with different country codes) for the same language, then
+all those must probably be removed to block the language.
+
+English is the Zonemaster default language, but it can be blocked
 from being allowed by RPC-API by not including it in the
 configuration.
 
@@ -122,13 +128,14 @@ TBD
 
 --------
 
-[Default JSON profile file]:   https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
-[ISO 3166-1 alpha-2]:          https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-[ISO 639-1]:                   https://en.wikipedia.org/wiki/ISO_639-1
-[Profile JSON files]:          https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
-[Profile names]:               API.md#profile-name
-[Profiles]:                    Architecture.md#profile
-[Zonemaster::Engine::Profile]: https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
+[Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
+[ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
+[Profile names]:                      API.md#profile-name
+[Profiles]:                           Architecture.md#profile
+[Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
+[Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
 
 
 

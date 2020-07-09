@@ -46,9 +46,9 @@ my $router = router {
                 action => "profile_names"
         };
 
-	connect "translation_language_strings" => {
+	connect "get_language_strings" => {
                 handler => "+Zonemaster::Backend::RPCAPI",
-                action => "translation_language_strings"
+                action => "get_language_strings"
         };
 
         connect "get_host_by_name" => {

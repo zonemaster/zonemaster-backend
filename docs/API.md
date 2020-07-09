@@ -334,6 +334,7 @@ Example response:
 }
 ```
 
+
 #### `"result"`
 
 An object with the following properties:
@@ -374,12 +375,13 @@ Example response:
 }
 ```
 
+
 #### `"result"`
 
 An array of *Profile names* in lower case. `"default"` is always included.
 
 
-## API method: `translation_language_strings`
+## API method: `get_language_strings`
 
 Returns valid strings for [translation language] based on the setting in the
 configuration file.
@@ -389,7 +391,7 @@ Example request:
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "translation_language_strings"
+  "method": "get_language_strings"
 }
 ```
 
@@ -409,9 +411,11 @@ Example response:
 }
 ```
 
+
 #### `"result"`
 
 An array of strings for *translation language*. It is never empty.
+
 
 #### `"error"`
 
@@ -473,6 +477,7 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 >
 > TODO: If the name resolves to two or more IPv4 address, how is that represented?
 >
+
 
 #### `"error"`
 
@@ -629,13 +634,15 @@ An object with the following properties:
 > TODO: Clarify the purpose of each `"params"` property.
 >
 
+
 #### `"result"`
 
 A *test id*. 
 
 If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
 then the new request does not trigger a new test, but returns with the results of the last test
- 
+
+
 #### `"error"`
 
 * If the given `profile` is not among the [available profiles], a user
@@ -799,7 +806,6 @@ In the case of a test created with `add_batch_job`:
 >
 
 
-
 #### `"error"`
 
 >
@@ -936,9 +942,11 @@ An object with the following properties:
 * `"username"`: An *username*, required. The name of the user to add.
 * `"api_key"`: An *api key*, required. The API key for the user to add.
 
+
 #### `"result"`
 
 An integer. The value is equal to 1 if the registration is a success, or 0 if it failed.
+
 
 #### `"error"`
 >
@@ -1146,6 +1154,7 @@ Example response:
     }
 }
 ```
+
 
 #### `"params"`
 

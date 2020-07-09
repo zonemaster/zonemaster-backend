@@ -80,8 +80,8 @@ sub profile_names {
 
 # Return the list of language tags supported by get_test_results(). The tags are
 # set in the configuration file.
-$json_schemas{translation_language_strings} = joi->object->strict;
-sub translation_language_strings {
+$json_schemas{get_language_strings} = joi->object->strict;
+sub get_language_strings {
     my ($self) = @_;
 
     my @lang = Zonemaster::Backend::Config->load_config()->ListTranslationLanguageStrings();

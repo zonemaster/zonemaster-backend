@@ -1,9 +1,9 @@
 #!/bin/sh
 
-bindir="`dirname $0`"
+bindir="$(dirname "$0")"
 
 ZMB="${bindir}/zmb"
-JQ="`which jq`"
+JQ="$(which jq)"
 
 error () {
     status="$1"
@@ -13,7 +13,7 @@ error () {
 }
 
 zmb () {
-    json="`"${ZMB}" "$@"`"
+    json="$("${ZMB}" "$@")"
     if echo "${json}" | "${JQ}" -e .error > /dev/null ; then
         error 1 "method $1: ${json}"
     else
@@ -27,12 +27,12 @@ zmb () {
 domain="$1" ; shift
 
 # Start test
-testid="`zmb start_domain_test --domain "${domain}" | "${JQ}" -r .result`" || exit 1
+testid="$(zmb start_domain_test --domain "${domain}" | "${JQ}" -r .result)" || exit 1
 
 # Wait for test to finish
 while true
 do
-    progress="`zmb test_progress --testid "${testid}" | "${JQ}" -r .result`" || exit 1
+    progress="$(zmb test_progress --testid "${testid}" | "${JQ}" -r .result)" || exit 1
     printf "\r${progress}%% done" >&2
     if [ "${progress}" -eq 100 ] ; then
         echo >&2
@@ -43,4 +43,4 @@ done
 
 # Get test results
 zmb get_test_results --testid "${testid}" --lang en
-echo "testid:" ${testid} >&2
+echo "testid: ${testid}" >&2

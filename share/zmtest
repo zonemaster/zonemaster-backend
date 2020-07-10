@@ -13,12 +13,10 @@ error () {
 }
 
 zmb () {
-    json="$("${ZMB}" "$@")"
-    if echo "${json}" | "${JQ}" -e .error > /dev/null ; then
-        error 1 "method $1: ${json}"
-    else
-        echo "${json}"
-    fi
+    json="$("${ZMB}" "$@" 2>&1)" || error 1 "method $1: ${json}"
+    echo "${json}" | "${JQ}" . >/dev/null 2>&1 || error 1 "method $1 did not return valid JSON output"
+    error="$(echo "${json}" | "${JQ}" -e .error 2>/dev/null)" && error 1 "method $1: ${error}"
+    echo "${json}"
 }
 
 [ -n "${JQ}" ] || error 2 "Dependency not found: jq"
@@ -27,12 +25,14 @@ zmb () {
 domain="$1" ; shift
 
 # Start test
-testid="$(zmb start_domain_test --domain "${domain}" | "${JQ}" -r .result)" || exit 1
+output="$(zmb start_domain_test --domain "${domain}")" || exit $?
+testid="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
 
 # Wait for test to finish
 while true
 do
-    progress="$(zmb test_progress --testid "${testid}" | "${JQ}" -r .result)" || exit 1
+    output="$(zmb test_progress --testid "${testid}")" || exit $?
+    progress="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
     printf "\r${progress}%% done" >&2
     if [ "${progress}" -eq 100 ] ; then
         echo >&2

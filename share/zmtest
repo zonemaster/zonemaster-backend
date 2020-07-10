@@ -13,6 +13,8 @@ usage () {
     echo >&2
     echo "Options:" >&2
     echo "  -s URL --server=URL   Zonemaster Backend to query. Default is http://localhost:5000/" >&2
+    echo "  --noipv4              Run the test without ipv4." >&2
+    echo "  --noipv6              Run the test without ipv6." >&2
     exit "${status}"
 }
 
@@ -35,16 +37,20 @@ zmb () {
 
 domain=""
 server_url="http://localhost:5000/"
+ipv4="true"
+ipv6="true"
 while [ $# -gt 0 ] ; do
     case "$1" in
         -s|--server) server_url="$2"; shift 2;;
+        --noipv4) ipv4="false"; shift 1;;
+        --noipv6) ipv6="false"; shift 1;;
         *) domain="$1" ; shift 1;;
     esac
 done
 [ -n "${domain}" ] || usage 2 "No domain specified"
 
 # Start test
-output="$(zmb "${server_url}" start_domain_test --domain "${domain}")" || exit $?
+output="$(zmb "${server_url}" start_domain_test --domain "${domain}" --ipv4 "${ipv4}" --ipv6 "${ipv6}")" || exit $?
 testid="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
 
 # Wait for test to finish

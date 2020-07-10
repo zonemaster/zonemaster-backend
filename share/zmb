@@ -22,8 +22,9 @@ zmb COMMAND [OPTIONS]
 
 =head1 GLOBAL OPTIONS
 
- --help        Show usage
- --verbose     Show RPC query
+ --help         Show usage
+ --verbose      Show RPC query
+ --server URL   The server to connect to. Default is http://localhost:5000/.
 
 =cut
 
@@ -32,10 +33,12 @@ sub main {
 
     my $opt_help;
     my $opt_verbose;
+    my $opt_server = 'http://localhost:5000/';
     GetOptionsFromArray(
         \@argv,
-        'help'    => \$opt_help,
-        'verbose' => \$opt_verbose,
+        'help'     => \$opt_help,
+        'verbose'  => \$opt_verbose,
+        'server=s' => \$opt_server,
     ) or pod2usage( 2 );
     if ( !@argv ) {
         pod2usage( -verbose => 99, -sections => ['SYNOPSIS', 'GLOBAL OPTIONS'], -exitval => 'NOEXIT' );
@@ -52,7 +55,7 @@ sub main {
 
     if ( $json ) {
         say $json if $opt_verbose;
-        my $request  = to_request( $json );
+        my $request  = to_request( $opt_server, $json );
         my $response = submit( $request );
         say $response;
     }
@@ -398,9 +401,10 @@ sub to_jsonrpc {
 }
 
 sub to_request {
-    my $json = shift;
+    my $server = shift;
+    my $json   = shift;
 
-    my $req = HTTP::Request->new( POST => 'http://localhost:5000/' );
+    my $req = HTTP::Request->new( POST => $server );
     $req->content_type( 'application/json' );
     $req->content( $json );
 

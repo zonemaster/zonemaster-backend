@@ -5,6 +5,17 @@ bindir="$(dirname "$0")"
 ZMB="${bindir}/zmb"
 JQ="$(which jq)"
 
+usage () {
+    status="$1"
+    message="$2"
+    echo "${message}" >&2
+    echo "Usage: zmtest [OPTIONS] DOMAIN" >&2
+    echo >&2
+    echo "Options:" >&2
+    echo "  -s URL --server=URL   Zonemaster Backend to query. Default is http://localhost:5000/" >&2
+    exit "${status}"
+}
+
 error () {
     status="$1"
     message="$2"
@@ -13,7 +24,8 @@ error () {
 }
 
 zmb () {
-    json="$("${ZMB}" "$@" 2>&1)" || error 1 "method $1: ${json}"
+    server_url="$1"; shift
+    json="$("${ZMB}" --server="${server_url}" "$@" 2>&1)" || error 1 "method $1: ${json}"
     echo "${json}" | "${JQ}" . >/dev/null 2>&1 || error 1 "method $1 did not return valid JSON output"
     error="$(echo "${json}" | "${JQ}" -e .error 2>/dev/null)" && error 1 "method $1: ${error}"
     echo "${json}"
@@ -21,17 +33,24 @@ zmb () {
 
 [ -n "${JQ}" ] || error 2 "Dependency not found: jq"
 
-[ $# -ge 1 ] || error 2 "No domain specified"
-domain="$1" ; shift
+domain=""
+server_url="http://localhost:5000/"
+while [ $# -gt 0 ] ; do
+    case "$1" in
+        -s|--server) server_url="$2"; shift 2;;
+        *) domain="$1" ; shift 1;;
+    esac
+done
+[ -n "${domain}" ] || usage 2 "No domain specified"
 
 # Start test
-output="$(zmb start_domain_test --domain "${domain}")" || exit $?
+output="$(zmb "${server_url}" start_domain_test --domain "${domain}")" || exit $?
 testid="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
 
 # Wait for test to finish
 while true
 do
-    output="$(zmb test_progress --testid "${testid}")" || exit $?
+    output="$(zmb "${server_url}" test_progress --testid "${testid}")" || exit $?
     progress="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
     printf "\r${progress}%% done" >&2
     if [ "${progress}" -eq 100 ] ; then
@@ -42,5 +61,5 @@ do
 done
 
 # Get test results
-zmb get_test_results --testid "${testid}" --lang en
+zmb "${server_url}" get_test_results --testid "${testid}" --lang en
 echo "testid: ${testid}" >&2

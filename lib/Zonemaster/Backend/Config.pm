@@ -76,11 +76,12 @@ sub DB_name {
     return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
-=head2 Translation_Locale_hash
+=head2 Language_Locale_hash
 
-Read LANGUAGE.lang from the configuration (.ini) file and returns
-the valid translation language strings for RPCAPI. The incoming
-language string from RPCAPI is compared to those.
+Read LANGUAGE.locale from the configuration (.ini) file and returns
+the valid language tags for RPCAPI. The incoming language tag
+from RPCAPI is compared to those. The language tags are mapped to
+locale setting value.
 
 =head3 INPUT
 
@@ -88,22 +89,22 @@ None
 
 =head3 RETURNS
 
-A hash of valid language translation strings as keys with set
-locale value as value. The hash is never empty.
+A hash of valid language tags as keys with set locale value as value.
+The hash is never empty.
 
 =cut
 
-sub Translation_Locale_hash {
+sub Language_Locale_hash {
     # There is one special value to capture ambiguous (and therefore
-    # not permitted) translation language strings.
+    # not permitted) translation language tags.
     my ($self) = @_;
-    my $lang = $self->{cfg}->val( 'LANGUAGE', 'lang' );
-    $lang = 'en_US' unless $lang;
-    my @langs = split (/\s+/,$lang);
+    my $data = $self->{cfg}->val( 'LANGUAGE', 'locale' );
+    $data = 'en_US' unless $data;
+    my @localetags = split (/\s+/,$data);
     my %locale;
-    foreach my $la (@langs) {
-        die "Incorrect language tag in LANGUAGE.lang: $la\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
-        die "Repeated language tag in LANGUAGE.lang: $la\n" if $locale{$la};
+    foreach my $la (@localetags) {
+        die "Incorrect locale tag in LANGUAGE.locale: $la\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
+        die "Repeated locale tag in LANGUAGE.locale: $la\n" if $locale{$la};
         (my $a) = split (/_/,$la); # $a is the language code only
         my $lo = "$la.UTF-8";
         # Set special value if the same language code is used more than once
@@ -119,11 +120,11 @@ sub Translation_Locale_hash {
     return %locale;
 }
 
-=head2 ListTranslationLanguageStrings
+=head2 ListLanguageTags
 
-Read indirectly LANGUAGE.lang from the configuration (.ini) file
-and returns a list of valid translation language strings for RPCAPI.
-The list can be retrieved via an RPCAPI method.
+Read indirectly LANGUAGE.locale from the configuration (.ini) file
+and returns a list of valid language tags for RPCAPI. The list can
+be retrieved via an RPCAPI method.
 
 =head3 INPUT
 
@@ -131,19 +132,18 @@ None
 
 =head3 RETURNS
 
-An array of valid language translation strings. The array is never
-empty.
+An array of valid language tags. The array is never empty.
 
 =cut
 
-sub ListTranslationLanguageStrings {
+sub ListLanguageTags {
     my ($self) = @_;
-    my %locale = &Translation_Locale_hash($self);
-    my @lang;
+    my %locale = &Language_Locale_hash($self);
+    my @langtags;
     foreach my $key (keys %locale) {
-        push @lang, $key unless $locale{$key} eq 'NOT-UNIQUE';
+        push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
     }
-    return @lang;
+    return @langtags;
 }
 
 

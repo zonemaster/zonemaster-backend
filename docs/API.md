@@ -263,32 +263,30 @@ Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 
 
-### Translation language
+### Language tag
 
 Basic data type: string
 
 A string of A-Z, a-z and underscores matching the regular expression
 `/^[a-z]{2}(_[A-Z]{2})?$/`.
 
-The translation language string must match a language tag in the
-configuration file. If the language translation string is a
-two-character string, it only needs to match the first two characters
-of the language tag in the configuration file, if that is unique (there
-is only one language tag starting with the same two characters), else
-it is an error.
+The `language tag` must match a `locale tag` in the configuration file.
+If the `language tag` is a two-character string, it only needs to match the
+first two characters of the `locale tag` from the configuration file, if
+that is unique (there is only one `locale tag` starting with the same two
+characters), else it is an error.
 
 Any other string is an error.
 
-The two first characters of the translation language string are
-intended to be an [ISO 639-1] two-character language code and the
-optional two last characters are intended to be an [ISO 3166-1 alpha-2]
-two-character country code.
+The two first characters of the `language tag` are intended to be an
+[ISO 639-1] two-character language code and the optional two last characters
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 
-A default installation will will accept the following strings:
-* `"da"` or `"da_DK"` for Danish language.
-* `"en"` or `"en_US"` for English language.
-* `"fr"` or `"fr_FR"` for French language.
-* `"sv"` or `"sv_SE"` for Swedish language.
+A default installation will will accept the following `language tags`:
+* `da` or `da_DK` for Danish language.
+* `en` or `en_US` for English language.
+* `fr` or `fr_FR` for French language.
+* `sv` or `sv_SE` for Swedish language.
 
 
 ### Unsigned integer
@@ -381,9 +379,9 @@ Example response:
 An array of *Profile names* in lower case. `"default"` is always included.
 
 
-## API method: `get_language_strings`
+## API method: `get_language_tags`
 
-Returns valid strings for [translation language] based on the setting in the
+Returns valid [language tags][language tag] generated from the setting in the
 configuration file.
 
 Example request:
@@ -391,7 +389,7 @@ Example request:
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "get_language_strings"
+  "method": "get_language_tags"
 }
 ```
 
@@ -414,7 +412,7 @@ Example response:
 
 #### `"result"`
 
-An array of strings for *translation language*. It is never empty.
+An array of *language tags*. It is never empty.
 
 
 #### `"error"`
@@ -700,7 +698,8 @@ A *progress percentage*.
 
 ## API method: `get_test_results`
 
-Return all *test result* objects of a *test*, with *messages* in the requested *translation language*.
+Return all *test result* objects of a *test*, with *messages* in the requested language as selected by the
+*language tag*.
 
 Example request:
 ```json
@@ -776,7 +775,7 @@ Example response:
 An object with the following properties:
 
 * `"id"`: A *test id*, required.
-* `"language"`: A *translation language*, required.
+* `"language"`: A *language tag*, required.
 
 
 #### `"result"`
@@ -1178,4 +1177,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [Privilege levels]:             #privilege-levels
-[Translation language]:         #translation-language
+[Language tag]:                 #language-tag

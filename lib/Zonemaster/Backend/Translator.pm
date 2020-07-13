@@ -17,7 +17,7 @@ extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
     my ( $self, $entry, $browser_lang ) = @_;
-    my %locale = Zonemaster::Backend::Config->load_config()->Translation_Locale_hash();
+    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
     my $previous_locale = $self->locale;
 
     if ( $locale{$browser_lang} ) {

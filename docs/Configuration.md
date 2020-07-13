@@ -72,7 +72,7 @@ English  | en_US              | en_US.UTF-8
 French   | fr_FR              | fr_FR.UTF-8
 Swedish  | sv_SE              | sv_SE.UTF-8
 
-Repeated language tag values are just ignored.
+It is an error to repeate the sama language tag.
 
 Setting in the default configuration file:
 

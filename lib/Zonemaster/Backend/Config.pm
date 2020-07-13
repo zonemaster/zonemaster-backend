@@ -102,7 +102,8 @@ sub Translation_Locale_hash {
     my @langs = split (/\s+/,$lang);
     my %locale;
     foreach my $la (@langs) {
-        die "Incorrect language tag in LANGUAGE.lang: $lang\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
+        die "Incorrect language tag in LANGUAGE.lang: $la\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
+        die "Repeated language tag in LANGUAGE.lang: $la\n" if $locale{$la};
         (my $a) = split (/_/,$la); # $a is the language code only
         my $lo = "$la.UTF-8";
         # Set special value if the same language code is used more than once

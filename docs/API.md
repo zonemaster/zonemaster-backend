@@ -282,7 +282,7 @@ The two first characters of the `language tag` are intended to be an
 [ISO 639-1] two-character language code and the optional two last characters
 are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 
-A default installation will will accept the following `language tags`:
+A default installation will accept the following `language tags`:
 * `da` or `da_DK` for Danish language.
 * `en` or `en_US` for English language.
 * `fr` or `fr_FR` for French language.

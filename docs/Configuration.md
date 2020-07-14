@@ -40,17 +40,20 @@ The value of the `locale` key is a space separated list of
 `locale tags` where each tag must match the regular expression
 `/^[a-z]{2}_[A-Z]{2}$/`.
 
+If the `locale` key is empty or absent, the `locale tag` value
+"en_US" is set by default.
+
 The two first characters of a `locale tag` are intended to be an
 [ISO 639-1] two-character language code and the two last characters
 are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 A `locale tag` is a locale setting for the available translation
 of messages without ".UTF-8", which is implied.
 
-Adding a new `locale tag` to the configuration requires that the
-equivalent .mo file is added to Zonemaster-Engine at the correct
-place so that gettext get retrieve it. See the
-[Zonemaster-Engine share directory] for the existing .po files
-that are converted to .mo files. (Here we should have a link
+If a new `locale tag` is added to the configuration then the equivalent
+MO file should be added to Zonemaster-Engine at the correct place so
+that gettext can retrieve it, or else the added `locale tag` will not
+add anything. See the [Zonemaster-Engine share directory] for the existing
+PO files that are converted to .mo files. (Here we should have a link
 to documentation instead.)
 
 Removing a language from the configuration file just blocks that
@@ -72,16 +75,13 @@ English  | en_US              | en_US.UTF-8
 French   | fr_FR              | fr_FR.UTF-8
 Swedish  | sv_SE              | sv_SE.UTF-8
 
-It is an error to repeate the same `locale tag`.
+It is an error to repeat the same `locale tag`.
 
 Setting in the default configuration file:
 
 ```
 locale = da_DK en_US fr_FR sv_SE
 ```
-
-If the `locale` key is empty or absent, the `locale tag` value
-"en_US" is set by default.
 
 Each locale set in the configuration file, including the implied
 ".UTF-8", must also be installed or activate on the system

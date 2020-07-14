@@ -1,0 +1,424 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use feature 'say';
+
+use Getopt::Long qw( GetOptionsFromArray :config require_order );
+
+use Pod::Usage;
+
+use JSON::PP;
+use LWP::UserAgent;
+
+=head1 NAME
+
+B<zmb> - Shell bindings for the Zonemaster::Backend RPC API
+
+Zmb is meant to be pronounced I<Zimba>.
+
+=head1 SYNOPSIS
+
+zmb COMMAND [OPTIONS]
+
+=head1 GLOBAL OPTIONS
+
+ --help        Show usage
+ --verbose     Show RPC query
+
+=cut
+
+sub main {
+    my @argv = @_;
+
+    my $opt_help;
+    my $opt_verbose;
+    GetOptionsFromArray(
+        \@argv,
+        'help'    => \$opt_help,
+        'verbose' => \$opt_verbose,
+    ) or pod2usage( 2 );
+    if ( !@argv ) {
+        pod2usage( -verbose => 99, -sections => ['SYNOPSIS', 'GLOBAL OPTIONS'], -exitval => 'NOEXIT' );
+        show_commands();
+        exit 1;
+    }
+    my $cmd = shift @argv;
+    pod2usage( 1 ) if !defined $cmd;
+    my $cmd_sub = \&{ "cmd_" . $cmd };
+    pod2usage( "'$cmd' is not a command" ) if !defined &$cmd_sub;
+    pod2usage( -verbose => 99, -sections => ["COMMANDS/$cmd"] ) if $opt_help;
+
+    my $json = &$cmd_sub( @argv );
+
+    if ( $json ) {
+        say $json if $opt_verbose;
+        my $request  = to_request( $json );
+        my $response = submit( $request );
+        say $response;
+    }
+}
+
+
+=head1 COMMANDS
+
+=head2 man
+
+Show the full manual page.
+
+    zmb man
+
+=cut
+
+sub cmd_man {
+    pod2usage( -verbose => 2 );
+}
+
+
+=head2 non_existing_method
+
+Call a non-existing RPC method.
+
+    zmb non_existing_method
+
+=cut
+
+sub cmd_non_existing_method {
+    return to_jsonrpc(
+        id     => 1,
+        method => 'non_existing_method',
+    );
+}
+
+
+=head2 version_info
+
+    zmb version_info
+
+=cut
+
+sub cmd_version_info {
+    return to_jsonrpc(
+        id     => 1,
+        method => 'version_info',
+    );
+}
+
+
+=head2 start_domain_test
+
+Call start_domain_test.
+
+    zmb start_domain_test [OPTIONS]
+
+Options:
+
+    --domain DOMAIN_NAME
+    --nameserver DOMAIN_NAME:IP_ADDRESS
+    --client-id CLIENT_ID
+    --client-version CLIENT_VERSION
+    --ds-info DS_INFO
+
+DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
+
+    keytag=UNSIGNED_INTEGER
+    algorithm=UNSIGNED_INTEGER
+    digtype=UNSIGNED_INTEGER
+    digest=HEX_STRING
+
+=cut
+
+sub cmd_start_domain_test {
+    my @opts = @_;
+
+    my @opt_nameserver;
+    my $opt_domain;
+    my $opt_client_id;
+    my $opt_client_version;
+    my @opt_ds_info;
+    GetOptionsFromArray(
+        \@opts,
+        'domain|d=s'       => \$opt_domain,
+        'nameserver|n=s'   => \@opt_nameserver,
+        'client-id=s'      => \$opt_client_id,
+        'client-version=s' => \$opt_client_version,
+        'ds-info=s'        => \@opt_ds_info,
+    ) or pod2usage( 2 );
+
+    my %params = ( domain => $opt_domain, );
+
+    if ( $opt_client_id ) {
+        $params{client_id} = $opt_client_id,
+    }
+
+    if ( $opt_client_version ) {
+        $params{client_version} = $opt_client_version,
+    }
+
+    if ( @opt_ds_info ) {
+        my @info_objects;
+        for my $property_value_pairs ( @opt_ds_info ) {
+            my %info_object;
+            for my $pair ( split /,/, $property_value_pairs ) {
+                my ( $property, $value ) = split /=/, $pair;
+                if ( $property =~ /^(?:keytag|algorithm|digtype)$/ ) {
+                    $value = 0 + $value;
+                }
+                $info_object{$property} = $value;
+            }
+            push @info_objects, \%info_object;
+        }
+        $params{ds_info} = \@info_objects;
+    }
+
+    if ( @opt_nameserver ) {
+        my @nameserver_objects;
+        for my $domain_ip_pair ( @opt_nameserver ) {
+            my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
+            push @nameserver_objects,
+              {
+                ns => $domain,
+                ip => $ip,
+              };
+        }
+        $params{nameservers} = \@nameserver_objects;
+    }
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'start_domain_test',
+        params => \%params,
+    );
+}
+
+
+=head2 test_progress
+
+ zmb test_progress [OPTIONS]
+
+ Options:
+   --testid TEST_ID
+
+=cut
+
+sub cmd_test_progress {
+    my @opts = @_;
+
+    my $opt_lang;
+    my $opt_testid;
+    GetOptionsFromArray( \@opts, 'testid|t=s' => \$opt_testid, )
+      or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'test_progress',
+        params => {
+            test_id => $opt_testid,
+        },
+    );
+}
+
+
+=head2 get_test_results
+
+ zmb get_test_results [OPTIONS]
+
+ Options:
+   --testid TEST_ID
+   --lang LANGUAGE
+
+=cut
+
+sub cmd_get_test_results {
+    my @opts = @_;
+
+    my $opt_lang;
+    my $opt_testid;
+    GetOptionsFromArray(
+        \@opts,
+        'testid|t=s' => \$opt_testid,
+        'lang|l=s'   => \$opt_lang,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_test_results',
+        params => {
+            id       => $opt_testid,
+            language => $opt_lang,
+        },
+    );
+}
+
+
+=head2 get_test_history
+
+ zmb get_test_history [OPTIONS]
+
+ Options:
+   --domain DOMAIN_NAME
+   --nameserver true|false|null
+   --offset COUNT
+   --limit COUNT
+
+=cut
+
+sub cmd_get_test_history {
+    my @opts = @_;
+    my $opt_nameserver;
+    my $opt_domain;
+    my $opt_offset;
+    my $opt_limit;
+
+    GetOptionsFromArray(
+        \@opts,
+        'domain|d=s'     => \$opt_domain,
+        'nameserver|n=s' => \$opt_nameserver,
+        'offset|o=i'     => \$opt_offset,
+        'limit|l=i'      => \$opt_limit,
+    ) or pod2usage( 2 );
+
+    my %params = (
+        frontend_params => {
+            domain => $opt_domain,
+        },
+    );
+
+    if ( $opt_nameserver ) {
+        $params{frontend_params}{nameservers} = json_tern( $opt_nameserver );
+    }
+
+    if ( defined $opt_offset ) {
+        $params{offset} = $opt_offset;
+    }
+
+    if ( defined $opt_limit ) {
+        $params{limit} = $opt_limit;
+    }
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_test_history',
+        params => \%params,
+    );
+}
+
+
+=head2 add_api_user
+
+ zmb add_api_user [OPTIONS]
+
+ Options:
+   --username USERNAME
+   --api-key API_KEY
+
+=cut
+
+sub cmd_add_api_user {
+    my @opts = @_;
+
+    my $opt_username;
+    my $opt_api_key;
+    GetOptionsFromArray(
+        \@opts,
+        'username|u=s' => \$opt_username,
+        'api-key|a=s'  => \$opt_api_key,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'add_api_user',
+        params => {
+            username => $opt_username,
+            api_key  => $opt_api_key,
+        },
+    );
+}
+
+
+sub show_commands {
+    my %specials = (
+        man                 => 'Show the full manual page.',
+        non_existing_method => 'Call a non-existing RPC method.',
+    );
+    my @commands  = get_commands();
+    my $max_width = 0;
+    for my $command ( @commands ) {
+        $max_width = length $command if length $command > $max_width;
+    }
+    say "Commands:";
+    for my $command ( @commands ) {
+        if ( exists $specials{$command} ) {
+            printf "     %-*s     %s\n", $max_width, $command, $specials{$command};
+        }
+        else {
+            say "     ", $command;
+        }
+    }
+}
+
+
+sub get_commands {
+    no strict 'refs';
+
+    return sort
+      map { $_ =~ s/^cmd_//r }
+      grep { $_ =~ /^cmd_/ } grep { defined &{"main\::$_"} } keys %{"main\::"};
+}
+
+sub json_tern {
+    my $value = shift;
+    if ( $value eq 'true' ) {
+        return JSON::PP::true;
+    }
+    elsif ( $value eq 'false' ) {
+        return JSON::PP::false;
+    }
+    elsif ( $value eq 'null' ) {
+        return undef;
+    }
+    else {
+        die "unknown ternary value";
+    }
+}
+
+sub to_jsonrpc {
+    my %args   = @_;
+    my $id     = $args{id};
+    my $method = $args{method};
+
+    my $request = {
+        jsonrpc => "2.0",
+        method  => $method,
+        id      => $id,
+    };
+    if ( exists $args{params} ) {
+        $request->{params} = $args{params};
+    }
+    return encode_json( $request );
+}
+
+sub to_request {
+    my $json = shift;
+
+    my $req = HTTP::Request->new( POST => 'http://localhost:5000/' );
+    $req->content_type( 'application/json' );
+    $req->content( $json );
+
+    return $req;
+}
+
+sub submit {
+    my $req = shift;
+
+    my $ua  = LWP::UserAgent->new;
+    my $res = $ua->request( $req );
+
+    if ( $res->is_success ) {
+        return $res->decoded_content;
+    }
+    else {
+        die $res->status_line;
+    }
+}
+
+main( @ARGV );

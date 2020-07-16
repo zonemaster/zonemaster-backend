@@ -18,7 +18,7 @@ Zmb is meant to be pronounced I<Zimba>.
 
 =head1 SYNOPSIS
 
-zmb COMMAND [OPTIONS]
+zmb [GLOBAL OPTIONS] COMMAND [OPTIONS]
 
 =head1 GLOBAL OPTIONS
 

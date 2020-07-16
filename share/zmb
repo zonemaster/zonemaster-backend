@@ -18,12 +18,13 @@ Zmb is meant to be pronounced I<Zimba>.
 
 =head1 SYNOPSIS
 
-zmb COMMAND [OPTIONS]
+zmb [GLOBAL OPTIONS] COMMAND [OPTIONS]
 
 =head1 GLOBAL OPTIONS
 
- --help        Show usage
- --verbose     Show RPC query
+ --help         Show usage
+ --verbose      Show RPC query
+ --server URL   The server to connect to. Default is http://localhost:5000/.
 
 =cut
 
@@ -32,10 +33,12 @@ sub main {
 
     my $opt_help;
     my $opt_verbose;
+    my $opt_server = 'http://localhost:5000/';
     GetOptionsFromArray(
         \@argv,
-        'help'    => \$opt_help,
-        'verbose' => \$opt_verbose,
+        'help'     => \$opt_help,
+        'verbose'  => \$opt_verbose,
+        'server=s' => \$opt_server,
     ) or pod2usage( 2 );
     if ( !@argv ) {
         pod2usage( -verbose => 99, -sections => ['SYNOPSIS', 'GLOBAL OPTIONS'], -exitval => 'NOEXIT' );
@@ -52,7 +55,7 @@ sub main {
 
     if ( $json ) {
         say $json if $opt_verbose;
-        my $request  = to_request( $json );
+        my $request  = to_request( $opt_server, $json );
         my $response = submit( $request );
         say $response;
     }
@@ -65,7 +68,7 @@ sub main {
 
 Show the full manual page.
 
-    zmb man
+ zmb [GLOBAL OPTIONS] man
 
 =cut
 
@@ -78,7 +81,7 @@ sub cmd_man {
 
 Call a non-existing RPC method.
 
-    zmb non_existing_method
+ zmb [GLOBAL OPTIONS] non_existing_method
 
 =cut
 
@@ -92,7 +95,7 @@ sub cmd_non_existing_method {
 
 =head2 version_info
 
-    zmb version_info
+ zmb [GLOBAL OPTIONS] version_info
 
 =cut
 
@@ -106,19 +109,19 @@ sub cmd_version_info {
 
 =head2 start_domain_test
 
-Call start_domain_test.
+ zmb [GLOBAL OPTIONS] start_domain_test [OPTIONS]
 
-    zmb start_domain_test [OPTIONS]
-
-Options:
+ Options:
 
     --domain DOMAIN_NAME
     --nameserver DOMAIN_NAME:IP_ADDRESS
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
     --ds-info DS_INFO
+    --ipv4 true|false|null
+    --ipv6 true|false|null
 
-DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
+ DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
     keytag=UNSIGNED_INTEGER
     algorithm=UNSIGNED_INTEGER
@@ -135,6 +138,8 @@ sub cmd_start_domain_test {
     my $opt_client_id;
     my $opt_client_version;
     my @opt_ds_info;
+    my $opt_ipv4;
+    my $opt_ipv6;
     GetOptionsFromArray(
         \@opts,
         'domain|d=s'       => \$opt_domain,
@@ -142,6 +147,8 @@ sub cmd_start_domain_test {
         'client-id=s'      => \$opt_client_id,
         'client-version=s' => \$opt_client_version,
         'ds-info=s'        => \@opt_ds_info,
+        'ipv4=s'           => \$opt_ipv4,
+        'ipv6=s'           => \$opt_ipv6,
     ) or pod2usage( 2 );
 
     my %params = ( domain => $opt_domain, );
@@ -183,6 +190,14 @@ sub cmd_start_domain_test {
         $params{nameservers} = \@nameserver_objects;
     }
 
+    if ( $opt_ipv4 ) {
+        $params{ipv4} = json_tern( $opt_ipv4 );
+    }
+
+    if ( $opt_ipv6 ) {
+        $params{ipv6} = json_tern( $opt_ipv6 );
+    }
+
     return to_jsonrpc(
         id     => 1,
         method => 'start_domain_test',
@@ -193,7 +208,7 @@ sub cmd_start_domain_test {
 
 =head2 test_progress
 
- zmb test_progress [OPTIONS]
+ zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
 
  Options:
    --testid TEST_ID
@@ -220,7 +235,7 @@ sub cmd_test_progress {
 
 =head2 get_test_results
 
- zmb get_test_results [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_results [OPTIONS]
 
  Options:
    --testid TEST_ID
@@ -252,7 +267,7 @@ sub cmd_get_test_results {
 
 =head2 get_test_history
 
- zmb get_test_history [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_history [OPTIONS]
 
  Options:
    --domain DOMAIN_NAME
@@ -305,7 +320,7 @@ sub cmd_get_test_history {
 
 =head2 add_api_user
 
- zmb add_api_user [OPTIONS]
+ zmb [GLOBAL OPTIONS] add_api_user [OPTIONS]
 
  Options:
    --username USERNAME
@@ -398,9 +413,10 @@ sub to_jsonrpc {
 }
 
 sub to_request {
-    my $json = shift;
+    my $server = shift;
+    my $json   = shift;
 
-    my $req = HTTP::Request->new( POST => 'http://localhost:5000/' );
+    my $req = HTTP::Request->new( POST => $server );
     $req->content_type( 'application/json' );
     $req->content( $json );
 

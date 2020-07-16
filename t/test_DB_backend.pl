@@ -4,6 +4,7 @@ use 5.14.2;
 
 use Test::More;    # see done_testing()
 use JSON::PP;
+use Test::Exception;
 
 my $db_backend = $ARGV[0];
 ok( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' , "Testing a supported database backend: $db_backend" );
@@ -59,12 +60,20 @@ sub run_zonemaster_test_with_backend_API {
         last if ( $progress == 100 );
     }
     ok( $engine->test_progress( $api_test_id ) == 100 , 'API test_progress -> Test finished' );
-    my $test_results = $engine->get_test_results( { id => $api_test_id, language => 'fr-FR' } );
+
+    my $test_results = $engine->get_test_results( { id => $api_test_id, language => 'fr_FR' } );
     ok( defined $test_results->{id} , 'API get_test_results -> [id] paramater present' );
     ok( defined $test_results->{params} , 'API get_test_results -> [params] paramater present' );
     ok( defined $test_results->{creation_time} , 'API get_test_results -> [creation_time] paramater present' );
     ok( defined $test_results->{results} , 'API get_test_results -> [results] paramater present' );
     ok( scalar( @{ $test_results->{results} } ) > 1 , 'API get_test_results -> [results] paramater contains data' );
+
+    dies_ok { $engine->get_test_results( { id => $api_test_id, language => 'fr-FR' } ); }
+    'API get_test_results -> [results] parameter not present (wrong language tag)';
+
+    dies_ok { $engine->get_test_results( { id => $api_test_id, language => 'zz' } ); }
+    'API get_test_results -> [results] parameter not present (wrong language tag)';
+
 }
 
 # add test user
@@ -99,3 +108,4 @@ ok( $test_history->[0]->{id} eq '1' || $test_history->[1]->{id} eq '1' );
 ok( length($test_history->[0]->{id}) == 16 || length($test_history->[1]->{id}) == 16 );
 
 done_testing();
+

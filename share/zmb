@@ -68,7 +68,7 @@ sub main {
 
 Show the full manual page.
 
-    zmb man
+ zmb [GLOBAL OPTIONS] man
 
 =cut
 
@@ -81,7 +81,7 @@ sub cmd_man {
 
 Call a non-existing RPC method.
 
-    zmb non_existing_method
+ zmb [GLOBAL OPTIONS] non_existing_method
 
 =cut
 
@@ -95,7 +95,7 @@ sub cmd_non_existing_method {
 
 =head2 version_info
 
-    zmb version_info
+ zmb [GLOBAL OPTIONS] version_info
 
 =cut
 
@@ -109,11 +109,9 @@ sub cmd_version_info {
 
 =head2 start_domain_test
 
-Call start_domain_test.
+ zmb [GLOBAL OPTIONS] start_domain_test [OPTIONS]
 
-    zmb start_domain_test [OPTIONS]
-
-Options:
+ Options:
 
     --domain DOMAIN_NAME
     --nameserver DOMAIN_NAME:IP_ADDRESS
@@ -123,7 +121,7 @@ Options:
     --ipv4 true|false|null
     --ipv6 true|false|null
 
-DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
+ DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
     keytag=UNSIGNED_INTEGER
     algorithm=UNSIGNED_INTEGER
@@ -210,7 +208,7 @@ sub cmd_start_domain_test {
 
 =head2 test_progress
 
- zmb test_progress [OPTIONS]
+ zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
 
  Options:
    --testid TEST_ID
@@ -237,7 +235,7 @@ sub cmd_test_progress {
 
 =head2 get_test_results
 
- zmb get_test_results [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_results [OPTIONS]
 
  Options:
    --testid TEST_ID
@@ -269,7 +267,7 @@ sub cmd_get_test_results {
 
 =head2 get_test_history
 
- zmb get_test_history [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_history [OPTIONS]
 
  Options:
    --domain DOMAIN_NAME
@@ -322,7 +320,7 @@ sub cmd_get_test_history {
 
 =head2 add_api_user
 
- zmb add_api_user [OPTIONS]
+ zmb [GLOBAL OPTIONS] add_api_user [OPTIONS]
 
  Options:
    --username USERNAME

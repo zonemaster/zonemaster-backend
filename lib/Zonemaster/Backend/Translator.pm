@@ -7,6 +7,7 @@ use 5.14.2;
 use Moose;
 use Encode;
 use POSIX qw[setlocale LC_MESSAGES LC_CTYPE];
+use Zonemaster::Backend::Config;
 
 # Zonemaster Modules
 require Zonemaster::Engine::Translator;
@@ -16,19 +17,19 @@ extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
     my ( $self, $entry, $browser_lang ) = @_;
-
+    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
     my $previous_locale = $self->locale;
-    if ( $browser_lang eq 'fr' ) {
-        $self->locale( "fr_FR.UTF-8" );
-    }
-    elsif ( $browser_lang eq 'sv' ) {
-        $self->locale( "sv_SE.UTF-8" );
-    }
-    elsif ( $browser_lang eq 'da' ) {
-        $self->locale( "da_DK.UTF-8" );
+
+    if ( $locale{$browser_lang} ) {
+        if ( $locale{$browser_lang} eq 'NOT-UNIQUE') {
+            die "Language string not unique: '$browser_lang'\n";
+        }
+        else {
+            $self->locale( $locale{$browser_lang} );
+        }
     }
     else {
-        $self->locale( "en_US.UTF-8" );
+        die "Undefined language string: '$browser_lang'\n";
     }
 
     # Make locale really be set. Fix that makes translation work on FreeBSD 12.1. Solution copied from

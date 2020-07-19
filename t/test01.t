@@ -3,6 +3,7 @@ use warnings;
 use 5.14.2;
 
 use Test::More;    # see done_testing()
+use Test::Exception;
 use Zonemaster::Engine;
 use JSON::PP;
 
@@ -82,13 +83,19 @@ sub run_zonemaster_test_with_backend_API {
 		last if ( $progress == 100 );
 	}
 	ok( $engine->test_progress( $test_id ) == 100 );
-	my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr-FR' } );
+
+        my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr_FR' } );
 	ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
 	ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
 	ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
 	ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
 	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
+        dies_ok { $engine->get_test_results( { id => $test_id, language => 'fr-FR' } ); }
+        'API get_test_results -> [results] parameter not present (wrong language tag)'; # Should be underscore, not hyphen.
+
+        dies_ok { $engine->get_test_results( { id => $test_id, language => 'zz' } ); }
+        'API get_test_results -> [results] parameter not present (wrong language tag)'; # "zz" is not our configuration file.
 }
 
 run_zonemaster_test_with_backend_API(1);

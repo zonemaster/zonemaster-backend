@@ -42,11 +42,16 @@ my $router = router {
 	};
 
 	connect "profile_names" => {
-        handler => "+Zonemaster::Backend::RPCAPI",
-        action => "profile_names"
-  };
-  
-  connect "get_host_by_name" => {
+                handler => "+Zonemaster::Backend::RPCAPI",
+                action => "profile_names"
+        };
+
+	connect "get_language_tags" => {
+                handler => "+Zonemaster::Backend::RPCAPI",
+                action => "get_language_tags"
+        };
+
+        connect "get_host_by_name" => {
 		handler => "+Zonemaster::Backend::RPCAPI",
 		action => "get_host_by_name"
 	};

@@ -28,10 +28,6 @@ PostgreSQL        | `PostgreSQL`
 SQLite            | `SQLite`
 
 
-## GEOLOCATION section
-
-TBD
-
 ## LANGUAGE section
 
 The LANGUAGE section has one key, `locale`.

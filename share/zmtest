@@ -15,6 +15,7 @@ usage () {
     echo "  -s URL --server URL   Zonemaster Backend to query. Default is http://localhost:5000/" >&2
     echo "  --noipv4              Run the test without ipv4." >&2
     echo "  --noipv6              Run the test without ipv6." >&2
+    echo "  --lang LANG           A language tag. Default is en." >&2
     exit "${status}"
 }
 
@@ -44,6 +45,7 @@ while [ $# -gt 0 ] ; do
         -s|--server) server_url="$2"; shift 2;;
         --noipv4) ipv4="false"; shift 1;;
         --noipv6) ipv6="false"; shift 1;;
+        --lang) lang="$1"; shift 1;;
         *) domain="$1" ; shift 1;;
     esac
 done
@@ -67,5 +69,5 @@ do
 done
 
 # Get test results
-zmb "${server_url}" get_test_results --testid "${testid}" --lang en
+zmb "${server_url}" get_test_results --testid "${testid}" --lang "${lang}"
 echo "testid: ${testid}" >&2

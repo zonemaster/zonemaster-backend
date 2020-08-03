@@ -78,6 +78,17 @@ sub profile_names {
     return \@profiles;
 }
 
+# Return the list of language tags supported by get_test_results(). The tags are
+# derived from the locale tags set in the configuration file.
+$json_schemas{get_language_tags} = joi->object->strict;
+sub get_language_tags {
+    my ($self) = @_;
+
+    my @lang = Zonemaster::Backend::Config->load_config()->ListLanguageTags();
+
+    return \@lang;
+}
+
 $json_schemas{get_host_by_name} = joi->object->strict->props(
     hostname   => $zm_validator->domain_name->required
 );
@@ -358,7 +369,7 @@ sub get_test_params {
 
 $json_schemas{get_test_results} = joi->object->strict->props(
     id => $zm_validator->test_id->required,
-    language => $zm_validator->translation_language->required
+    language => $zm_validator->language_tag->required
 );
 sub get_test_results {
     my ( $self, $params ) = @_;
@@ -367,7 +378,6 @@ sub get_test_results {
 
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
-    my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
@@ -386,7 +396,7 @@ sub get_test_results {
         }
 
         $res->{module} = $test_res->{module};
-        $res->{message} = $translator->translate_tag( $test_res, $browser_lang ) . "\n";
+        $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
         $res->{message} =~ s/,/, /isg;
         $res->{message} =~ s/;/; /isg;
         $res->{level} = $test_res->{level};

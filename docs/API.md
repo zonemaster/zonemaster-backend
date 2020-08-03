@@ -263,25 +263,37 @@ Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 
 
-### Translation language
+### Language tag
 
 Basic data type: string
 
-A string of alphanumeric, hyphens, underscores, full stops and at-signs (`@`),
-of at least 1 and at most 30 characters.
-I.e. a string matching `/^[a-zA-Z0-9-_.@]{1,30}$/`.
+A string of A-Z, a-z and underscores matching the regular expression
+`/^[a-z]{2}(_[A-Z]{2})?$/`.
 
-* Any string starting with `"fr"` is interpreted as French.
-* Any string starting with `"sv"` is interpreted as Swedish.
-* Any string starting with `"da"` is interpreted as Danish.
-* Any other string is interpreted as English.
+The `language tag` must match a `locale tag` in the configuration file.
+If the `language tag` is a two-character string, it only needs to match the
+first two characters of the `locale tag` from the configuration file, if
+that is unique (there is only one `locale tag` starting with the same two
+characters), else it is an error.
+
+Any other string is an error.
+
+The two first characters of the `language tag` are intended to be an
+[ISO 639-1] two-character language code and the optional two last characters
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+
+A default installation will accept the following `language tags`:
+* `da` or `da_DK` for Danish language.
+* `en` or `en_US` for English language.
+* `fr` or `fr_FR` for French language.
+* `sv` or `sv_SE` for Swedish language.
 
 
 ### Unsigned integer
 
- Basic data type: number (integer)
+Basic data type: number (integer)
  
- An unsigned integer is either positive or zero.
+An unsigned integer is either positive or zero.
  
 
 ### Username
@@ -367,6 +379,52 @@ Example response:
 An array of *Profile names* in lower case. `"default"` is always included.
 
 
+## API method: `get_language_tags`
+
+Returns all valid [language tags][language tag] generated from the setting in
+the configuration file.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "get_language_tags"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "en",
+    "en_US",
+    "fr",
+    "fr_FR",
+    "sv",
+    "sv_SE"
+  ]
+}
+```
+
+
+#### `"result"`
+
+An array of *language tags*. It is never empty.
+
+
+#### `"error"`
+
+>
+> TODO: List all possible error codes and describe what they mean enough for
+> clients to know how react to them. Or prevent RPCAPI from starting with
+> errors in the configuration file and make it not to reread the configuration
+> file while running.
+>
+
+
 ## API method: `get_host_by_name`
 
 Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
@@ -417,6 +475,7 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 >
 > TODO: If the name resolves to two or more IPv4 address, how is that represented?
 >
+
 
 #### `"error"`
 
@@ -573,13 +632,15 @@ An object with the following properties:
 > TODO: Clarify the purpose of each `"params"` property.
 >
 
+
 #### `"result"`
 
 A *test id*. 
 
 If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
 then the new request does not trigger a new test, but returns with the results of the last test
- 
+
+
 #### `"error"`
 
 * If the given `profile` is not among the [available profiles], a user
@@ -637,7 +698,8 @@ A *progress percentage*.
 
 ## API method: `get_test_results`
 
-Return all *test result* objects of a *test*, with *messages* in the requested *translation language*.
+Return all *test result* objects of a *test*, with *messages* in the requested language as selected by the
+*language tag*.
 
 Example request:
 ```json
@@ -651,6 +713,9 @@ Example request:
   }
 }
 ```
+
+The `id` parameter must match the `result` in the response to a `start_domain_test` call,
+and that test must have been completed.
 
 Example response:
 ```json
@@ -710,7 +775,7 @@ Example response:
 An object with the following properties:
 
 * `"id"`: A *test id*, required.
-* `"language"`: A *translation language*, required.
+* `"language"`: A *language tag*, required.
 
 
 #### `"result"`
@@ -738,7 +803,6 @@ In the case of a test created with `add_batch_job`:
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
 >
-
 
 
 #### `"error"`
@@ -877,9 +941,11 @@ An object with the following properties:
 * `"username"`: An *username*, required. The name of the user to add.
 * `"api_key"`: An *api key*, required. The API key for the user to add.
 
+
 #### `"result"`
 
 An integer. The value is equal to 1 if the registration is a success, or 0 if it failed.
+
 
 #### `"error"`
 >
@@ -1088,6 +1154,7 @@ Example response:
 }
 ```
 
+
 #### `"params"`
 
 An object with the property:
@@ -1106,5 +1173,8 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Available profiles]: Configuration.md#profiles-section
-[Privilege levels]: #privilege-levels
+[Available profiles]:           Configuration.md#profiles-section
+[ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
+[Privilege levels]:             #privilege-levels
+[Language tag]:                 #language-tag

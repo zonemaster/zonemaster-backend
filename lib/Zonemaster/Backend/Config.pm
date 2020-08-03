@@ -76,6 +76,77 @@ sub DB_name {
     return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
+=head2 Language_Locale_hash
+
+Read LANGUAGE.locale from the configuration (.ini) file and returns
+the valid language tags for RPCAPI. The incoming language tag
+from RPCAPI is compared to those. The language tags are mapped to
+locale setting value.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+A hash of valid language tags as keys with set locale value as value.
+The hash is never empty.
+
+=cut
+
+sub Language_Locale_hash {
+    # There is one special value to capture ambiguous (and therefore
+    # not permitted) translation language tags.
+    my ($self) = @_;
+    my $data = $self->{cfg}->val( 'LANGUAGE', 'locale' );
+    $data = 'en_US' unless $data;
+    my @localetags = split (/\s+/,$data);
+    my %locale;
+    foreach my $la (@localetags) {
+        die "Incorrect locale tag in LANGUAGE.locale: $la\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
+        die "Repeated locale tag in LANGUAGE.locale: $la\n" if $locale{$la};
+        (my $a) = split (/_/,$la); # $a is the language code only
+        my $lo = "$la.UTF-8";
+        # Set special value if the same language code is used more than once
+        # with different country codes.
+        if ( $locale{$a} and $locale{$a} ne $lo ) {
+            $locale{$a} = 'NOT-UNIQUE';
+        }
+        else {
+            $locale{$a} = $lo;
+        }
+        $locale{$la} = $lo;
+    }
+    return %locale;
+}
+
+=head2 ListLanguageTags
+
+Read indirectly LANGUAGE.locale from the configuration (.ini) file
+and returns a list of valid language tags for RPCAPI. The list can
+be retrieved via an RPCAPI method.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+An array of valid language tags. The array is never empty.
+
+=cut
+
+sub ListLanguageTags {
+    my ($self) = @_;
+    my %locale = &Language_Locale_hash($self);
+    my @langtags;
+    foreach my $key (keys %locale) {
+        push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
+    }
+    return @langtags;
+}
+
+
 sub DB_connection_string {
     my ($self) = @_;
 

@@ -28,10 +28,83 @@ PostgreSQL        | `PostgreSQL`
 SQLite            | `SQLite`
 
 
-## GEOLOCATION section
+## LANGUAGE section
 
-TBD
+The LANGUAGE section has one key, `locale`.
 
+The value of the `locale` key is a space separated list of
+`locale tags` where each tag must match the regular expression
+`/^[a-z]{2}_[A-Z]{2}$/`.
+
+If the `locale` key is empty or absent, the `locale tag` value
+"en_US" is set by default.
+
+The two first characters of a `locale tag` are intended to be an
+[ISO 639-1] two-character language code and the two last characters
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+A `locale tag` is a locale setting for the available translation
+of messages without ".UTF-8", which is implied.
+
+If a new `locale tag` is added to the configuration then the equivalent
+MO file should be added to Zonemaster-Engine at the correct place so
+that gettext can retrieve it, or else the added `locale tag` will not
+add any actual language support. See the
+[Zonemaster-Engine share directory] for the existing PO files that are
+converted to MO files. (Here we should have a link
+to documentation instead.)
+
+Removing a language from the configuration file just blocks that
+language from being allowed. If there are more than one `locale tag`
+(with different country codes) for the same language, then
+all those must be removed to block that language.
+
+English is the Zonemaster default language, but it can be blocked
+from being allowed by RPC-API by not including it in the
+configuration.
+
+In the RPCAPI, `language tag` is used ([Language tag]). The
+`language tags` are generated from the `locale tags`. Each
+`locale tag` will generate two `language tags`, a short tag
+equal to the first two letters (usually the same as a language
+code) and a long tag which is equal to the full `locale tag`.
+If "en_US" is the `locale tag` then "en" and "en_US" are the
+`language tags`.
+
+If there are two `locale tags` that would give the same short
+`language tag` then that is excluded. E.g. "en_US en_UK" will
+only give "en_US" and "en_UK" as `language tags`.
+
+The default installation and configuration supports the
+following languages.
+
+Language | Locale tag value   | Locale value used
+---------|--------------------|------------------
+Danish   | da_DK              | da_DK.UTF-8
+English  | en_US              | en_US.UTF-8
+French   | fr_FR              | fr_FR.UTF-8
+Swedish  | sv_SE              | sv_SE.UTF-8
+
+The following `language tags` are generated:
+* da
+* da_DK
+* en
+* en_US
+* fr
+* fr_FR
+* sv
+* sv_SE
+
+It is an error to repeat the same `locale tag`.
+
+Setting in the default configuration file:
+
+```
+locale = da_DK en_US fr_FR sv_SE
+```
+
+Each locale set in the configuration file, including the implied
+".UTF-8", must also be installed or activate on the system
+running the RPCAPI daemon for the translation to work correctly.
 
 ## LOG section
 
@@ -74,11 +147,14 @@ TBD
 
 --------
 
-[Zonemaster::Engine::Profile]: https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
-[Default JSON profile file]: https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
-[Profile JSON files]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
-[Profile names]: API.md#profile-name
-[Profiles]: Architecture.md#profile
-
+[Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
+[ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
+[Profile names]:                      API.md#profile-name
+[Profiles]:                           Architecture.md#profile
+[Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
+[Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
+[Language tag]:                       API.md#language-tag
 
 

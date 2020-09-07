@@ -17,8 +17,9 @@ use JSON::Validator "joi";
 
 # Zonemaster Modules
 use Zonemaster::Engine;
-use Zonemaster::Engine::Nameserver;
 use Zonemaster::Engine::DNSName;
+use Zonemaster::Engine::Logger::Entry;
+use Zonemaster::Engine::Nameserver;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
@@ -189,8 +190,10 @@ sub _check_domain {
             );
     }
 
+    my %levels = Zonemaster::Engine::Logger::Entry::levels();
     my @res;
     @res = Zonemaster::Engine::Test::Basic->basic00($dn);
+    @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
     if (@res != 0) {
         return ( $dn, { status => 'nok', message => encode_entities( "$type name or label outside allowed length" ) } );
     }

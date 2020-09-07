@@ -15,7 +15,7 @@ usage () {
     echo "  -s URL --server URL   Zonemaster Backend to query. Default is http://localhost:5000/" >&2
     echo "  --noipv4              Run the test without ipv4." >&2
     echo "  --noipv6              Run the test without ipv6." >&2
-    echo "  --lang LANG           A language tag. Default is en." >&2
+    echo "  --lang LANG           A language tag. Default is \"en\"." >&2
     echo "                        Valid values are determined by backend_config.ini." >&2
     exit "${status}"
 }

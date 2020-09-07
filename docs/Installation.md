@@ -62,13 +62,13 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote perl-Net-Server redhat-lsb-core
+sudo yum install perl-Config-IniFiles perl-JSON-RPC perl-Module-Install perl-IO-CaptureOutput perl-Parallel-ForkManager perl-Plack perl-Router-Simple perl-String-ShellQuote perl-Net-Server redhat-lsb-core
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Net::IP::XS Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
+sudo cpanm Class::Method::Modifiers Daemon::Control Net::IP::XS Plack::Middleware::Debug Role::Tiny Starman
 ```
 
 Install Zonemaster::Backend:

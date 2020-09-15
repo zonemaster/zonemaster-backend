@@ -6,8 +6,8 @@ use Test::More;    # see done_testing()
 use JSON::PP;
 use Test::Exception;
 
-my $db_backend = $ARGV[0];
-ok( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' , "Testing a supported database backend: $db_backend" );
+my $db_backend = $ARGV[0] // BAIL_OUT( "No database backend specified" );
+( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' ) or BAIL_OUT( "Unsupported database backend: $db_backend" );
 
 my $frontend_params_1 = {
 	client_id      => "$db_backend Unit Test",         # free string

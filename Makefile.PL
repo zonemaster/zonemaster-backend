@@ -28,7 +28,7 @@ requires
   'Router::Simple::Declare'     => 0,
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
-  'Try::Tiny'                   => 0.30,
+  'Try::Tiny'                   => 0.24,
   'Zonemaster::Engine'          => 3.0,
   'Zonemaster::LDNS'            => 2.0,
   ;

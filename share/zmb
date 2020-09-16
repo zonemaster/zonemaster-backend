@@ -114,12 +114,12 @@ sub cmd_version_info {
  Options:
 
     --domain DOMAIN_NAME
-    --nameserver DOMAIN_NAME:IP_ADDRESS
-    --client-id CLIENT_ID
-    --client-version CLIENT_VERSION
-    --ds-info DS_INFO
     --ipv4 true|false|null
     --ipv6 true|false|null
+    --nameserver DOMAIN_NAME:IP_ADDRESS
+    --ds-info DS_INFO
+    --client-id CLIENT_ID
+    --client-version CLIENT_VERSION
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 

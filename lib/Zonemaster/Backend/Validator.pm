@@ -6,7 +6,11 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use JSON::Validator "joi";
+use JSON::Validator::Joi;
+
+sub joi {
+    return JSON::Validator::Joi->new;
+}
 
 sub new {
     my ( $type ) = @_;

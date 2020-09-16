@@ -24,7 +24,6 @@ requires
   'Net::IP::XS'                 => 0.14,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,
-  'Plack::Middleware::Debug'    => 0.14,
   'Role::Tiny'                  => 1.001003,
   'Router::Simple::Declare'     => 0,
   'Starman'                     => 0,

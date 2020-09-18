@@ -21,7 +21,6 @@ requires
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,
   'Moose'                       => 2.04,
-  'Net::IP::XS'                 => 0.14,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,
   'Role::Tiny'                  => 1.001003,

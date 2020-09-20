@@ -14,8 +14,8 @@
 ### END INIT INFO
 
 BINDIR=${ZM_BACKEND_BINDIR:-/usr/local/bin}
-LOGFILE=${ZM_BACKEND_LOGDIR:-/var/log/zonemaster}/zm-rpcapi.log
-PIDFILE=${ZM_BACKEND_PIDDIR:-/var/run/zonemaster}/zm-rpcapi.pid
+LOGFILE=${ZM_BACKEND_LOGFILE:-/var/log/zonemaster/zm-rpcapi.log}
+PIDFILE=${ZM_BACKEND_PIDFILE:-/var/run/zonemaster/zm-rpcapi.pid}
 LISTENIP=${ZM_BACKEND_LISTENIP:-127.0.0.1}
 LISTENPORT=${ZM_BACKEND_LISTENPORT:-5000}
 USER=${ZM_BACKEND_USER:-zonemaster}

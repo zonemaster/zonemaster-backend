@@ -23,7 +23,6 @@ use Zonemaster::Backend::Config;
 local $| = 1;
 
 builder {
-    enable 'Debug';
     enable sub {
         my $app = shift;
 

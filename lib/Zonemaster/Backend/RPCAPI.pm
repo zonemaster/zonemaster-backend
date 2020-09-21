@@ -10,16 +10,16 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use String::ShellQuote;
 use File::Slurp qw(append_file);
-use Zonemaster::LDNS;
-use Net::IP::XS qw(:PROC);
 use HTML::Entities;
 use JSON::Validator::Joi;
 
 # Zonemaster Modules
+use Zonemaster::LDNS;
 use Zonemaster::Engine;
 use Zonemaster::Engine::DNSName;
 use Zonemaster::Engine::Logger::Entry;
 use Zonemaster::Engine::Nameserver;
+use Zonemaster::Engine::Net::IP;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
@@ -271,7 +271,9 @@ sub validate_syntax {
                 unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
 
             return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-              unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
+              unless ( !$ns_ip->{ip}
+                || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
+                || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
         }
 
         foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {

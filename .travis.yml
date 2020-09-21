@@ -15,7 +15,7 @@ perl:
     - "5.26"
     - "5.24"
     - "5.22"
-      # Perl 5.16 is temporarily excluded because Travis fails
+    - "5.16"
     
 addons:
   apt:

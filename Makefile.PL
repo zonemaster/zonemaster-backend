@@ -13,7 +13,6 @@ requires
   'File::ShareDir'              => 0,
   'File::Slurp'                 => 0,
   'HTML::Entities'              => 0,
-  'IO::CaptureOutput'           => 0,
   'JSON::PP'                    => 0,
   'JSON::RPC'                   => 1.01,
   'JSON::Validator'             => 3.12,

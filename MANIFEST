@@ -46,9 +46,6 @@ README.md
 script/add-test.pl
 script/create_db_mysql.pl
 script/create_db_postgresql_9.3.pl
-script/crontab_job_runner/execute_tests.pl
-script/crontab_job_runner/execute_zonemaster_P10.pl
-script/crontab_job_runner/execute_zonemaster_P5.pl
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
 share/backend_config.ini

@@ -286,6 +286,7 @@ A default installation will accept the following `language tags`:
 * `da` or `da_DK` for Danish language.
 * `en` or `en_US` for English language.
 * `fr` or `fr_FR` for French language.
+* `nb` or `nb_NO` for Norwegian language.
 * `sv` or `sv_SE` for Swedish language.
 
 

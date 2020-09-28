@@ -317,10 +317,11 @@ sudo apt install curl
 Install required locales:
 
 ```sh
-locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
 locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep nb_NO.utf8 || echo nb_NO.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
 sudo locale-gen
 ```
 

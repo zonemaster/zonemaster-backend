@@ -82,6 +82,7 @@ Language | Locale tag value   | Locale value used
 Danish   | da_DK              | da_DK.UTF-8
 English  | en_US              | en_US.UTF-8
 French   | fr_FR              | fr_FR.UTF-8
+Norwegian| nb_NO              | nb_NO.UTF-8
 Swedish  | sv_SE              | sv_SE.UTF-8
 
 The following `language tags` are generated:
@@ -91,6 +92,8 @@ The following `language tags` are generated:
 * en_US
 * fr
 * fr_FR
+* nb
+* nb_NO
 * sv
 * sv_SE
 
@@ -99,7 +102,7 @@ It is an error to repeat the same `locale tag`.
 Setting in the default configuration file:
 
 ```
-locale = da_DK en_US fr_FR sv_SE
+locale = da_DK en_US fr_FR nb_NO sv_SE
 ```
 
 Each locale set in the configuration file, including the implied

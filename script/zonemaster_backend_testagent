@@ -61,22 +61,51 @@ $loglevel = lc $loglevel;
 
 $loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
 
-print STDERR "Logging to $logfile\n";
+# Returns a Log::Dispatch object logging to STDOUT
+#
+# This procedure duplicates the STDOUT file descriptor to make sure that it keeps
+# logging to the same place even if STDOUT is later redirected.
+sub log_dispatcher_dup_stdout {
+    my $min_level = shift;
 
-{
-    my $dispatcher = Log::Dispatch->new(outputs => [
-        [
-            'File',
-            min_level => $loglevel,
-            filename => $logfile,
-            mode => '>>',
-            callbacks => sub {
-                my %args = @_;
-                $args{message} = sprintf "%s [%d] %s - %s\n", strftime("%FT%TZ", gmtime), $PID, uc $args{level}, $args{message};
-            },
+    open( my $fd, '>&', \*STDOUT ) or die "Can't dup STDOUT: $!";
+    my $handle = IO::Handle->new_from_fd( $fd, "w" ) or die "Can't fdopen duplicated STDOUT: $!";
+    $handle->autoflush(1);
+
+    return Log::Dispatch->new(
+        outputs => [
+            [
+                'Handle',
+                handle    => $handle,
+                min_level => $min_level,
+                callbacks => sub {
+                    my %args = @_;
+                    $args{message} = sprintf "%s: %s\n", uc $args{level}, $args{message};
+                },
+            ],
         ]
-    ]);
-    Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
+    );
+}
+
+# Returns a Log::Dispatch object logging to a file
+sub log_dispatcher_file {
+    my $min_level = shift;
+    my $log_file  = shift;
+
+    return Log::Dispatch->new(
+        outputs => [
+            [
+                'File',
+                filename  => $log_file,
+                mode      => '>>',
+                min_level => $min_level,
+                callbacks => sub {
+                    my %args = @_;
+                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
+                },
+            ],
+        ]
+    );
 }
 
 ###
@@ -136,6 +165,18 @@ sub main {
 # Make sure the environment is alright before forking
 my $initial_config;
 eval {
+    # Initialize logging
+    my $dispatcher;
+    if ( $logfile eq '-' ) {
+        $dispatcher = log_dispatcher_dup_stdout( $loglevel );
+    }
+    else {
+        $dispatcher = log_dispatcher_file( $loglevel, $logfile );
+        print STDERR "zonemaster-testagent logging to file $logfile\n";
+    }
+    Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
+
+    # Make sure we can load the configuration file
     $log->debug("Starting pre-flight check");
     $initial_config = Zonemaster::Backend::Config->load_config();
 
@@ -215,6 +256,8 @@ The location of the PID file to use.
 =item B<--logfile=FILE>
 
 The location of the log file to use.
+
+When FILE is -, the log is written to standard output.
 
 =item B<--loglevel=LEVEL>
 

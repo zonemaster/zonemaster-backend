@@ -573,7 +573,7 @@ If an identical *test* was already enqueued and hasn't been started or was enque
 no new *test* is enqueued.
 Instead the id for the already enqueued or run test is returned.
 
-*Tests* enqueud using this method are assigned a *priority* of 10.
+*Tests* enqueued using this method are assigned a *priority* of 10.
 
 Example request:
 ```json

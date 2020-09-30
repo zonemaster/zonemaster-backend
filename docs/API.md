@@ -303,7 +303,7 @@ Basic data type: string
 
 A string of alphanumerics, dashes, full stops and at-signs, of at least 1 and at
 most 50 characters.
-I.e. a string matching `/^[a-zA-Z0-9]{1,50}$/`.
+I.e. a string matching `/^[a-zA-Z0-9-.@]{1,50}$/`.
 
 Represents the name of an authenticated account (see *[Privilege levels]*)
 

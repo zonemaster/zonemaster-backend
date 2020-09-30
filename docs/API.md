@@ -98,7 +98,7 @@ The unique id of a *batch*.
 Basic data type: string
 
 A string of alphanumerics, hyphens, underscores, pluses (`+`), tildes (`~`),
-full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 512
+full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 50
 characters.
 I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
@@ -111,7 +111,7 @@ Used for monitoring which client (GUI) uses the API.
 Basic data type: string
 
 A string of alphanumerics, hyphens, pluses, tildes, underscores, full stops,
-colons and spaces, of at least 1 and at most 512 characters.
+colons and spaces, of at least 1 and at most 50 characters.
 I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
 Represents the version of the client.

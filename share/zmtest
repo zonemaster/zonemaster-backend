@@ -41,12 +41,13 @@ domain=""
 server_url="http://localhost:5000/"
 ipv4="true"
 ipv6="true"
+lang="en"
 while [ $# -gt 0 ] ; do
     case "$1" in
         -s|--server) server_url="$2"; shift 2;;
         --noipv4) ipv4="false"; shift 1;;
         --noipv6) ipv6="false"; shift 1;;
-        --lang) lang="$1"; shift 1;;
+        --lang) lang="$2"; shift 2;;
         *) domain="$1" ; shift 1;;
     esac
 done

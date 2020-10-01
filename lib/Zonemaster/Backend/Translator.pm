@@ -18,6 +18,7 @@ extends 'Zonemaster::Engine::Translator';
 sub translate_tag {
     my ( $self, $hashref, $browser_lang ) = @_;
 
+    # Workaround for broken Zonemaster::Engine::translate_tag in Zonemaster-Engine 3.1.2.
     # Make locale really be set. Fix that makes translation work on FreeBSD 12.1. Solution copied from
     # CLI.pm in the Zonemaster-CLI repository.
     undef $ENV{LANGUAGE};

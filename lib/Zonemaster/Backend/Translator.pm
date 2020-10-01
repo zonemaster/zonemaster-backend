@@ -17,20 +17,8 @@ extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
     my ( $self, $hashref, $browser_lang ) = @_;
-    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
     my $previous_locale = $self->locale;
-
-    if ( $locale{$browser_lang} ) {
-        if ( $locale{$browser_lang} eq 'NOT-UNIQUE') {
-            die "Language string not unique: '$browser_lang'\n";
-        }
-        else {
-            $self->locale( $locale{$browser_lang} );
-        }
-    }
-    else {
-        die "Undefined language string: '$browser_lang'\n";
-    }
+    $self->locale( $locale{$browser_lang} );
 
     # Make locale really be set. Fix that makes translation work on FreeBSD 12.1. Solution copied from
     # CLI.pm in the Zonemaster-CLI repository.

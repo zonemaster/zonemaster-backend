@@ -388,8 +388,6 @@ sub get_test_results {
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
-    eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
-
     my $test_info = $self->{db}->test_results( $params->{id} );
     my @zm_results;
     foreach my $test_res ( @{ $test_info->{results} } ) {

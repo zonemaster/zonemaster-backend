@@ -49,9 +49,7 @@ sub translate_tag {
     my $octets = Zonemaster::Engine::Translator::translate_tag( $self, $entry );
     $self->locale( $previous_locale );
 
-    return ( defined $octets )
-      ? decode_utf8( $octets )
-      : $entry->string;
+    return decode_utf8( $octets );
 }
 
 1;

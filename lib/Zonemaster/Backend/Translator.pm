@@ -17,8 +17,6 @@ extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
     my ( $self, $hashref, $browser_lang ) = @_;
-    my $previous_locale = $self->locale;
-    $self->locale( $locale{$browser_lang} );
 
     # Make locale really be set. Fix that makes translation work on FreeBSD 12.1. Solution copied from
     # CLI.pm in the Zonemaster-CLI repository.
@@ -35,7 +33,6 @@ sub translate_tag {
 
     my $entry = Zonemaster::Engine::Logger::Entry->new( %{ $hashref } );
     my $octets = Zonemaster::Engine::Translator::translate_tag( $self, $entry );
-    $self->locale( $previous_locale );
 
     return decode_utf8( $octets );
 }

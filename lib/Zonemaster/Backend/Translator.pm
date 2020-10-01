@@ -16,7 +16,7 @@ require Zonemaster::Engine::Logger::Entry;
 extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
-    my ( $self, $entry, $browser_lang ) = @_;
+    my ( $self, $hashref, $browser_lang ) = @_;
     my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
     my $previous_locale = $self->locale;
 
@@ -45,17 +45,13 @@ sub translate_tag {
         $ENV{LC_ALL} || $ENV{LC_CTYPE};
     }
 
-    my $string = $self->data->{ $entry->{module} }{ $entry->{tag} };
-
-    if ( not $string ) {
-        return $entry->{string};
-    }
-
-    my $blessed_entry = bless($entry, 'Zonemaster::Engine::Logger::Entry');
-    my $octets = Zonemaster::Engine::Translator::translate_tag( $self, $blessed_entry );
+    my $entry = Zonemaster::Engine::Logger::Entry->new( %{ $hashref } );
+    my $octets = Zonemaster::Engine::Translator::translate_tag( $self, $entry );
     $self->locale( $previous_locale );
-    my $str = decode_utf8( $octets );
-    return $str;
+
+    return ( defined $octets )
+      ? decode_utf8( $octets )
+      : $entry->string;
 }
 
 1;

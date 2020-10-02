@@ -6,14 +6,18 @@ our $VERSION = '1.1.0';
 
 use 5.14.2;
 
-use JSON::RPC::Dispatch;
-use Router::Simple::Declare;
+use English qw( $PID );
 use JSON::PP;
+use JSON::RPC::Dispatch;
+use Log::Any qw( $log );
+use Log::Any::Adapter;
+use Log::Any::Adapter::Util qw( logging_methods logging_aliases );
+use Log::Dispatch;
 use POSIX;
-use Try::Tiny;
-
 use Plack::Builder;
 use Plack::Response;
+use Router::Simple::Declare;
+use Try::Tiny;
 
 BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
@@ -102,6 +106,34 @@ my $router = router {
 		action => "get_batch_job_result"
 	};
 };
+
+# Returns a Log::Any-compatible log level string, or throws an exception.
+sub get_loglevel {
+    my $value = $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL} || 'warning';
+    for my $method ( logging_methods(), logging_aliases() ) {
+        if ( $value eq $method ) {
+            return $method;
+        }
+    }
+    die "Error: Unrecognized ZM_BACKEND_RPCAPI_LOGLEVEL $value\n";
+}
+
+Log::Any::Adapter->set(
+    'Dispatch',
+    dispatcher => Log::Dispatch->new(
+        outputs => [
+            [
+                'Screen',
+                min_level => get_loglevel(),
+                stderr    => 1,
+                callbacks => sub {
+                    my %args = @_;
+                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
+                },
+            ],
+        ]
+    ),
+);
 
 my $dispatch = JSON::RPC::Dispatch->new(
 	router => $router,

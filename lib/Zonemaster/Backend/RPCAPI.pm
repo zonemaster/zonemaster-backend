@@ -388,6 +388,19 @@ sub get_test_results {
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
+    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
+    if ( $locale{$params->{language}} ) {
+        if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
+            die "Language string not unique: '$params->{language}'\n";
+        }
+    }
+    else {
+        die "Undefined language string: '$params->{language}'\n";
+    }
+
+    my $previous_locale = $translator->locale;
+    $translator->locale( $locale{$params->{language}} );
+
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
     my $test_info = $self->{db}->test_results( $params->{id} );
@@ -437,6 +450,8 @@ sub get_test_results {
 
         push( @zm_results, $res );
     }
+
+    $translator->locale( $previous_locale );
 
     $result = $test_info;
     $result->{results} = \@zm_results;

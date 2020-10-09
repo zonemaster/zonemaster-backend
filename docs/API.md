@@ -98,7 +98,7 @@ The unique id of a *batch*.
 Basic data type: string
 
 A string of alphanumerics, hyphens, underscores, pluses (`+`), tildes (`~`),
-full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 512
+full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 50
 characters.
 I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
@@ -111,7 +111,7 @@ Used for monitoring which client (GUI) uses the API.
 Basic data type: string
 
 A string of alphanumerics, hyphens, pluses, tildes, underscores, full stops,
-colons and spaces, of at least 1 and at most 512 characters.
+colons and spaces, of at least 1 and at most 50 characters.
 I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
 Represents the version of the client.
@@ -303,7 +303,7 @@ Basic data type: string
 
 A string of alphanumerics, dashes, full stops and at-signs, of at least 1 and at
 most 50 characters.
-I.e. a string matching `/^[a-zA-Z0-9]{1,50}$/`.
+I.e. a string matching `/^[a-zA-Z0-9-.@]{1,50}$/`.
 
 Represents the name of an authenticated account (see *[Privilege levels]*)
 
@@ -573,7 +573,7 @@ If an identical *test* was already enqueued and hasn't been started or was enque
 no new *test* is enqueued.
 Instead the id for the already enqueued or run test is returned.
 
-*Tests* enqueud using this method are assigned a *priority* of 10.
+*Tests* enqueued using this method are assigned a *priority* of 10.
 
 Example request:
 ```json

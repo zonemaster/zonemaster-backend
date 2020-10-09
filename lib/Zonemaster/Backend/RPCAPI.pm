@@ -42,8 +42,8 @@ sub new {
             $self->{db} = "$params->{db}"->new();
         };
         if ($@) {
-            warn "Failed to initialize the [$params->{db}] database backend module: [$@] \n";
-            die "Failed to initialize the [$params->{db}] database backend module \n";
+            warn "Internal error #001: Failed to initialize the [$params->{db}] database backend module: [$@] \n";
+            die "Internal error #001 \n";
         }
     }
     else {
@@ -54,8 +54,8 @@ sub new {
             $self->{db} = $backend_module->new();
         };
         if ($@) {
-            warn "Failed to initialize the database backend module: [$@] \n";
-            die "Failed to initialize the database backend module \n" if $@;
+            warn "Internal error #002: Failed to initialize the database backend module: [$@] \n";
+            die "Internal error #002 \n" if $@;
         }
     }
 
@@ -63,10 +63,10 @@ sub new {
 }
 
 sub handle_exception {
-    my ( $method, $exception ) = @_;
+    my ( $method, $exception, $exception_id ) = @_;
 
-    warn "Unexpected error in the $method API call: [$exception] \n";
-    die "Unexpected error in the $method API call \n";
+    warn "Internal error $exception_id: Unexpected error in the $method API call: [$exception] \n";
+    die "Internal error $exception_id \n";
 }
 
 $json_schemas{version_info} = joi->object->strict;
@@ -80,7 +80,7 @@ sub version_info {
 
     };
     if ($@) {
-        handle_exception('version_info', $@);
+        handle_exception('version_info', $@, '#003');
     }
     
     return \%ver;
@@ -96,7 +96,7 @@ sub profile_names {
 
     };
     if ($@) {
-        handle_exception('profile_names', $@);
+        handle_exception('profile_names', $@, '#004');
     }
     
     return \@profiles;
@@ -116,7 +116,7 @@ sub get_host_by_name {
 
     };
     if ($@) {
-        handle_exception('get_host_by_name', $@);
+        handle_exception('get_host_by_name', $@, '#005');
     }
     
     return \@adresses;
@@ -164,7 +164,7 @@ sub get_data_from_parent_zone {
 
     };
     if ($@) {
-        handle_exception('get_data_from_parent_zone', $@);
+        handle_exception('get_data_from_parent_zone', $@, '#006');
     }
     
     return \%result;
@@ -198,7 +198,7 @@ sub _check_domain {
                     {
                         status => 'nok',
                         message =>
-                        encode_entities( "$type contains non-ascii characters and IDNA conversion is not installed" )
+                        encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
                     }
                 );
             }
@@ -209,7 +209,7 @@ sub _check_domain {
                 $dn,
                 {
                 status  => 'nok',
-                message => encode_entities( "The domain name contains unauthorized character(s)")
+                message => encode_entities( "The domain name character(s) not supported")
                 }
             );
         }
@@ -217,11 +217,11 @@ sub _check_domain {
         my @res;
         @res = Zonemaster::Engine::Test::Basic->basic00($dn);
         if (@res != 0) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type name or label outside allowed length" ) } );
+            return ( $dn, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
         }
     };
     if ($@) {
-        handle_exception('_check_domain', $@);
+        handle_exception('_check_domain', $@, '#007');
     }
 
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
@@ -323,7 +323,7 @@ sub validate_syntax {
         $message = encode_entities( 'Syntax ok' );
     };
     if ($@) {
-        handle_exception('validate_syntax', $@);
+        handle_exception('validate_syntax', $@, '#008');
     }
 
     return { status => 'ok', message =>  $message };
@@ -370,7 +370,7 @@ sub start_domain_test {
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
     };
     if ($@) {
-        handle_exception('start_domain_test', $@);
+        handle_exception('start_domain_test', $@, '#009');
     }
 
     return $result;
@@ -395,7 +395,7 @@ sub test_progress {
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
-        handle_exception('test_progress', $@);
+        handle_exception('test_progress', $@, '#010');
     }
 
     return $result;
@@ -414,7 +414,7 @@ sub get_test_params {
         $result = $self->{db}->get_test_params( $test_id );
     };
     if ($@) {
-        handle_exception('get_test_params', $@);
+        handle_exception('get_test_params', $@, '#011');
     }
 
     return $result;
@@ -488,7 +488,7 @@ sub get_test_results {
         $result->{results} = \@zm_results;
     };
     if ($@) {
-        handle_exception('get_test_results', $@);
+        handle_exception('get_test_results', $@, '#012');
     }
 
     return $result;
@@ -515,7 +515,7 @@ sub get_test_history {
         $results = $self->{db}->get_test_history( $p );
     };
     if ($@) {
-        handle_exception('get_test_history', $@);
+        handle_exception('get_test_history', $@, '#013');
     }
 
     return $results;
@@ -544,7 +544,7 @@ sub add_api_user {
         }
     };
     if ($@) {
-        handle_exception('add_api_user', $@);
+        handle_exception('add_api_user', $@, '#014');
     }
 
     return $result;
@@ -584,7 +584,7 @@ sub add_batch_job {
         $results = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
-        handle_exception('add_batch_job', $@);
+        handle_exception('add_batch_job', $@, '#015');
     }
 
     return $results;
@@ -604,7 +604,7 @@ sub get_batch_job_result {
         $result = $self->{db}->get_batch_job_result($batch_id);
     };
     if ($@) {
-        handle_exception('get_batch_job_result', $@);
+        handle_exception('get_batch_job_result', $@, '#016');
     }
     
     return $result;

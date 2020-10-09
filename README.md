@@ -27,17 +27,30 @@ instructions](https://github.com/zonemaster/zonemaster-engine/blob/master/docs/I
 
 ### Upgrade 
 
-If you are upgrading Zonemaster Backend from 1.0.X to 1.1.X please follow the
-[upgrade instructions from 1.0.X to 1.1.X](docs/upgrade-from-1.0.x-to-1.1.x.md) and then follow the
-relevant parts of the installation instructions below.
+If you upgrade Zonemaster-Backend and want to keep the content of the database
+(MySQL/MariaDB or PostgrSQL) then you should not reset the database when you
+follow the [installation instructions]. In some cases you need to patch the
+database when you update Zonemaster-Backend.
 
-For all other upgrades follow the relevant parts of the installation
-instructions below.
+Always take a backup first if the database is valuable.
 
+Current version                     | Link to instructions  | Comments
+------------------------------------|-----------------------|-----------------------
+Older than 1.0.3                    | [Upgrade to 1.0.3]    |
+At least 1.0.3 but older than 1.1.0 | [Upgrade to 1.1.0]    |
+At least 1.1.0 but older than 5.0.0 | [Upgrade to 5.0.0]    |
+At least 5.0.0 but older than 5.0.2 | [Upgrade to 5.0.2]    | For MySQL/MariaDB only
+
+If the database was created before Zonemaster-Backend version 5.0.0, then you
+have to upgrade in several steps.
+
+To complete the upgrade follow the [installation instructions], except for creating
+the database. If you instead want to start from an empty database, then you remove the database
+and create a new database using the [installation instructions].
 
 ### Installation
 
-Follow the detailed [installation instructions](docs/Installation.md).
+Follow the detailed [installation instructions].
 
 
 ### Configuration
@@ -61,9 +74,6 @@ The Zonemaster Backend documentation is split up into several documents:
 * The [API](docs/API.md) documentation describes the *RPC API daemon* inteface in
   detail.
 
-The [docs](docs/) directory also contains the SQL commands for manipulating the
-database. 
-
 
 ## License
 
@@ -72,3 +82,8 @@ The software is released under the 2-clause BSD license. See separate
 
 
 [Configuration documentation]: docs/Configuration.md
+[Installation instructions]:   docs/Installation.md
+[Upgrade to 1.0.3]:            docs/upgrade_db_zonemaster_backend_ver_1.0.3.md
+[Upgrade to 1.1.0]:            docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
+[Upgrade to 5.0.0]:            docs/upgrade_db_zonemaster_backend_ver_5.0.0.md
+[Upgrade to 5.0.2]:            docs/upgrade_db_zonemaster_backend_ver_5.0.2.md

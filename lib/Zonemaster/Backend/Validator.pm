@@ -6,7 +6,11 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use JSON::Validator "joi";
+use JSON::Validator::Joi;
+
+sub joi {
+    return JSON::Validator::Joi->new;
+}
 
 sub new {
     my ( $type ) = @_;
@@ -21,16 +25,16 @@ my $ipv4_regex = "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\$";
 my $ipv6_regex = "^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)\$|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\$";
 
 sub api_key {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-_]{1,512}$');
 }
 sub batch_id {
     return joi->integer->positive;
 }
 sub client_id {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-+~_.: ]{1,50}$');
 }
 sub client_version {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-+~_.: ]{1,50}$');
 }
 sub domain_name {
     return joi->string->regex('^[.]$|^.{2,254}$');
@@ -38,22 +42,13 @@ sub domain_name {
 sub ds_info {
     return joi->object->strict->props(
         digest => joi->string->regex("^[A-Fa-f0-9]{40}\$|^[A-Fa-f0-9]{64}\$")->required,
-        algorithm => joi->integer->min(0),
-        digtype => joi->integer->min(0),
-        keytag => joi->integer->min(0)
-);
+        algorithm => joi->integer->min(0)->required,
+        digtype => joi->integer->min(0)->required,
+        keytag => joi->integer->min(0)->required,
+    );
 }
 sub ip_address {
     return joi->string->regex($ipv4_regex."|".$ipv6_regex);
-}
-sub location {
-    return joi->object->strict->props(
-    isp => joi->string,
-    country => joi->string,
-    city => joi->string,
-    longitude => joi->string->regex("^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))\$"),
-    latitude => joi->string->regex("^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))\$"),
-);
 }
 sub nameserver {
     return joi->object->strict->props(
@@ -71,14 +66,14 @@ sub queue {
     return joi->integer;
 }
 sub test_id {
-    return joi->string;
+    return joi->string->regex('^[0-9]$|^[1-9][0-9]{1,8}$|^[0-9a-f]{16}$');
 }
-sub translation_language {
-    return joi->string->length(2);
+sub language_tag {
+    return joi->string->regex('^[a-z]{2}(_[A-Z]{2})?$');
 }
 sub username {
-    return joi->string;
+    return joi->string->regex('^[a-zA-Z0-9-.@]{1,50}$');
 }
 sub jsonrpc_method {
-    return joi->string->regex("[a-zA-Z0-9_-]*");
+    return joi->string->regex('^[a-zA-Z0-9_-]*$');
 }

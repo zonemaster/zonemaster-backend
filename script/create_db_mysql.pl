@@ -32,15 +32,16 @@ sub create_db {
             domain varchar(255) NOT NULL,
             batch_id integer NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            test_start_time TIMESTAMP,
-            test_end_time TIMESTAMP,
+            test_start_time TIMESTAMP NULL DEFAULT NULL,
+            test_end_time TIMESTAMP NULL DEFAULT NULL,
             priority integer DEFAULT 10,
             queue integer DEFAULT 0,
             progress integer DEFAULT 0,
             params_deterministic_hash character varying(32),
             params blob NOT NULL,
             results blob DEFAULT NULL,
-            undelegated boolean NOT NULL DEFAULT false
+            undelegated boolean NOT NULL DEFAULT false,
+            nb_retries integer NOT NULL DEFAULT 0
         ) ENGINE=InnoDB
         '
     );

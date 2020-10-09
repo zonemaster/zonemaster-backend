@@ -15,15 +15,16 @@ use Zonemaster::Backend::Config;
 
 with 'Zonemaster::Backend::DB';
 
+has 'config' => (
+    is       => 'ro',
+    isa      => 'Zonemaster::Backend::Config',
+    required => 1,
+);
+
 has 'dbhandle' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
-
-my $connection_string   = Zonemaster::Backend::Config->load_config()->DB_connection_string( 'postgresql' );
-my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-my $connection_user     = Zonemaster::Backend::Config->load_config()->DB_user();
-my $connection_password = Zonemaster::Backend::Config->load_config()->DB_password();
 
 sub dbh {
     my ( $self ) = @_;
@@ -33,8 +34,13 @@ sub dbh {
         return $dbh;
     }
     else {
+        my $connection_string   = $self->config->DB_connection_string( 'postgresql' );
+        my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
+        my $connection_user     = $self->config->DB_user();
+        my $connection_password = $self->config->DB_password();
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
-        $dbh->{InactiveDestroy} = 1;
+#        $dbh->{InactiveDestroy} = 1;
+# This line vas introduced to fix a non-trivial, hard to reproduce problem, it is causing giant memory leaks. It is kept here commented out for a while in case the initial problem occurs again.
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;
@@ -77,10 +83,10 @@ sub test_progress {
     my $dbh = $self->dbh;
     if ( $progress ) {
         if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=?", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=?", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
     
@@ -142,7 +148,7 @@ sub create_new_test {
     my ( $id, $hash_id ) = $dbh->selectrow_array(
         "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
         
-    if ( $id > Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id() ) {
+    if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
         $result = $hash_id;
     }
     else {
@@ -171,7 +177,7 @@ sub test_results {
 
     my $dbh = $self->dbh;
     my $id_field = $self->_get_allowed_id_field_name($test_id);
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=?",
+    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND progress < 100",
         undef, $results, $test_id )
       if ( $results );
 
@@ -179,8 +185,22 @@ sub test_results {
     eval {
         my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
         $result            = $hrefs->{$test_id};
-        $result->{params}  = decode_json( encode_utf8( $result->{params} ) );
-        $result->{results} = decode_json( encode_utf8( $result->{results} ) );
+        
+        # This workaround is needed to properly handle all versions of perl and the DBD::Pg module 
+        # More details in the zonemaster backend issue #570
+        if (utf8::is_utf8($result->{params}) ) {
+                $result->{params}  = decode_json( encode_utf8($result->{params}) );
+        }
+        else {
+                $result->{params}  = decode_json( $result->{params} );
+        }
+        
+        if (utf8::is_utf8($result->{results} ) ) {
+                $result->{results}  = decode_json( encode_utf8($result->{results}) );
+        }
+        else {
+                $result->{results}  = decode_json( $result->{results} );
+        }
     };
     die "$@ \n" if $@;
 
@@ -192,7 +212,7 @@ sub get_test_history {
 
     my $dbh = $self->dbh;
 
-    my $use_hash_id_from_id = Zonemaster::Backend::Config->load_config()->force_hash_id_use_in_API_starting_from_id();
+    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
@@ -289,6 +309,39 @@ sub add_batch_job {
     return $batch_id;
 }
 
+sub build_process_unfinished_tests_select_query {
+    my ( $self ) = @_;
+    
+    if ($self->config->lock_on_queue()) {
+        return "
+            SELECT hash_id, results, nb_retries
+            FROM test_results 
+            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            AND progress > 0
+            AND progress < 100
+            AND queue=".$self->config->lock_on_queue();
+    }
+    else {
+        return "
+            SELECT hash_id, results, nb_retries
+            FROM test_results 
+            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            AND progress > 0
+            AND progress < 100";
+    }
+}
+
+sub process_unfinished_tests_give_up {
+    my ( $self, $result, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+}
+
+sub schedule_for_retry {
+    my ( $self, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
+}
 
 no Moose;
 __PACKAGE__->meta()->make_immutable();

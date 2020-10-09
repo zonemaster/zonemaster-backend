@@ -3,6 +3,7 @@ use warnings;
 use 5.14.2;
 
 use Test::More;    # see done_testing()
+use Test::Exception;
 use Zonemaster::Engine;
 use JSON::PP;
 
@@ -16,8 +17,15 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
+my $config = Zonemaster::Backend::Config->load_config();
+
 # Create Zonemaster::Backend::RPCAPI object
-my $engine = Zonemaster::Backend::RPCAPI->new( { db => 'Zonemaster::Backend::DB::SQLite' } );
+my $engine = Zonemaster::Backend::RPCAPI->new(
+    {
+        db     => 'Zonemaster::Backend::DB::SQLite',
+        config => $config,
+    }
+);
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 # create a new memory SQLite database
@@ -57,10 +65,16 @@ sub run_zonemaster_test_with_backend_API {
 	ok( $engine->test_progress( $test_id ) == 0 );
 
 	use_ok( 'Zonemaster::Backend::Config' );
-	my $config = Zonemaster::Backend::Config->load_config();
 
 	use_ok( 'Zonemaster::Backend::TestAgent' );
+
+	if ( not $ENV{ZONEMASTER_RECORD} ) {
+		Zonemaster::Engine->preload_cache( $datafile );
+		Zonemaster::Engine->profile->set( q{no_network}, 1 );
+	}
 	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $test_id );
+
+	Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
 	ok( $engine->test_progress( $test_id ) > 0 );
 
@@ -69,13 +83,19 @@ sub run_zonemaster_test_with_backend_API {
 		last if ( $progress == 100 );
 	}
 	ok( $engine->test_progress( $test_id ) == 100 );
-	my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr-FR' } );
+
+        my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr_FR' } );
 	ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
 	ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
 	ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
 	ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
 	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
+        dies_ok { $engine->get_test_results( { id => $test_id, language => 'fr-FR' } ); }
+        'API get_test_results -> [results] parameter not present (wrong language tag)'; # Should be underscore, not hyphen.
+
+        dies_ok { $engine->get_test_results( { id => $test_id, language => 'zz' } ); }
+        'API get_test_results -> [results] parameter not present (wrong language tag)'; # "zz" is not our configuration file.
 }
 
 run_zonemaster_test_with_backend_API(1);

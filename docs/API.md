@@ -77,9 +77,12 @@ is based on a JSON data type, but additionally imposes its own restrictions.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the password of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
+A string of alphanumerics, hyphens (`-`) and underscores (`_`), of at least 1
+and at most 512 characters.
+I.e. a string matching `/^[a-zA-Z0-9-_]{1,512}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the password of an authenticated account (see *[Privilege levels]*)
+
 
 ### Batch id
 
@@ -94,18 +97,25 @@ The unique id of a *batch*.
 
 Basic data type: string
 
-This parameter is a free-form string that represent the name of the client. It used to monitor which client (GUI) uses the API.
+A string of alphanumerics, hyphens, underscores, pluses (`+`), tildes (`~`),
+full stops (`.`), colons (`:`) and spaces (` `), of at least 1 and at most 50
+characters.
+I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the name of the client.
+Used for monitoring which client (GUI) uses the API.
 
 
 ### Client version
 
 Basic data type: string
 
-This parameter is a free-form string that represent the version of the client. It used to monitor which client (GUI) uses the API.
+A string of alphanumerics, hyphens, pluses, tildes, underscores, full stops,
+colons and spaces, of at least 1 and at most 50 characters.
+I.e. a string matching `/^[a-zA-Z0-9-+~_.: ]{1,50}$/`.
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+Represents the version of the client.
+Used for monitoring which client (GUI) uses the API.
 
 
 ### Domain name
@@ -130,9 +140,9 @@ DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKE
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
-* `"algorithm"`: An non negative integer, optional.
-* `"digtype"`: An non negative integer, optional.
-* `"keytag"`: An non negative integer, optional.
+* `"algorithm"`: An non negative integer, required.
+* `"digtype"`: An non negative integer, required.
+* `"keytag"`: An non negative integer, required.
 
 Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
@@ -159,7 +169,7 @@ Properties:
 ### Priority
 
 Basic data type: number (integer)
- 
+
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
 The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
@@ -220,6 +230,12 @@ One of the strings (in order from least to most severe):
 
 Basic data type: string
 
+Either:
+ * A string of at least 1 and at most 9 digits where the first digit is not a zero, or
+ * a string of exactly 16 lower-case hex-digits.
+
+I.e. a string matching `/^([0-9]|[1-9][0-9]{1,8}|[0-9a-f]{16})$/`.
+
 Each *test* has a unique *test id*.
 
 
@@ -243,33 +259,53 @@ This key is added when the module name is `"NAMESERVER"`.
 
 Basic data type: string
 
-Default database timestamp format: "Y-M-D H:M:S.ms"
+Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 
-### Translation language
+
+### Language tag
 
 Basic data type: string
 
-* Any string starting with `"fr"` is interpreted as French.
-* Any string starting with `"sv"` is interpreted as Swedish.
-* Any string starting with `"da"` is interpreted as Danish.
-* Any other string is interpreted as English.
+A string of A-Z, a-z and underscores matching the regular expression
+`/^[a-z]{2}(_[A-Z]{2})?$/`.
+
+The `language tag` must match a `locale tag` in the configuration file.
+If the `language tag` is a two-character string, it only needs to match the
+first two characters of the `locale tag` from the configuration file, if
+that is unique (there is only one `locale tag` starting with the same two
+characters), else it is an error.
+
+Any other string is an error.
+
+The two first characters of the `language tag` are intended to be an
+[ISO 639-1] two-character language code and the optional two last characters
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+
+A default installation will accept the following `language tags`:
+* `da` or `da_DK` for Danish language.
+* `en` or `en_US` for English language.
+* `fr` or `fr_FR` for French language.
+* `nb` or `nb_NO` for Norwegian language.
+* `sv` or `sv_SE` for Swedish language.
 
 
 ### Unsigned integer
 
- Basic data type: number (integer)
+Basic data type: number (integer)
  
- An unsigned integer is either positive or zero.
+An unsigned integer is either positive or zero.
  
 
 ### Username
 
 Basic data type: string
- 
-This parameter is a free-form string that represent the name of an authenticated account (see [*Privilege levels*](API.md#privilege-levels))
 
-> Note: Currently there are no restrictions on what characters that are allowed.
+A string of alphanumerics, dashes, full stops and at-signs, of at least 1 and at
+most 50 characters.
+I.e. a string matching `/^[a-zA-Z0-9-.@]{1,50}$/`.
+
+Represents the name of an authenticated account (see *[Privilege levels]*)
 
 
 ## API method: `version_info`
@@ -344,6 +380,52 @@ Example response:
 An array of *Profile names* in lower case. `"default"` is always included.
 
 
+## API method: `get_language_tags`
+
+Returns all valid [language tags][language tag] generated from the setting in
+the configuration file.
+
+Example request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "get_language_tags"
+}
+```
+
+Example response:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "en",
+    "en_US",
+    "fr",
+    "fr_FR",
+    "sv",
+    "sv_SE"
+  ]
+}
+```
+
+
+#### `"result"`
+
+An array of *language tags*. It is never empty.
+
+
+#### `"error"`
+
+>
+> TODO: List all possible error codes and describe what they mean enough for
+> clients to know how react to them. Or prevent RPCAPI from starting with
+> errors in the configuration file and make it not to reread the configuration
+> file while running.
+>
+
+
 ## API method: `get_host_by_name`
 
 Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
@@ -394,6 +476,7 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 >
 > TODO: If the name resolves to two or more IPv4 address, how is that represented?
 >
+
 
 #### `"error"`
 
@@ -490,7 +573,7 @@ If an identical *test* was already enqueued and hasn't been started or was enque
 no new *test* is enqueued.
 Instead the id for the already enqueued or run test is returned.
 
-*Tests* enqueud using this method are assigned a *priority* of 10.
+*Tests* enqueued using this method are assigned a *priority* of 10.
 
 Example request:
 ```json
@@ -501,7 +584,7 @@ Example request:
   "params": {
     "client_id": "Zonemaster Dancer Frontend",
     "domain": "zonemaster.net",
-    "profile": "default_profile",
+    "profile": "default",
     "client_version": "1.0.1",
     "nameservers": [
       {
@@ -550,13 +633,15 @@ An object with the following properties:
 > TODO: Clarify the purpose of each `"params"` property.
 >
 
+
 #### `"result"`
 
 A *test id*. 
 
 If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
 then the new request does not trigger a new test, but returns with the results of the last test
- 
+
+
 #### `"error"`
 
 * If the given `profile` is not among the [available profiles], a user
@@ -614,7 +699,8 @@ A *progress percentage*.
 
 ## API method: `get_test_results`
 
-Return all *test result* objects of a *test*, with *messages* in the requested *translation language*.
+Return all *test result* objects of a *test*, with *messages* in the requested language as selected by the
+*language tag*.
 
 Example request:
 ```json
@@ -629,6 +715,9 @@ Example request:
 }
 ```
 
+The `id` parameter must match the `result` in the response to a `start_domain_test` call,
+and that test must have been completed.
+
 Example response:
 ```json
 {
@@ -642,7 +731,7 @@ Example response:
       "ds_info": [],
       "client_version": "1.0.1",
       "domain": "zonemaster.net",
-      "profile": "default_profile",
+      "profile": "default",
       "ipv6": true,
       "advanced": true,
       "nameservers": [
@@ -687,7 +776,7 @@ Example response:
 An object with the following properties:
 
 * `"id"`: A *test id*, required.
-* `"language"`: A *translation language*, required.
+* `"language"`: A *language tag*, required.
 
 
 #### `"result"`
@@ -715,7 +804,6 @@ In the case of a test created with `add_batch_job`:
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
 >
-
 
 
 #### `"error"`
@@ -854,9 +942,11 @@ An object with the following properties:
 * `"username"`: An *username*, required. The name of the user to add.
 * `"api_key"`: An *api key*, required. The API key for the user to add.
 
+
 #### `"result"`
 
 An integer. The value is equal to 1 if the registration is a success, or 0 if it failed.
+
 
 #### `"error"`
 >
@@ -1044,7 +1134,7 @@ Example response:
     "id": 143014426992009,
     "result": {
          "domain": "zonemaster.net",
-         "profile": "default_profile",
+         "profile": "default",
          "client_id": "Zonemaster Dancer Frontend",
          "advanced": true,
          "nameservers": [
@@ -1065,6 +1155,7 @@ Example response:
 }
 ```
 
+
 #### `"params"`
 
 An object with the property:
@@ -1083,4 +1174,8 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Available profiles]: Configuration.md#profiles-section
+[Available profiles]:           Configuration.md#profiles-section
+[ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
+[Privilege levels]:             #privilege-levels
+[Language tag]:                 #language-tag

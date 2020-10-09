@@ -27,12 +27,12 @@ sub new {
 
     if ( $params && $params->{db} ) {
         eval "require $params->{db}";
-        $self->{db} = "$params->{db}"->new();
+        $self->{db} = "$params->{db}"->new( { config => $self->{config} } );
     }
     else {
         my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
         eval "require $backend_module";
-        $self->{db} = $backend_module->new();
+        $self->{db} = $backend_module->new( { config => $self->{config} } );
     }
         
     $self->{profiles} = $self->{config}->ReadProfilesInfo();
@@ -113,7 +113,7 @@ sub run {
                         if ( $previous_method ne $module_method ) {
                             $percent_progress = sprintf(
                                 "%.0f",
-                                100 * (
+                                99 * (
                                     scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
                                       scalar( keys %{ $counter_for_progress_indicator{planned} } )
                                 )
@@ -168,9 +168,13 @@ sub run {
 
     $progress = $self->{db}->test_progress( $test_id );
 
-    Zonemaster::Engine->reset();
     return;
 } ## end sub run
+
+sub reset {
+    my ( $self ) = @_;
+    Zonemaster::Engine->reset();
+}
 
 sub add_fake_delegation {
     my ( $self, $domain, $nameservers ) = @_;

@@ -1,0 +1,79 @@
+#!/bin/sh
+
+bindir="$(dirname "$0")"
+
+ZMB="${bindir}/zmb"
+JQ="$(which jq)"
+
+usage () {
+    status="$1"
+    message="$2"
+    echo "${message}" >&2
+    echo "Usage: zmtest [OPTIONS] DOMAIN" >&2
+    echo >&2
+    echo "Options:" >&2
+    echo "  -s URL --server URL   Zonemaster Backend to query. Default is http://localhost:5000/" >&2
+    echo "  --noipv4              Run the test without ipv4." >&2
+    echo "  --noipv6              Run the test without ipv6." >&2
+    echo "  --lang LANG           A language tag. Default is \"en\"." >&2
+    echo "                        Valid values are determined by backend_config.ini." >&2
+    exit "${status}"
+}
+
+error () {
+    status="$1"
+    message="$2"
+    echo "error: ${message}" >&2
+    exit "${status}"
+}
+
+zmb () {
+    server_url="$1"; shift
+    json="$("${ZMB}" --server="${server_url}" "$@" 2>&1)" || error 1 "method $1: ${json}"
+    json="$(echo "${json}" | "${JQ}" -S . 2>/dev/null)" || error 1 "method $1 did not return valid JSON output"
+    error="$(echo "${json}" | "${JQ}" -e .error 2>/dev/null)" && error 1 "method $1: ${error}"
+    echo "${json}"
+}
+
+[ -n "${JQ}" ] || error 2 "Dependency not found: jq"
+
+domain=""
+server_url="http://localhost:5000/"
+ipv4="true"
+ipv6="true"
+lang="en"
+while [ $# -gt 0 ] ; do
+    case "$1" in
+        -s|--server) server_url="$2"; shift 2;;
+        --noipv4) ipv4="false"; shift 1;;
+        --noipv6) ipv6="false"; shift 1;;
+        --lang) lang="$2"; shift 2;;
+        *) domain="$1" ; shift 1;;
+    esac
+done
+[ -n "${domain}" ] || usage 2 "No domain specified"
+
+# Start test
+output="$(zmb "${server_url}" start_domain_test --domain "${domain}" --ipv4 "${ipv4}" --ipv6 "${ipv6}")" || exit $?
+testid="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
+
+if echo "${testid}" | grep -qE '[^0-9a-fA-F]' ; then
+    error 1 "start_domain_test did not return a testid: ${testid}"
+fi
+
+# Wait for test to finish
+while true
+do
+    output="$(zmb "${server_url}" test_progress --testid "${testid}")" || exit $?
+    progress="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
+    printf "\r${progress}%% done" >&2
+    if [ "${progress}" -eq 100 ] ; then
+        echo >&2
+        break
+    fi
+    sleep 1
+done
+
+# Get test results
+zmb "${server_url}" get_test_results --testid "${testid}" --lang "${lang}"
+echo "testid: ${testid}" >&2

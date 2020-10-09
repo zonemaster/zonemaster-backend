@@ -10,15 +10,16 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use String::ShellQuote;
 use File::Slurp qw(append_file);
-use Zonemaster::LDNS;
-use Net::IP::XS qw(:PROC);
 use HTML::Entities;
-use JSON::Validator "joi";
+use JSON::Validator::Joi;
 
 # Zonemaster Modules
+use Zonemaster::LDNS;
 use Zonemaster::Engine;
-use Zonemaster::Engine::Nameserver;
 use Zonemaster::Engine::DNSName;
+use Zonemaster::Engine::Logger::Entry;
+use Zonemaster::Engine::Nameserver;
+use Zonemaster::Engine::Net::IP;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
@@ -29,17 +30,23 @@ my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
+sub joi {
+    return JSON::Validator::Joi->new;
+}
+
 sub new {
     my ( $type, $params ) = @_;
 
     my $self = {};
     bless( $self, $type );
 
+    my $config = Zonemaster::Backend::Config->load_config();
+
     if ( $params && $params->{db} ) {
         eval {
             eval "require $params->{db}";
             die "$@ \n" if $@;
-            $self->{db} = "$params->{db}"->new();
+            $self->{db} = "$params->{db}"->new( { config => $config } );
         };
         if ($@) {
             warn "Internal error #001: Failed to initialize the [$params->{db}] database backend module: [$@] \n";
@@ -48,10 +55,10 @@ sub new {
     }
     else {
         eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . Zonemaster::Backend::Config->load_config()->BackendDBType();
+            my $backend_module = "Zonemaster::Backend::DB::" . $config->BackendDBType();
             eval "require $backend_module";
             die "$@ \n" if $@;
-            $self->{db} = $backend_module->new();
+            $self->{db} = $backend_module->new( { config => $config } );
         };
         if ($@) {
             warn "Internal error #002: Failed to initialize the database backend module: [$@] \n";
@@ -100,6 +107,17 @@ sub profile_names {
     }
     
     return \@profiles;
+}
+
+# Return the list of language tags supported by get_test_results(). The tags are
+# derived from the locale tags set in the configuration file.
+$json_schemas{get_language_tags} = joi->object->strict;
+sub get_language_tags {
+    my ($self) = @_;
+
+    my @lang = Zonemaster::Backend::Config->load_config()->ListLanguageTags();
+
+    return \@lang;
 }
 
 $json_schemas{get_host_by_name} = joi->object->strict->props(
@@ -214,14 +232,12 @@ sub _check_domain {
             );
         }
 
-        my @res;
-        @res = Zonemaster::Engine::Test::Basic->basic00($dn);
-        if (@res != 0) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
-        }
-    };
-    if ($@) {
-        handle_exception('_check_domain', $@, '#007');
+    my %levels = Zonemaster::Engine::Logger::Entry::levels();
+    my @res;
+    @res = Zonemaster::Engine::Test::Basic->basic00($dn);
+    @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
+    if (@res != 0) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
     }
 
     return ( $dn, { status => 'ok', message => 'Syntax ok' } );
@@ -294,9 +310,11 @@ sub validate_syntax {
                 return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                     unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
 
-                return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-                unless ( !$ns_ip->{ip} || ip_is_ipv4( $ns_ip->{ip} ) || ip_is_ipv6( $ns_ip->{ip} ) );
-            }
+            return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+              unless ( !$ns_ip->{ip}
+                || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
+                || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
+        }
 
             foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
                 return {
@@ -422,32 +440,62 @@ sub get_test_params {
 
 $json_schemas{get_test_results} = joi->object->strict->props(
     id => $zm_validator->test_id->required,
-    language => $zm_validator->translation_language->required
+    language => $zm_validator->language_tag->required
 );
 sub get_test_results {
     my ( $self, $params ) = @_;
 
     my $result;
 
-    eval {
-        my $translator;
-        $translator = Zonemaster::Backend::Translator->new;
-        my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
+    my $translator;
+    $translator = Zonemaster::Backend::Translator->new;
+
+    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
+    if ( $locale{$params->{language}} ) {
+        if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
+            die "Language string not unique: '$params->{language}'\n";
+        }
+    }
+    else {
+        die "Undefined language string: '$params->{language}'\n";
+    }
+
+    my $previous_locale = $translator->locale;
+    $translator->locale( $locale{$params->{language}} );
 
         eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
-        my $test_info = $self->{db}->test_results( $params->{id} );
-        my @zm_results;
-        foreach my $test_res ( @{ $test_info->{results} } ) {
-            my $res;
-            if ( $test_res->{module} eq 'NAMESERVER' ) {
-                $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
-            }
-            elsif ($test_res->{module} eq 'SYSTEM'
-                && $test_res->{tag} eq 'POLICY_DISABLED'
-                && $test_res->{args}->{name} eq 'Example' )
-            {
-                next;
+    my $test_info = $self->{db}->test_results( $params->{id} );
+    my @zm_results;
+    foreach my $test_res ( @{ $test_info->{results} } ) {
+        my $res;
+        if ( $test_res->{module} eq 'NAMESERVER' ) {
+            $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
+        }
+        elsif ($test_res->{module} eq 'SYSTEM'
+            && $test_res->{tag} eq 'POLICY_DISABLED'
+            && $test_res->{args}->{name} eq 'Example' )
+        {
+            next;
+        }
+
+        $res->{module} = $test_res->{module};
+        $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
+        $res->{message} =~ s/,/, /isg;
+        $res->{message} =~ s/;/; /isg;
+        $res->{level} = $test_res->{level};
+
+        if ( $test_res->{module} eq 'SYSTEM' ) {
+            if ( $res->{message} =~ /policy\.json/ ) {
+                my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
+                if ( $policy ) {
+                    my $policy_description = 'DEFAULT POLICY';
+                    $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
+                    $res->{message} =~ s/$policy/$policy_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN POLICY FORMAT';
+                }
             }
 
             $res->{module} = $test_res->{module};
@@ -490,6 +538,11 @@ sub get_test_results {
     if ($@) {
         handle_exception('get_test_results', $@, '#012');
     }
+
+    $translator->locale( $previous_locale );
+
+    $result = $test_info;
+    $result->{results} = \@zm_results;
 
     return $result;
 }

@@ -13,14 +13,12 @@ use Client;
 my $c = Client->new( { url => 'http://localhost:5000' } );
 
 my $frontend_params = {
-    client_id      => 'Zonemaster CGI/Dancer/node.js',    # free string
+    client_id      => 'Client.pm module',    # free string
     client_version => '1.0',                              # free version like string
 
     domain      => 'afnic.fr',                            # content of the domain text field
-    advanced    => 1,                                     # 0 or 1, is the advanced options checkbox checked
     ipv4        => 1,                                     # 0 or 1, is the ipv4 checkbox checked
     ipv6        => 1,                                     # 0 or 1, is the ipv6 checkbox checked
-    profile     => 'test_profile_1',                      # the id if the Test profile listbox
     nameservers => [                                      # list of the namaserves up to 32
         { ns => 'ns1.nic.fr', ip => '1.1.1.1' },          # key values pairs representing nameserver => namesterver_ip
         { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
@@ -30,7 +28,8 @@ my $frontend_params = {
     ],
 };
 
-say "Client->validate_syntax:" . Dumper( $c->validate_syntax( $frontend_params ) );
+my $id_test = $c->start_domain_test($frontend_params);
+say Dumper($id_test);
 
 =coment
 say "Client->version_info:".Dumper($c->version_info("test param"));

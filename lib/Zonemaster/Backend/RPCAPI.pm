@@ -232,6 +232,11 @@ sub _check_domain {
             );
         }
 
+    };
+    if ($@) {
+        handle_exception('_check_domain', $@, '#007');
+    }
+    
     my %levels = Zonemaster::Engine::Logger::Entry::levels();
     my @res;
     @res = Zonemaster::Engine::Test::Basic->basic00($dn);
@@ -310,11 +315,11 @@ sub validate_syntax {
                 return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                     unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
 
-            return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-              unless ( !$ns_ip->{ip}
-                || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
-                || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
-        }
+                return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                unless ( !$ns_ip->{ip}
+                    || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
+                    || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
+            }
 
             foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
                 return {
@@ -449,6 +454,7 @@ sub get_test_results {
 
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
+    my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
 
     my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
     if ( $locale{$params->{language}} ) {

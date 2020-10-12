@@ -49,8 +49,7 @@ sub new {
             $self->{db} = "$params->{db}"->new( { config => $config } );
         };
         if ($@) {
-            warn "Internal error #001: Failed to initialize the [$params->{db}] database backend module: [$@] \n";
-            die "Internal error #001 \n";
+            handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '001');
         }
     }
     else {
@@ -61,8 +60,7 @@ sub new {
             $self->{db} = $backend_module->new( { config => $config } );
         };
         if ($@) {
-            warn "Internal error #002: Failed to initialize the database backend module: [$@] \n";
-            die "Internal error #002 \n" if $@;
+            handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '002');
         }
     }
 
@@ -73,7 +71,7 @@ sub handle_exception {
     my ( $method, $exception, $exception_id ) = @_;
 
     $exception =~ s/\n/ /g;
-    chomp($exception);
+    $exception =~ s/^\s+|\s+$//g;
     warn "Internal error $exception_id: Unexpected error in the $method API call: [$exception] \n";
     die "Internal error $exception_id \n";
 }
@@ -89,7 +87,7 @@ sub version_info {
 
     };
     if ($@) {
-        handle_exception('version_info', $@, '#003');
+        handle_exception('version_info', $@, '003');
     }
     
     return \%ver;
@@ -105,7 +103,7 @@ sub profile_names {
 
     };
     if ($@) {
-        handle_exception('profile_names', $@, '#004');
+        handle_exception('profile_names', $@, '004');
     }
     
     return \@profiles;
@@ -136,7 +134,7 @@ sub get_host_by_name {
 
     };
     if ($@) {
-        handle_exception('get_host_by_name', $@, '#005');
+        handle_exception('get_host_by_name', $@, '005');
     }
     
     return \@adresses;
@@ -149,8 +147,8 @@ sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
     my $domain = "";
 
-    my %result;
-    eval {
+    my $result = eval {
+		my %result;
         if (ref \$params eq "SCALAR") {
             $domain = $params;
         } else {
@@ -181,20 +179,21 @@ sub get_data_from_parent_zone {
 
         $result{ns_list} = \@ns_list;
         $result{ds_list} = \@ds_list;
-
+		return \%result;
     };
     if ($@) {
-        handle_exception('get_data_from_parent_zone', $@, '#006');
+        handle_exception('get_data_from_parent_zone', $@, '006');
     }
-    
-    return \%result;
+    elsif ($result) {
+		return $result;
+    }
 }
 
 
 sub _check_domain {
     my ( $self, $dn, $type ) = @_;
 
-    eval {
+    my $result = eval {
         if ( !defined( $dn ) ) {
             return ( $dn, { status => 'nok', message => encode_entities( "$type required" ) } );
         }
@@ -236,7 +235,10 @@ sub _check_domain {
 
     };
     if ($@) {
-        handle_exception('_check_domain', $@, '#007');
+        handle_exception('_check_domain', $@, '007');
+    }
+    elsif ($result) {
+		return $result;
     }
     
     my %levels = Zonemaster::Engine::Logger::Entry::levels();
@@ -313,6 +315,7 @@ sub validate_syntax {
             }
 
             foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
+                # Although counterintuitive both tests are necessary as Zonemaster::Engine::Net::IP accepts incomplete IP adresses (network adresses) as valid IP adresses
                 return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                     unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
 
@@ -345,7 +348,7 @@ sub validate_syntax {
         }
     };
     if ($@) {
-        handle_exception('validate_syntax', $@, '#008');
+        handle_exception('validate_syntax', $@, '008');
     }
     elsif ($result) {
         return $result;
@@ -396,7 +399,7 @@ sub start_domain_test {
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
     };
     if ($@) {
-        handle_exception('start_domain_test', $@, '#009');
+        handle_exception('start_domain_test', $@, '009');
     }
 
     return $result;
@@ -421,7 +424,7 @@ sub test_progress {
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
-        handle_exception('test_progress', $@, '#010');
+        handle_exception('test_progress', $@, '010');
     }
 
     return $result;
@@ -440,7 +443,7 @@ sub get_test_params {
         $result = $self->{db}->get_test_params( $test_id );
     };
     if ($@) {
-        handle_exception('get_test_params', $@, '#011');
+        handle_exception('get_test_params', $@, '011');
     }
 
     return $result;
@@ -526,7 +529,7 @@ sub get_test_results {
         $result->{results} = \@zm_results;
     };
     if ($@) {
-        handle_exception('get_test_results', $@, '#012');
+        handle_exception('get_test_results', $@, '012');
     }
 
     $translator->locale( $previous_locale );
@@ -558,7 +561,7 @@ sub get_test_history {
         $results = $self->{db}->get_test_history( $p );
     };
     if ($@) {
-        handle_exception('get_test_history', $@, '#013');
+        handle_exception('get_test_history', $@, '013');
     }
 
     return $results;
@@ -587,7 +590,7 @@ sub add_api_user {
         }
     };
     if ($@) {
-        handle_exception('add_api_user', $@, '#014');
+        handle_exception('add_api_user', $@, '014');
     }
 
     return $result;
@@ -627,7 +630,7 @@ sub add_batch_job {
         $results = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
-        handle_exception('add_batch_job', $@, '#015');
+        handle_exception('add_batch_job', $@, '015');
     }
 
     return $results;
@@ -647,7 +650,7 @@ sub get_batch_job_result {
         $result = $self->{db}->get_batch_job_result($batch_id);
     };
     if ($@) {
-        handle_exception('get_batch_job_result', $@, '#016');
+        handle_exception('get_batch_job_result', $@, '016');
     }
     
     return $result;

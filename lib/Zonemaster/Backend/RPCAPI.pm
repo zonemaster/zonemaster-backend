@@ -72,6 +72,8 @@ sub new {
 sub handle_exception {
     my ( $method, $exception, $exception_id ) = @_;
 
+    $exception =~ s/\n/ /g;
+    chomp($exception);
     warn "Internal error $exception_id: Unexpected error in the $method API call: [$exception] \n";
     die "Internal error $exception_id \n";
 }
@@ -251,8 +253,7 @@ sub _check_domain {
 sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
-    my $message;
-    eval {
+    my $result = eval {
         my @allowed_params_keys = (
             'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
             'client_id', 'client_version', 'config', 'priority', 'queue'
@@ -342,14 +343,16 @@ sub validate_syntax {
                 );
             }
         }
-        
-        $message = encode_entities( 'Syntax ok' );
     };
     if ($@) {
         handle_exception('validate_syntax', $@, '#008');
     }
-
-    return { status => 'ok', message =>  $message };
+    elsif ($result) {
+        return $result;
+    }
+    else {
+        return { status => 'ok', message =>  encode_entities( 'Syntax ok' ) };
+    }
 }
 
 $json_schemas{start_domain_test} = joi->object->strict->props(
@@ -451,10 +454,8 @@ sub get_test_results {
     my ( $self, $params ) = @_;
 
     my $result;
-
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
-    my ( $browser_lang ) = ( $params->{language} =~ /^(\w{2})/ );
 
     my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
     if ( $locale{$params->{language}} ) {
@@ -469,43 +470,26 @@ sub get_test_results {
     my $previous_locale = $translator->locale;
     $translator->locale( $locale{$params->{language}} );
 
-        eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
+    eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
-    my $test_info = $self->{db}->test_results( $params->{id} );
+    my $test_info;
     my @zm_results;
-    foreach my $test_res ( @{ $test_info->{results} } ) {
-        my $res;
-        if ( $test_res->{module} eq 'NAMESERVER' ) {
-            $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
-        }
-        elsif ($test_res->{module} eq 'SYSTEM'
-            && $test_res->{tag} eq 'POLICY_DISABLED'
-            && $test_res->{args}->{name} eq 'Example' )
-        {
-            next;
-        }
-
-        $res->{module} = $test_res->{module};
-        $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
-        $res->{message} =~ s/,/, /isg;
-        $res->{message} =~ s/;/; /isg;
-        $res->{level} = $test_res->{level};
-
-        if ( $test_res->{module} eq 'SYSTEM' ) {
-            if ( $res->{message} =~ /policy\.json/ ) {
-                my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                if ( $policy ) {
-                    my $policy_description = 'DEFAULT POLICY';
-                    $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
-                    $res->{message} =~ s/$policy/$policy_description/;
-                }
-                else {
-                    $res->{message} = 'UNKNOWN POLICY FORMAT';
-                }
+    eval{
+        $test_info = $self->{db}->test_results( $params->{id} );
+        foreach my $test_res ( @{ $test_info->{results} } ) {
+            my $res;
+            if ( $test_res->{module} eq 'NAMESERVER' ) {
+                $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
+            }
+            elsif ($test_res->{module} eq 'SYSTEM'
+                && $test_res->{tag} eq 'POLICY_DISABLED'
+                && $test_res->{args}->{name} eq 'Example' )
+            {
+                next;
             }
 
             $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res, $browser_lang ) . "\n";
+            $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};

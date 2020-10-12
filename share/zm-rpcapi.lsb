@@ -22,6 +22,7 @@ USER=${ZM_BACKEND_USER:-zonemaster}
 GROUP=${ZM_BACKEND_GROUP:-zonemaster}
 
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
+export ZM_BACKEND_RPCAPI_LOGLEVEL='warning' # Lowest level that will be logged
 
 . /lib/lsb/init-functions
 

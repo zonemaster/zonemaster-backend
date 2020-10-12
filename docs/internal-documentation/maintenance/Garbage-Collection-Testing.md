@@ -18,7 +18,7 @@ The purpose of this instruction is to serve as a notice for manual testing of th
      ```
      _Remark: for MySQL use `SHOW COLUMNS FROM test_results` and ensure the `nb_retries` column is present in the list._
 
-2. Check that your `/etc/zonemaster/bacend_config.ini` (or, in FreeBSD, `/usr/local/etc/zonemaster/bacend_config.ini`) has the proper parameter set
+2. Check that your `/etc/zonemaster/backend_config.ini` (or, in FreeBSD, `/usr/local/etc/zonemaster/backend_config.ini`) has the proper parameter set
 
      Either disabled:
      ```
@@ -48,7 +48,7 @@ The purpose of this instruction is to serve as a notice for manual testing of th
      UPDATE test_results SET progress = 50, test_start_time = '2020-01-01' WHERE hash_id = '3f7a604683efaf93';
      ```
 
-5. Chaek that the backend finishes the test with a result stating it was unfinished
+5. Check that the backend finishes the test with a result stating it was unfinished
 
      ```
      SELECT hash_id, progress FROM test_results WHERE hash_id = '3f7a604683efaf93';
@@ -91,6 +91,7 @@ The purpose of this instruction is to serve as a notice for manual testing of th
      ```
      zonemaster_backend_testagent restart
      ```
+     _Remark: Update accordingly to the OS where the tests are done (ex use init script for FreeBSD, etc.)_
 
 3. Simulate a crashed test
      ```

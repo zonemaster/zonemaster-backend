@@ -56,6 +56,7 @@ done
 # Start test
 output="$(zmb "${server_url}" start_domain_test --domain "${domain}" --ipv4 "${ipv4}" --ipv6 "${ipv6}")" || exit $?
 testid="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
+echo "testid: ${testid}" >&2
 
 if echo "${testid}" | grep -qE '[^0-9a-fA-F]' ; then
     error 1 "start_domain_test did not return a testid: ${testid}"
@@ -76,4 +77,3 @@ done
 
 # Get test results
 zmb "${server_url}" get_test_results --testid "${testid}" --lang "${lang}"
-echo "testid: ${testid}" >&2

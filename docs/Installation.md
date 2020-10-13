@@ -684,8 +684,7 @@ API on localhost port 5000 as below. The command requires that `curl` and `jq` a
 
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-./zmtest zonemaster.net
+`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/zmtest zonemaster.net
 ```
 
 The command is expected to immediately print out a testid,

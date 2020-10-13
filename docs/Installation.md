@@ -687,11 +687,9 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 ./zmtest zonemaster.net
 ```
 
-The command is expected to give an immediate JSON response similiar to:
-
-```json
-{"id":"1","jsonrpc":"2.0","result":{"zonemaster_backend":"2.0.2","zonemaster_engine":"v2.0.6"}}
-```
+The command is expected to immediately print out a testid,
+followed by a percentage ticking up from 0% to 100%.
+Once the number reaches 100% a JSON object is printed and zmtest terminates.
 
 
 ### 7.2. What to do next?

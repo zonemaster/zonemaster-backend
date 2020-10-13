@@ -52,6 +52,12 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 > **Note:** In addition to the normal dependencies, the post-installation
 > smoke test instruction assumes that you have curl installed.
 
+Optionally install jq (only needed for the post-installation smoke test):
+
+```sh
+sudo yum install jq
+```
+
 ## 3. Installation on CentOS
 
 ### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)
@@ -308,10 +314,10 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
-Optionally install Curl (only needed for the post-installation smoke test):
+Optionally install Curl and jq (only needed for the post-installation smoke test):
 
 ```sh
-sudo apt install curl
+sudo apt install curl jq
 ```
 
 Install required locales:
@@ -491,10 +497,10 @@ Install dependencies available from binary packages:
 pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote databases/p5-DBD-SQLite devel/p5-Log-Dispatch devel/p5-Log-Any devel/p5-Log-Any-Adapter-Dispatch
 ```
 
-Optionally install Curl (only needed for the post-installation smoke test):
+Optionally install Curl and jq (only needed for the post-installation smoke test):
 
 ```sh
-pkg install curl
+pkg install curl jq
 ```
 
 Install dependencies not available from binary packages:
@@ -677,7 +683,8 @@ you should be able to use the
 API on localhost port 5000 as below. The command requires that `curl` is installed.
 
 ```sh
-curl -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+./zmtest zonemaster.net
 ```
 
 The command is expected to give an immediate JSON response similiar to:

@@ -49,9 +49,6 @@ Prerequisite for FreeBSD is that the package system is upadated and activated
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
-> **Note:** In addition to the normal dependencies, the post-installation
-> smoke test instruction assumes that you have curl installed.
-
 ## 3. Installation on CentOS
 
 ### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)

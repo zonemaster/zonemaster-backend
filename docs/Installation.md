@@ -52,18 +52,18 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 > **Note:** In addition to the normal dependencies, the post-installation
 > smoke test instruction assumes that you have curl installed.
 
-Optionally install jq (only needed for the post-installation smoke test):
-
-```sh
-sudo yum install jq
-```
-
 ## 3. Installation on CentOS
 
 ### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)
 
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
+
+Optionally install jq (only needed for the post-installation smoke test):
+
+```sh
+sudo yum install jq
+```
 
 Install dependencies available from binary packages:
 

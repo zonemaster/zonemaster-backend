@@ -8,10 +8,10 @@ CodeSnippets/sample_api_call__validate_syntax.pl
 CodeSnippets/sample_api_call__version_info.pl
 docs/API.md
 docs/Architecture.md
+docs/Configuration.md
 docs/files-description.md
 docs/GettingStarted.md
 docs/Installation.md
-docs/Configuration.md
 docs/TypographicConventions.md
 docs/upgrade_db_zonemaster_backend_ver_1.0.3.md
 docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
@@ -51,6 +51,7 @@ script/zonemaster_backend_testagent
 share/backend_config.ini
 share/cleanup-mysql.sql
 share/cleanup-postgres.sql
+share/freebsd-pwd.conf
 share/initial-mysql.sql
 share/initial-postgres.sql
 share/patch_db_README.txt
@@ -76,5 +77,3 @@ t/test01.t
 t/test_DB_backend.pl
 t/test_runner.pl
 t/test_validate_syntax.t
-
-

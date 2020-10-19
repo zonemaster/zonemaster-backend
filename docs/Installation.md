@@ -668,7 +668,7 @@ See the [post-installation] section for post-installation matters.
 
 ## 6. Installation on Ubuntu
 
-Use the procedure for installation on [Debian](#2-installation-on-debian).
+Use the procedure for installation on [Debian](#4-installation-on-debian).
 
 
 ## 7. Post-installation

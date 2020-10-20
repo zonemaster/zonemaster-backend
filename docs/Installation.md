@@ -680,7 +680,8 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 If you have followed the installation instructions for Zonemaster::Backend above,
 you should be able to use the
-API on localhost port 5000 as below. The command requires that `curl` is installed.
+API on localhost port 5000 as below. The command requires that `curl` and `jq` are installed.
+
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`

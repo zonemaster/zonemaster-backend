@@ -8,7 +8,7 @@ JQ="$(which jq)"
 usage () {
     status="$1"
     message="$2"
-    echo "${message}" >&2
+    printf "%s" "${message}" >&2
     echo "Usage: zmtest [OPTIONS] DOMAIN" >&2
     echo >&2
     echo "Options:" >&2
@@ -23,16 +23,16 @@ usage () {
 error () {
     status="$1"
     message="$2"
-    echo "error: ${message}" >&2
+    printf "error: %s\n" "${message}" >&2
     exit "${status}"
 }
 
 zmb () {
     server_url="$1"; shift
     json="$("${ZMB}" --server="${server_url}" "$@" 2>&1)" || error 1 "method $1: ${json}"
-    json="$(echo "${json}" | "${JQ}" -S . 2>/dev/null)" || error 1 "method $1 did not return valid JSON output"
-    error="$(echo "${json}" | "${JQ}" -e .error 2>/dev/null)" && error 1 "method $1: ${error}"
-    echo "${json}"
+    json="$(printf "%s" "${json}" | "${JQ}" -S . 2>/dev/null)" || error 1 "method $1 did not return valid JSON output"
+    error="$(printf "%s" "${json}" | "${JQ}" -e .error 2>/dev/null)" && error 1 "method $1: ${error}"
+    printf "%s" "${json}"
 }
 
 [ -n "${JQ}" ] || error 2 "Dependency not found: jq"
@@ -55,7 +55,8 @@ done
 
 # Start test
 output="$(zmb "${server_url}" start_domain_test --domain "${domain}" --ipv4 "${ipv4}" --ipv6 "${ipv6}")" || exit $?
-testid="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
+testid="$(printf "%s" "${output}" | "${JQ}" -r .result)" || exit $?
+printf "testid: %s\n" "${testid}" >&2
 
 if echo "${testid}" | grep -qE '[^0-9a-fA-F]' ; then
     error 1 "start_domain_test did not return a testid: ${testid}"
@@ -65,7 +66,7 @@ fi
 while true
 do
     output="$(zmb "${server_url}" test_progress --testid "${testid}")" || exit $?
-    progress="$(echo "${output}" | "${JQ}" -r .result)" || exit $?
+    progress="$(printf "%s" "${output}" | "${JQ}" -r .result)" || exit $?
     printf "\r${progress}%% done" >&2
     if [ "${progress}" -eq 100 ] ; then
         echo >&2
@@ -76,4 +77,3 @@ done
 
 # Get test results
 zmb "${server_url}" get_test_results --testid "${testid}" --lang "${lang}"
-echo "testid: ${testid}" >&2

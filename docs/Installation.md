@@ -49,15 +49,18 @@ Prerequisite for FreeBSD is that the package system is upadated and activated
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
-> **Note:** In addition to the normal dependencies, the post-installation
-> smoke test instruction assumes that you have curl installed.
-
 ## 3. Installation on CentOS
 
 ### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)
 
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
+
+Optionally install jq (only needed for the post-installation smoke test):
+
+```sh
+sudo yum install jq
+```
 
 Install dependencies available from binary packages:
 
@@ -308,10 +311,10 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
-Optionally install Curl (only needed for the post-installation smoke test):
+Optionally install Curl and jq (only needed for the post-installation smoke test):
 
 ```sh
-sudo apt install curl
+sudo apt install curl jq
 ```
 
 Install required locales:
@@ -491,10 +494,10 @@ Install dependencies available from binary packages:
 pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote databases/p5-DBD-SQLite devel/p5-Log-Dispatch devel/p5-Log-Any devel/p5-Log-Any-Adapter-Dispatch
 ```
 
-Optionally install Curl (only needed for the post-installation smoke test):
+Optionally install Curl and jq (only needed for the post-installation smoke test):
 
 ```sh
-pkg install curl
+pkg install curl jq
 ```
 
 Install dependencies not available from binary packages:
@@ -674,17 +677,16 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 If you have followed the installation instructions for Zonemaster::Backend above,
 you should be able to use the
-API on localhost port 5000 as below. The command requires that `curl` is installed.
+API on localhost port 5000 as below. The command requires that `curl` and `jq` are installed.
+
 
 ```sh
-curl -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/zmtest zonemaster.net
 ```
 
-The command is expected to give an immediate JSON response similiar to:
-
-```json
-{"id":"1","jsonrpc":"2.0","result":{"zonemaster_backend":"2.0.2","zonemaster_engine":"v2.0.6"}}
-```
+The command is expected to immediately print out a testid,
+followed by a percentage ticking up from 0% to 100%.
+Once the number reaches 100% a JSON object is printed and zmtest terminates.
 
 
 ### 7.2. What to do next?
@@ -736,10 +738,3 @@ database to use it with the new version of Zonemaster-Backend. Please see the
 [Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md
 [Zonemaster::Engine]: https://github.com/zonemaster/zonemaster-engine/blob/master/README.md
 [Zonemaster::LDNS]: https://github.com/zonemaster/zonemaster-ldns/blob/master/README.md
-
-Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
-Copyright (c) 2013 - 2017, AFNIC \
-Creative Commons Attribution 4.0 International License
-
-You should have received a copy of the license along with this
-work.  If not, see <https://creativecommons.org/licenses/by/4.0/>.

@@ -43,7 +43,7 @@ Zonemaster::Engine installation].
 > install from your operating system distribution (rather than CPAN).
 > We recommend following the Zonemaster::Engine installation instruction.
 
-Prerequisite for FreeBSD is that the package system is upadated and activated
+Prerequisite for FreeBSD is that the package system is updated and activated
 (see the FreeBSD section of [Zonemaster::Engine installation]).
 
 For details on supported versions of Perl, database engine and operating system
@@ -668,7 +668,7 @@ See the [post-installation] section for post-installation matters.
 
 ## 6. Installation on Ubuntu
 
-Use the procedure for installation on [Debian](#2-installation-on-debian).
+Use the procedure for installation on [Debian](#4-installation-on-debian).
 
 
 ## 7. Post-installation

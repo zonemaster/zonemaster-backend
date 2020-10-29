@@ -29,8 +29,8 @@ error () {
 
 zmb () {
     server_url="$1"; shift
-    json="$("${ZMB}" --server="${server_url}" "$@" 2>&1)" || error 1 "method $1: ${json}"
-    json="$(printf "%s" "${json}" | "${JQ}" -S . 2>/dev/null)" || error 1 "method $1 did not return valid JSON output"
+    output="$("${ZMB}" --server="${server_url}" "$@" 2>&1)" || error 1 "method $1: ${output}"
+    json="$(printf "%s" "${output}" | "${JQ}" -S . 2>/dev/null)" || error 1 "method $1 did not return valid JSON output: ${output}"
     error="$(printf "%s" "${json}" | "${JQ}" -e .error 2>/dev/null)" && error 1 "method $1: ${error}"
     printf "%s" "${json}"
 }

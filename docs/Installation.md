@@ -67,6 +67,11 @@ Install dependencies available from binary packages:
 ```sh
 sudo yum install perl-Class-Method-Modifiers perl-Config-IniFiles perl-JSON-RPC perl-Module-Install perl-Parallel-ForkManager perl-Plack perl-Router-Simple perl-String-ShellQuote perl-Net-Server perl-Role-Tiny redhat-lsb-core
 ```
+*  Only for CentOS 7 *
+
+```sh
+sudo yum install perl-Plack-Test
+```
 
 Install dependencies not available from binary packages:
 
@@ -118,7 +123,7 @@ the old database first.
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
 
-#### 3.2.1 Instructions for MySQL (CentOS)
+#### 3.2.1 Instructions for MariaDB (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -128,18 +133,33 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install, configure and start database engine (and Perl bindings):
+Install the database eengine:
 
 ```sh
-sudo rpm -ivh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
-sudo yum install mysql-server perl-DBD-mysql
-sudo systemctl start mysqld
+sudo yum install mariadb-server
 ```
 
-Verify that MySQL has started:
+Start the database:
 
 ```sh
-service mysqld status
+sudo systemctl start mariadb
+```
+
+Verify that MariaDB has started:
+
+```sh
+sudo systemctl status mariadb
+```
+
+Ensure that MariaDB starts at boot:
+
+```sh
+sudo systemctl enable mariadb
+```
+
+Set the root password in case if it is not done:
+```sh
+sudo mysql_secure_installation
 ```
 
 Initialize the database (unless you keep an old database):
@@ -296,7 +316,6 @@ Check that the service has started:
 sudo /etc/init.d/zm-rpcapi status
 sudo /etc/init.d/zm-testagent status
 ```
-*Does not return any status as of now*
 
 
 ### 3.4 Post-installation (CentOS)

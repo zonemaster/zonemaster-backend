@@ -631,7 +631,7 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install databases/postgresql12-server databases/p5-DBD-Pg
+pkg install postgresql12-server p5-DBD-Pg
 sysrc postgresql_enable="YES"
 service postgresql initdb
 service postgresql start

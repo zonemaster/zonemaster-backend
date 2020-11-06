@@ -740,9 +740,6 @@ Zonemaster-Backend and keep the database, then you might have to upgrade the
 database to use it with the new version of Zonemaster-Backend. Please see the
 [upgrade][README.md-upgrade] information.
 
-If you keep the database but upgrade the database engine, read the instructions
-for the database engine if any steps have to be take first.
-
 -------
 
 [Backend configuration]: Configuration.md

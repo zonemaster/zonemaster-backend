@@ -5,6 +5,9 @@ all_from 'lib/Zonemaster/Backend.pm';
 repository 'https://github.com/zonemaster/zonemaster-backend';
 bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 
+# "2.1.0" could be declared as "2.001" but not as "2.1"
+# (see Zonemaster::LDNS below)
+
 requires
   'Class::Method::Modifiers'    => 1.09,
   'Config::IniFiles'            => 0,
@@ -28,7 +31,7 @@ requires
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.24,
   'Zonemaster::Engine'          => 4.0,
-  'Zonemaster::LDNS'            => 2.1,
+  'Zonemaster::LDNS'            => 2.001,
   ;
 
 test_requires 'DBD::SQLite';

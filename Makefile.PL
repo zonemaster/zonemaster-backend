@@ -5,6 +5,9 @@ all_from 'lib/Zonemaster/Backend.pm';
 repository 'https://github.com/zonemaster/zonemaster-backend';
 bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 
+# "2.1.0" could be declared as "2.001" but not as "2.1"
+# (see Zonemaster::LDNS below)
+
 requires
   'Class::Method::Modifiers'    => 1.09,
   'Config::IniFiles'            => 0,
@@ -13,7 +16,6 @@ requires
   'File::ShareDir'              => 0,
   'File::Slurp'                 => 0,
   'HTML::Entities'              => 0,
-  'IO::CaptureOutput'           => 0,
   'JSON::PP'                    => 0,
   'JSON::RPC'                   => 1.01,
   'JSON::Validator'             => 3.12,
@@ -21,17 +23,15 @@ requires
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,
   'Moose'                       => 2.04,
-  'Net::IP::XS'                 => 0.14,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,
-  'Plack::Middleware::Debug'    => 0.14,
   'Role::Tiny'                  => 1.001003,
   'Router::Simple::Declare'     => 0,
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
-  'Try::Tiny'                   => 0.30,
-  'Zonemaster::Engine'          => 3.0,
-  'Zonemaster::LDNS'            => 2.0,
+  'Try::Tiny'                   => 0.24,
+  'Zonemaster::Engine'          => 4.0,
+  'Zonemaster::LDNS'            => 2.001,
   ;
 
 test_requires 'DBD::SQLite';

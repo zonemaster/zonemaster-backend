@@ -43,14 +43,11 @@ Zonemaster::Engine installation].
 > install from your operating system distribution (rather than CPAN).
 > We recommend following the Zonemaster::Engine installation instruction.
 
-Prerequisite for FreeBSD is that the package system is upadated and activated
+Prerequisite for FreeBSD is that the package system is updated and activated
 (see the FreeBSD section of [Zonemaster::Engine installation]).
 
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
-
-> **Note:** In addition to the normal dependencies, the post-installation
-> smoke test instruction assumes that you have curl installed.
 
 ## 3. Installation on CentOS
 
@@ -59,16 +56,27 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
+Optionally install jq (only needed for the post-installation smoke test):
+
+```sh
+sudo yum install jq
+```
+
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install perl-Module-Install perl-IO-CaptureOutput perl-String-ShellQuote perl-Net-Server redhat-lsb-core
+sudo yum install perl-Class-Method-Modifiers perl-Config-IniFiles perl-JSON-RPC perl-Module-Install perl-Parallel-ForkManager perl-Plack perl-Router-Simple perl-String-ShellQuote perl-Net-Server perl-Role-Tiny redhat-lsb-core
+```
+*  Only for CentOS 7 *
+
+```sh
+sudo yum install perl-Plack-Test
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Class::Method::Modifiers Config::IniFiles Daemon::Control JSON::RPC::Dispatch Net::IP::XS Parallel::ForkManager Plack::Builder Plack::Middleware::Debug Role::Tiny Router::Simple::Declare Starman
+sudo cpanm Daemon::Control Starman
 ```
 
 Install Zonemaster::Backend:
@@ -115,7 +123,7 @@ the old database first.
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
 
-#### 3.2.1 Instructions for MySQL (CentOS)
+#### 3.2.1 Instructions for MariaDB (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -125,18 +133,33 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install, configure and start database engine (and Perl bindings):
+Install the database eengine:
 
 ```sh
-sudo rpm -ivh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
-sudo yum install mysql-server perl-DBD-mysql
-sudo systemctl start mysqld
+sudo yum install mariadb-server
 ```
 
-Verify that MySQL has started:
+Start the database:
 
 ```sh
-service mysqld status
+sudo systemctl start mariadb
+```
+
+Verify that MariaDB has started:
+
+```sh
+sudo systemctl status mariadb
+```
+
+Ensure that MariaDB starts at boot:
+
+```sh
+sudo systemctl enable mariadb
+```
+
+Set the root password in case if it is not done:
+```sh
+sudo mysql_secure_installation
 ```
 
 Initialize the database (unless you keep an old database):
@@ -293,7 +316,6 @@ Check that the service has started:
 sudo /etc/init.d/zm-rpcapi status
 sudo /etc/init.d/zm-testagent status
 ```
-*Does not return any status as of now*
 
 
 ### 3.4 Post-installation (CentOS)
@@ -308,32 +330,33 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
-Optionally install Curl (only needed for the post-installation smoke test):
+Optionally install Curl and jq (only needed for the post-installation smoke test):
 
 ```sh
-sudo apt install curl
+sudo apt install curl jq
 ```
 
 Install required locales:
 
 ```sh
-locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
 locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep nb_NO.utf8 || echo nb_NO.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
 sudo locale-gen
 ```
 
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-captureoutput-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl starman
+sudo apt install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtry-tiny-perl starman
 ```
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control JSON::Validator Net::IP::XS Try::Tiny
+sudo cpanm Daemon::Control JSON::Validator
 ```
 
 Install Zonemaster::Backend:
@@ -487,19 +510,15 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-IO-CaptureOutput p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-Debug p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote net-mgmt/p5-Net-IP-XS databases/p5-DBD-SQLite devel/p5-Log-Dispatch devel/p5-Log-Any devel/p5-Log-Any-Adapter-Dispatch
+pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML
 ```
+<!-- JSON::Validator requires YAML::PP, but p5-JSON-Validator currently lacks a dependency on p5-YAML-LibYAML -->
 
-Optionally install Curl (only needed for the post-installation smoke test):
+
+Optionally install Curl and jq (only needed for the post-installation smoke test):
 
 ```sh
-pkg install curl
-```
-
-Install dependencies not available from binary packages:
-
-```sh
-cpanm JSON::Validator
+pkg install curl jq
 ```
 
 Install Zonemaster::Backend:
@@ -515,7 +534,8 @@ Unless they already exist, add `zonemaster` user and `zonemaster` group
 (the group is created automatically):
 
 ```sh
-pw useradd zonemaster -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+pw useradd zonemaster -C freebsd-pwd.conf -s /sbin/nologin -d /nonexistent -c "Zonemaster daemon user"
 ```
 
 Install files to their proper locations:
@@ -611,7 +631,7 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install databases/postgresql11-server databases/p5-DBD-Pg
+pkg install postgresql12-server p5-DBD-Pg
 sysrc postgresql_enable="YES"
 service postgresql initdb
 service postgresql start
@@ -663,7 +683,7 @@ See the [post-installation] section for post-installation matters.
 
 ## 6. Installation on Ubuntu
 
-Use the procedure for installation on [Debian](#2-installation-on-debian).
+Use the procedure for installation on [Debian](#4-installation-on-debian).
 
 
 ## 7. Post-installation
@@ -672,17 +692,16 @@ Use the procedure for installation on [Debian](#2-installation-on-debian).
 
 If you have followed the installation instructions for Zonemaster::Backend above,
 you should be able to use the
-API on localhost port 5000 as below. The command requires that `curl` is installed.
+API on localhost port 5000 as below. The command requires that `curl` and `jq` are installed.
+
 
 ```sh
-curl -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"version_info","id":"1"}' http://localhost:5000/ && echo
+`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/zmtest zonemaster.net
 ```
 
-The command is expected to give an immediate JSON response similiar to:
-
-```json
-{"id":"1","jsonrpc":"2.0","result":{"zonemaster_backend":"2.0.2","zonemaster_engine":"v2.0.6"}}
-```
+The command is expected to immediately print out a testid,
+followed by a percentage ticking up from 0% to 100%.
+Once the number reaches 100% a JSON object is printed and zmtest terminates.
 
 
 ### 7.2. What to do next?
@@ -734,10 +753,3 @@ database to use it with the new version of Zonemaster-Backend. Please see the
 [Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md
 [Zonemaster::Engine]: https://github.com/zonemaster/zonemaster-engine/blob/master/README.md
 [Zonemaster::LDNS]: https://github.com/zonemaster/zonemaster-ldns/blob/master/README.md
-
-Copyright (c) 2013 - 2017, IIS (The Internet Foundation in Sweden) \
-Copyright (c) 2013 - 2017, AFNIC \
-Creative Commons Attribution 4.0 International License
-
-You should have received a copy of the license along with this
-work.  If not, see <https://creativecommons.org/licenses/by/4.0/>.

@@ -1,21 +1,29 @@
-services: 
-  - mysql
-  - postgresql
-
-env:
-    - TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
-    - TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
-    - TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    
 language: perl
 
-perl:
-    - "5.30"
-    - "5.28"
-    - "5.26"
-    - "5.24"
-    - "5.22"
-      # Perl 5.16 is temporarily excluded because Travis fails
+jobs:
+  include:
+  # Cover MySQL and PostgreSQL with the latest supported Perl version
+  - perl: "5.32"
+    env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+    services: mysql
+  - perl: "5.32"
+    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    services: postgresql
+  # Cover all Perl versions with SQLite
+  - perl: "5.32"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+  - perl: "5.30"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+  - perl: "5.28"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+  - perl: "5.26"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+  - perl: "5.24"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+  - perl: "5.22"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+  - perl: "5.16"
+    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     
 addons:
   apt:
@@ -67,6 +75,7 @@ addons:
     - librole-tiny-perl
     - librouter-simple-perl
     - libstring-shellquote-perl
+    - libtry-tiny-perl
     - starman
 
 before_install:

@@ -128,7 +128,7 @@ sub process_unfinished_tests {
         }
         else {
             my $result;
-            if ($h->{results} =~ /^\[/) {
+            if ( defined $h->{results} && $h->{results} =~ /^\[/ ) {
                 $result = decode_json( $h->{results} );
             }
             else {

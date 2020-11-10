@@ -1,5 +1,39 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v6.0.1 2020-11-09 (public release version)
+ [Fixes]
+ - Fixed a version specification error in Makefile.PL.
+
+
+v6.0.0 2020-11-06 (public release version)
+
+ [Breaking changes]
+ - Updated language tag format in the RPCAPI (#629)
+   - Restricted language tag.
+   - Language tag is set in backend.ini.
+   - New languages can be added without code change.
+   - RPCAPI can report supported language tags.
+
+ [Features]
+ - New tools for command line test (#662, #658, #652, #632,
+   #628, #626, #536, #534)
+ - Improved log handling in RPCAPI (#653, #656, #650, #840)
+ - Improved log handling in testagent (#644, #612)
+
+ [Fixes]
+ - Updated installation instructions (#665, #663, #660, #658,
+   #633, #638, #449, #620)
+ - Corrected MANIFEST (#657)
+ - Improved error handling handling RPCAPI daemon (#545, #213)
+ - Garbage collection testing documentation (#567, #578)
+ - Corrected API documentation (#647, #648)
+ - Updates and corrections in Translator (#655, #649, #631)
+ - Add Norwegian in documentation and configuration (#643)
+ - Clean-up (#642, #598, #597, #639, #638, #641, #193)
+ - Fix warning in test agent (#635, #630, #625, #607)
+ - Fix warning in RPCAPI (#636, #624, #634)
+
+
 v5.0.2 2020-05-22
 
  [Fixes]

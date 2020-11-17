@@ -6,6 +6,7 @@ use Test::More;    # see done_testing()
 use Test::Exception;
 use Zonemaster::Engine;
 use JSON::PP;
+use File::ShareDir qw[dist_file];
 
 my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
@@ -13,6 +14,15 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster::Engine->preload_cache( $datafile );
 	Zonemaster::Engine->profile->set( q{no_network}, 1 );
 }
+
+# The configuration file should be based on the default
+# configuration file, unless the ENV variable below is already
+# set (e.g. for Travis). Set the ENV variable, and this must
+# be placed before Zonemaster::Backend::Config is loaded.
+unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
+       $ENV{ZONEMASTER_BACKEND_CONFIG_FILE} =
+       dist_file('Zonemaster-Backend', "backend_config.ini");
+};
 
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );

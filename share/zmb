@@ -107,6 +107,18 @@ sub cmd_version_info {
 }
 
 
+=head2 profile_names
+
+ zmb [GLOBAL OPTIONS] profile_names
+
+=cut
+
+sub cmd_profile_names {
+    return to_jsonrpc(
+        id     => 1,
+        method => 'profile_names',
+    );
+}
 =head2 start_domain_test
 
  zmb [GLOBAL OPTIONS] start_domain_test [OPTIONS]

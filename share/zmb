@@ -119,6 +119,22 @@ sub cmd_profile_names {
         method => 'profile_names',
     );
 }
+
+
+=head2 get_language_tags
+
+ zmb [GLOBAL OPTIONS] get_language_tags
+
+=cut
+
+sub cmd_get_language_tags {
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_language_tags',
+    );
+}
+
+
 =head2 start_domain_test
 
  zmb [GLOBAL OPTIONS] start_domain_test [OPTIONS]

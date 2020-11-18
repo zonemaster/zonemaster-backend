@@ -1,6 +1,14 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v6.0.2 2020-11-18 (public fix release)
+
+ [Fixes]
+ - Fixes a bug in unit test that prevented update in
+   some cases (#670, #671)
+
+
 v6.0.1 2020-11-09 (public release version)
+
  [Fixes]
  - Fixed a version specification error in Makefile.PL.
 

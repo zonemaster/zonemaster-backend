@@ -105,7 +105,7 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemster-Backend, you should remove any
+> If this is an update of Zonemaster-Backend, you should remove any
 > `/etc/init.d/zm-backend.sh` and `/etc/init.d/zm-centos.sh` (scripts from
 > previous version of Zonemaster-Backend).
 
@@ -386,7 +386,7 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemster-Backend, you should remove any
+> If this is an update of Zonemaster-Backend, you should remove any
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
 
 ### 4.2 Database engine installation and configuration (Debian)

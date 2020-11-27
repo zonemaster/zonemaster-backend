@@ -15,10 +15,10 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
 	Zonemaster::Engine->profile->set( q{no_network}, 1 );
 }
 
-# The configuration file should be based on the default
+# The configuration file should be the default
 # configuration file, unless the ENV variable below is already
 # set (e.g. for Travis). Set the ENV variable, and this must
-# be placed before Zonemaster::Backend::Config is loaded.
+# be done before Zonemaster::Backend::Config is loaded.
 unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
        $ENV{ZONEMASTER_BACKEND_CONFIG_FILE} =
        dist_file('Zonemaster-Backend', "backend_config.ini");

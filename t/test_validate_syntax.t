@@ -5,8 +5,18 @@ use utf8;
 
 use Encode;
 use Test::More;    # see done_testing()
+use File::ShareDir qw[dist_file];
 
 my $can_use_threads = eval 'use threads; 1';
+
+# The configuration file should be the default
+# configuration file, unless the ENV variable below is already
+# set (e.g. for Travis). Set the ENV variable, and this must
+# be done before Zonemaster::Backend::Config is loaded.
+unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
+       $ENV{ZONEMASTER_BACKEND_CONFIG_FILE} =
+       dist_file('Zonemaster-Backend', "backend_config.ini");
+};
 
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );

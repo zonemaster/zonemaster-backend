@@ -17,6 +17,9 @@ usage () {
     echo "  --noipv6              Run the test without ipv6." >&2
     echo "  --lang LANG           A language tag. Default is \"en\"." >&2
     echo "                        Valid values are determined by backend_config.ini." >&2
+    echo "  --profile PROFILE     The name of a profile. Default is \"default\"." >&2
+    echo "                        Valid values are determined by backend_config.ini except that" >&2
+    echo "                        \"default\" is always a valid value." >&2
     exit "${status}"
 }
 
@@ -42,19 +45,21 @@ server_url="http://localhost:5000/"
 ipv4="true"
 ipv6="true"
 lang="en"
+profile="default"
 while [ $# -gt 0 ] ; do
     case "$1" in
         -s|--server) server_url="$2"; shift 2;;
         --noipv4) ipv4="false"; shift 1;;
         --noipv6) ipv6="false"; shift 1;;
         --lang) lang="$2"; shift 2;;
+        --profile) profile="$2"; shift 2;;
         *) domain="$1" ; shift 1;;
     esac
 done
 [ -n "${domain}" ] || usage 2 "No domain specified"
 
 # Start test
-output="$(zmb "${server_url}" start_domain_test --domain "${domain}" --ipv4 "${ipv4}" --ipv6 "${ipv6}")" || exit $?
+output="$(zmb "${server_url}" start_domain_test --domain "${domain}" --ipv4 "${ipv4}" --ipv6 "${ipv6}" --profile "${profile}")" || exit $?
 testid="$(printf "%s" "${output}" | "${JQ}" -r .result)" || exit $?
 printf "testid: %s\n" "${testid}" >&2
 

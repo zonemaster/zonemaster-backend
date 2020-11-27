@@ -107,6 +107,34 @@ sub cmd_version_info {
 }
 
 
+=head2 profile_names
+
+ zmb [GLOBAL OPTIONS] profile_names
+
+=cut
+
+sub cmd_profile_names {
+    return to_jsonrpc(
+        id     => 1,
+        method => 'profile_names',
+    );
+}
+
+
+=head2 get_language_tags
+
+ zmb [GLOBAL OPTIONS] get_language_tags
+
+=cut
+
+sub cmd_get_language_tags {
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_language_tags',
+    );
+}
+
+
 =head2 start_domain_test
 
  zmb [GLOBAL OPTIONS] start_domain_test [OPTIONS]
@@ -120,6 +148,7 @@ sub cmd_version_info {
     --ds-info DS_INFO
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
+    --profile PROFILE_NAME
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
@@ -140,6 +169,7 @@ sub cmd_start_domain_test {
     my @opt_ds_info;
     my $opt_ipv4;
     my $opt_ipv6;
+    my $opt_profile;
     GetOptionsFromArray(
         \@opts,
         'domain|d=s'       => \$opt_domain,
@@ -149,16 +179,17 @@ sub cmd_start_domain_test {
         'ds-info=s'        => \@opt_ds_info,
         'ipv4=s'           => \$opt_ipv4,
         'ipv6=s'           => \$opt_ipv6,
+        'profile=s'        => \$opt_profile,
     ) or pod2usage( 2 );
 
     my %params = ( domain => $opt_domain, );
 
     if ( $opt_client_id ) {
-        $params{client_id} = $opt_client_id,
+        $params{client_id} = $opt_client_id;
     }
 
     if ( $opt_client_version ) {
-        $params{client_version} = $opt_client_version,
+        $params{client_version} = $opt_client_version;
     }
 
     if ( @opt_ds_info ) {
@@ -196,6 +227,10 @@ sub cmd_start_domain_test {
 
     if ( $opt_ipv6 ) {
         $params{ipv6} = json_tern( $opt_ipv6 );
+    }
+
+    if ( $opt_profile ) {
+        $params{profile} = $opt_profile;
     }
 
     return to_jsonrpc(

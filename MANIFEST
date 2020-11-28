@@ -71,7 +71,6 @@ share/zm_rpcapi-bsd
 share/zm_testagent-bsd
 share/zmb
 share/zmtest
-share/zonemaster_backend_testagent.conf
 t/test01.data
 t/test01.t
 t/test_DB_backend.pl

@@ -9,7 +9,8 @@ Each section in `backend_config.ini` is documented below.
 ## DB section
 
 The DB section has a number of keys.
-At this time the only documented key is `engine`.
+Available keys : `engine`, `user`, `password`, `database_name`,
+`database_host`, `polling_interval`.
 
 ### engine
 
@@ -26,6 +27,26 @@ MariaDB           | `MySQL`
 MySQL             | `MySQL`
 PostgreSQL        | `PostgreSQL`
 SQLite            | `SQLite`
+
+### user
+
+The name of the user with sufficient permission to access the database.
+
+### password
+
+The password of the configured user.
+
+### database_host
+
+The host name of the machine on which the engine is running.
+
+### database_name
+
+The name of the database to use.
+
+### polling_interval
+
+not used anywhere besides in script/zonemaster_backend_testagent
 
 
 ## LANGUAGE section
@@ -109,14 +130,23 @@ Each locale set in the configuration file, including the implied
 ".UTF-8", must also be installed or activate on the system
 running the RPCAPI daemon for the translation to work correctly.
 
+
 ## LOG section
 
-TBD
+The LOG section has a unique key, `log_dir`.
+
+### log_dir
+
+not used in the code
 
 
 ## PERL section
 
-TBD
+The PERL section has a unique key, `interpreter`.
+
+### interpreter
+
+not used in the code
 
 
 ## PUBLIC PROFILES and PRIVATE PROFILES sections
@@ -146,7 +176,41 @@ to specifying a profile JSON file containing the entire
 
 ## ZONEMASTER section
 
-TBD
+The ZONEMASTER section has several keys :
+`max_zonemaster_execution_time`,
+`number_of_professes_for_frontend_testing`,
+`number_of_professes_for_batch_testing`,
+`force_hash_id_use_in_API_starting_from_id`, `lock_on_queue`,
+`maximal_number_of_retries`.
+
+### max_zonemaster_execution_time
+
+This key allows to define the interval in seconds to reload unfinished
+queries.
+This assume that after `max_zonemaster_execution_time`, if the test is
+not finished, it has fail. And it will be run again up to
+`maximal_number_of_retries`.
+
+### maximal_number_of_retries
+
+Specifies the number of time a test is allowed to be run again if
+unfinished after `max_zonemaster_execution_time`.
+
+### number_of_professes_for_frontend_testing
+
+not used in the code
+
+### number_of_professes_for_batch_testing
+
+not used in the code
+
+### force_hash_id_use_in_API_starting_from_id
+
+used -> todo
+
+### lock_on_queue
+
+used -> todo
 
 --------
 

@@ -173,7 +173,6 @@ sub create_new_batch_job {
 
 sub create_new_test {
     my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
-    my $result;
 
     my $dbh = $self->dbh;
 
@@ -226,7 +225,7 @@ sub create_new_test {
         }
     }
 
-    return $result;
+    return $result_id;
 }
 
 sub test_progress {

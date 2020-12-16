@@ -139,24 +139,6 @@ Each locale set in the configuration file, including the implied
 running the RPCAPI daemon for the translation to work correctly.
 
 
-## LOG section
-
-The LOG section has a unique key, `log_dir`.
-
-### log_dir
-
-not used in the code
-
-
-## PERL section
-
-The PERL section has a unique key, `interpreter`.
-
-### interpreter
-
-not used in the code
-
-
 ## PUBLIC PROFILES and PRIVATE PROFILES sections
 
 The PUBLIC PROFILES and PRIVATE PROFILES sections together define the available [profiles].
@@ -203,11 +185,11 @@ Number of time a test is allowed to be run again if unfinished after
 
 ### number_of_professes_for_frontend_testing
 
-not used in the code
+used -> todo
 
 ### number_of_professes_for_batch_testing
 
-not used in the code
+used -> todo
 
 ### force_hash_id_use_in_API_starting_from_id
 

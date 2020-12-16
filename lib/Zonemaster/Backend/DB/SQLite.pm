@@ -186,8 +186,8 @@ sub create_new_test {
     my $queue = $test_params->{queue};
 
     my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
-        q[SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND (CAST(strftime('%s', 'now') as integer) - CAST(strftime('%s', creation_time) as integer)) < ?],
-        undef, $test_params_deterministic_hash, 60 * $minutes_between_tests_with_same_params,
+        qq[SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes_between_tests_with_same_params minutes')],
+        undef, $test_params_deterministic_hash,
     );
 
     if ( $recent_id ) {

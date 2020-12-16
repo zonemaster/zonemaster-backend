@@ -31,22 +31,34 @@ SQLite            | `SQLite`
 ### user
 
 The name of the user with sufficient permission to access the database.
+Default value: `zonemaster`.
+
+Ignored by the SQLite database engine.
 
 ### password
 
-The password of the configured user.
+The password of the configured user. Default value: `zonemaster`.
+
+Ignored by the SQLite database engine.
 
 ### database_host
 
-The host name of the machine on which the engine is running.
+The host name of the machine on which the engine is running. Default
+value: `localhost`.
+
+Ignored by the SQLite database engine.
 
 ### database_name
 
-The name of the database to use.
+The name of the database to use, except for SQLite database engine where
+it holds the full path to the SQLite database file. Default value:
+`zonemaster` or `/var/lib/zonemaster/db.sqlite`
+(`/var/db/zonemaster/db.sqlite` on FreeBSD).
 
 ### polling_interval
 
-not used anywhere besides in script/zonemaster_backend_testagent
+Time in seconds between database lookups by Test Agent. Default value:
+`0.5`.
 
 
 ## LANGUAGE section
@@ -185,16 +197,13 @@ The ZONEMASTER section has several keys :
 
 ### max_zonemaster_execution_time
 
-This key allows to define the interval in seconds to reload unfinished
-queries.
-This assume that after `max_zonemaster_execution_time`, if the test is
-not finished, it has fail. And it will be run again up to
-`maximal_number_of_retries`.
+Time in seconds before reporting an unfinished test as failed. Default
+value: `600`.
 
 ### maximal_number_of_retries
 
-Specifies the number of time a test is allowed to be run again if
-unfinished after `max_zonemaster_execution_time`.
+Number of time a test is allowed to be run again if unfinished after
+`max_zonemaster_execution_time`. Default value: `0`.
 
 ### number_of_professes_for_frontend_testing
 
@@ -210,7 +219,7 @@ used -> todo
 
 ### lock_on_queue
 
-used -> todo
+Integer working as a label to associate a test to a specific Test Agent.
 
 --------
 

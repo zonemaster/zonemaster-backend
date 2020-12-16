@@ -193,7 +193,13 @@ used -> todo
 
 ### force_hash_id_use_in_API_starting_from_id
 
-used -> todo
+This parameter determines if it is possible to get the test results
+using an incremental numeric id (allowing easy enumeration of the whole
+database of results) or if a half-md5 hash id should be used instead. If
+set to a non zero value the API will use the simple id up to that value
+(the id value given here will be the highest posible value allowed as
+simple id, for everything above hash_id will be forced). Default value:
+`0`.
 
 ### lock_on_queue
 

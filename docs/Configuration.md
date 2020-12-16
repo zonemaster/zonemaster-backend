@@ -1,8 +1,9 @@
 # Configuration
 
-Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`
-(CentOS, Debian and Ubuntu) or `/usr/local/etc/zonemaster/backend_config.ini`
-(FreeBSD).
+Zonemaster *Backend* is configured in
+`/etc/zonemaster/backend_config.ini` (CentOS, Debian and Ubuntu) or
+`/usr/local/etc/zonemaster/backend_config.ini` (FreeBSD). Following
+[Installation instructions] will create the file with factory settings.
 
 Each section in `backend_config.ini` is documented below.
 
@@ -31,34 +32,29 @@ SQLite            | `SQLite`
 ### user
 
 The name of the user with sufficient permission to access the database.
-Default value: `zonemaster`.
 
 Ignored by the SQLite database engine.
 
 ### password
 
-The password of the configured user. Default value: `zonemaster`.
+The password of the configured user.
 
 Ignored by the SQLite database engine.
 
 ### database_host
 
-The host name of the machine on which the engine is running. Default
-value: `localhost`.
+The host name of the machine on which the engine is running.
 
 Ignored by the SQLite database engine.
 
 ### database_name
 
 The name of the database to use, except for SQLite database engine where
-it holds the full path to the SQLite database file. Default value:
-`zonemaster` or `/var/lib/zonemaster/db.sqlite`
-(`/var/db/zonemaster/db.sqlite` on FreeBSD).
+it holds the full path to the SQLite database file.
 
 ### polling_interval
 
-Time in seconds between database lookups by Test Agent. Default value:
-`0.5`.
+Time in seconds between database lookups by Test Agent.
 
 
 ## LANGUAGE section
@@ -223,6 +219,7 @@ Integer working as a label to associate a test to a specific Test Agent.
 
 --------
 
+[Installation instructions]:          Installation.md
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1

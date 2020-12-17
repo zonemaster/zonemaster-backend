@@ -168,8 +168,8 @@ to specifying a profile JSON file containing the entire
 
 The ZONEMASTER section has several keys :
 `max_zonemaster_execution_time`,
-`number_of_professes_for_frontend_testing`,
-`number_of_professes_for_batch_testing`,
+`number_of_processes_for_frontend_testing`,
+`number_of_processes_for_batch_testing`,
 `force_hash_id_use_in_API_starting_from_id`, `lock_on_queue`,
 `maximal_number_of_retries`.
 
@@ -183,11 +183,11 @@ value: `600`.
 Number of time a test is allowed to be run again if unfinished after
 `max_zonemaster_execution_time`. Default value: `0`.
 
-### number_of_professes_for_frontend_testing
+### number_of_processes_for_frontend_testing
 
 used -> todo
 
-### number_of_professes_for_batch_testing
+### number_of_processes_for_batch_testing
 
 used -> todo
 

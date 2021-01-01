@@ -167,11 +167,13 @@ to specifying a profile JSON file containing the entire
 ## ZONEMASTER section
 
 The ZONEMASTER section has several keys :
-`max_zonemaster_execution_time`,
-`number_of_processes_for_frontend_testing`,
-`number_of_processes_for_batch_testing`,
-`force_hash_id_use_in_API_starting_from_id`, `lock_on_queue`,
-`maximal_number_of_retries`.
+* max_zonemaster_execution_time
+* number_of_processes_for_frontend_testing
+* number_of_processes_for_batch_testing
+* force_hash_id_use_in_API_starting_from_id
+* lock_on_queue
+* maximal_number_of_retries
+* age_reuse_previous_test
 
 ### max_zonemaster_execution_time
 
@@ -204,6 +206,13 @@ simple id, for everything above hash_id will be forced). Default value:
 ### lock_on_queue
 
 Integer working as a label to associate a test to a specific Test Agent.
+
+### age_reuse_previous_test
+
+Positiv integer (in seconds) for how old a previous test of the same
+zone name and parameters must be before we start a new test. Internally
+the value is converted to whole minutes. If the conversion results in
+zero minutes, then the default value (600 seconds) is used.
 
 --------
 

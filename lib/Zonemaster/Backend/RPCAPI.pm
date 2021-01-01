@@ -394,7 +394,7 @@ sub start_domain_test {
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
-        my $minutes_between_tests_with_same_params = 10;
+        my $minutes_between_tests_with_same_params = Zonemaster::Backend::Config->load_config()->age_reuse_previous_test();
 
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
     };

@@ -316,6 +316,29 @@ sub maximal_number_of_retries {
 }
 
 
+=head2 age_reuse_previous_test
+
+=head3 INPUT
+
+'age_reuse_previous_test' from [ZONEMASTER] section in ini file (in seconds).
+
+=head3 RETURNS
+
+A scalar value of the number of minutes old the previous test with the same
+parameters can be when it is reused instead of starting a new test (default
+10). Note that it returns in minutes, whereas the input is in seconds.
+
+=cut
+
+sub age_reuse_previous_test {
+    my ($self) = @_;
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test' );
+    $val = ($val > 0) ? $val : 0;
+    $val = int ( ($val / 60) + 0.5); # in minutes
+    return ($val)? $val : 10;
+}
+
+
 sub ReadProfilesInfo {
     my ($self) = @_;
 

@@ -172,7 +172,7 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $minutes, $batch_id ) = @_;
 
     my $dbh = $self->dbh;
 
@@ -185,9 +185,11 @@ sub create_new_test {
     my $priority = $test_params->{priority};
     my $queue = $test_params->{queue};
 
+    # Search for recent test result with the test parameters
     my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
-        qq[SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes_between_tests_with_same_params minutes')],
-        undef, $test_params_deterministic_hash,
+        "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes minutes')",
+        undef,
+	$test_params_deterministic_hash,
     );
 
     if ( $recent_id ) {
@@ -200,9 +202,20 @@ sub create_new_test {
         }
     }
     else {
+	my $hash_id; # To hold unique id
+	for (1..5) { # 5 trials or else we have a full database or a bug.
+	    $hash_id = substr(md5_hex(time().rand()), 0, 16);
+	    my ( $i ) = $self->dbh->selectrow_array( "SELECT hash_id FROM test_results WHERE hash_id=?", undef, $hash_id );
+	    last unless $i; # Expected to be empty
+	    $hash_id = ''; # Discard since already in use
+	}
+	die 'Cannot create unique hash_id in create_new_test()' unless $hash_id;
+	
+	my $fields = 'hash_id, batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated';
         $dbh->do(
-            q[INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?, ?,?,?,?,?, datetime('now'),?)],
+            "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?, datetime('now'),?)",
             undef,
+	    $hash_id,
             $batch_id,
             $priority,
             $queue,
@@ -211,11 +224,8 @@ sub create_new_test {
             $test_params->{domain},
             ($test_params->{nameservers})?(1):(0),
         );
-        
-        $dbh->do(q[UPDATE test_results SET hash_id = ? WHERE params_deterministic_hash = ?], undef, substr(md5_hex(time().rand()), 0, 16), $test_params_deterministic_hash);
-        
-        my ( $id, $hash_id ) = $dbh->selectrow_array(
-            "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
+
+        my ( $id ) = $dbh->selectrow_array("SELECT id FROM test_results WHERE hash_id='$hash_id'" );
             
         if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
             $result_id = $hash_id;
@@ -225,7 +235,7 @@ sub create_new_test {
         }
     }
 
-    return $result_id;
+    return $result_id; # Return test ID, either test previously run or just created.
 }
 
 sub test_progress {

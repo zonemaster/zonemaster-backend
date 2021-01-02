@@ -269,7 +269,7 @@ sub get_test_params {
         $result = decode_json( $params_json );
     };
     
-    warn "decoding of params_json failed (testi_id: [$test_id]):".Dumper($params_json) if $@;
+    $log->warn( "decoding of params_json failed (test_id: [$test_id]):".Dumper($params_json) ) if $@;
 
     return $result;
 }

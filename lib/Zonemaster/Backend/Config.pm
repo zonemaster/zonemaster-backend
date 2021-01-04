@@ -167,18 +167,6 @@ sub DB_connection_string {
     return $result;
 }
 
-sub LogDir {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'LOG', 'log_dir' );
-}
-
-sub PerlInterpreter {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'PERL', 'interpreter' );
-}
-
 sub PollingInterval {
     my ($self) = @_;
 

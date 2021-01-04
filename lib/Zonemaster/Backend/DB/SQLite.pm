@@ -205,7 +205,7 @@ sub create_new_test {
     else {
 
         # The SQLite database engine does not have support to create the "hash_id" by a
-        # datbase engine trigger. "hash_id" is assumed to hold a unique hash. Uniqueness
+        # database engine trigger. "hash_id" is assumed to hold a unique hash. Uniqueness
         # cannot, however, be guaranteed. Same as with the other database engines.
         my $hash_id = substr(md5_hex(time().rand()), 0, 16);
 

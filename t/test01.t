@@ -44,7 +44,7 @@ ok( $engine->{db}->create_db() );
 # add test user
 ok( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ) == 1 );
 ok(
-    scalar( $engine->{db}->dbh->selectrow_array( q/SELECT * FROM users WHERE user_info like '%zonemaster_test%'/ ) ) ==
+    scalar( $engine->{db}->dbh->selectrow_array( q/SELECT * FROM users WHERE username like '%zonemaster_test%'/ ) ) ==
       1 );
 
 # add a new test to the db
@@ -68,11 +68,12 @@ my $frontend_params_1 = {
 sub run_zonemaster_test_with_backend_API {
 	my ($test_id) = @_;
 	
-	ok( $engine->start_domain_test( $frontend_params_1 ) == $test_id, "API start_domain_test OK/test_id=$test_id" );
+	my $hash_id;
+	ok( ($hash_id = $engine->start_domain_test( $frontend_params_1)) && $hash_id , "API start_domain_test OK/test_id=$test_id" );
 	ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id );
 
 	# test test_progress API
-	ok( $engine->test_progress( $test_id ) == 0 );
+	ok( $engine->test_progress( $hash_id ) == 0 );
 
 	use_ok( 'Zonemaster::Backend::Config' );
 
@@ -82,29 +83,29 @@ sub run_zonemaster_test_with_backend_API {
 		Zonemaster::Engine->preload_cache( $datafile );
 		Zonemaster::Engine->profile->set( q{no_network}, 1 );
 	}
-	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $test_id );
+	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $hash_id );
 
 	Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
-	ok( $engine->test_progress( $test_id ) > 0 );
+	ok( $engine->test_progress( $hash_id ) > 0 );
 
 	foreach my $i ( 1 .. 12 ) {
-		my $progress = $engine->test_progress( $test_id );
+		my $progress = $engine->test_progress( $hash_id );
 		last if ( $progress == 100 );
 	}
-	ok( $engine->test_progress( $test_id ) == 100 );
+	ok( $engine->test_progress( $hash_id ) == 100 );
 
-        my $test_results = $engine->get_test_results( { id => $test_id, language => 'fr_FR' } );
+        my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );
 	ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
 	ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
 	ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
 	ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
 	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
-        dies_ok { $engine->get_test_results( { id => $test_id, language => 'fr-FR' } ); }
+        dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
         'API get_test_results -> [results] parameter not present (wrong language tag)'; # Should be underscore, not hyphen.
 
-        dies_ok { $engine->get_test_results( { id => $test_id, language => 'zz' } ); }
+        dies_ok { $engine->get_test_results( { id => $hash_id, language => 'zz' } ); }
         'API get_test_results -> [results] parameter not present (wrong language tag)'; # "zz" is not our configuration file.
 }
 

@@ -9,6 +9,8 @@ use DBI qw(:utils);
 use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Log::Any qw( $log );
+use Encode;
+use Data::Dumper;
 
 use Zonemaster::Backend::Config;
 
@@ -65,6 +67,8 @@ sub create_db {
     $self->dbh->do(
         'CREATE TABLE test_results (
                          id integer PRIMARY KEY AUTOINCREMENT,
+                         hash_id VARCHAR(16) DEFAULT NULL,
+                         domain VARCHAR(255) NOT NULL,
                          batch_id integer NULL,
                          creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                          test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -74,7 +78,9 @@ sub create_db {
                          progress integer DEFAULT 0,
                          params_deterministic_hash character varying(32),
                          params text NOT NULL,
-                         results text DEFAULT NULL
+                         results text DEFAULT NULL,
+                         undelegated boolean NOT NULL DEFAULT false,
+                         nb_retries integer NOT NULL DEFAULT 0
                )
      '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
@@ -99,8 +105,10 @@ sub create_db {
     $self->dbh->do( 'DROP TABLE IF EXISTS users' );
     $self->dbh->do(
         'CREATE TABLE users (
-                         id integer primary key,
-                         user_info json DEFAULT NULL
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username varchar(128),
+                    api_key varchar(512),
+                    user_info json DEFAULT NULL
                )
      '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
@@ -110,22 +118,22 @@ sub create_db {
 
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
-    my $user_id;
 
-    my $href = $self->dbh->selectall_hashref( "SELECT * FROM users", 'id' );
-    foreach my $id ( keys %$href ) {
-        my $user_info = decode_josn( $href->{$id}->{user_info} );
-        $user_id = $id if ( $user_info->{username} eq $user );
-    }
+    my ( $id ) = $self->dbh->selectrow_array( "SELECT id FROM users WHERE username = ?", undef, $user );
 
-    return $user_id;
+    return $id;
 }
 
 sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key ) = @_;
+    my ( $self, $user_name, $api_key  ) = @_;
 
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( { username => $user_name, api_key => $api_key } ) );
+    my $nb_inserted = $self->dbh->do(
+        "INSERT INTO users (user_info, username, api_key) VALUES (?,?,?)",
+        undef,
+        'NULL',
+        $user_name,
+        $api_key,
+    );
 
     return $nb_inserted;
 }
@@ -133,17 +141,10 @@ sub add_api_user_to_db {
 sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
-    my $user_id;
-
-    my $href = $self->dbh->selectall_hashref( "SELECT * FROM users", 'id' );
-    foreach my $id ( keys %$href ) {
-        my $user_info = decode_josn( $href->{$id}->{user_info} );
-        if ( $user_info->{username} eq $user && $user_info->{api_key} eq $api_key ) {
-            $user_id = $id;
-        }
-    }
-
-    return $user_id;
+    my ( $id ) =
+      $self->dbh->selectrow_array( q[SELECT id FROM users WHERE username = ? AND api_key = ?], undef, $user, $api_key );
+      
+    return $id;
 }
 
 sub create_new_batch_job {
@@ -164,51 +165,93 @@ sub create_new_batch_job {
 
     die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
 
-    my ( $new_batch_id ) = $self->dbh->selectrow_array(
-        "INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ") RETURNING id" );
+    $self->dbh->do("INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ")" );
+    my ( $new_batch_id ) = $self->dbh->sqlite_last_insert_rowid;
 
     return $new_batch_id;
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
-    my $result;
+    my ( $self, $domain, $test_params, $minutes, $batch_id ) = @_;
 
-    my $priority = 10;
-    $priority = $test_params->{priority} if (defined $test_params->{priority});
-    
-    my $queue = 0;
-    $queue = $test_params->{queue} if (defined $test_params->{queue});
+    my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
-    my $js = JSON::PP->new;
-    $js->canonical( 1 );
+    my $js                             = JSON::PP->new->canonical;
     my $encoded_params                 = $js->encode( $test_params );
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
+    my $result_id;
 
-    my $query =
-        "INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
-      . $self->dbh->quote( $batch_id ) . ", "
-      . $self->dbh->quote( $priority ) . ", "
-      . $self->dbh->quote( $queue ) . ", "
-      . $self->dbh->quote( $test_params_deterministic_hash ) . ", "
-      . $self->dbh->quote( $encoded_params )
-      . " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > datetime('now', '-$minutes_between_tests_with_same_params minute'))";
+    my $priority = $test_params->{priority};
+    my $queue = $test_params->{queue};
 
-    my $nb_inserted = $self->dbh->do( $query );
+    # Search for recent test result with the test same parameters, where "$minutes"
+    # gives the time limit for how old test result that is accepted.
+    my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes minutes')",
+        undef,
+        $test_params_deterministic_hash,
+    );
 
-    ( $result ) = $self->dbh->selectrow_array(
-        "SELECT MAX(id) AS id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash'" );
+    if ( $recent_id ) {
+        # A recent entry exists, so return its id
+        if ( $recent_id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
+            $result_id = $recent_hash_id;
+        }
+        else {
+            $result_id = $recent_id;
+        }
+    }
+    else {
 
-    return $result;
+        # The SQLite database engine does not have support to create the "hash_id" by a
+        # database engine trigger. "hash_id" is assumed to hold a unique hash. Uniqueness
+        # cannot, however, be guaranteed. Same as with the other database engines.
+        my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+
+        my $fields = 'hash_id, batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated';
+        $dbh->do(
+            "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?, datetime('now'),?)",
+            undef,
+            $hash_id,
+            $batch_id,
+            $priority,
+            $queue,
+            $test_params_deterministic_hash,
+            $encoded_params,
+            $test_params->{domain},
+            ($test_params->{nameservers})?(1):(0),
+        );
+
+        my ( $id ) = $dbh->selectrow_array("SELECT id FROM test_results WHERE hash_id='$hash_id'" );
+            
+        if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
+            $result_id = $hash_id;
+        }
+        else {
+            $result_id = $id;
+        }
+    }
+
+    return $result_id; # Return test ID, either test previously run or just created.
 }
 
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=$progress WHERE id=$test_id AND progress <> 100" ) if ( $progress );
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE id=$test_id" );
+    my $dbh = $self->dbh;
+    if ( $progress ) {
+        if ($progress == 1) {
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=datetime('now') WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+        }
+        else {
+            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+        }
+    }
+
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
 
     return $result;
 }
@@ -216,43 +259,36 @@ sub test_progress {
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
-    my $result;
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
+    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
 
-    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE id=$test_id" );
-    eval { $result = decode_json( $params_json ); };
-    die "$@ \n" if $@;
+    my $result;
+    eval {
+        $result = decode_json( $params_json );
+    };
+    
+    $log->warn( "decoding of params_json failed (test_id: [$test_id]):".Dumper($params_json) ) if $@;
 
     return $result;
 }
 
 sub test_results {
-    my ( $self, $test_id, $results ) = @_;
+    my ( $self, $test_id, $new_results ) = @_;
 
-    $self->dbh->do( "UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = "
-          . $self->dbh->quote( $results )
-          . " WHERE id=$test_id  AND progress < 100" )
-      if ( $results );
+    my $id_field = $self->_get_allowed_id_field_name($test_id);
+    
+    if ( $new_results ) {
+        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = ? WHERE $id_field=? AND progress < 100],
+            undef, $new_results, $test_id );
+    }
 
     my $result;
-    eval {
-        my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT * FROM test_results WHERE id=$test_id", 'id' );
-        $result            = $hrefs->{$test_id};
-        $result->{params}  = decode_json( $result->{params} );
-        $result->{results} = decode_json( $result->{results} );
-    };
-    die "$@ \n" if $@;
+    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, datetime(creation_time,'localtime') AS creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+    $result            = $hrefs->{$test_id};
+    $result->{params}  = decode_json( $result->{params} );
+    $result->{results} = decode_json( $result->{results} );
 
     return $result;
-}
-
-sub get_test_request {
-    my ( $self ) = @_;
-
-    my ( $id ) = $self->dbh->selectrow_array(
-        q[ SELECT id FROM test_results WHERE progress=0 ORDER BY priority ASC, id ASC LIMIT 1 ] );
-    $self->dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
-
-    return $id;
 }
 
 sub get_test_history {
@@ -292,6 +328,48 @@ sub get_test_history {
 
 sub add_batch_job {
     my ( $self, $params ) = @_;
+    my $batch_id;
+
+    my $dbh = $self->dbh;
+    my $js = JSON::PP->new;
+    $js->canonical( 1 );
+
+    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
+        $batch_id = $self->create_new_batch_job( $params->{username} );
+
+        my $test_params = $params->{test_params};
+        my $priority = $test_params->{priority};
+        my $queue = $test_params->{queue};
+
+        $dbh->{AutoCommit} = 0;
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
+        
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
+        foreach my $domain ( @{$params->{domains}} ) {
+            $test_params->{domain} = $domain;
+            my $encoded_params                 = $js->encode( $test_params );
+            my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+
+            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue, $test_params_deterministic_hash, $encoded_params );
+        }
+        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+        $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
+       
+        $dbh->commit();
+        $dbh->{AutoCommit} = 1;
+    }
+    else {
+        die "User $params->{username} not authorized to use batch mode\n";
+    }
+
+    return $batch_id;
 }
 
 sub build_process_unfinished_tests_select_query {
@@ -301,7 +379,7 @@ sub build_process_unfinished_tests_select_query {
           return "
                SELECT hash_id, results, nb_retries
                FROM test_results 
-               WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->MaxZonemasterExecutionTime()." seconds')
+               WHERE test_start_time < DATETIME('now', '-".$self->config->MaxZonemasterExecutionTime()." seconds')
                AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
                AND progress > 0
                AND progress < 100
@@ -311,7 +389,7 @@ sub build_process_unfinished_tests_select_query {
           return "
                SELECT hash_id, results, nb_retries
                FROM test_results 
-               WHERE test_start_time < DATETIME(test_start_time, '-".$self->config->MaxZonemasterExecutionTime()." seconds')
+               WHERE test_start_time < DATETIME('now', '-".$self->config->MaxZonemasterExecutionTime()." seconds')
                AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
                AND progress > 0
                AND progress < 100";
@@ -321,13 +399,13 @@ sub build_process_unfinished_tests_select_query {
 sub process_unfinished_tests_give_up {
      my ( $self, $result, $hash_id ) = @_;
 
-     $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now', 'localtime'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+     $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
 }
 
 sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = DATETIME('now', 'localtime') WHERE hash_id=?", undef, $hash_id);
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = DATETIME('now') WHERE hash_id=?", undef, $hash_id);
 }
 
 no Moose;

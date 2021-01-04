@@ -379,7 +379,6 @@ sub start_domain_test {
     my ( $self, $params ) = @_;
 
     my $result = 0;
-
     eval {
         $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
         my $syntax_result = $self->validate_syntax( $params );

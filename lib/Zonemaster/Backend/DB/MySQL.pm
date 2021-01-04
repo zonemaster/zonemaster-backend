@@ -9,6 +9,7 @@ use Encode;
 use DBI qw(:utils);
 use JSON::PP;
 use Digest::MD5 qw(md5_hex);
+use Data::Dumper;
 
 use Zonemaster::Backend::Config;
 

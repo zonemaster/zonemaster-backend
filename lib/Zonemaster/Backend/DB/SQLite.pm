@@ -185,11 +185,12 @@ sub create_new_test {
     my $priority = $test_params->{priority};
     my $queue = $test_params->{queue};
 
-    # Search for recent test result with the test parameters
+    # Search for recent test result with the test same parameters, where "$minutes"
+    # gives the time limit for how old test result that is accepted.
     my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
         "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes minutes')",
         undef,
-	$test_params_deterministic_hash,
+        $test_params_deterministic_hash,
     );
 
     if ( $recent_id ) {
@@ -202,20 +203,17 @@ sub create_new_test {
         }
     }
     else {
-	my $hash_id; # To hold unique id
-	for (1..5) { # 5 trials or else we have a full database or a bug.
-	    $hash_id = substr(md5_hex(time().rand()), 0, 16);
-	    my ( $i ) = $self->dbh->selectrow_array( "SELECT hash_id FROM test_results WHERE hash_id=?", undef, $hash_id );
-	    last unless $i; # Expected to be empty
-	    $hash_id = ''; # Discard since already in use
-	}
-	die 'Cannot create unique hash_id in create_new_test()' unless $hash_id;
-	
-	my $fields = 'hash_id, batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated';
+
+        # The SQLite database engine does not have support to create the "hash_id" by a
+        # datbase engine trigger. "hash_id" is assumed to hold a unique hash. Uniqueness
+        # cannot, however, be guaranteed. Same as with the other database engines.
+        my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+
+        my $fields = 'hash_id, batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated';
         $dbh->do(
             "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?, datetime('now'),?)",
             undef,
-	    $hash_id,
+            $hash_id,
             $batch_id,
             $priority,
             $queue,

@@ -20,6 +20,8 @@ Zmb is meant to be pronounced I<Zimba>.
 
 zmb [GLOBAL OPTIONS] COMMAND [OPTIONS]
 
+This interface is unstable and will change in a future release.
+
 =head1 GLOBAL OPTIONS
 
  --help         Show usage

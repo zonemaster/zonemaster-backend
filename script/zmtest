@@ -11,6 +11,8 @@ usage () {
     printf "%s" "${message}" >&2
     echo "Usage: zmtest [OPTIONS] DOMAIN" >&2
     echo >&2
+    echo "This interface is unstable and may change in a future release." >&2
+    echo >&2
     echo "Options:" >&2
     echo "  -s URL --server URL   Zonemaster Backend to query. Default is http://localhost:5000/" >&2
     echo "  --noipv4              Run the test without ipv4." >&2

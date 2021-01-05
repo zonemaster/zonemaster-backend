@@ -47,6 +47,8 @@ script/add-test.pl
 script/add-batch-job.pl
 script/create_db_mysql.pl
 script/create_db_postgresql_9.3.pl
+script/zmb
+script/zmtest
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
 share/backend_config.ini
@@ -71,8 +73,6 @@ share/zm-rpcapi.lsb
 share/zm-testagent.lsb
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
-share/zmb
-share/zmtest
 t/test01.data
 t/test01.t
 t/test_DB_backend.pl

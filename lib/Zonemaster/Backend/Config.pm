@@ -190,7 +190,8 @@ sub PollingInterval {
 
 =head3 INPUT
 
-'max_zonemaster_execution_time' from [ZONEMASTER] section in ini file.
+'max_zonemaster_execution_time' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
 
 =head3 RETURNS
 
@@ -211,7 +212,8 @@ sub MaxZonemasterExecutionTime {
 
 =head3 INPUT
 
-'number_of_processes_for_frontend_testing' from [ZONEMASTER] section in ini file.
+'number_of_processes_for_frontend_testing' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
 
 =head3 RETURNS
 
@@ -233,7 +235,8 @@ sub NumberOfProcessesForFrontendTesting {
 
 =head3 INPUT
 
-'number_of_processes_for_batch_testing' from [ZONEMASTER] section in ini file.
+'number_of_processes_for_batch_testing' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
 
 =head3 RETURNS
 
@@ -255,7 +258,8 @@ sub NumberOfProcessesForBatchTesting {
 
 =head3 INPUT
 
-'force_hash_id_use_in_API_starting_from_id' from [ZONEMASTER] section in ini file.
+'force_hash_id_use_in_API_starting_from_id' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#force_hash_id_use_in_api_starting_from_id>.
 
 =head3 RETURNS
 
@@ -275,7 +279,8 @@ sub force_hash_id_use_in_API_starting_from_id {
 
 =head3 INPUT
 
-'lock_on_queue' from [ZONEMASTER] section in ini file.
+'lock_on_queue' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
 
 =head3 RETURNS
 
@@ -299,7 +304,8 @@ Do not use it (keep the default value "0"), or use it with care.
 
 =head3 INPUT
 
-'maximal_number_of_retries' from [ZONEMASTER] section in ini file.
+'maximal_number_of_retries' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
 
 =head3 RETURNS
 
@@ -320,7 +326,8 @@ sub maximal_number_of_retries {
 
 =head3 INPUT
 
-'age_reuse_previous_test' from [ZONEMASTER] section in ini file (in seconds).
+'age_reuse_previous_test' from [ZONEMASTER] section in ini file (in seconds). See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
 
 =head3 RETURNS
 

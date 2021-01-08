@@ -123,6 +123,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -175,6 +176,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -285,9 +287,30 @@ sudo -u postgres psql -f ./initial-postgres.sql
 
 #### 3.2.3 Instructions for SQLite (CentOS)
 
->
-> At this time there is no instruction for using SQLite on CentOS.
->
+> **Note:** Zonemaster with SQLite backedn is not yet considered stable and anyway
+> not meant for an installation with heavy load.
+
+> All binaries and Perl bindings are already installed.
+
+Configure Zonemaster::Backend to use the correct database engine and database
+path:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
+```
+
+Create database directory, set correct ownership and create database
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo perl create_db_sqlite.pl
+```
+
+> SQLite will not run as a daemon and does not need to be started.
+
+> **Note:** See the [backend configuration] documentation for details.
 
 ### 3.3 Service configuration and startup (CentOS)
 
@@ -397,6 +420,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -423,6 +447,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -446,10 +471,30 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir -le 'print File::ShareDir::dist
 
 #### 4.2.3 Instructions for SQLite (Debian)
 
->
-> At this time there is no instruction for configuring/creating a database in SQLite
->
+> **Note:** Zonemaster with SQLite backedn is not yet considered stable and anyway
+> not meant for an installation with heavy load.
 
+> All binaries and Perl bindings are already installed.
+
+Configure Zonemaster::Backend to use the correct database engine and database
+path:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
+```
+
+Create database directory, set correct ownership and create database
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo perl create_db_sqlite.pl
+```
+
+> SQLite will not run as a daemon and does not need to be started.
+
+> **Note:** See the [backend configuration] documentation for details.
 
 ### 4.3 Service configuration and startup (Debian)
 
@@ -552,6 +597,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -607,6 +653,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -628,10 +675,30 @@ psql -U postgres -f ./initial-postgres.sql
 
 #### 5.2.3 Instructions for SQLite (FreeBSD)
 
->
-> At this time there is no instruction for configuring and creating a database
-> in SQLite.
->
+> **Note:** Zonemaster with SQLite backedn is not yet considered stable and anyway
+> not meant for an installation with heavy load.
+
+> All binaries and Perl bindings are already installed.
+
+Configure Zonemaster::Backend to use the correct database engine and database
+path:
+
+```sh
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_name[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
+```
+
+Create database directory, set correct ownership and create database
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+install -v -m 755 -u zonemaster -g zonemaster -d /var/db/zonemaster
+ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini" perl create_db_sqlite.pl
+```
+
+> SQLite will not run as a daemon and does not need to be started.
+
+> **Note:** See the [backend configuration] documentation for details.
 
 ### 5.3 Service startup (FreeBSD)
 
@@ -713,12 +780,18 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 ```
 
+#### 7.3.3 SQLite
+
+Remove the database file and recreate it following the installation instructions above.
+
 ### 7.4 Upgrade Zonemaster database
 
 If you upgrade your Zonemaster installation with a newer version of
 Zonemaster-Backend and keep the database, then you might have to upgrade the
 database to use it with the new version of Zonemaster-Backend. Please see the
 [upgrade][README.md-upgrade] information.
+
+For SQLite database upgrading is not needed as of now.
 
 -------
 

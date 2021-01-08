@@ -193,6 +193,8 @@ used -> todo
 
 ### force_hash_id_use_in_API_starting_from_id
 
+> **Deprecated**
+
 This parameter determines if it is possible to get the test results
 using an incremental numeric id (allowing easy enumeration of the whole
 database of results) or if a half-md5 hash id should be used instead. If

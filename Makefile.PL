@@ -22,6 +22,7 @@ requires
   'Log::Any'                    => 0,
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,
+  'LWP::UserAgent'              => 0,
   'Moose'                       => 2.04,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,
@@ -44,6 +45,8 @@ install_share;
 
 install_script 'zonemaster_backend_rpcapi.psgi';
 install_script 'zonemaster_backend_testagent';
+install_script 'zmtest';
+install_script 'zmb';
 
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';

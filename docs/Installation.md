@@ -676,7 +676,7 @@ If you have followed the installation instructions for Zonemaster::Backend above
 you should be able to use the API on localhost port 5000 as below.
 
 ```sh
-`zmtest zonemaster.net
+zmtest zonemaster.net
 ```
 
 The command is expected to immediately print out a testid,

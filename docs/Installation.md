@@ -128,7 +128,7 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install the database eengine:
+Install the database engine:
 
 ```sh
 sudo yum install mariadb-server
@@ -287,7 +287,7 @@ sudo -u postgres psql -f ./initial-postgres.sql
 
 #### 3.2.3 Instructions for SQLite (CentOS)
 
-> **Note:** Zonemaster with SQLite backedn is not yet considered stable and anyway
+> **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
 > not meant for an installation with heavy load.
 
 > All binaries and Perl bindings are already installed.
@@ -300,7 +300,7 @@ sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
 sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
 ```
 
-Create database directory, set correct ownership and create database
+Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
@@ -471,7 +471,7 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir -le 'print File::ShareDir::dist
 
 #### 4.2.3 Instructions for SQLite (Debian)
 
-> **Note:** Zonemaster with SQLite backedn is not yet considered stable and anyway
+> **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
 > not meant for an installation with heavy load.
 
 > All binaries and Perl bindings are already installed.
@@ -484,7 +484,7 @@ sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
 sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
 ```
 
-Create database directory, set correct ownership and create database
+Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
@@ -675,7 +675,7 @@ psql -U postgres -f ./initial-postgres.sql
 
 #### 5.2.3 Instructions for SQLite (FreeBSD)
 
-> **Note:** Zonemaster with SQLite backedn is not yet considered stable and anyway
+> **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
 > not meant for an installation with heavy load.
 
 > All binaries and Perl bindings are already installed.
@@ -688,7 +688,7 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/bac
 sed -i '' '/[[:<:]]database_name[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
-Create database directory, set correct ownership and create database
+Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`

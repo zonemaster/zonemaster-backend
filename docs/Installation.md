@@ -182,34 +182,13 @@ sudo systemctl start postgresql-9.3
 > **Note:** Following commands are required only if PostgreSQL is not installed
 > and is not greater or equal to version 9.3 
 
-Install the PostgreSQL packages:
+Install, configure and start database engine:
 
 ```sh
 sudo yum -y install postgresql-server perl-DBD-Pg
-```
-
-Initialise PostgreSQL:
-
-```sh
 sudo postgresql-setup --initdb --unit postgresql
-```
-
-Configure:
-
-```sh
-# In the below file modify all instances of "ident" to "md5"
-sudoedit /var/lib/pgsql/data/pg_hba.conf
-```
-
-To enable PostgreSQL from boot:
-
-```sh
+sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
 sudo systemctl enable postgresql
-```
-
-Start PostgreSQL:
-
-```sh
 sudo systemctl start postgresql
 ```
 
@@ -219,7 +198,7 @@ sudo systemctl start postgresql
 Initialize Zonemaster database (unless you keep an old database):
 
 ```sh
-sudo -u postgres psql -f ./initial-postgres.sql
+sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-postgres.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user called

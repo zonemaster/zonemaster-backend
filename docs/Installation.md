@@ -297,15 +297,15 @@ sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 Start the services:
 
 ```sh
-sudo /etc/init.d/zm-rpcapi start
-sudo /etc/init.d/zm-testagent start
+sudo service zm-rpcapi start
+sudo service zm-testagent start
 ```
 
 Check that the service has started:
 
 ```sh
-sudo /etc/init.d/zm-rpcapi status
-sudo /etc/init.d/zm-testagent status
+sudo service zm-rpcapi status
+sudo service zm-testagent status
 ```
 
 

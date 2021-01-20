@@ -60,7 +60,7 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-JSON-RPC perl-Module-Install perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Router-Simple perl-String-ShellQuote perl-Net-Server perl-Role-Tiny redhat-lsb-core
+sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-JSON-RPC perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Router-Simple perl-String-ShellQuote perl-Role-Tiny redhat-lsb-core
 ```
 
 Install dependencies not available from binary packages:

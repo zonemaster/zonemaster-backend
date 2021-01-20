@@ -144,12 +144,6 @@ Start the database:
 sudo systemctl start mariadb
 ```
 
-Verify that MariaDB has started:
-
-```sh
-sudo systemctl status mariadb
-```
-
 Ensure that MariaDB starts at boot:
 
 ```sh
@@ -231,12 +225,6 @@ Start PostgreSQL:
 sudo systemctl start postgresql-9.3
 ```
 
-Verify PostgreSQL has started:
-
-```sh
-sudo systemctl status postgresql-9.3
-```
-
 
 ##### 3.2.2.2 PostgreSQL installation instructions for CentOS8
 
@@ -272,12 +260,6 @@ Start PostgreSQL:
 
 ```sh
 sudo systemctl start postgresql
-```
-
-Verify PostgreSQL has started:
-
-```sh
-sudo systemctl status postgresql
 ```
 
 

@@ -163,37 +163,28 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 > **Note:** See the [backend configuration] documentation for details.
 
 
-##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
-
 Install, configure and start database engine:
 
-```sh
-sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
-sudo yum -y install postgresql93-server perl-DBD-Pg
-sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
-sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/9.3/data/pg_hba.conf
-sudo systemctl enable postgresql-9.3
-sudo systemctl start postgresql-9.3
-```
+* On CentOS 7:
 
+  ```sh
+  sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
+  sudo yum -y install postgresql93-server perl-DBD-Pg
+  sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
+  sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/9.3/data/pg_hba.conf
+  sudo systemctl enable postgresql-9.3
+  sudo systemctl start postgresql-9.3
+  ```
 
-##### 3.2.2.2 PostgreSQL installation instructions for CentOS8
+* On CentOS 8:
 
-> **Note:** Following commands are required only if PostgreSQL is not installed
-> and is not greater or equal to version 9.3 
-
-Install, configure and start database engine:
-
-```sh
-sudo yum -y install postgresql-server perl-DBD-Pg
-sudo postgresql-setup --initdb --unit postgresql
-sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
-sudo systemctl enable postgresql
-sudo systemctl start postgresql
-```
-
-
-##### 3.2.2.3 PostgreSQL installation instructions (common for CentOS7 and CentOS8)
+  ```sh
+  sudo yum -y install postgresql-server perl-DBD-Pg
+  sudo postgresql-setup --initdb --unit postgresql
+  sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
+  sudo systemctl enable postgresql
+  sudo systemctl start postgresql
+  ```
 
 Initialize Zonemaster database (unless you keep an old database):
 

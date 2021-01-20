@@ -202,8 +202,6 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zone
 > **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
 > not meant for an installation with heavy load.
 
-> All binaries and Perl bindings are already installed.
-
 Configure Zonemaster::Backend to use the correct database engine and database
 path:
 
@@ -219,8 +217,6 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
 ```
-
-> SQLite will not run as a daemon and does not need to be started.
 
 > **Note:** See the [backend configuration] documentation for details.
 

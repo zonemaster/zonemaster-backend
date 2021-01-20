@@ -132,36 +132,18 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install the database engine:
+Install, configure and start database engine:
 
 ```sh
 sudo yum install mariadb-server
-```
-
-Start the database:
-
-```sh
-sudo systemctl start mariadb
-```
-
-Ensure that MariaDB starts at boot:
-
-```sh
 sudo systemctl enable mariadb
-```
-
-Set the root password in case if it is not done:
-```sh
-sudo mysql_secure_installation
+sudo systemctl start mariadb
 ```
 
 Initialize the database (unless you keep an old database):
 
-> **Note:** If MySQL is newly installed, then one *may* have to set the root
-> password for the following command to work
-
 ```sh
-mysql --user=root --password < ./initial-mysql.sql
+sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-mysql.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user

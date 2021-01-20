@@ -165,45 +165,14 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 
 ##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
 
-Add PostgreSQL package repository needed to get the appropriate PostgreSQL
-binary package
-
-> **Note:** PostgreSQL version should be equal or greater than 9.3. If
-> PostgreSQL is already installed and is greater than 9.3 ignore the following
-> commands
+Install, configure and start database engine:
 
 ```sh
 sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
-```
-
-Install the PostgreSQL packages:
-
-```sh
-sudo yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs postgresql93-devel perl-DBD-Pg
-```
-
-To enable PostgreSQL from boot:
-
-```sh
-sudo systemctl enable postgresql-9.3
-```
-
-Initialise PostgreSQL:
-
-```sh
+sudo yum -y install postgresql93-server perl-DBD-Pg
 sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
-```
-
-Configure:
-
-```sh
-# In the below file modify all instances of "ident" to "md5"
-sudoedit /var/lib/pgsql/9.3/data/pg_hba.conf
-```
-
-Start PostgreSQL:
-
-```sh
+sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/9.3/data/pg_hba.conf
+sudo systemctl enable postgresql-9.3
 sudo systemctl start postgresql-9.3
 ```
 

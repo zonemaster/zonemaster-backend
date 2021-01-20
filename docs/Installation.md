@@ -49,6 +49,7 @@ Prerequisite for FreeBSD is that the package system is updated and activated
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
+
 ## 3. Installation on CentOS
 
 ### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)
@@ -69,6 +70,7 @@ sudo cpanm Daemon::Control Starman
 ```
 
 Install Zonemaster::Backend:
+
 ```sh
 sudo cpanm Zonemaster::Backend
 ```
@@ -77,6 +79,7 @@ sudo cpanm Zonemaster::Backend
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add Zonemaster user (unless it already exists):
+
 ```sh
 sudo useradd -r -c "Zonemaster daemon user" zonemaster
 ```
@@ -98,6 +101,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > `/etc/init.d/zm-backend.sh` and `/etc/init.d/zm-centos.sh` (scripts from
 > previous version of Zonemaster-Backend).
 
+
 ### 3.2 Database engine installation and configuration (CentOS)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
@@ -111,6 +115,7 @@ the old database first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
+
 
 #### 3.2.1 Instructions for MariaDB (CentOS)
 
@@ -165,6 +170,7 @@ mysql --user=root --password < ./initial-mysql.sql
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
 
+
 #### 3.2.2 Instructions for PostgreSQL (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
@@ -176,6 +182,7 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 
 > **Note:** See the [backend configuration] documentation for details.
 
+
 ##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
 
 Add PostgreSQL package repository needed to get the appropriate PostgreSQL
@@ -183,7 +190,7 @@ binary package
 
 > **Note:** PostgreSQL version should be equal or greater than 9.3. If
 > PostgreSQL is already installed and is greater than 9.3 ignore the following
-> commands   
+> commands
 
 ```sh
 sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
@@ -225,6 +232,7 @@ Verify PostgreSQL has started:
 ```sh
 sudo systemctl status postgresql-9.3
 ```
+
 
 ##### 3.2.2.2 PostgreSQL installation instructions for CentOS8
 
@@ -268,6 +276,7 @@ Verify PostgreSQL has started:
 sudo systemctl status postgresql
 ```
 
+
 ##### 3.2.2.3 PostgreSQL installation instructions (common for CentOS7 and CentOS8)
 
 Initialize Zonemaster database (unless you keep an old database):
@@ -279,6 +288,7 @@ sudo -u postgres psql -f ./initial-postgres.sql
 > **Note:** This creates a database called `zonemaster`, as well as a user called
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
+
 
 #### 3.2.3 Instructions for SQLite (CentOS)
 
@@ -306,6 +316,7 @@ sudo perl create_db_sqlite.pl
 > SQLite will not run as a daemon and does not need to be started.
 
 > **Note:** See the [backend configuration] documentation for details.
+
 
 ### 3.3 Service configuration and startup (CentOS)
 

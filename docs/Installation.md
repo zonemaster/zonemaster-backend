@@ -230,7 +230,7 @@ Make sure our tmpfiles configuration takes effect:
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-Start the services:
+Enable services at boot time and start them:
 
 ```sh
 sudo systemctl enable zm-rpcapi

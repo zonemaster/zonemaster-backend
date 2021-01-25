@@ -255,12 +255,17 @@ See the [post-installation] section for post-installation matters.
 Install required locales:
 
 ```sh
-locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep nb_NO.utf8 || echo nb_NO.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
 sudo locale-gen
+```
+
+After the update, `locale -a` should at least list the following locales:
+```
+da_DK.utf8
+en_US.utf8
+fr_FR.utf8
+nb_NO.utf8
+sv_SE.utf8
 ```
 
 Install dependencies available from binary packages:

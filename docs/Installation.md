@@ -310,6 +310,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > If this is an update of Zonemaster-Backend, you should remove any
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
 
+
 ### 4.2 Database engine installation and configuration (Debian)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
@@ -323,6 +324,7 @@ the old database first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
+
 
 #### 4.2.1 Instructions for MariaDB (Debian)
 
@@ -350,6 +352,7 @@ sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backe
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
+
 
 #### 4.2.2 Instructions for PostgreSQL (Debian)
 
@@ -406,6 +409,7 @@ sudo perl create_db_sqlite.pl
 
 > **Note:** See the [backend configuration] documentation for details.
 
+
 ### 4.3 Service configuration and startup (Debian)
 
 Add services to the default runlevel:
@@ -431,6 +435,7 @@ with the `start` command, you probably do not get it with the `status` command).
 sudo service zm-rpcapi status | cat
 sudo service zm-testagent status | cat
 ```
+
 
 ### 4.4 Post-installation (Debian)
 

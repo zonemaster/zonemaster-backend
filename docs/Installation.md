@@ -328,6 +328,12 @@ but if you have removed the old Zonemaster database, then do the initialization.
 
 #### 4.2.1 Instructions for MariaDB (Debian)
 
+Install the database engine and its dependencies:
+
+```sh
+sudo apt install mariadb-server libdbd-mysql-perl
+```
+
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
@@ -336,12 +342,6 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
-
-Install the database engine and its dependencies:
-
-```sh
-sudo apt install mariadb-server libdbd-mysql-perl
-```
 
 Initialize Zonemaster database (unless you keep an old database):
 
@@ -356,6 +356,12 @@ sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backe
 
 #### 4.2.2 Instructions for PostgreSQL (Debian)
 
+Install database engine and Perl bindings:
+
+```sh
+sudo apt install postgresql libdbd-pg-perl
+```
+
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
@@ -364,12 +370,6 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
-
-Install, configure and start database engine (and Perl bindings):
-
-```sh
-sudo apt install libdbd-pg-perl postgresql
-```
 
 Initialize Zonemaster database (unless you keep an old database):
 

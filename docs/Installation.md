@@ -413,28 +413,19 @@ sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 
 ### 4.3 Service configuration and startup (Debian)
 
-Add services to the default runlevel:
-
-```sh
-sudo update-rc.d zm-rpcapi defaults
-sudo update-rc.d zm-testagent defaults
-```
-
-Start the services:
+Make sure our tmpfiles configuration takes effect:
 
 ```sh
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
-sudo service zm-rpcapi start
-sudo service zm-testagent start
 ```
 
-If the `start` command did not give any output (depends on OS and version) then
-check that the service has started with the following command (if you get output
-with the `start` command, you probably do not get it with the `status` command).
+Enable services at boot time and start them:
 
 ```sh
-sudo service zm-rpcapi status | cat
-sudo service zm-testagent status | cat
+sudo systemctl enable zm-rpcapi
+sudo systemctl enable zm-testagent
+sudo systemctl start zm-rpcapi
+sudo systemctl start zm-testagent
 ```
 
 

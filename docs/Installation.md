@@ -401,7 +401,7 @@ Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
 ```
 

@@ -199,8 +199,8 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zone
 
 #### 3.2.3 Instructions for SQLite (CentOS)
 
-> **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
-> not meant for an installation with heavy load.
+> **Note:** Zonemaster with SQLite is not meant for an installation with heavy
+> load.
 
 Configure Zonemaster::Backend to use the correct database engine and database
 path:
@@ -376,8 +376,8 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir -le 'print File::ShareDir::dist
 
 #### 4.2.3 Instructions for SQLite (Debian)
 
-> **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
-> not meant for an installation with heavy load.
+> **Note:** Zonemaster with SQLite is not meant for an installation with heavy
+> load.
 
 > All binaries and Perl bindings are already installed.
 
@@ -580,8 +580,8 @@ psql -U postgres -f ./initial-postgres.sql
 
 #### 5.2.3 Instructions for SQLite (FreeBSD)
 
-> **Note:** Zonemaster with SQLite backend is not yet considered stable and anyway
-> not meant for an installation with heavy load.
+> **Note:** Zonemaster with SQLite is not meant for an installation with heavy
+> load.
 
 > All binaries and Perl bindings are already installed.
 

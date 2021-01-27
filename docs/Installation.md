@@ -255,12 +255,17 @@ See the [post-installation] section for post-installation matters.
 Install required locales:
 
 ```sh
-locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep nb_NO.utf8 || echo nb_NO.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
 sudo locale-gen
+```
+
+After the update, `locale -a` should at least list the following locales:
+```
+da_DK.utf8
+en_US.utf8
+fr_FR.utf8
+nb_NO.utf8
+sv_SE.utf8
 ```
 
 Install dependencies available from binary packages:
@@ -293,7 +298,7 @@ sudo useradd -r -c "Zonemaster daemon user" zonemaster
 Install files to their proper locations:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
@@ -304,6 +309,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 
 > If this is an update of Zonemaster-Backend, you should remove any
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
+
 
 ### 4.2 Database engine installation and configuration (Debian)
 
@@ -319,7 +325,14 @@ the old database first.
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
 
+
 #### 4.2.1 Instructions for MariaDB (Debian)
+
+Install the database engine and its dependencies:
+
+```sh
+sudo apt install mariadb-server libdbd-mysql-perl
+```
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -330,23 +343,24 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install the database engine and its dependencies:
-
-```sh
-sudo apt install mariadb-server libdbd-mysql-perl
-```
-
 Initialize Zonemaster database (unless you keep an old database):
 
 ```sh
-sudo mysql < $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/initial-mysql.sql
+sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-mysql.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
 
+
 #### 4.2.2 Instructions for PostgreSQL (Debian)
+
+Install database engine and Perl bindings:
+
+```sh
+sudo apt install postgresql libdbd-pg-perl
+```
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -357,16 +371,10 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install, configure and start database engine (and Perl bindings):
-
-```sh
-sudo apt install libdbd-pg-perl postgresql
-```
-
 Initialize Zonemaster database (unless you keep an old database):
 
 ```sh
-sudo -u postgres psql -f $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/initial-postgres.sql
+sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-postgres.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user called
@@ -392,40 +400,34 @@ sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zo
 Create database directory, set correct ownership and create database:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
+sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
+sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```
 
 > SQLite will not run as a daemon and does not need to be started.
 
 > **Note:** See the [backend configuration] documentation for details.
 
+
 ### 4.3 Service configuration and startup (Debian)
 
-Add services to the default runlevel:
-
-```sh
-sudo update-rc.d zm-rpcapi defaults
-sudo update-rc.d zm-testagent defaults
-```
-
-Start the services:
+Make sure our tmpfiles configuration takes effect:
 
 ```sh
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
-sudo service zm-rpcapi start
-sudo service zm-testagent start
 ```
 
-If the `start` command did not give any output (depends on OS and version) then
-check that the service has started with the following command (if you get output
-with the `start` command, you probably do not get it with the `status` command).
+Enable services at boot time and start them:
 
 ```sh
-sudo service zm-rpcapi status | cat
-sudo service zm-testagent status | cat
+sudo systemctl enable zm-rpcapi
+sudo systemctl enable zm-testagent
+sudo systemctl start zm-rpcapi
+sudo systemctl start zm-testagent
 ```
+
 
 ### 4.4 Post-installation (Debian)
 

@@ -597,8 +597,8 @@ Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-install -v -m 755 -u zonemaster -g zonemaster -d /var/db/zonemaster
-ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini" perl create_db_sqlite.pl
+install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
+ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini" su -m zonemaster -c "perl create_db_sqlite.pl"
 ```
 
 > SQLite will not run as a daemon and does not need to be started.

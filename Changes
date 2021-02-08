@@ -6,7 +6,9 @@ v6.1.0 2020-11-06 (public release version)
  - Adds full support of a light weight SQLite database backend
    as an alternative to MariaDB or PostgreSQL database daemons
    (#695, #690, #177
- - Extends zmtest and zmb with new functions (#675)
+ - Extends zmtest with support for selecting profile. Extends zmb
+   with support for methods "profile_names" and "get_language_tags"
+   and support for selecting profile (#675)
  - Installs zmtest and zmb test tools in path (#693, #687
  - Deprecates "force_hash_id_use_in_API_starting_from_id"
    configuration item (#694)

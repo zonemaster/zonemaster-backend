@@ -1,5 +1,29 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v6.1.0 2020-11-06 (public release version)
+
+ [Features]
+ - Adds full support of a light weight SQLite database backend
+   as an alternative to MariaDB or PostgreSQL database daemons
+   (#695, #690, #177
+ - Extends zmtest and zmb with new functions (#675)
+ - Installs zmtest and zmb test tools in path (#693, #687
+ - Deprecates "force_hash_id_use_in_API_starting_from_id"
+   configuration item (#694)
+
+ [Fixes]
+ - Creates a work-around to allow for empty "ip" in nameserver
+   objects in "start_domain_test" method (#705, #702
+ - Updates installation document (#701, #700, #699, #698, #697,
+   (#696, #695, #686
+ - Removes unused configuration properties (#688, #273)
+ - Updates the configuration file document (#684, #520
+ - Resolves issue where selected profile and selected IP
+   transport are in conflict (#682, #683)
+ - Removes unused configuration file (#672)
+ - Corrects unit test (#677, #679, #671)
+
+
 v6.0.2 2020-11-18 (public fix release)
 
  [Fixes]
@@ -10,7 +34,8 @@ v6.0.2 2020-11-18 (public fix release)
 v6.0.1 2020-11-09 (public release version)
 
  [Fixes]
- - Fixed a version specification error in Makefile.PL.
+ - Fixed a version specification error in Makefile.PL
+   (#668)
 
 
 v6.0.0 2020-11-06 (public release version)

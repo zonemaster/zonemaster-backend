@@ -49,6 +49,7 @@ Prerequisite for FreeBSD is that the package system is updated and activated
 For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
+
 ## 3. Installation on CentOS
 
 ### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)
@@ -56,30 +57,24 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
-Optionally install jq (only needed for the post-installation smoke test):
-
-```sh
-sudo yum install jq
-```
-
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install perl-Class-Method-Modifiers perl-Config-IniFiles perl-JSON-RPC perl-Module-Install perl-Parallel-ForkManager perl-Plack perl-Router-Simple perl-String-ShellQuote perl-Net-Server perl-Role-Tiny redhat-lsb-core
+sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-Warn redhat-lsb-core
 ```
-*  Only for CentOS 7 *
 
-```sh
-sudo yum install perl-Plack-Test
-```
+> **Note:** perl-Net-Server and perl-Test-Warn are listed here even though they
+> are not direct dependencies. They are transitive dependencies with build
+> problems when installed using cpanm.
 
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control Starman
+sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman Try::Tiny
 ```
 
 Install Zonemaster::Backend:
+
 ```sh
 sudo cpanm Zonemaster::Backend
 ```
@@ -88,6 +83,7 @@ sudo cpanm Zonemaster::Backend
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add Zonemaster user (unless it already exists):
+
 ```sh
 sudo useradd -r -c "Zonemaster daemon user" zonemaster
 ```
@@ -95,7 +91,7 @@ sudo useradd -r -c "Zonemaster daemon user" zonemaster
 Install files to their proper locations:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
@@ -105,9 +101,10 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemster-Backend, you should remove any
+> If this is an update of Zonemaster-Backend, you should remove any
 > `/etc/init.d/zm-backend.sh` and `/etc/init.d/zm-centos.sh` (scripts from
 > previous version of Zonemaster-Backend).
+
 
 ### 3.2 Database engine installation and configuration (CentOS)
 
@@ -123,57 +120,36 @@ the old database first.
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
 
+
 #### 3.2.1 Instructions for MariaDB (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install the database eengine:
+Install, configure and start database engine:
 
 ```sh
 sudo yum install mariadb-server
-```
-
-Start the database:
-
-```sh
-sudo systemctl start mariadb
-```
-
-Verify that MariaDB has started:
-
-```sh
-sudo systemctl status mariadb
-```
-
-Ensure that MariaDB starts at boot:
-
-```sh
 sudo systemctl enable mariadb
-```
-
-Set the root password in case if it is not done:
-```sh
-sudo mysql_secure_installation
+sudo systemctl start mariadb
 ```
 
 Initialize the database (unless you keep an old database):
 
-> **Note:** If MySQL is newly installed, then one *may* have to set the root
-> password for the following command to work
-
 ```sh
-mysql --user=root --password < ./initial-mysql.sql
+sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-mysql.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
+
 
 #### 3.2.2 Instructions for PostgreSQL (CentOS)
 
@@ -181,119 +157,70 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
 
-##### 3.2.2.1 PostgreSQL installation instructions for CentOS7
 
-Add PostgreSQL package repository needed to get the appropriate PostgreSQL
-binary package
+Install, configure and start database engine:
 
-> **Note:** PostgreSQL version should be equal or greater than 9.3. If
-> PostgreSQL is already installed and is greater than 9.3 ignore the following
-> commands   
+* On CentOS 7:
 
-```sh
-sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
-```
+  ```sh
+  sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
+  sudo yum -y install postgresql93-server perl-DBD-Pg
+  sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
+  sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/9.3/data/pg_hba.conf
+  sudo systemctl enable postgresql-9.3
+  sudo systemctl start postgresql-9.3
+  ```
 
-Install the PostgreSQL packages:
+* On CentOS 8:
 
-```sh
-sudo yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs postgresql93-devel perl-DBD-Pg
-```
-
-To enable PostgreSQL from boot:
-
-```sh
-sudo systemctl enable postgresql-9.3
-```
-
-Initialise PostgreSQL:
-
-```sh
-sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
-```
-
-Configure:
-
-```sh
-# In the below file modify all instances of "ident" to "md5"
-sudoedit /var/lib/pgsql/9.3/data/pg_hba.conf
-```
-
-Start PostgreSQL:
-
-```sh
-sudo systemctl start postgresql-9.3
-```
-
-Verify PostgreSQL has started:
-
-```sh
-sudo systemctl status postgresql-9.3
-```
-
-##### 3.2.2.2 PostgreSQL installation instructions for CentOS8
-
-> **Note:** Following commands are required only if PostgreSQL is not installed
-> and is not greater or equal to version 9.3 
-
-Install the PostgreSQL packages:
-
-```sh
-sudo yum -y install postgresql-server perl-DBD-Pg
-```
-
-Initialise PostgreSQL:
-
-```sh
-sudo postgresql-setup --initdb --unit postgresql
-```
-
-Configure:
-
-```sh
-# In the below file modify all instances of "ident" to "md5"
-sudoedit /var/lib/pgsql/data/pg_hba.conf
-```
-
-To enable PostgreSQL from boot:
-
-```sh
-sudo systemctl enable postgresql
-```
-
-Start PostgreSQL:
-
-```sh
-sudo systemctl start postgresql
-```
-
-Verify PostgreSQL has started:
-
-```sh
-sudo systemctl status postgresql
-```
-
-##### 3.2.2.3 PostgreSQL installation instructions (common for CentOS7 and CentOS8)
+  ```sh
+  sudo yum -y install postgresql-server perl-DBD-Pg
+  sudo postgresql-setup --initdb --unit postgresql
+  sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
+  sudo systemctl enable postgresql
+  sudo systemctl start postgresql
+  ```
 
 Initialize Zonemaster database (unless you keep an old database):
 
 ```sh
-sudo -u postgres psql -f ./initial-postgres.sql
+sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-postgres.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user called
 > "zonemaster" with the password "zonemaster" (as stated in the config file).
 > This user has just enough permissions to run the backend software.
 
+
 #### 3.2.3 Instructions for SQLite (CentOS)
 
->
-> At this time there is no instruction for using SQLite on CentOS.
->
+> **Note:** Zonemaster with SQLite is not meant for an installation with heavy
+> load.
+
+Configure Zonemaster::Backend to use the correct database engine and database
+path:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
+```
+
+Create database directory, set correct ownership and create database:
+
+```sh
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
+sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo perl create_db_sqlite.pl
+sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
+```
+
+> **Note:** See the [backend configuration] documentation for details.
+
 
 ### 3.3 Service configuration and startup (CentOS)
 
@@ -303,18 +230,13 @@ Make sure our tmpfiles configuration takes effect:
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-Start the services:
+Enable services at boot time and start them:
 
 ```sh
-sudo /etc/init.d/zm-rpcapi start
-sudo /etc/init.d/zm-testagent start
-```
-
-Check that the service has started:
-
-```sh
-sudo /etc/init.d/zm-rpcapi status
-sudo /etc/init.d/zm-testagent status
+sudo systemctl enable zm-rpcapi
+sudo systemctl enable zm-testagent
+sudo systemctl start zm-rpcapi
+sudo systemctl start zm-testagent
 ```
 
 
@@ -330,27 +252,26 @@ See the [post-installation] section for post-installation matters.
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
 
-Optionally install Curl and jq (only needed for the post-installation smoke test):
-
-```sh
-sudo apt install curl jq
-```
-
 Install required locales:
 
 ```sh
-locale -a | grep da_DK.utf8 || echo da_DK.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep en_US.utf8 || echo en_US.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep fr_FR.utf8 || echo fr_FR.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep nb_NO.utf8 || echo nb_NO.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
-locale -a | grep sv_SE.utf8 || echo sv_SE.UTF-8 UTF-8 | sudo tee -a /etc/locale.gen
+sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
 sudo locale-gen
+```
+
+After the update, `locale -a` should at least list the following locales:
+```
+da_DK.utf8
+en_US.utf8
+fr_FR.utf8
+nb_NO.utf8
+sv_SE.utf8
 ```
 
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt install libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtry-tiny-perl starman
+sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtry-tiny-perl starman
 ```
 
 Install dependencies not available from binary packages:
@@ -377,7 +298,7 @@ sudo useradd -r -c "Zonemaster daemon user" zonemaster
 Install files to their proper locations:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
@@ -386,8 +307,9 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemster-Backend, you should remove any
+> If this is an update of Zonemaster-Backend, you should remove any
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
+
 
 ### 4.2 Database engine installation and configuration (Debian)
 
@@ -403,15 +325,8 @@ the old database first.
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
 
+
 #### 4.2.1 Instructions for MariaDB (Debian)
-
-Configure Zonemaster::Backend to use the correct database engine:
-
-```sh
-sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
-```
-
-> **Note:** See the [backend configuration] documentation for details.
 
 Install the database engine and its dependencies:
 
@@ -419,36 +334,47 @@ Install the database engine and its dependencies:
 sudo apt install mariadb-server libdbd-mysql-perl
 ```
 
+Configure Zonemaster::Backend to use the correct database engine:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
+```
+
+> **Note:** See the [backend configuration] documentation for details.
+
 Initialize Zonemaster database (unless you keep an old database):
 
 ```sh
-sudo mysql < $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/initial-mysql.sql
+sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-mysql.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user
 > called "zonemaster" with the password "zonemaster" (as stated in the config
 > file). This user has just enough permissions to run the backend software.
 
+
 #### 4.2.2 Instructions for PostgreSQL (Debian)
+
+Install database engine and Perl bindings:
+
+```sh
+sudo apt install postgresql libdbd-pg-perl
+```
 
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Install, configure and start database engine (and Perl bindings):
-
-```sh
-sudo apt install libdbd-pg-perl postgresql
-```
-
 Initialize Zonemaster database (unless you keep an old database):
 
 ```sh
-sudo -u postgres psql -f $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/initial-postgres.sql
+sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-postgres.sql
 ```
 
 > **Note:** This creates a database called `zonemaster`, as well as a user called
@@ -458,36 +384,50 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir -le 'print File::ShareDir::dist
 
 #### 4.2.3 Instructions for SQLite (Debian)
 
->
-> At this time there is no instruction for configuring/creating a database in SQLite
->
+> **Note:** Zonemaster with SQLite is not meant for an installation with heavy
+> load.
+
+> All binaries and Perl bindings are already installed.
+
+Configure Zonemaster::Backend to use the correct database engine and database
+path:
+
+```sh
+sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
+sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
+```
+
+Create database directory, set correct ownership and create database:
+
+```sh
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
+sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo perl create_db_sqlite.pl
+sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
+```
+
+> SQLite will not run as a daemon and does not need to be started.
+
+> **Note:** See the [backend configuration] documentation for details.
 
 
 ### 4.3 Service configuration and startup (Debian)
 
-Add services to the default runlevel:
-
-```sh
-sudo update-rc.d zm-rpcapi defaults
-sudo update-rc.d zm-testagent defaults
-```
-
-Start the services:
+Make sure our tmpfiles configuration takes effect:
 
 ```sh
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/zonemaster.conf
-sudo service zm-rpcapi start
-sudo service zm-testagent start
 ```
 
-If the `start` command did not give any output (depends on OS and version) then
-check that the service has started with the following command (if you get output
-with the `start` command, you probably do not get it with the `status` command).
+Enable services at boot time and start them:
 
 ```sh
-sudo service zm-rpcapi status | cat
-sudo service zm-testagent status | cat
+sudo systemctl enable zm-rpcapi
+sudo systemctl enable zm-testagent
+sudo systemctl start zm-rpcapi
+sudo systemctl start zm-testagent
 ```
+
 
 ### 4.4 Post-installation (Debian)
 
@@ -510,16 +450,10 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML
+pkg install jq p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML
 ```
 <!-- JSON::Validator requires YAML::PP, but p5-JSON-Validator currently lacks a dependency on p5-YAML-LibYAML -->
 
-
-Optionally install Curl and jq (only needed for the post-installation smoke test):
-
-```sh
-pkg install curl jq
-```
 
 Install Zonemaster::Backend:
 
@@ -570,6 +504,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -625,6 +560,7 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -646,10 +582,30 @@ psql -U postgres -f ./initial-postgres.sql
 
 #### 5.2.3 Instructions for SQLite (FreeBSD)
 
->
-> At this time there is no instruction for configuring and creating a database
-> in SQLite.
->
+> **Note:** Zonemaster with SQLite is not meant for an installation with heavy
+> load.
+
+> All binaries and Perl bindings are already installed.
+
+Configure Zonemaster::Backend to use the correct database engine and database
+path:
+
+```sh
+sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_name[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
+```
+
+Create database directory, set correct ownership and create database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
+ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini" su -m zonemaster -c "perl create_db_sqlite.pl"
+```
+
+> SQLite will not run as a daemon and does not need to be started.
+
+> **Note:** See the [backend configuration] documentation for details.
 
 ### 5.3 Service startup (FreeBSD)
 
@@ -691,12 +647,10 @@ Use the procedure for installation on [Debian](#4-installation-on-debian).
 ### 7.1 Smoke test
 
 If you have followed the installation instructions for Zonemaster::Backend above,
-you should be able to use the
-API on localhost port 5000 as below. The command requires that `curl` and `jq` are installed.
-
+you should be able to use the API on localhost port 5000 as below.
 
 ```sh
-`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/zmtest zonemaster.net
+zmtest zonemaster.net
 ```
 
 The command is expected to immediately print out a testid,
@@ -733,12 +687,18 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 ```
 
+#### 7.3.3 SQLite
+
+Remove the database file and recreate it following the installation instructions above.
+
 ### 7.4 Upgrade Zonemaster database
 
 If you upgrade your Zonemaster installation with a newer version of
 Zonemaster-Backend and keep the database, then you might have to upgrade the
 database to use it with the new version of Zonemaster-Backend. Please see the
 [upgrade][README.md-upgrade] information.
+
+For SQLite database upgrading is not needed as of now.
 
 -------
 

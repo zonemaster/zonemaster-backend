@@ -77,14 +77,6 @@ sub run {
     }
     $domain = $self->to_idn( $domain );
 
-    if (defined $params->{ipv4}) {
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
-    }
-
-    if (defined $params->{ipv6}) {
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
-    }
-
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
 
@@ -150,6 +142,16 @@ sub run {
         else {
             die "The profile [$params->{profile}] is not defined in the backend_config ini file" if ($params->{profile} ne 'default')
         }
+    }
+
+    # If IPv4 or IPv6 transport has been explicitly disabled or enabled, then load it after
+    # any explicitly set profile has been loaded.
+    if (defined $params->{ipv4}) {
+        Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
+    }
+
+    if (defined $params->{ipv6}) {
+        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
 
     # Actually run tests!

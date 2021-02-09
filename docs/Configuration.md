@@ -1,15 +1,17 @@
 # Configuration
 
-Zonemaster *Backend* is configured as a whole from `/etc/zonemaster/backend_config.ini`
-(CentOS, Debian and Ubuntu) or `/usr/local/etc/zonemaster/backend_config.ini`
-(FreeBSD).
+Zonemaster *Backend* is configured in
+`/etc/zonemaster/backend_config.ini` (CentOS, Debian and Ubuntu) or
+`/usr/local/etc/zonemaster/backend_config.ini` (FreeBSD). Following
+[Installation instructions] will create the file with factory settings.
 
 Each section in `backend_config.ini` is documented below.
 
 ## DB section
 
 The DB section has a number of keys.
-At this time the only documented key is `engine`.
+Available keys : `engine`, `user`, `password`, `database_name`,
+`database_host`, `polling_interval`.
 
 ### engine
 
@@ -26,6 +28,33 @@ MariaDB           | `MySQL`
 MySQL             | `MySQL`
 PostgreSQL        | `PostgreSQL`
 SQLite            | `SQLite`
+
+### user
+
+The name of the user with sufficient permission to access the database.
+
+Ignored by the SQLite database engine.
+
+### password
+
+The password of the configured user.
+
+Ignored by the SQLite database engine.
+
+### database_host
+
+The host name of the machine on which the engine is running.
+
+Ignored by the SQLite database engine.
+
+### database_name
+
+The name of the database to use, except for SQLite database engine where
+it holds the full path to the SQLite database file.
+
+### polling_interval
+
+Time in seconds between database lookups by Test Agent.
 
 
 ## LANGUAGE section
@@ -109,15 +138,6 @@ Each locale set in the configuration file, including the implied
 ".UTF-8", must also be installed or activate on the system
 running the RPCAPI daemon for the translation to work correctly.
 
-## LOG section
-
-TBD
-
-
-## PERL section
-
-TBD
-
 
 ## PUBLIC PROFILES and PRIVATE PROFILES sections
 
@@ -146,10 +166,50 @@ to specifying a profile JSON file containing the entire
 
 ## ZONEMASTER section
 
-TBD
+The ZONEMASTER section has several keys :
+`max_zonemaster_execution_time`,
+`number_of_processes_for_frontend_testing`,
+`number_of_processes_for_batch_testing`,
+`force_hash_id_use_in_API_starting_from_id`, `lock_on_queue`,
+`maximal_number_of_retries`.
+
+### max_zonemaster_execution_time
+
+Time in seconds before reporting an unfinished test as failed. Default
+value: `600`.
+
+### maximal_number_of_retries
+
+Number of time a test is allowed to be run again if unfinished after
+`max_zonemaster_execution_time`. Default value: `0`.
+
+### number_of_processes_for_frontend_testing
+
+used -> todo
+
+### number_of_processes_for_batch_testing
+
+used -> todo
+
+### force_hash_id_use_in_API_starting_from_id
+
+> **Deprecated**
+
+This parameter determines if it is possible to get the test results
+using an incremental numeric id (allowing easy enumeration of the whole
+database of results) or if a half-md5 hash id should be used instead. If
+set to a non zero value the API will use the simple id up to that value
+(the id value given here will be the highest posible value allowed as
+simple id, for everything above hash_id will be forced). Default value:
+`0`.
+
+### lock_on_queue
+
+Integer working as a label to associate a test to a specific Test Agent.
 
 --------
 
+[Installation instructions]:          Installation.md
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1

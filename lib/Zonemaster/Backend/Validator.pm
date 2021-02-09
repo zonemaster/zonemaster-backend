@@ -48,7 +48,7 @@ sub ds_info {
     );
 }
 sub ip_address {
-    return joi->string->regex($ipv4_regex."|".$ipv6_regex);
+    return joi->string->regex('^$|'.$ipv4_regex."|".$ipv6_regex);
 }
 sub nameserver {
     return joi->object->strict->props(

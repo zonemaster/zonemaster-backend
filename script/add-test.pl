@@ -23,10 +23,9 @@ foreach my $domain ( @ARGV ) {
             client_id      => 'Add Script',
             client_version => '1.0',
             domain         => $domain,
-            advanced       => 0,                   # 0 or 1, is the advanced options checkbox checked
             ipv4           => 1,                   # 0 or 1, is the ipv4 checkbox checked
             ipv6           => 1,                   # 0 or 1, is the ipv6 checkbox checked
-            profile        => 'test_profile_1',    # the id if the Test profile listbox (unused)
+            profile        => 'default',    # the id if the Test profile listbox (unused)
 
         }
     );

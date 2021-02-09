@@ -31,7 +31,7 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.24,
-  'Zonemaster::Engine'          => 4.0,
+  'Zonemaster::Engine'          => 4.001,
   'Zonemaster::LDNS'            => 2.001,
   ;
 

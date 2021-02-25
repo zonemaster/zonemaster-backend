@@ -95,7 +95,6 @@ cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
 sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf

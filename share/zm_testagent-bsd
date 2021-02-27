@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # PROVIDE: zm_testagent
-# REQUIRE: mysql postgresql
+# REQUIRE: NETWORKING mysql postgresql
 # KEYWORD: shutdown
 
 . /etc/rc.subr

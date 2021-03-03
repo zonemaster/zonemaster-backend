@@ -342,7 +342,7 @@ sub age_reuse_previous_test {
     my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test' );
     $val = ($val > 0) ? $val : 0;
     $val = int ( ($val / 60) + 0.5); # in minutes
-    return ($val)? $val : 10;
+    return ($val) ? $val : 10;
 }
 
 

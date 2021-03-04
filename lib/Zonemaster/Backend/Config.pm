@@ -33,7 +33,7 @@ sub load_config {
     my $self = {};
 
     $log->notice( "Loading config: $path" );
-    
+
     $self->{cfg} = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
     bless( $self, $class );
@@ -173,31 +173,87 @@ sub PollingInterval {
     return $self->{cfg}->val( 'DB', 'polling_interval' );
 }
 
+
+=head2 MaxZonemasterExecutionTime
+
+=head3 INPUT
+
+'max_zonemaster_execution_time' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
+
+=head3 RETURNS
+
+Integer (number of seconds), default 600.
+
+=cut
+
 sub MaxZonemasterExecutionTime {
     my ($self) = @_;
 
     my $val = $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
-    
+
     return ($val)?($val):(10*60);
 }
+
+
+=head2 NumberOfProcessesForFrontendTesting
+
+=head3 INPUT
+
+'number_of_processes_for_frontend_testing' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
+
+=head3 RETURNS
+
+Positive integer.
+
+=cut
 
 sub NumberOfProcessesForFrontendTesting {
     my ($self) = @_;
 
     my $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' );
     $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) unless ($nb);
-    
+
     return $nb;
 }
+
+
+=head2 NumberOfProcessesForBatchTesting
+
+=head3 INPUT
+
+'number_of_processes_for_batch_testing' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
+
+=head3 RETURNS
+
+Integer.
+
+=cut
 
 sub NumberOfProcessesForBatchTesting {
     my ($self) = @_;
 
     my $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
     $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) unless ($nb);
-    
+
     return $nb;
 }
+
+
+=head2 force_hash_id_use_in_API_starting_from_id
+
+=head3 INPUT
+
+'force_hash_id_use_in_API_starting_from_id' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#force_hash_id_use_in_api_starting_from_id>.
+
+=head3 RETURNS
+
+Integer (default 0).
+
+=cut
 
 sub force_hash_id_use_in_API_starting_from_id {
     my ($self) = @_;
@@ -207,9 +263,80 @@ sub force_hash_id_use_in_API_starting_from_id {
     return ($val)?($val):(0);
 }
 
+=head2 lock_on_queue
+
+=head3 INPUT
+
+'lock_on_queue' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
+
+=head3 RETURNS
+
+Integer (default 0).
+
+=cut
+
+sub lock_on_queue {
+    my ($self) = @_;
+
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'lock_on_queue' );
+
+    return $val;
+}
+
+
+=head2 maximal_number_of_retries
+
+This option is experimental and all edge cases are not fully tested.
+Do not use it (keep the default value "0"), or use it with care.
+
+=head3 INPUT
+
+'maximal_number_of_retries' from [ZONEMASTER] section in ini file. See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
+
+=head3 RETURNS
+
+A scalar value of the number of retries (default 0).
+
+=cut
+
+sub maximal_number_of_retries {
+    my ($self) = @_;
+
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'maximal_number_of_retries' );
+
+    return ($val)?($val):(0);
+}
+
+
+=head2 age_reuse_previous_test
+
+=head3 INPUT
+
+'age_reuse_previous_test' from [ZONEMASTER] section in ini file (in seconds). See
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
+
+=head3 RETURNS
+
+A scalar value of the number of minutes old the previous test with the same
+parameters can be when it is reused instead of starting a new test (default
+10). Note that it returns in minutes, whereas the input is in seconds.
+
+=cut
+
+sub age_reuse_previous_test {
+    my ($self) = @_;
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test' );
+    $val = ($val > 0) ? $val : 0;
+    $val = int ( ($val / 60) + 0.5); # in minutes
+    return ($val) ? $val : 10;
+}
+
+
 sub ReadProfilesInfo {
     my ($self) = @_;
-    
+
     my $profiles;
     $profiles->{'default'}->{type} = 'public';
     $profiles->{'default'}->{profile_file_name} = '';
@@ -222,13 +349,13 @@ sub ReadProfilesInfo {
         $profiles->{lc($private_profile)}->{type} = 'private';
         $profiles->{lc($private_profile)}->{profile_file_name} = $self->{cfg}->val('PRIVATE PROFILES', $private_profile);
     }
-    
+
     return $profiles;
 }
 
 sub ListPublicProfiles {
     my ($self) = @_;
-    
+
     my $profiles;
     $profiles->{'default'}->{type} = 'public';
     foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
@@ -239,36 +366,6 @@ sub ListPublicProfiles {
     return keys %$profiles;
 }
 
-sub lock_on_queue {
-    my ($self) = @_;
-
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'lock_on_queue' );
-
-    return $val;
-}
-
-=head2 maximal_number_of_retries
-
-WARNING: This option is experimental and all edge cases are not fully tested.
-Do not use it (keep the default value "0"), or use it with care.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-A scalar value of the number of retries or the default 0 if no value is defined in the backend_config.ini file.
-
-=cut
-
-sub maximal_number_of_retries {
-    my ($self) = @_;
-
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'maximal_number_of_retries' );
-
-    return ($val)?($val):(0);
-}
 
 =head2 BackendDBType
 

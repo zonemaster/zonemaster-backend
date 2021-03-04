@@ -195,7 +195,7 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 
 =head3 RETURNS
 
-Integer (number of seconds)
+Integer (number of seconds), default 600.
 
 =cut
 
@@ -217,7 +217,7 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 
 =head3 RETURNS
 
-Positive integer (default 600).
+Positive integer.
 
 =cut
 

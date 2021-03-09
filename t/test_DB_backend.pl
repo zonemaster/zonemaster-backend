@@ -7,7 +7,7 @@ use JSON::PP;
 use Test::Exception;
 
 my $db_backend = $ARGV[0] // BAIL_OUT( "No database backend specified" );
-( $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' ) or BAIL_OUT( "Unsupported database backend: $db_backend" );
+( $db_backend eq 'SQLite' || $db_backend eq 'PostgreSQL' || $db_backend eq 'MySQL' ) or BAIL_OUT( "Unsupported database backend: $db_backend" );
 
 my $frontend_params_1 = {
     client_id      => "$db_backend Unit Test",         # free string
@@ -83,7 +83,7 @@ my $user_check_query;
 if ($db_backend eq 'PostgreSQL') {
     $user_check_query = q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/;
 }
-elsif ($db_backend eq 'MySQL') {
+else {
     $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
 }
 

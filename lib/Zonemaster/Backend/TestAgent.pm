@@ -34,7 +34,7 @@ sub new {
         eval "require $backend_module";
         $self->{db} = $backend_module->new( { config => $self->{config} } );
     }
-        
+
     $self->{profiles} = $self->{config}->ReadProfilesInfo();
     foreach my $profile (keys %{$self->{profiles}}) {
         die "default profile cannot be private" if ($profile eq 'default' && $self->{profiles}->{$profile}->{type} eq 'private');
@@ -129,7 +129,7 @@ sub run {
     if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
         $self->add_fake_ds( $domain, $params->{ds_info} );
     }
-    
+
 
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
@@ -200,7 +200,7 @@ sub add_fake_delegation {
             $data{ $self->to_idn( $ns ) } = undef;
         }
     }
-    
+
     Zonemaster::Engine->add_fake_delegation( $domain => \%data );
 
     return;

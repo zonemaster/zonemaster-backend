@@ -89,7 +89,7 @@ sub version_info {
     if ($@) {
         handle_exception('version_info', $@, '003');
     }
-    
+
     return \%ver;
 }
 
@@ -105,7 +105,7 @@ sub profile_names {
     if ($@) {
         handle_exception('profile_names', $@, '004');
     }
-    
+
     return \@profiles;
 }
 
@@ -136,7 +136,7 @@ sub get_host_by_name {
     if ($@) {
         handle_exception('get_host_by_name', $@, '005');
     }
-    
+
     return \@adresses;
 }
 
@@ -148,7 +148,7 @@ sub get_data_from_parent_zone {
     my $domain = "";
 
     my $result = eval {
-		my %result;
+        my %result;
         if (ref \$params eq "SCALAR") {
             $domain = $params;
         } else {
@@ -179,13 +179,13 @@ sub get_data_from_parent_zone {
 
         $result{ns_list} = \@ns_list;
         $result{ds_list} = \@ds_list;
-		return \%result;
+        return \%result;
     };
     if ($@) {
         handle_exception('get_data_from_parent_zone', $@, '006');
     }
     elsif ($result) {
-		return $result;
+        return $result;
     }
 }
 
@@ -238,9 +238,9 @@ sub _check_domain {
         handle_exception('_check_domain', $@, '007');
     }
     elsif ($result) {
-		return $result;
+        return $result;
     }
-    
+
     my %levels = Zonemaster::Engine::Logger::Entry::levels();
     my @res;
     @res = Zonemaster::Engine::Test::Basic->basic00($dn);
@@ -409,7 +409,7 @@ $json_schemas{test_progress} = joi->object->strict->props(
 );
 sub test_progress {
     my ( $self, $params ) = @_;
-    
+
     my $result = 0;
     eval {
         my $test_id = "";
@@ -642,7 +642,7 @@ sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
     my $result;
-    
+
     eval {
         my $batch_id = $params->{"batch_id"};
 
@@ -651,7 +651,7 @@ sub get_batch_job_result {
     if ($@) {
         handle_exception('get_batch_job_result', $@, '016');
     }
-    
+
     return $result;
 }
 

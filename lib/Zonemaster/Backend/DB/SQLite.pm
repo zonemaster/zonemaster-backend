@@ -296,6 +296,8 @@ sub get_test_history {
 
     my @results;
 
+    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
+
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
@@ -307,6 +309,7 @@ sub get_test_history {
     $quoted_domain =~ s/'/"/g;
     my $query = "SELECT
                     id,
+                    hash_id,
                     creation_time,
                     params
                  FROM
@@ -319,7 +322,11 @@ sub get_test_history {
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {
         push( @results,
-            { id => $h->{id}, creation_time => $h->{creation_time} } );
+            {
+                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
+                creation_time    => $h->{creation_time},
+            }
+        );
     }
     $sth1->finish;
 

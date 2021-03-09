@@ -321,10 +321,22 @@ sub get_test_history {
     my $sth1 = $self->dbh->prepare( $query );
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {
+        $h->{results} = decode_json($h->{results}) if $h->{results};
+        $h->{params} = decode_json($h->{params}) if $h->{params};
+        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
+        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
+        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
+
+        # More important overwrites
+        my $overall = 'INFO';
+        $overall = 'warning'  if $warning;
+        $overall = 'error'    if $error;
+        $overall = 'critical' if $critical;
         push( @results,
             {
                 id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
                 creation_time    => $h->{creation_time},
+                overall_result   => $overall,
             }
         );
     }

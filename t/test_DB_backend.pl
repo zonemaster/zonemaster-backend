@@ -56,7 +56,7 @@ sub run_zonemaster_test_with_backend_API {
     foreach my $i ( 1 .. 12 ) {
         sleep( 5 );
         my $progress = $engine->test_progress( $api_test_id );
-        diag "pregress: $progress";
+        diag "progress: $progress";
         last if ( $progress == 100 );
     }
     ok( $engine->test_progress( $api_test_id ) == 100 , 'API test_progress -> Test finished' );

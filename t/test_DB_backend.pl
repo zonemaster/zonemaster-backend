@@ -27,8 +27,16 @@ my $frontend_params_1 = {
 };
 
 use_ok( 'Zonemaster::Backend::RPCAPI' );
+
+my $config = Zonemaster::Backend::Config->load_config();
+
 # Create Zonemaster::Backend::RPCAPI object
-my $engine = Zonemaster::Backend::RPCAPI->new( { db => "Zonemaster::Backend::DB::$db_backend" } );
+my $engine = Zonemaster::Backend::RPCAPI->new(
+    {
+        db     => 'Zonemaster::Backend::DB::' . "$db_backend",
+        config => $config,
+    }
+);
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 sub run_zonemaster_test_with_backend_API {

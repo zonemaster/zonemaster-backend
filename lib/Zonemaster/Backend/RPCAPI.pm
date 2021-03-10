@@ -40,13 +40,13 @@ sub new {
     my $self = {};
     bless( $self, $type );
 
-    my $config = Zonemaster::Backend::Config->load_config();
+    $self->{config} = Zonemaster::Backend::Config->load_config();
 
     if ( $params && $params->{db} ) {
         eval {
             eval "require $params->{db}";
             die "$@ \n" if $@;
-            $self->{db} = "$params->{db}"->new( { config => $config } );
+            $self->{db} = "$params->{db}"->new( { config => $self->{config} } );
         };
         if ($@) {
             handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '001');
@@ -54,10 +54,10 @@ sub new {
     }
     else {
         eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . $config->BackendDBType();
+            my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
             eval "require $backend_module";
             die "$@ \n" if $@;
-            $self->{db} = $backend_module->new( { config => $config } );
+            $self->{db} = $backend_module->new( { config => $self->{config} } );
         };
         if ($@) {
             handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '002');

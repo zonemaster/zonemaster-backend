@@ -95,7 +95,7 @@ sub version_info {
 
 $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
     my @profiles;
     eval {
@@ -113,7 +113,7 @@ sub profile_names {
 # derived from the locale tags set in the configuration file.
 $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
     my @lang = Zonemaster::Backend::Config->load_config()->ListLanguageTags();
 
@@ -419,7 +419,6 @@ sub test_progress {
             $test_id = $params->{"test_id"};
         }
 
-
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
@@ -434,6 +433,7 @@ $json_schemas{get_test_params} = joi->object->strict->props(
 );
 sub get_test_params {
     my ( $self, $params ) = @_;
+
     my $test_id = $params->{"test_id"};
 
     my $result = 0;
@@ -548,16 +548,16 @@ $json_schemas{get_test_history} = joi->object->strict->props(
     )->required
 );
 sub get_test_history {
-    my ( $self, $p ) = @_;
+    my ( $self, $params ) = @_;
 
     my $results;
 
     eval {
-        $p->{offset} //= 0;
-        $p->{limit} //= 200;
-        $p->{filter} //= "all";
+        $params->{offset} //= 0;
+        $params->{limit} //= 200;
+        $params->{filter} //= "all";
 
-        $results = $self->{db}->get_test_history( $p );
+        $results = $self->{db}->get_test_history( $params );
     };
     if ($@) {
         handle_exception('get_test_history', $@, '013');
@@ -571,7 +571,7 @@ $json_schemas{add_api_user} = joi->object->strict->props(
     api_key => $zm_validator->api_key->required,
 );
 sub add_api_user {
-    my ( $self, $p, undef, $remote_ip ) = @_;
+    my ( $self, $params, undef, $remote_ip ) = @_;
 
     my $result = 0;
 
@@ -585,7 +585,7 @@ sub add_api_user {
         }
 
         if ( $allow ) {
-            $result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
+            $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
         }
     };
     if ($@) {

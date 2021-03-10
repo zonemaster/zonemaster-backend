@@ -104,7 +104,7 @@ sub profile_names {
 
     my @profiles;
     eval {
-        @profiles = Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
+        @profiles = $self->{config}->ListPublicProfiles();
 
     };
     if ($@) {
@@ -120,7 +120,7 @@ $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
-    my @lang = Zonemaster::Backend::Config->load_config()->ListLanguageTags();
+    my @lang = $self->{config}->ListLanguageTags();
 
     return \@lang;
 }
@@ -304,7 +304,7 @@ sub validate_syntax {
         }
 
         if ( defined $syntax_input->{profile} ) {
-            my @profiles = map lc, Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
+            my @profiles = map lc, $self->{config}->ListPublicProfiles();
             return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
@@ -393,12 +393,12 @@ sub start_domain_test {
 
         if ($params->{config}) {
             $params->{config} =~ s/[^\w_]//isg;
-            die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->load_config()->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+            die "Unknown test configuration: [$params->{config}]\n" unless ( $self->{config}->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
         }
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
-        my $minutes_between_tests_with_same_params = Zonemaster::Backend::Config->load_config()->age_reuse_previous_test();
+        my $minutes_between_tests_with_same_params = $self->{config}->age_reuse_previous_test();
 
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
     };
@@ -464,7 +464,7 @@ sub get_test_results {
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
-    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
+    my %locale = $self->{config}->Language_Locale_hash();
     if ( $locale{$params->{language}} ) {
         if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
             die "Language string not unique: '$params->{language}'\n";

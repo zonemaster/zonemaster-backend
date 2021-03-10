@@ -311,7 +311,8 @@ sub get_test_history {
                     id,
                     hash_id,
                     creation_time,
-                    params
+                    params,
+                    results
                  FROM
                     test_results
                  WHERE
@@ -322,7 +323,6 @@ sub get_test_history {
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
-        $h->{params} = decode_json($h->{params}) if $h->{params};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
         my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
         my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );

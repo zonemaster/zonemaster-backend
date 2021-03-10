@@ -57,18 +57,24 @@ sub new {
         }
     }
     else {
-        eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
-            eval "require $backend_module";
-            die "$@ \n" if $@;
-            $self->{db} = $backend_module->new( { config => $self->{config} } );
-        };
-        if ($@) {
-            handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '002');
-        }
+        $self->_init_db($self->{config}->BackendDBType());
     }
 
     return ( $self );
+}
+
+sub _init_db {
+    my ( $self, $dbtype ) = @_;
+
+    eval {
+        my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
+        eval "require $backend_module";
+        die "$@ \n" if $@;
+        $self->{db} = $backend_module->new( { config => $self->{config} } );
+    };
+    if ($@) {
+        handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');
+    }
 }
 
 sub handle_exception {

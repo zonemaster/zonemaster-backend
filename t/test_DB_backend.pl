@@ -33,7 +33,7 @@ my $config = Zonemaster::Backend::Config->load_config();
 # Create Zonemaster::Backend::RPCAPI object
 my $engine = Zonemaster::Backend::RPCAPI->new(
     {
-        db     => 'Zonemaster::Backend::DB::' . "$db_backend",
+        dbtype => "$db_backend",
         config => $config,
     }
 );
@@ -55,7 +55,7 @@ sub run_zonemaster_test_with_backend_API {
     my $config = Zonemaster::Backend::Config->load_config();
 
     use_ok( 'Zonemaster::Backend::TestAgent' );
-    Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::$db_backend", config => $config } )->run( $api_test_id );
+    Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } )->run( $api_test_id );
 
     sleep( 5 );
     ok( $engine->test_progress( $api_test_id ) > 0 , 'API test_progress -> Test started');

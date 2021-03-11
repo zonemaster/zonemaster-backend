@@ -32,7 +32,7 @@ my $config = Zonemaster::Backend::Config->load_config();
 # Create Zonemaster::Backend::RPCAPI object
 my $engine = Zonemaster::Backend::RPCAPI->new(
     {
-        db     => 'Zonemaster::Backend::DB::SQLite',
+        dbtype => 'SQLite',
         config => $config,
     }
 );
@@ -83,7 +83,7 @@ sub run_zonemaster_test_with_backend_API {
         Zonemaster::Engine->preload_cache( $datafile );
         Zonemaster::Engine->profile->set( q{no_network}, 1 );
     }
-    Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $hash_id );
+    Zonemaster::Backend::TestAgent->new( { dbtype => "SQLite", config => $config } )->run( $hash_id );
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 

@@ -46,14 +46,15 @@ sub new {
 
     $self->{config} = $params->{config};
 
-    if ( $params->{db} ) {
+    if ( $params->{dbtype} ) {
         eval {
-            eval "require $params->{db}";
+            my $backend_module = "Zonemaster::Backend::DB::" . $params->{dbtype};
+            eval "require $backend_module";
             die "$@ \n" if $@;
-            $self->{db} = "$params->{db}"->new( { config => $self->{config} } );
+            $self->{db} = $backend_module->new( { config => $self->{config} } );
         };
         if ($@) {
-            handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '001');
+            handle_exception('new', "Failed to initialize the [$params->{dbtype}] database backend module: [$@]", '001');
         }
     }
     else {

@@ -27,13 +27,14 @@ sub new {
 
     $self->{config} = $params->{config};
 
-    my $backend_module;
-    if ( $params->{db} ) {
-        $backend_module = "$params->{db}";
+    my $dbtype;
+    if ( $params->{dbtype} ) {
+        $dbtype = $params->{dbtype};
     }
     else {
-        $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
+        $dbtype = $self->{config}->BackendDBType();
     }
+    my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
     eval "require $backend_module";
     $self->{db} = $backend_module->new( { config => $self->{config} } );
 

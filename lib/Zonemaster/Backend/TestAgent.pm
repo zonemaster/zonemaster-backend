@@ -29,11 +29,12 @@ sub new {
 
     my $dbtype;
     if ( $params->{dbtype} ) {
-        $dbtype = $params->{dbtype};
+        $dbtype = $self->{config}->check_db($params->{dbtype});
     }
     else {
         $dbtype = $self->{config}->BackendDBType();
     }
+
     my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
     eval "require $backend_module";
     $self->{db} = $backend_module->new( { config => $self->{config} } );

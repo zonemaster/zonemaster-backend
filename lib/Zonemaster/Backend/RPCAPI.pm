@@ -41,7 +41,7 @@ sub new {
     bless( $self, $type );
 
     if ( ! $params || ! $params->{config} ) {
-        handle_exception('new', "Missing 'config' parameter", '000');
+        handle_exception('new', "Missing 'config' parameter", '001');
     }
 
     $self->{config} = $params->{config};

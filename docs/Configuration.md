@@ -7,6 +7,9 @@ Zonemaster *Backend* is configured in
 
 Each section in `backend_config.ini` is documented below.
 
+Restart the `zm-rpcapi` and `zm-testagent` daemons to load the changes
+made to the `backend_config.ini` file.
+
 ## DB section
 
 The DB section has a number of keys.

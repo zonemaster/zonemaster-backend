@@ -21,13 +21,11 @@ sub new {
     my ( $class, $params ) = @_;
     my $self = {};
 
-    if ( $params && $params->{config} ) {
-        $self->{config} = $params->{config};
+    if ( ! $params || ! $params->{config} ) {
+        die "missing 'config' parameter";
     }
 
-    if ( $params && $params->{db} ) {
-        eval "require $params->{db}";
-        $self->{db} = "$params->{db}"->new( { config => $self->{config} } );
+    $self->{config} = $params->{config};
     }
     else {
         my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();

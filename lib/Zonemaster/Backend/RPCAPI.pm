@@ -40,7 +40,11 @@ sub new {
     my $self = {};
     bless( $self, $type );
 
-    $self->{config} = Zonemaster::Backend::Config->load_config();
+    if ( ! $params || ! $params->{config} ) {
+        handle_exception('new', "Missing 'config' parameter", '000');
+    }
+
+    $self->{config} = $params->{config};
 
     if ( $params && $params->{db} ) {
         eval {

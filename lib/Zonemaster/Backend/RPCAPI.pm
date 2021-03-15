@@ -46,7 +46,7 @@ sub new {
 
     $self->{config} = $params->{config};
 
-    if ( $params && $params->{db} ) {
+    if ( $params->{db} ) {
         eval {
             eval "require $params->{db}";
             die "$@ \n" if $@;

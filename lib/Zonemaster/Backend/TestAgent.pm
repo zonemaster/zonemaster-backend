@@ -26,12 +26,16 @@ sub new {
     }
 
     $self->{config} = $params->{config};
+
+    my $backend_module;
+    if ( $params->{db} ) {
+        $backend_module = "$params->{db}";
     }
     else {
-        my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
-        eval "require $backend_module";
-        $self->{db} = $backend_module->new( { config => $self->{config} } );
+        $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
     }
+    eval "require $backend_module";
+    $self->{db} = $backend_module->new( { config => $self->{config} } );
 
     $self->{profiles} = $self->{config}->ReadProfilesInfo();
     foreach my $profile (keys %{$self->{profiles}}) {

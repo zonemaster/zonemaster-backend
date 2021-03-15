@@ -40,22 +40,34 @@ sub load_config {
     return $self;
 }
 
+sub check_db {
+    my ( $self, $db ) = @_;
+
+    if ( lc $db eq 'sqlite' ) {
+        return 'SQLite';
+    }
+    elsif ( lc $db eq 'postgresql' ) {
+        return 'PostgreSQL';
+    }
+    elsif ( lc $db eq 'mysql' ) {
+        return 'MySQL';
+    }
+    else {
+        die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
+    }
+}
+
 sub BackendDBType {
     my ($self) = @_;
 
     my $engine = $self->{cfg}->val( 'DB', 'engine' );
-    if ( lc $engine eq 'sqlite' ) {
-        return 'SQLite';
-    }
-    elsif ( lc $engine eq 'postgresql' ) {
-        return 'PostgreSQL';
-    }
-    elsif ( lc $engine eq 'mysql' ) {
-        return 'MySQL';
-    }
-    else {
+    eval {
+        $engine = $self->check_db($engine);
+    };
+    if ($@) {
         die "Unknown config value DB.engine: $engine\n";
     }
+    return $engine;
 }
 
 sub DB_user {
@@ -346,6 +358,13 @@ sub ListPublicProfiles {
     return keys %$profiles;
 }
 
+=head2 check_db
+
+Returns a normalized string based on the supported databases.
+
+=head3 EXCEPTION
+
+Dies if the value is not one of SQLite, PostgreSQL or MySQL.
 
 =head2 BackendDBType
 

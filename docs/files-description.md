@@ -44,6 +44,5 @@
 ./t/test01.t
 ./t/test_mysql_backend.pl
 ./t/test_postgresql_backend.pl
-./t/test_runner.pl
 ./t/test_validate_syntax.t
     Test files.

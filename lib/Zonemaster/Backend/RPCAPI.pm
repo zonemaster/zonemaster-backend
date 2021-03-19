@@ -198,7 +198,7 @@ sub get_data_from_parent_zone {
 sub _check_domain {
     my ( $self, $dn, $type ) = @_;
 
-    my $result = eval {
+    ( $dn, my $result ) = eval {
         if ( !defined( $dn ) ) {
             return ( $dn, { status => 'nok', message => encode_entities( "$type required" ) } );
         }
@@ -243,7 +243,7 @@ sub _check_domain {
         handle_exception('_check_domain', $@, '007');
     }
     elsif ($result) {
-        return $result;
+		return ( $dn, $result );
     }
 
     my %levels = Zonemaster::Engine::Logger::Entry::levels();

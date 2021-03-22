@@ -170,7 +170,6 @@ The ZONEMASTER section has several keys :
 * max_zonemaster_execution_time
 * number_of_processes_for_frontend_testing
 * number_of_processes_for_batch_testing
-* force_hash_id_use_in_API_starting_from_id
 * lock_on_queue
 * maximal_number_of_retries
 * age_reuse_previous_test
@@ -192,18 +191,6 @@ used -> todo
 ### number_of_processes_for_batch_testing
 
 used -> todo
-
-### force_hash_id_use_in_API_starting_from_id
-
-> **Deprecated**
-
-This parameter determines if it is possible to get the test results
-using an incremental numeric id (allowing easy enumeration of the whole
-database of results) or if a half-md5 hash id should be used instead. If
-set to a non zero value the API will use the simple id up to that value
-(the id value given here will be the highest posible value allowed as
-simple id, for everything above hash_id will be forced). Default value:
-`0`.
 
 ### lock_on_queue
 

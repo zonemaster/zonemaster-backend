@@ -242,27 +242,6 @@ sub NumberOfProcessesForBatchTesting {
 }
 
 
-=head2 force_hash_id_use_in_API_starting_from_id
-
-=head3 INPUT
-
-'force_hash_id_use_in_API_starting_from_id' from [ZONEMASTER] section in ini file. See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#force_hash_id_use_in_api_starting_from_id>.
-
-=head3 RETURNS
-
-Integer (default 0).
-
-=cut
-
-sub force_hash_id_use_in_API_starting_from_id {
-    my ($self) = @_;
-
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'force_hash_id_use_in_API_starting_from_id' );
-
-    return ($val)?($val):(0);
-}
-
 =head2 lock_on_queue
 
 =head3 INPUT

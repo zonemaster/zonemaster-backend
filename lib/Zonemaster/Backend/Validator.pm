@@ -66,7 +66,7 @@ sub queue {
     return joi->integer;
 }
 sub test_id {
-    return joi->string->regex('^[0-9]$|^[1-9][0-9]{1,8}$|^[0-9a-f]{16}$');
+    return joi->string->regex('^[0-9a-f]{16}$');
 }
 sub language_tag {
     return joi->string->regex('^[a-z]{2}(_[A-Z]{2})?$');

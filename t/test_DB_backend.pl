@@ -102,10 +102,10 @@ my $limit  = 10;
 my $test_history =
 	$engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
 diag explain( $test_history );
-ok( scalar( @$test_history ) == 2 ), 'Two tests created';
+ok( scalar( @$test_history ) == 2, 'Two tests created' );
 
-ok( length($test_history->[0]->{id}) == 16 ),'Test 0 has 16 character length hash ID';
-ok( length($test_history->[1]->{id}) == 16 ),'Test 1 has 16 character length hash ID';
+ok( length($test_history->[0]->{id}) == 16,'Test 0 has 16 character length hash ID' );
+ok( length($test_history->[1]->{id}) == 16,'Test 1 has 16 character length hash ID' );
 
 done_testing();
 

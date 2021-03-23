@@ -238,6 +238,7 @@ sub _check_domain {
             );
         }
 
+        return ( $dn, undef );
     };
     if ($@) {
         handle_exception('_check_domain', $@, '007');

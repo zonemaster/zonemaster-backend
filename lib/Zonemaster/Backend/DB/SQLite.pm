@@ -36,6 +36,7 @@ sub BUILD {
 
         my $dbh = DBI->connect(
             $connection_string,
+            undef, undef,
             {
                 AutoCommit => 1,
                 RaiseError => 1,

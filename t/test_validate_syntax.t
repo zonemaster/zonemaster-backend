@@ -41,56 +41,93 @@ $frontend_params->{nameservers} = [    # list of the namaserves up to 32
 ];
 
 subtest 'domain present' => sub {
-    $frontend_params->{domain} = 'afnic.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok' );
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => 'afnic.fr'
+        }
+    );
+
+    is( $res->{status}, 'ok' );
 };
 
 subtest 'idn domain=[é]' => sub {
-    $frontend_params->{domain} = 'é';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok' )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => 'é'
+        }
+    );
+
+    is( $res->{status}, 'ok' )
+        or diag( $res->{message} );
 };
 
 subtest 'idn domain=[éé]' => sub {
-    $frontend_params->{domain} = 'éé';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok' )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => 'éé'
+        }
+    );
+
+    is( $res->{status}, 'ok' )
+        or diag( $res->{message} );
 };
 
 subtest '253 characters long domain without dot' => sub {
-    $frontend_params->{domain} =
-    '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com';
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com'
+        }
+    );
+
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'ok'
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+        $res->{status}, 'ok'
+    ) or diag( $res->{message} );
 };
 
 subtest '254 characters long domain with trailing dot' => sub {
-    $frontend_params->{domain} =
-    '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.';
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.'
+        }
+    );
+
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'ok'
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+        $res->{status}, 'ok'
+    ) or diag( $res->{message} );
 };
 
 subtest '254 characters long domain without trailing dot' => sub {
-    $frontend_params->{domain} =
-    '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club';
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club'
+        }
+    );
+
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'nok'
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+        $res->{status}, 'nok'
+    ) or diag( $res->{message} );
 };
 
 subtest '63 characters long domain label' => sub {
-    $frontend_params->{domain} = '012345678901234567890123456789012345678901234567890123456789-63.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok' )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789-63.fr'
+        }
+    );
+
+    is( $res->{status}, 'ok' )
+        or diag( $res->{message} );
 };
 
 subtest '64 characters long domain label' => sub {
-    $frontend_params->{domain} = '012345678901234567890123456789012345678901234567890123456789--64.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok')
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789--64.fr'
+        }
+    );
+
+    is( $res->{status}, 'nok')
+        or diag( $res->{message} );
 };
 
 #TEST NS

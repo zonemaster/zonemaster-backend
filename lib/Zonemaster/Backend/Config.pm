@@ -327,10 +327,11 @@ parameters can be when it is reused instead of starting a new test (default
 
 sub age_reuse_previous_test {
     my ($self) = @_;
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test' );
+    my $default = 600; # in seconds
+    my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test', $default );
     $val = ($val > 0) ? $val : 0;
     $val = int ( ($val / 60) + 0.5); # in minutes
-    return ($val) ? $val : 10;
+    return $val;
 }
 
 

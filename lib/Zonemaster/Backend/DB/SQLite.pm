@@ -188,20 +188,15 @@ sub create_new_test {
 
     # Search for recent test result with the test same parameters, where "$minutes"
     # gives the time limit for how old test result that is accepted.
-    my ( $recent_id, $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes minutes')",
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes minutes')",
         undef,
         $test_params_deterministic_hash,
     );
 
-    if ( $recent_id ) {
+    if ( $recent_hash_id ) {
         # A recent entry exists, so return its id
-        if ( $recent_id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
-            $result_id = $recent_hash_id;
-        }
-        else {
-            $result_id = $recent_id;
-        }
+        $result_id = $recent_hash_id;
     }
     else {
 
@@ -223,15 +218,7 @@ sub create_new_test {
             $test_params->{domain},
             ($test_params->{nameservers})?(1):(0),
         );
-
-        my ( $id ) = $dbh->selectrow_array("SELECT id FROM test_results WHERE hash_id='$hash_id'" );
-            
-        if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
-            $result_id = $hash_id;
-        }
-        else {
-            $result_id = $id;
-        }
+        $result_id = $hash_id;
     }
 
     return $result_id; # Return test ID, either test previously run or just created.
@@ -240,19 +227,17 @@ sub create_new_test {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-
     my $dbh = $self->dbh;
     if ( $progress ) {
         if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=datetime('now') WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=datetime('now') WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
 }
@@ -260,8 +245,7 @@ sub test_progress {
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
 
     my $result;
     eval {
@@ -276,15 +260,13 @@ sub get_test_params {
 sub test_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-    
     if ( $new_results ) {
-        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = ? WHERE $id_field=? AND progress < 100],
+        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = ? WHERE hash_id=? AND progress < 100],
             undef, $new_results, $test_id );
     }
 
     my $result;
-    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, datetime(creation_time,'localtime') AS creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, datetime(creation_time,'localtime') AS creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
     $result            = $hrefs->{$test_id};
     $result->{params}  = decode_json( $result->{params} );
     $result->{results} = decode_json( $result->{results} );
@@ -296,8 +278,6 @@ sub get_test_history {
     my ( $self, $p ) = @_;
 
     my @results;
-
-    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
@@ -313,7 +293,7 @@ sub get_test_history {
                     hash_id,
                     creation_time,
                     params,
-                    results
+                    results   
                  FROM
                     test_results
                  WHERE
@@ -334,12 +314,12 @@ sub get_test_history {
         $overall = 'error'    if $error;
         $overall = 'critical' if $critical;
         push( @results,
-            {
-                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
-                creation_time    => $h->{creation_time},
-                overall_result   => $overall,
-            }
-        );
+              {
+                  id => $h->{hash_id},
+                  creation_time => $h->{creation_time},
+                  overall_result   => $overall,
+              }
+            );
     }
     $sth1->finish;
 

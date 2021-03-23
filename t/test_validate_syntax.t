@@ -50,7 +50,7 @@ subtest 'domain present' => sub {
     is( $res->{status}, 'ok' );
 };
 
-subtest 'idn domain=[é]' => sub {
+subtest encode_utf8( 'idn domain=[é]' ) => sub {
     my $res = $engine->validate_syntax(
         {
             %$frontend_params, domain => 'é'
@@ -61,7 +61,7 @@ subtest 'idn domain=[é]' => sub {
         or diag( $res->{message} );
 };
 
-subtest 'idn domain=[éé]' => sub {
+subtest encode_utf8( 'idn domain=[éé]' ) => sub {
     my $res = $engine->validate_syntax(
         {
             %$frontend_params, domain => 'éé'

@@ -297,6 +297,8 @@ sub get_test_history {
 
     my @results;
 
+    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
+
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
@@ -308,8 +310,10 @@ sub get_test_history {
     $quoted_domain =~ s/'/"/g;
     my $query = "SELECT
                     id,
+                    hash_id,
                     creation_time,
-                    params
+                    params,
+                    results
                  FROM
                     test_results
                  WHERE
@@ -319,8 +323,23 @@ sub get_test_history {
     my $sth1 = $self->dbh->prepare( $query );
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {
+        $h->{results} = decode_json($h->{results}) if $h->{results};
+        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
+        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
+        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
+
+        # More important overwrites
+        my $overall = 'INFO';
+        $overall = 'warning'  if $warning;
+        $overall = 'error'    if $error;
+        $overall = 'critical' if $critical;
         push( @results,
-            { id => $h->{id}, creation_time => $h->{creation_time} } );
+            {
+                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
+                creation_time    => $h->{creation_time},
+                overall_result   => $overall,
+            }
+        );
     }
     $sth1->finish;
 

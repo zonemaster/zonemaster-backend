@@ -104,8 +104,8 @@ my $test_history =
 diag explain( $test_history );
 ok( scalar( @$test_history ) == 2 ), 'Two tests created';
 
-ok( length($test_history->[0]->{id}) == 16 ),'Test 0 has 16 character lenght hash ID';
-ok( length($test_history->[1]->{id}) == 16 ),'Test 1 has 16 character lenght hash ID';
+ok( length($test_history->[0]->{id}) == 16 ),'Test 0 has 16 character length hash ID';
+ok( length($test_history->[1]->{id}) == 16 ),'Test 1 has 16 character length hash ID';
 
 done_testing();
 

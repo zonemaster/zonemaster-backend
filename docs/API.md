@@ -230,11 +230,7 @@ One of the strings (in order from least to most severe):
 
 Basic data type: string
 
-Either:
- * A string of at least 1 and at most 9 digits where the first digit is not a zero, or
- * a string of exactly 16 lower-case hex-digits.
-
-I.e. a string matching `/^([0-9]|[1-9][0-9]{1,8}|[0-9a-f]{16})$/`.
+A string of exactly 16 lower-case hex-digits matching `/^[0-9a-f]{16}$/`.
 
 Each *test* has a unique *test id*.
 

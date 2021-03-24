@@ -198,53 +198,42 @@ sub get_data_from_parent_zone {
 sub _check_domain {
     my ( $self, $dn, $type ) = @_;
 
-    ( $dn, my $result ) = eval {
-        if ( !defined( $dn ) ) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type required" ) } );
-        }
+    if ( !defined( $dn ) ) {
+        return ( $dn, { status => 'nok', message => encode_entities( "$type required" ) } );
+    }
 
-        if ( $dn =~ m/[^[:ascii:]]+/ ) {
-            if ( Zonemaster::LDNS::has_idn() ) {
-                eval { $dn = Zonemaster::LDNS::to_idn( $dn ); };
-                if ( $@ ) {
-                    return (
-                        $dn,
-                        {
-                            status  => 'nok',
-                            message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
-                        }
-                    );
-                }
-            }
-            else {
+    if ( $dn =~ m/[^[:ascii:]]+/ ) {
+        if ( Zonemaster::LDNS::has_idn() ) {
+            eval { $dn = Zonemaster::LDNS::to_idn( $dn ); };
+            if ( $@ ) {
                 return (
                     $dn,
                     {
-                        status => 'nok',
-                        message =>
-                        encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
+                        status  => 'nok',
+                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
                     }
                 );
             }
         }
-
-        if( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+        else {
             return (
                 $dn,
                 {
-                status  => 'nok',
-                message => encode_entities( "The domain name character(s) not supported")
+                    status  => 'nok',
+                    message => encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
                 }
             );
         }
-
-        return ( $dn, undef );
-    };
-    if ($@) {
-        handle_exception('_check_domain', $@, '007');
     }
-    elsif ($result) {
-		return ( $dn, $result );
+
+    if ( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+        return (
+            $dn,
+            {
+                status  => 'nok',
+                message => encode_entities( "The domain name character(s) not supported" )
+            }
+        );
     }
 
     my %levels = Zonemaster::Engine::Logger::Entry::levels();

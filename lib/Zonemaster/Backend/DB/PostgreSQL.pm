@@ -77,18 +77,17 @@ sub user_authorized {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
     my $dbh = $self->dbh;
     if ( $progress ) {
         if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
     
-    my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
 }
@@ -120,7 +119,6 @@ sub create_new_batch_job {
 
 sub create_new_test {
     my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
-    my $result;
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
@@ -143,17 +141,10 @@ sub create_new_test {
 
     my $nb_inserted = $dbh->do( $query );
 
-    my ( $id, $hash_id ) = $dbh->selectrow_array(
-        "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
-        
-    if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
-        $result = $hash_id;
-    }
-    else {
-        $result = $id;
-    }
+    my ( undef, $hash_id ) = $dbh->selectrow_array(
+        "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $test_params_deterministic_hash );
 
-    return $result;
+    return $hash_id;
 }
 
 sub get_test_params {
@@ -162,8 +153,7 @@ sub get_test_params {
     my $result;
 
     my $dbh = $self->dbh;
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
     die "$@ \n" if $@;
 
@@ -174,14 +164,13 @@ sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
     my $dbh = $self->dbh;
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND progress < 100",
+    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100",
         undef, $results, $test_id )
       if ( $results );
 
     my $result;
     eval {
-        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
         $result            = $hrefs->{$test_id};
         
         # This workaround is needed to properly handle all versions of perl and the DBD::Pg module 
@@ -210,7 +199,6 @@ sub get_test_history {
 
     my $dbh = $self->dbh;
 
-    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
@@ -248,7 +236,7 @@ sub get_test_history {
         push(
             @results,
             {
-                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
+                id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
                 overall_result   => $overall_result,
             }

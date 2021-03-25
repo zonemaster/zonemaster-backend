@@ -21,6 +21,8 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
+    $dbh->do( 'SET GLOBAL log_bin_trust_function_creators = 1' );
+
     $dbh->do( 'DROP TABLE IF EXISTS test_specs CASCADE' );
 
     $dbh->do( 'DROP TABLE IF EXISTS test_results CASCADE' );

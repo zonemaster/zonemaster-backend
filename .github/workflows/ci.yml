@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+      - 'releases/**'
+  pull_request:
+    branches:
+      - develop
+      - master
+      - 'releases/**'
+
+jobs:
+  run-tests:
+    strategy:
+      matrix:
+        db:
+          - sqlite
+        compatibility:
+          - develop
+          - latest
+        perl:
+          - '5.32'
+          - '5.26'
+          - '5.16'
+        runner:
+          - ubuntu-20.04
+        include:
+          - db: mysql
+            compatibility: develop
+            perl: '5.32'
+            runner: ubuntu-20.04
+          - db: postgresql
+            compatibility: develop
+            perl: '5.32'
+            runner: ubuntu-20.04
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+
+      - name: Install binary dependencies
+        run: |
+          sudo apt-get install -y \
+            autoconf \
+            automake \
+            build-essential \
+            cpanminus \
+            gettext \
+            libidn11-dev \
+            libssl-dev \
+            libtool \
+            m4 \
+
+      - name: Install Zonemaster::Engine (latest)
+        if: ${{ matrix.compatibility == 'latest' }}
+        run: |
+          cpanm --verbose --notest Module::Install Zonemaster::Engine
+
+      - name: Install Zonemaster::Engine (develop)
+        if: ${{ matrix.compatibility == 'develop' }}
+        run: |
+          cpanm --verbose --notest Devel::CheckLib Module::Install Module::Install::XSUtil
+          git clone --branch=develop --depth=1 https://github.com/zonemaster/zonemaster-ldns.git
+          ( cd zonemaster-ldns ; cpanm --verbose --notest . )
+          rm -rf zonemaster-ldns
+          git clone --branch=develop --depth=1 https://github.com/zonemaster/zonemaster-engine.git
+          ( cd zonemaster-engine ; cpanm --verbose --notest . )
+          rm -rf zonemaster-engine
+
+      - name: Show content of log files
+        if: ${{ failure() }}
+        run: cat /home/runner/.cpanm/work/*/build.log
+
+      - name: Install remaining dependencies
+        run: |
+          cpanm --verbose --notest --installdeps .
+
+      - name: Install Zonemaster::Backend
+        run: |
+          cpanm --verbose --notest .
+
+      - name: Setup MySQL
+        if: ${{ matrix.db == 'mysql' }}
+        env:
+          ZONEMASTER_BACKEND_CONFIG_FILE: ./share/travis_mysql_backend_config.ini
+        run: |
+          sudo systemctl start mysql.service
+          mysql -uroot -proot -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';"
+          mysql -uroot -proot -e "CREATE DATABASE travis_zonemaster CHARACTER SET utf8 COLLATE utf8_bin;"
+          mysql -uroot -proot -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'localhost';"
+          mysql -uroot -proot -e "GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'travis_zm'@'localhost';"
+          mysql -uroot -proot -e "FLUSH PRIVILEGES;"
+          cpanm --verbose --notest DBD::mysql
+          perl -I./lib ./script/create_db_mysql.pl
+
+      - name: Setup PostgreSQL
+        if: ${{ matrix.db == 'postgresql' }}
+        env:
+          ZONEMASTER_BACKEND_CONFIG_FILE: ./share/travis_postgresql_backend_config.ini
+        run: |
+          sudo systemctl start postgresql.service
+          pg_isready
+          sudo -u postgres psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';"
+          sudo -u postgres psql -c 'create database travis_zonemaster OWNER travis_zonemaster;'
+          cpanm --verbose --notest DBD::Pg
+          perl -I./lib ./script/create_db_postgresql_9.3.pl
+
+      - name: Test using MySQL
+        if: ${{ matrix.db == 'mysql' }}
+        env:
+          ZONEMASTER_BACKEND_CONFIG_FILE: ./share/travis_mysql_backend_config.ini
+        run: |
+          perl -I./lib ./t/test_DB_backend.pl MySQL
+
+      - name: Test using PostgreSQL
+        if: ${{ matrix.db == 'postgresql' }}
+        env:
+          ZONEMASTER_BACKEND_CONFIG_FILE: ./share/travis_postgresql_backend_config.ini
+        run: |
+          perl -I./lib ./t/test_DB_backend.pl PostgreSQL
+
+      - name: Test using SQLite
+        if: ${{ matrix.db == 'sqlite' }}
+        env:
+          ZONEMASTER_BACKEND_CONFIG_FILE: ./share/travis_sqlite_backend_config.ini
+        run: |
+          perl Makefile.PL
+          make test

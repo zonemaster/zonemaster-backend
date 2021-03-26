@@ -48,36 +48,31 @@ jobs:
 
       - name: Install binary dependencies
         run: |
+          # These were taken from the CI script of Zonemaster::Engine.
           sudo apt-get install -y \
             autoconf \
             automake \
             build-essential \
-            cpanminus \
             gettext \
             libidn11-dev \
             libssl-dev \
             libtool \
             m4 \
 
-      - name: Install Zonemaster::Engine (latest)
+      - name: Install Zonemaster::LDNS and Zonemaster::Engine (latest)
         if: ${{ matrix.compatibility == 'latest' }}
         run: |
           cpanm --verbose --notest Module::Install Zonemaster::Engine
 
-      - name: Install Zonemaster::Engine (develop)
+      - name: Install Zonemaster::LDNS and Zonemaster::Engine (develop)
         if: ${{ matrix.compatibility == 'develop' }}
         run: |
           cpanm --verbose --notest Devel::CheckLib Module::Install Module::Install::XSUtil
           git clone --branch=develop --depth=1 https://github.com/zonemaster/zonemaster-ldns.git
           ( cd zonemaster-ldns ; cpanm --verbose --notest . )
-          rm -rf zonemaster-ldns
           git clone --branch=develop --depth=1 https://github.com/zonemaster/zonemaster-engine.git
           ( cd zonemaster-engine ; cpanm --verbose --notest . )
-          rm -rf zonemaster-engine
-
-      - name: Show content of log files
-        if: ${{ failure() }}
-        run: cat /home/runner/.cpanm/work/*/build.log
+          rm -rf zonemaster-ldns zonemaster-engine  # Prevent make test from finding these .t files
 
       - name: Install remaining dependencies
         run: |
@@ -86,6 +81,10 @@ jobs:
       - name: Install Zonemaster::Backend
         run: |
           cpanm --verbose --notest .
+
+      - name: Show content of log files
+        if: ${{ failure() }}
+        run: cat /home/runner/.cpanm/work/*/build.log
 
       - name: Setup MySQL
         if: ${{ matrix.db == 'mysql' }}
@@ -96,7 +95,7 @@ jobs:
           mysql -uroot -proot -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';"
           mysql -uroot -proot -e "CREATE DATABASE travis_zonemaster CHARACTER SET utf8 COLLATE utf8_bin;"
           mysql -uroot -proot -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'localhost';"
-          mysql -uroot -proot -e "GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'travis_zm'@'localhost';"
+          mysql -uroot -proot -e "GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'travis_zm'@'localhost';"  # MySQL only (not MariaDB)
           mysql -uroot -proot -e "FLUSH PRIVILEGES;"
           cpanm --verbose --notest DBD::mysql
           perl -I./lib ./script/create_db_mysql.pl

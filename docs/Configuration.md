@@ -12,7 +12,6 @@ made to the `backend_config.ini` file.
 
 ## DB section
 
-The DB section has a number of keys.
 Available keys : `engine`, `user`, `password`, `database_name`,
 `database_host`, `polling_interval`.
 
@@ -38,11 +37,15 @@ The name of the user with sufficient permission to access the database.
 
 Ignored by the SQLite database engine.
 
+The MySQL.user and PostgreSQL.user properties take precedense over this.
+
 ### password
 
 The password of the configured user.
 
 Ignored by the SQLite database engine.
+
+The MySQL.password and PostgreSQL.password properties take precedense over this.
 
 ### database_host
 
@@ -50,14 +53,88 @@ The host name of the machine on which the engine is running.
 
 Ignored by the SQLite database engine.
 
+The MySQL.host and PostgreSQL.host properties take precedense over this.
+
 ### database_name
 
 The name of the database to use, except for SQLite database engine where
 it holds the full path to the SQLite database file.
 
+The MySQL.database, PostgreSQL.database, SQLite.file properties take precedense
+over this.
+
 ### polling_interval
 
 Time in seconds between database lookups by Test Agent.
+
+
+## MYSQL section
+
+Available keys : `host`, `user`, `password`, `database`.
+
+### host
+
+The host name of the machine on which the MYSQL server is running.
+
+If this property is unspecified, the value of DB.database_host is used instead.
+
+### user
+
+The name of the user with sufficient permission to access the database.
+
+If this property is unspecified, the value of DB.user is used instead.
+
+### password
+
+The password of the configured user.
+
+If this property is unspecified, the value of DB.password is used instead.
+
+### database
+
+The name of the database to use.
+
+If this property is unspecified, the value of DB.database_name is used instead.
+
+
+## POSTGRESQL section
+
+Available keys : `host`, `user`, `password`, `database`.
+
+### host
+
+The host name of the machine on which the PostgreSQL server is running.
+
+If this property is unspecified, the value of DB.database_host is used instead.
+
+### user
+
+The name of the user with sufficient permission to access the database.
+
+If this property is unspecified, the value of DB.user is used instead.
+
+### password
+
+The password of the configured user.
+
+If this property is unspecified, the value of DB.password is used instead.
+
+### database
+
+The name of the database to use.
+
+If this property is unspecified, the value of DB.database_name is used instead.
+
+
+## SQLITE section
+
+Available keys : `file`.
+
+### file
+
+The full path to the SQLite database file.
+
+If this property is unspecified, the value of DB.database_name is used instead.
 
 
 ## LANGUAGE section

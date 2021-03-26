@@ -36,8 +36,8 @@ sub dbh {
     else {
         my $connection_string   = $self->config->DB_connection_string( 'mysql' );
         my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-        my $connection_user     = $self->config->DB_user();
-        my $connection_password = $self->config->DB_password();
+        my $connection_user     = $self->config->MySQL_user();
+        my $connection_password = $self->config->MySQL_password();
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );

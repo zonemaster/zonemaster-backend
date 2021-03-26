@@ -88,6 +88,132 @@ sub DB_name {
     return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
+=head2 MySQL_database
+
+Returns the L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub MySQL_database {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
+}
+
+=head2 MySQL_host
+
+Returns the L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
+property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub MySQL_host {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
+}
+
+=head2 MySQL_password
+
+Returns the L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
+property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub MySQL_password {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
+}
+
+=head2 MySQL_user
+
+Returns the L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
+property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub MySQL_user {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
+}
+
+=head2 POSTGRESQL_database
+
+Returns the L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_database {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
+}
+
+=head2 POSTGRESQL_host
+
+Returns the L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
+property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_host {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
+}
+
+=head2 POSTGRESQL_password
+
+Returns the L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
+property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_password {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
+}
+
+=head2 POSTGRESQL_user
+
+Returns the L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
+property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_user {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
+}
+
+=head2 SQLITE_file
+
+Returns the L<SQLITE.file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#sqlite>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+property if it is unspecified.
+
+=cut
+
+sub SQLITE_file {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'SQLITE', 'file' ) // $self->{cfg}->val( 'DB', 'database_name' );
+}
+
 =head2 Language_Locale_hash
 
 Read LANGUAGE.locale from the configuration (.ini) file and returns
@@ -162,18 +288,18 @@ sub ListLanguageTags {
 sub DB_connection_string {
     my ($self) = @_;
 
-    my $db_engine = $_[1] || $self->{cfg}->val( 'DB', 'engine' );
+    my $db_engine = $_[1] || $self->BackendDBType;
 
     my $result;
 
     if ( lc( $db_engine ) eq 'sqlite' ) {
-        $result = sprintf('DBI:SQLite:dbname=%s', $self->{cfg}->val( 'DB', 'database_name' ));
+        $result = sprintf( 'DBI:SQLite:dbname=%s', $self->SQLite_file );
     }
     elsif ( lc( $db_engine ) eq 'postgresql' ) {
-        $result = sprintf('DBI:Pg:database=%s;host=%s', $self->{cfg}->val( 'DB', 'database_name' ), $self->{cfg}->val( 'DB', 'database_host' ));
+        $result = sprintf( 'DBI:Pg:database=%s;host=%s', $self->PostgreSQL_database, $self->PostgreSQL_host );
     }
     elsif ( lc( $db_engine ) eq 'mysql' ) {
-        $result = sprintf('DBI:mysql:database=%s;host=%s', $self->{cfg}->val( 'DB', 'database_name' ), $self->{cfg}->val( 'DB', 'database_host' ));
+        $result = sprintf( 'DBI:mysql:database=%s;host=%s', $self->MySQL_database, $self->MySQL_host );
     }
 
     return $result;

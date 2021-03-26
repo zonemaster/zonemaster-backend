@@ -37,6 +37,20 @@ sub load_config {
     $self->{cfg} = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
     bless( $self, $class );
+
+    if ( defined $self->{cfg}->val( 'DB', 'database_host' ) ) {
+        $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
+    }
+    if ( defined $self->{cfg}->val( 'DB', 'user' ) ) {
+        $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
+    }
+    if ( defined $self->{cfg}->val( 'DB', 'password' ) ) {
+        $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
+    }
+    if ( defined $self->{cfg}->val( 'DB', 'database_name' ) ) {
+        $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.file instead." );
+    }
+
     return $self;
 }
 
@@ -68,24 +82,6 @@ sub BackendDBType {
         die "Unknown config value DB.engine: $engine\n";
     }
     return $engine;
-}
-
-sub DB_user {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'DB', 'user' );
-}
-
-sub DB_password {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'DB', 'password' );
-}
-
-sub DB_name {
-    my ($self) = @_;
-
-    return $self->{cfg}->val( 'DB', 'database_name' );
 }
 
 =head2 MySQL_database

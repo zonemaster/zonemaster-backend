@@ -34,7 +34,7 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $connection_string   = $self->config->DB_connection_string( 'postgresql' );
+        my $connection_string   = sprintf( 'DBI:Pg:database=%s;host=%s', $self->config->PostgreSQL_database, $self->config->PostgreSQL_host );
         my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
         my $connection_user     = $self->config->PostgreSQL_user();
         my $connection_password = $self->config->PostgreSQL_password();

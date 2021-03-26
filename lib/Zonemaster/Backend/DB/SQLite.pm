@@ -31,7 +31,8 @@ sub BUILD {
     my ( $self ) = @_;
 
     if ( !defined $self->dbh ) {
-        my $connection_string = $self->config->DB_connection_string( 'sqlite' );
+        my $connection_string = sprintf( 'DBI:SQLite:dbname=%s', $self->config->SQLite_file );
+
         $log->debug( "Connection string: " . $connection_string );
 
         my $dbh = DBI->connect(

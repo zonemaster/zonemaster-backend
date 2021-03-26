@@ -280,27 +280,6 @@ sub ListLanguageTags {
     return @langtags;
 }
 
-
-sub DB_connection_string {
-    my ($self) = @_;
-
-    my $db_engine = $_[1] || $self->BackendDBType;
-
-    my $result;
-
-    if ( lc( $db_engine ) eq 'sqlite' ) {
-        $result = sprintf( 'DBI:SQLite:dbname=%s', $self->SQLite_file );
-    }
-    elsif ( lc( $db_engine ) eq 'postgresql' ) {
-        $result = sprintf( 'DBI:Pg:database=%s;host=%s', $self->PostgreSQL_database, $self->PostgreSQL_host );
-    }
-    elsif ( lc( $db_engine ) eq 'mysql' ) {
-        $result = sprintf( 'DBI:mysql:database=%s;host=%s', $self->MySQL_database, $self->MySQL_host );
-    }
-
-    return $result;
-}
-
 sub PollingInterval {
     my ($self) = @_;
 

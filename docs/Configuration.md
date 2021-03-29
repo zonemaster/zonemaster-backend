@@ -33,27 +33,27 @@ SQLite            | `SQLite`
 
 ### user
 
-**Deprecated.** Use MYSQL.user or POSTGRESQL.user instead.
+**Deprecated.** Use [MYSQL.user] or [POSTGRESQL.user] instead.
 
-The MYSQL.user and POSTGRESQL.user properties take precedense over this.
+The [MYSQL.user] and [POSTGRESQL.user] properties take precedense over this.
 
 ### password
 
-**Deprecated.** Use MYSQL.password or POSTGRESQL.password instead.
+**Deprecated.** Use [MYSQL.password] or [POSTGRESQL.password] instead.
 
-The MYSQL.password and POSTGRESQL.password properties take precedense over this.
+The [MYSQL.password] and [POSTGRESQL.password] properties take precedense over this.
 
 ### database_host
 
-**Deprecated.** Use MYSQL.host or POSTGRESQL.host instead.
+**Deprecated.** Use [MYSQL.host] or [POSTGRESQL.host] instead.
 
-The MYSQL.host and POSTGRESQL.host properties take precedense over this.
+The [MYSQL.host] and [POSTGRESQL.host] properties take precedense over this.
 
 ### database_name
 
-**Deprecated.** Use MYSQL.database, POSTGRESQL.database or SQLite.file instead.
+**Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLite.file] instead.
 
-The MYSQL.database, POSTGRESQL.database, SQLite.file properties take precedense
+The [MYSQL.database], [POSTGRESQL.database], [SQLite.file] properties take precedense
 over this.
 
 ### polling_interval
@@ -69,25 +69,25 @@ Available keys : `host`, `user`, `password`, `database`.
 
 The host name of the machine on which the MYSQL server is running.
 
-If this property is unspecified, the value of DB.database_host is used instead.
+If this property is unspecified, the value of [DB.database_host] is used instead.
 
 ### user
 
 The name of the user with sufficient permission to access the database.
 
-If this property is unspecified, the value of DB.user is used instead.
+If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
 The password of the configured user.
 
-If this property is unspecified, the value of DB.password is used instead.
+If this property is unspecified, the value of [DB.password] is used instead.
 
 ### database
 
 The name of the database to use.
 
-If this property is unspecified, the value of DB.database_name is used instead.
+If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## POSTGRESQL section
@@ -98,25 +98,25 @@ Available keys : `host`, `user`, `password`, `database`.
 
 The host name of the machine on which the PostgreSQL server is running.
 
-If this property is unspecified, the value of DB.database_host is used instead.
+If this property is unspecified, the value of [DB.database_host] is used instead.
 
 ### user
 
 The name of the user with sufficient permission to access the database.
 
-If this property is unspecified, the value of DB.user is used instead.
+If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
 The password of the configured user.
 
-If this property is unspecified, the value of DB.password is used instead.
+If this property is unspecified, the value of [DB.password] is used instead.
 
 ### database
 
 The name of the database to use.
 
-If this property is unspecified, the value of DB.database_name is used instead.
+If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## SQLITE section
@@ -127,7 +127,7 @@ Available keys : `file`.
 
 The full path to the SQLite database file.
 
-If this property is unspecified, the value of DB.database_name is used instead.
+If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## LANGUAGE section
@@ -278,15 +278,28 @@ zero minutes, then the default value (600 seconds) is used.
 
 --------
 
-[Installation instructions]:          Installation.md
+[DB.database_host]:                   #db-section
+[DB.database_name]:                   #db-section
+[DB.password]:                        #db-section
+[DB.user]:                            #db-section
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[Installation instructions]:          Installation.md
+[Language tag]:                       API.md#language-tag
+[MYSQL.database]:                     #mysql-section
+[MYSQL.host]:                         #mysql-section
+[MYSQL.password]:                     #mysql-section
+[MYSQL.user]:                         #mysql-section
+[POSTGRESQL.database]:                #postgresql-section
+[POSTGRESQL.host]:                    #postgresql-section
+[POSTGRESQL.password]:                #postgresql-section
+[POSTGRESQL.user]:                    #postgresql-section
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile names]:                      API.md#profile-name
 [Profiles]:                           Architecture.md#profile
+[SQLite.file]:                        #sqlite-section
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
-[Language tag]:                       API.md#language-tag
 
 

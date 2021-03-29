@@ -84,7 +84,7 @@ sub BackendDBType {
     return $engine;
 }
 
-=head2 MySQL_database
+=head2 MYSQL_database
 
 Returns the L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
 property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
@@ -92,7 +92,7 @@ property if it is unspecified.
 
 =cut
 
-sub MySQL_database {
+sub MYSQL_database {
     my ( $self ) = @_;
 
     return $self->{cfg}->val( 'MYSQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
@@ -106,13 +106,13 @@ property if it is unspecified.
 
 =cut
 
-sub MySQL_host {
+sub MYSQL_host {
     my ( $self ) = @_;
 
     return $self->{cfg}->val( 'MYSQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
 }
 
-=head2 MySQL_password
+=head2 MYSQL_password
 
 Returns the L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
 property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
@@ -120,13 +120,13 @@ property if it is unspecified.
 
 =cut
 
-sub MySQL_password {
+sub MYSQL_password {
     my ( $self ) = @_;
 
     return $self->{cfg}->val( 'MYSQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
 }
 
-=head2 MySQL_user
+=head2 MYSQL_user
 
 Returns the L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
 property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
@@ -134,7 +134,7 @@ property if it is unspecified.
 
 =cut
 
-sub MySQL_user {
+sub MYSQL_user {
     my ( $self ) = @_;
 
     return $self->{cfg}->val( 'MYSQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );

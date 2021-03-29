@@ -34,10 +34,10 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $connection_string   = sprintf( 'DBI:mysql:database=%s;host=%s', $self->config->MySQL_database, $self->config->MySQL_host );
+        my $connection_string   = sprintf( 'DBI:mysql:database=%s;host=%s', $self->config->MYSQL_database, $self->config->MYSQL_host );
         my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-        my $connection_user     = $self->config->MySQL_user();
-        my $connection_password = $self->config->MySQL_password();
+        my $connection_user     = $self->config->MYSQL_user();
+        my $connection_password = $self->config->MYSQL_password();
         $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );

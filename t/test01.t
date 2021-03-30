@@ -112,9 +112,20 @@ run_zonemaster_test_with_backend_API(1);
 $frontend_params_1->{ipv6} = 0;
 run_zonemaster_test_with_backend_API(2);
 
+my $offset = 0;
+my $limit  = 10;
+my $test_history =
+    $engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
+diag explain( $test_history );
+ok( scalar( @$test_history ) == 2, 'Two tests created' );
+
+ok( length($test_history->[0]->{id}) == 16, 'Test 0 has 16 characters length hash ID' );
+ok( length($test_history->[1]->{id}) == 16, 'Test 1 has 16 characters length hash ID' );
+
 if ( $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster::Engine->save_cache( $datafile );
 }
+
 done_testing();
 
 my $dbfile = 'zonemaster';

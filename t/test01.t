@@ -43,10 +43,10 @@ isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 ok( $engine->{db}->create_db() );
 
 # add test user
-ok( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ) == 1 );
-ok(
-    scalar( $engine->{db}->dbh->selectrow_array( q/SELECT * FROM users WHERE username like '%zonemaster_test%'/ ) ) ==
-      1 );
+is( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
+
+my $user_check_query = q/SELECT * FROM users WHERE username like '%zonemaster_test%'/;
+is( scalar( $engine->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
 
 # add a new test to the db
 my $frontend_params_1 = {
@@ -69,12 +69,13 @@ my $frontend_params_1 = {
 sub run_zonemaster_test_with_backend_API {
     my ($test_id) = @_;
 
-    my $hash_id;
-    ok( ($hash_id = $engine->start_domain_test( $frontend_params_1)) && $hash_id , "API start_domain_test OK/test_id=$test_id" );
-    ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id );
+    my $hash_id = $engine->start_domain_test( $frontend_params_1 );
+    ok( $hash_id, "API start_domain_test OK" );
+    is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
+    is( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ), $test_id , 'API start_domain_test -> Test inserted in the DB' );
 
     # test test_progress API
-    ok( $engine->test_progress( $hash_id ) == 0 );
+    is( $engine->test_progress( $hash_id ), 0 , 'API test_progress -> OK');
 
     if ( not $ENV{ZONEMASTER_RECORD} ) {
         Zonemaster::Engine->preload_cache( $datafile );
@@ -86,26 +87,26 @@ sub run_zonemaster_test_with_backend_API {
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
-    ok( $engine->test_progress( $hash_id ) > 0 );
+    cmp_ok( $engine->test_progress( $hash_id ), '>',  0 , 'API test_progress -> Test started');
 
     foreach my $i ( 1 .. 12 ) {
         my $progress = $engine->test_progress( $hash_id );
         last if ( $progress == 100 );
     }
-    ok( $engine->test_progress( $hash_id ) == 100 );
+    is( $engine->test_progress( $hash_id ), 100 , 'API test_progress -> Test finished' );
 
-        my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );
+    my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );
     ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
     ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
     ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
-    ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
+    cmp_ok( scalar( @{ $test_results->{results} } ), '>', 1, 'TEST1 got some results' );
 
-        dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
-        'API get_test_results -> [results] parameter not present (wrong language tag)'; # Should be underscore, not hyphen.
+    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
+    'API get_test_results -> [results] parameter not present (wrong language tag: underscore not hyphen)'; # Should be underscore, not hyphen.
 
-        dies_ok { $engine->get_test_results( { id => $hash_id, language => 'zz' } ); }
-        'API get_test_results -> [results] parameter not present (wrong language tag)'; # "zz" is not our configuration file.
+    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'zz' } ); }
+    'API get_test_results -> [results] parameter not present (wrong language tag: "zz" unknown)'; # "zz" is not our configuration file.
 }
 
 run_zonemaster_test_with_backend_API(1);
@@ -117,10 +118,10 @@ my $limit  = 10;
 my $test_history =
     $engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
 diag explain( $test_history );
-ok( scalar( @$test_history ) == 2, 'Two tests created' );
+is( scalar( @$test_history ), 2, 'Two tests created' );
 
-ok( length($test_history->[0]->{id}) == 16, 'Test 0 has 16 characters length hash ID' );
-ok( length($test_history->[1]->{id}) == 16, 'Test 1 has 16 characters length hash ID' );
+is( length($test_history->[0]->{id}), 16, 'Test 0 has 16 characters length hash ID' );
+is( length($test_history->[1]->{id}), 16, 'Test 1 has 16 characters length hash ID' );
 
 if ( $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster::Engine->save_cache( $datafile );

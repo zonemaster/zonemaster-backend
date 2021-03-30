@@ -8,6 +8,15 @@ use Zonemaster::Engine;
 use JSON::PP;
 use File::ShareDir qw[dist_file];
 
+# Use the TARGET environment variable to set the database to use
+# default to SQLite
+my $db_backend = $ENV{TARGET};
+if ( not $db_backend ) {
+    $db_backend = 'SQLite';
+} elsif ( $db_backend !~ /^(?:SQLite|MySQL|PostgreSQL)$/ ) {
+    BAIL_OUT( "Unsupported database backend: $db_backend" );
+}
+
 my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
     die q{Stored data file missing} if not -r $datafile;
@@ -33,19 +42,27 @@ my $config = Zonemaster::Backend::Config->load_config();
 # Create Zonemaster::Backend::RPCAPI object
 my $engine = Zonemaster::Backend::RPCAPI->new(
     {
-        dbtype => 'SQLite',
+        dbtype => $db_backend,
         config => $config,
     }
 );
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
-# create a new memory SQLite database
-ok( $engine->{db}->create_db() );
+if ( $db_backend eq 'SQLite' ) {
+    # create a new memory SQLite database
+    ok( $engine->{db}->create_db() );
+}
 
 # add test user
 is( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
-my $user_check_query = q/SELECT * FROM users WHERE username like '%zonemaster_test%'/;
+my $user_check_query;
+if ( $db_backend eq 'PostgreSQL' ) {
+    $user_check_query = q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/;
+}
+elsif ( $db_backend eq 'MySQL' || $db_backend eq 'SQLite' ) {
+    $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
+}
 is( scalar( $engine->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
 
 # add a new test to the db
@@ -83,14 +100,17 @@ sub run_zonemaster_test_with_backend_API {
     }
 
     use_ok( 'Zonemaster::Backend::TestAgent' );
-    Zonemaster::Backend::TestAgent->new( { dbtype => "SQLite", config => $config } )->run( $hash_id );
+    Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } )->run( $hash_id );
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
+    sleep( 5 ) unless ( $ENV{ZONEMASTER_RECORD} );
     cmp_ok( $engine->test_progress( $hash_id ), '>',  0 , 'API test_progress -> Test started');
 
     foreach my $i ( 1 .. 12 ) {
+        sleep( 5 ) unless ( $ENV{ZONEMASTER_RECORD} );
         my $progress = $engine->test_progress( $hash_id );
+        diag "progress: $progress" unless ( $ENV{ZONEMASTER_RECORD} );
         last if ( $progress == 100 );
     }
     is( $engine->test_progress( $hash_id ), 100 , 'API test_progress -> Test finished' );
@@ -129,7 +149,9 @@ if ( $ENV{ZONEMASTER_RECORD} ) {
 
 done_testing();
 
-my $dbfile = 'zonemaster';
-if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
-    unlink $dbfile;
+if ( $db_backend eq 'SQLite' ) {
+    my $dbfile = 'zonemaster';
+    if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
+        unlink $dbfile;
+    }
 }

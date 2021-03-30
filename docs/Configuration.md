@@ -35,25 +35,25 @@ SQLite            | `SQLite`
 
 **Deprecated.** Use [MYSQL.user] or [POSTGRESQL.user] instead.
 
-The [MYSQL.user] and [POSTGRESQL.user] properties take precedense over this.
+The [MYSQL.user] and [POSTGRESQL.user] properties take precedence over this.
 
 ### password
 
 **Deprecated.** Use [MYSQL.password] or [POSTGRESQL.password] instead.
 
-The [MYSQL.password] and [POSTGRESQL.password] properties take precedense over this.
+The [MYSQL.password] and [POSTGRESQL.password] properties take precedence over this.
 
 ### database_host
 
 **Deprecated.** Use [MYSQL.host] or [POSTGRESQL.host] instead.
 
-The [MYSQL.host] and [POSTGRESQL.host] properties take precedense over this.
+The [MYSQL.host] and [POSTGRESQL.host] properties take precedence over this.
 
 ### database_name
 
 **Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLite.file] instead.
 
-The [MYSQL.database], [POSTGRESQL.database], [SQLite.file] properties take precedense
+The [MYSQL.database], [POSTGRESQL.database], [SQLite.file] properties take precedence
 over this.
 
 ### polling_interval
@@ -67,7 +67,7 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
-The host name of the machine on which the MYSQL server is running.
+The host name of the machine on which the MySQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
 

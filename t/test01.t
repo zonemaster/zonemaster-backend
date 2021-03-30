@@ -27,6 +27,7 @@ unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
+use_ok( 'Zonemaster::Backend::Config' );
 my $config = Zonemaster::Backend::Config->load_config();
 
 # Create Zonemaster::Backend::RPCAPI object
@@ -75,14 +76,12 @@ sub run_zonemaster_test_with_backend_API {
     # test test_progress API
     ok( $engine->test_progress( $hash_id ) == 0 );
 
-    use_ok( 'Zonemaster::Backend::Config' );
-
-    use_ok( 'Zonemaster::Backend::TestAgent' );
-
     if ( not $ENV{ZONEMASTER_RECORD} ) {
         Zonemaster::Engine->preload_cache( $datafile );
         Zonemaster::Engine->profile->set( q{no_network}, 1 );
     }
+
+    use_ok( 'Zonemaster::Backend::TestAgent' );
     Zonemaster::Backend::TestAgent->new( { dbtype => "SQLite", config => $config } )->run( $hash_id );
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );

@@ -86,8 +86,8 @@ sub BackendDBType {
 
 =head2 MYSQL_database
 
-Returns the L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
-property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
 property if it is unspecified.
 
 =cut
@@ -100,8 +100,8 @@ sub MYSQL_database {
 
 =head2 MySQL_host
 
-Returns the L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
-property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>
+property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_host>
 property if it is unspecified.
 
 =cut
@@ -114,8 +114,8 @@ sub MYSQL_host {
 
 =head2 MYSQL_password
 
-Returns the L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
-property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>
+property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>
 property if it is unspecified.
 
 =cut
@@ -128,8 +128,8 @@ sub MYSQL_password {
 
 =head2 MYSQL_user
 
-Returns the L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#mysql>
-property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>
+property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>
 property if it is unspecified.
 
 =cut
@@ -142,8 +142,8 @@ sub MYSQL_user {
 
 =head2 POSTGRESQL_database
 
-Returns the L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
-property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
 property if it is unspecified.
 
 =cut
@@ -156,8 +156,8 @@ sub POSTGRESQL_database {
 
 =head2 POSTGRESQL_host
 
-Returns the L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
-property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>
+property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_host>
 property if it is unspecified.
 
 =cut
@@ -170,8 +170,8 @@ sub POSTGRESQL_host {
 
 =head2 POSTGRESQL_password
 
-Returns the L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
-property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>
+property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>
 property if it is unspecified.
 
 =cut
@@ -184,8 +184,8 @@ sub POSTGRESQL_password {
 
 =head2 POSTGRESQL_user
 
-Returns the L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#postgresql>
-property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>
+property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>
 property if it is unspecified.
 
 =cut
@@ -198,8 +198,8 @@ sub POSTGRESQL_user {
 
 =head2 SQLITE_file
 
-Returns the L<SQLITE.file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#sqlite>
-property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#db>
+Returns the L<SQLITE.file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#file>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
 property if it is unspecified.
 
 =cut

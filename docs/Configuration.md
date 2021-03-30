@@ -278,27 +278,27 @@ zero minutes, then the default value (600 seconds) is used.
 
 --------
 
-[DB.database_host]:                   #db-section
-[DB.database_name]:                   #db-section
-[DB.password]:                        #db-section
-[DB.user]:                            #db-section
+[DB.database_host]:                   #database_host
+[DB.database_name]:                   #database_name
+[DB.password]:                        #password
+[DB.user]:                            #user
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
 [Installation instructions]:          Installation.md
 [Language tag]:                       API.md#language-tag
-[MYSQL.database]:                     #mysql-section
-[MYSQL.host]:                         #mysql-section
-[MYSQL.password]:                     #mysql-section
-[MYSQL.user]:                         #mysql-section
-[POSTGRESQL.database]:                #postgresql-section
-[POSTGRESQL.host]:                    #postgresql-section
-[POSTGRESQL.password]:                #postgresql-section
-[POSTGRESQL.user]:                    #postgresql-section
+[MYSQL.database]:                     #database
+[MYSQL.host]:                         #host
+[MYSQL.password]:                     #password-1
+[MYSQL.user]:                         #user-1
+[POSTGRESQL.database]:                #database-1
+[POSTGRESQL.host]:                    #host-1
+[POSTGRESQL.password]:                #password-2
+[POSTGRESQL.user]:                    #user-2
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile names]:                      API.md#profile-name
 [Profiles]:                           Architecture.md#profile
-[SQLite.file]:                        #sqlite-section
+[SQLite.file]:                        #file
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
 

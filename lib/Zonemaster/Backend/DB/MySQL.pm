@@ -5,11 +5,11 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use Encode;
-use DBI qw(:utils);
-use JSON::PP;
-use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
+use DBI qw(:utils);
+use Digest::MD5 qw(md5_hex);
+use Encode;
+use JSON::PP;
 
 use Zonemaster::Backend::Config;
 
@@ -34,11 +34,20 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $connection_string   = sprintf( 'DBI:mysql:database=%s;host=%s', $self->config->MYSQL_database, $self->config->MYSQL_host );
-        my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-        my $connection_user     = $self->config->MYSQL_user();
-        my $connection_password = $self->config->MYSQL_password();
-        $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
+        my $database = $self->config->MYSQL_database;
+        my $host     = $self->config->MYSQL_host;
+        my $user     = $self->config->MYSQL_user();
+        my $password = $self->config->MYSQL_password();
+        my $connection_string = "DBI:mysql:database=$database;host=$host";
+        $dbh = DBI->connect(
+            $connection_string,
+            $user,
+            $password,
+            {
+                RaiseError => 1,
+                AutoCommit => 1
+            }
+        );
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;

@@ -6,9 +6,9 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
-use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use JSON::PP;
 
 use Zonemaster::Backend::DB;
 use Zonemaster::Backend::Config;
@@ -34,11 +34,20 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $connection_string   = sprintf( 'DBI:Pg:database=%s;host=%s', $self->config->POSTGRESQL_database, $self->config->POSTGRESQL_host );
-        my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-        my $connection_user     = $self->config->POSTGRESQL_user();
-        my $connection_password = $self->config->POSTGRESQL_password();
-        $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
+        my $database = $self->config->POSTGRESQL_database;
+        my $host     = $self->config->POSTGRESQL_host;
+        my $user     = $self->config->POSTGRESQL_user;
+        my $password = $self->config->POSTGRESQL_password;
+        my $connection_string = "DBI:Pg:database=$database;host=$host";
+        $dbh = DBI->connect(
+            $connection_string,
+            $user,
+            $password,
+            {
+                RaiseError => 1,
+                AutoCommit => 1
+            }
+        );
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;

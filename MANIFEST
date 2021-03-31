@@ -43,7 +43,6 @@ Makefile.PL
 MANIFEST			This list of files
 META.yml
 README.md
-script/add-test.pl
 script/add-batch-job.pl
 script/create_db_mysql.pl
 script/create_db_postgresql_9.3.pl

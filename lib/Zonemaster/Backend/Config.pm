@@ -519,7 +519,6 @@ sub new_DB {
     my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
     require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
     $dbclass->import();
-    $log->notice("Constructing database adapter: $dbclass");
 
     my $db = $dbclass->new({ config => $self });
 

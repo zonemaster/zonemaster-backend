@@ -10,6 +10,7 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
+use Log::Any qw($log);
 
 use Zonemaster::Backend::Config;
 
@@ -38,9 +39,10 @@ sub dbh {
         my $host     = $self->config->MYSQL_host;
         my $user     = $self->config->MYSQL_user();
         my $password = $self->config->MYSQL_password();
-        my $connection_string = "DBI:mysql:database=$database;host=$host";
+
+        $log->notice( "Connecting to MySQL: database=$database host=$host user=$user" ) if $log->is_notice;
         $dbh = DBI->connect(
-            $connection_string,
+            "DBI:mysql:database=$database;host=$host",
             $user,
             $password,
             {
@@ -48,6 +50,7 @@ sub dbh {
                 AutoCommit => 1
             }
         );
+
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;

@@ -43,7 +43,6 @@ Makefile.PL
 MANIFEST			This list of files
 META.yml
 README.md
-script/add-test.pl
 script/add-batch-job.pl
 script/create_db_mysql.pl
 script/create_db_postgresql_9.3.pl
@@ -64,7 +63,6 @@ share/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
 share/patch_postgresql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch_postgresql_db_zonemaster_backend_ver_5.0.0.pl
-share/starman-zm-backend-RPC-API.conf
 share/tmpfiles.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini

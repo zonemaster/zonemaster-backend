@@ -664,8 +664,8 @@ sub jsonrpc_validate {
             id => undef,
             error => {
                 code => '-32600',
-                message=> 'The JSON sent is not a valid request object.',
-                data => "@error_rpc\n"
+                message => 'The JSON sent is not a valid request object.',
+                data => "@error_rpc"
             }
         }
     }
@@ -678,8 +678,8 @@ sub jsonrpc_validate {
                 id => undef,
                 error => {
                     code => '-32602',
-                    message=> 'Invalid method parameter(s).',
-                    data => "@error\n"
+                    message => 'Invalid method parameter(s).',
+                    data => "@error"
                 }
             } if @error;
     }

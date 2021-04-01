@@ -131,8 +131,9 @@ $json_schemas{get_host_by_name} = joi->object->strict->props(
 sub get_host_by_name {
     my ( $self, $params ) = @_;
     my @adresses;
+
     eval {
-        my $ns_name  = $params->{"hostname"};
+        my $ns_name  = $params->{hostname};
 
         @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
         @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
@@ -157,7 +158,7 @@ sub get_data_from_parent_zone {
         if (ref \$params eq "SCALAR") {
             $domain = $params;
         } else {
-            $domain = $params->{"domain"};
+            $domain = $params->{domain};
         }
 
         my ( $dn, $dn_syntax ) = $self->_check_domain( $domain, 'Domain name' );
@@ -411,7 +412,7 @@ sub test_progress {
         if (ref \$params eq "SCALAR") {
             $test_id = $params;
         } else {
-            $test_id = $params->{"test_id"};
+            $test_id = $params->{test_id};
         }
 
         $result = $self->{db}->test_progress( $test_id );
@@ -429,7 +430,7 @@ $json_schemas{get_test_params} = joi->object->strict->props(
 sub get_test_params {
     my ( $self, $params ) = @_;
 
-    my $test_id = $params->{"test_id"};
+    my $test_id = $params->{test_id};
 
     my $result = 0;
 
@@ -639,7 +640,7 @@ sub get_batch_job_result {
     my $result;
 
     eval {
-        my $batch_id = $params->{"batch_id"};
+        my $batch_id = $params->{batch_id};
 
         $result = $self->{db}->get_batch_job_result($batch_id);
     };
@@ -657,7 +658,7 @@ sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
-    if (!exists $jsonrpc_request->{"id"} || @error_rpc) {
+    if (!exists $jsonrpc_request->{id} || @error_rpc) {
         return {
             jsonrpc => '2.0',
             id => undef,
@@ -669,9 +670,9 @@ sub jsonrpc_validate {
         }
     }
 
-    if (exists $jsonrpc_request->{"params"}) {
+    if (exists $jsonrpc_request->{params}) {
 
-        my @error = $json_schemas{$jsonrpc_request->{"method"}}->validate($jsonrpc_request->{"params"});
+        my @error = $json_schemas{$jsonrpc_request->{method}}->validate($jsonrpc_request->{params});
         return {
                 jsonrpc => '2.0',
                 id => undef,

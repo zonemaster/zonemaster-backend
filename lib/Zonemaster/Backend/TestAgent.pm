@@ -21,20 +21,24 @@ sub new {
     my ( $class, $params ) = @_;
     my $self = {};
 
-    if ( $params && $params->{config} ) {
-        $self->{config} = $params->{config};
+    if ( ! $params || ! $params->{config} ) {
+        die "missing 'config' parameter";
     }
 
-    if ( $params && $params->{db} ) {
-        eval "require $params->{db}";
-        $self->{db} = "$params->{db}"->new( { config => $self->{config} } );
+    $self->{config} = $params->{config};
+
+    my $dbtype;
+    if ( $params->{dbtype} ) {
+        $dbtype = $self->{config}->check_db($params->{dbtype});
     }
     else {
-        my $backend_module = "Zonemaster::Backend::DB::" . $self->{config}->BackendDBType();
-        eval "require $backend_module";
-        $self->{db} = $backend_module->new( { config => $self->{config} } );
+        $dbtype = $self->{config}->BackendDBType();
     }
-        
+
+    my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
+    eval "require $backend_module";
+    $self->{db} = $backend_module->new( { config => $self->{config} } );
+
     $self->{profiles} = $self->{config}->ReadProfilesInfo();
     foreach my $profile (keys %{$self->{profiles}}) {
         die "default profile cannot be private" if ($profile eq 'default' && $self->{profiles}->{$profile}->{type} eq 'private');
@@ -129,7 +133,7 @@ sub run {
     if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
         $self->add_fake_ds( $domain, $params->{ds_info} );
     }
-    
+
 
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
@@ -200,7 +204,7 @@ sub add_fake_delegation {
             $data{ $self->to_idn( $ns ) } = undef;
         }
     }
-    
+
     Zonemaster::Engine->add_fake_delegation( $domain => \%data );
 
     return;

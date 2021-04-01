@@ -24,7 +24,7 @@ use_ok( 'Zonemaster::Backend::RPCAPI' );
 # Create Zonemaster::Backend::RPCAPI object
 my $engine = Zonemaster::Backend::RPCAPI->new(
     {
-        db     => 'Zonemaster::Backend::DB::SQLite',
+        dbtype => 'SQLite',
         config => Zonemaster::Backend::Config->load_config(),
     }
 );

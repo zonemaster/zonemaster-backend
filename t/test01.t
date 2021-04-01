@@ -12,7 +12,7 @@ my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
     die q{Stored data file missing} if not -r $datafile;
     Zonemaster::Engine->preload_cache( $datafile );
-	Zonemaster::Engine->profile->set( q{no_network}, 1 );
+    Zonemaster::Engine->profile->set( q{no_network}, 1 );
 }
 
 # The configuration file should be the default
@@ -32,7 +32,7 @@ my $config = Zonemaster::Backend::Config->load_config();
 # Create Zonemaster::Backend::RPCAPI object
 my $engine = Zonemaster::Backend::RPCAPI->new(
     {
-        db     => 'Zonemaster::Backend::DB::SQLite',
+        dbtype => 'SQLite',
         config => $config,
     }
 );
@@ -66,41 +66,41 @@ my $frontend_params_1 = {
 };
 
 sub run_zonemaster_test_with_backend_API {
-	my ($test_id) = @_;
-	
-	my $hash_id;
-	ok( ($hash_id = $engine->start_domain_test( $frontend_params_1)) && $hash_id , "API start_domain_test OK/test_id=$test_id" );
-	ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id );
+    my ($test_id) = @_;
 
-	# test test_progress API
-	ok( $engine->test_progress( $hash_id ) == 0 );
+    my $hash_id;
+    ok( ($hash_id = $engine->start_domain_test( $frontend_params_1)) && $hash_id , "API start_domain_test OK/test_id=$test_id" );
+    ok( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ) == $test_id );
 
-	use_ok( 'Zonemaster::Backend::Config' );
+    # test test_progress API
+    ok( $engine->test_progress( $hash_id ) == 0 );
 
-	use_ok( 'Zonemaster::Backend::TestAgent' );
+    use_ok( 'Zonemaster::Backend::Config' );
 
-	if ( not $ENV{ZONEMASTER_RECORD} ) {
-		Zonemaster::Engine->preload_cache( $datafile );
-		Zonemaster::Engine->profile->set( q{no_network}, 1 );
-	}
-	Zonemaster::Backend::TestAgent->new( { db => "Zonemaster::Backend::DB::SQLite", config => $config } )->run( $hash_id );
+    use_ok( 'Zonemaster::Backend::TestAgent' );
 
-	Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
+    if ( not $ENV{ZONEMASTER_RECORD} ) {
+        Zonemaster::Engine->preload_cache( $datafile );
+        Zonemaster::Engine->profile->set( q{no_network}, 1 );
+    }
+    Zonemaster::Backend::TestAgent->new( { dbtype => "SQLite", config => $config } )->run( $hash_id );
 
-	ok( $engine->test_progress( $hash_id ) > 0 );
+    Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
-	foreach my $i ( 1 .. 12 ) {
-		my $progress = $engine->test_progress( $hash_id );
-		last if ( $progress == 100 );
-	}
-	ok( $engine->test_progress( $hash_id ) == 100 );
+    ok( $engine->test_progress( $hash_id ) > 0 );
+
+    foreach my $i ( 1 .. 12 ) {
+        my $progress = $engine->test_progress( $hash_id );
+        last if ( $progress == 100 );
+    }
+    ok( $engine->test_progress( $hash_id ) == 100 );
 
         my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );
-	ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
-	ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
-	ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
-	ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
-	ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
+    ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
+    ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
+    ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
+    ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
+    ok( scalar( @{ $test_results->{results} } ) > 1, 'TEST1 got some results' );
 
         dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
         'API get_test_results -> [results] parameter not present (wrong language tag)'; # Should be underscore, not hyphen.
@@ -114,11 +114,11 @@ $frontend_params_1->{ipv6} = 0;
 run_zonemaster_test_with_backend_API(2);
 
 if ( $ENV{ZONEMASTER_RECORD} ) {
-	Zonemaster::Engine->save_cache( $datafile );
+    Zonemaster::Engine->save_cache( $datafile );
 }
 done_testing();
 
 my $dbfile = 'zonemaster';
 if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
-	unlink $dbfile;
+    unlink $dbfile;
 }

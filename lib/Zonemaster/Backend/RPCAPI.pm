@@ -40,31 +40,36 @@ sub new {
     my $self = {};
     bless( $self, $type );
 
-    my $config = Zonemaster::Backend::Config->load_config();
+    if ( ! $params || ! $params->{config} ) {
+        handle_exception('new', "Missing 'config' parameter", '001');
+    }
 
-    if ( $params && $params->{db} ) {
-        eval {
-            eval "require $params->{db}";
-            die "$@ \n" if $@;
-            $self->{db} = "$params->{db}"->new( { config => $config } );
-        };
-        if ($@) {
-            handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '001');
-        }
+    $self->{config} = $params->{config};
+
+    my $dbtype;
+    if ( $params->{dbtype} ) {
+        $dbtype = $self->{config}->check_db($params->{dbtype});
+    } else {
+        $dbtype = $self->{config}->BackendDBType();
     }
-    else {
-        eval {
-            my $backend_module = "Zonemaster::Backend::DB::" . $config->BackendDBType();
-            eval "require $backend_module";
-            die "$@ \n" if $@;
-            $self->{db} = $backend_module->new( { config => $config } );
-        };
-        if ($@) {
-            handle_exception('new', "Failed to initialize the [$params->{db}] database backend module: [$@]", '002');
-        }
-    }
+
+    $self->_init_db($dbtype);
 
     return ( $self );
+}
+
+sub _init_db {
+    my ( $self, $dbtype ) = @_;
+
+    eval {
+        my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
+        eval "require $backend_module";
+        die "$@ \n" if $@;
+        $self->{db} = $backend_module->new( { config => $self->{config} } );
+    };
+    if ($@) {
+        handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');
+    }
 }
 
 sub handle_exception {
@@ -89,23 +94,23 @@ sub version_info {
     if ($@) {
         handle_exception('version_info', $@, '003');
     }
-    
+
     return \%ver;
 }
 
 $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
     my @profiles;
     eval {
-        @profiles = Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
+        @profiles = $self->{config}->ListPublicProfiles();
 
     };
     if ($@) {
         handle_exception('profile_names', $@, '004');
     }
-    
+
     return \@profiles;
 }
 
@@ -113,9 +118,9 @@ sub profile_names {
 # derived from the locale tags set in the configuration file.
 $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
-    my @lang = Zonemaster::Backend::Config->load_config()->ListLanguageTags();
+    my @lang = $self->{config}->ListLanguageTags();
 
     return \@lang;
 }
@@ -136,7 +141,7 @@ sub get_host_by_name {
     if ($@) {
         handle_exception('get_host_by_name', $@, '005');
     }
-    
+
     return \@adresses;
 }
 
@@ -148,7 +153,7 @@ sub get_data_from_parent_zone {
     my $domain = "";
 
     my $result = eval {
-		my %result;
+        my %result;
         if (ref \$params eq "SCALAR") {
             $domain = $params;
         } else {
@@ -179,13 +184,13 @@ sub get_data_from_parent_zone {
 
         $result{ns_list} = \@ns_list;
         $result{ds_list} = \@ds_list;
-		return \%result;
+        return \%result;
     };
     if ($@) {
         handle_exception('get_data_from_parent_zone', $@, '006');
     }
     elsif ($result) {
-		return $result;
+        return $result;
     }
 }
 
@@ -238,9 +243,9 @@ sub _check_domain {
         handle_exception('_check_domain', $@, '007');
     }
     elsif ($result) {
-		return $result;
+        return $result;
     }
-    
+
     my %levels = Zonemaster::Engine::Logger::Entry::levels();
     my @res;
     @res = Zonemaster::Engine::Test::Basic->basic00($dn);
@@ -299,7 +304,7 @@ sub validate_syntax {
         }
 
         if ( defined $syntax_input->{profile} ) {
-            my @profiles = map lc, Zonemaster::Backend::Config->load_config()->ListPublicProfiles();
+            my @profiles = map lc, $self->{config}->ListPublicProfiles();
             return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
@@ -388,12 +393,12 @@ sub start_domain_test {
 
         if ($params->{config}) {
             $params->{config} =~ s/[^\w_]//isg;
-            die "Unknown test configuration: [$params->{config}]\n" unless ( Zonemaster::Backend::Config->load_config()->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
+            die "Unknown test configuration: [$params->{config}]\n" unless ( $self->{config}->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
         }
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
-        my $minutes_between_tests_with_same_params = Zonemaster::Backend::Config->load_config()->age_reuse_previous_test();
+        my $minutes_between_tests_with_same_params = $self->{config}->age_reuse_previous_test();
 
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $minutes_between_tests_with_same_params );
     };
@@ -409,7 +414,7 @@ $json_schemas{test_progress} = joi->object->strict->props(
 );
 sub test_progress {
     my ( $self, $params ) = @_;
-    
+
     my $result = 0;
     eval {
         my $test_id = "";
@@ -418,7 +423,6 @@ sub test_progress {
         } else {
             $test_id = $params->{"test_id"};
         }
-
 
         $result = $self->{db}->test_progress( $test_id );
     };
@@ -434,6 +438,7 @@ $json_schemas{get_test_params} = joi->object->strict->props(
 );
 sub get_test_params {
     my ( $self, $params ) = @_;
+
     my $test_id = $params->{"test_id"};
 
     my $result = 0;
@@ -459,7 +464,7 @@ sub get_test_results {
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
-    my %locale = Zonemaster::Backend::Config->load_config()->Language_Locale_hash();
+    my %locale = $self->{config}->Language_Locale_hash();
     if ( $locale{$params->{language}} ) {
         if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
             die "Language string not unique: '$params->{language}'\n";
@@ -548,16 +553,16 @@ $json_schemas{get_test_history} = joi->object->strict->props(
     )->required
 );
 sub get_test_history {
-    my ( $self, $p ) = @_;
+    my ( $self, $params ) = @_;
 
     my $results;
 
     eval {
-        $p->{offset} //= 0;
-        $p->{limit} //= 200;
-        $p->{filter} //= "all";
+        $params->{offset} //= 0;
+        $params->{limit} //= 200;
+        $params->{filter} //= "all";
 
-        $results = $self->{db}->get_test_history( $p );
+        $results = $self->{db}->get_test_history( $params );
     };
     if ($@) {
         handle_exception('get_test_history', $@, '013');
@@ -571,7 +576,7 @@ $json_schemas{add_api_user} = joi->object->strict->props(
     api_key => $zm_validator->api_key->required,
 );
 sub add_api_user {
-    my ( $self, $p, undef, $remote_ip ) = @_;
+    my ( $self, $params, undef, $remote_ip ) = @_;
 
     my $result = 0;
 
@@ -585,7 +590,7 @@ sub add_api_user {
         }
 
         if ( $allow ) {
-            $result = 1 if ( $self->{db}->add_api_user( $p->{username}, $p->{api_key} ) eq '1' );
+            $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
         }
     };
     if ($@) {
@@ -642,7 +647,7 @@ sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
     my $result;
-    
+
     eval {
         my $batch_id = $params->{"batch_id"};
 
@@ -651,7 +656,7 @@ sub get_batch_job_result {
     if ($@) {
         handle_exception('get_batch_job_result', $@, '016');
     }
-    
+
     return $result;
 }
 

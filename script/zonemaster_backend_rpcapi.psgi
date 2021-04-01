@@ -37,74 +37,77 @@ builder {
     };
 };
 
+my $config = Zonemaster::Backend::Config->load_config;
+my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
+
 my $router = router {
 ############## FRONTEND ####################
-	connect "version_info" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "version_info"
-	};
+    connect "version_info" => {
+        handler => $handler,
+        action => "version_info"
+    };
 
-	connect "profile_names" => {
-                handler => "+Zonemaster::Backend::RPCAPI",
+    connect "profile_names" => {
+                handler => $handler,
                 action => "profile_names"
         };
 
-	connect "get_language_tags" => {
-                handler => "+Zonemaster::Backend::RPCAPI",
+    connect "get_language_tags" => {
+                handler => $handler,
                 action => "get_language_tags"
         };
 
         connect "get_host_by_name" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_host_by_name"
-	};
+        handler => $handler,
+        action => "get_host_by_name"
+    };
 
-	connect "get_data_from_parent_zone" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_data_from_parent_zone"
-	};
+    connect "get_data_from_parent_zone" => {
+        handler => $handler,
+        action => "get_data_from_parent_zone"
+    };
 
-	connect "start_domain_test" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "start_domain_test"
-	};
-	
-	connect "test_progress" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "test_progress"
-	};
-	
-	connect "get_test_params" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_test_params"
-	};
+    connect "start_domain_test" => {
+        handler => $handler,
+        action => "start_domain_test"
+    };
 
-	connect "get_test_results" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_test_results"
-	};
+    connect "test_progress" => {
+        handler => $handler,
+        action => "test_progress"
+    };
 
-	connect "get_test_history" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_test_history"
-	};
+    connect "get_test_params" => {
+        handler => $handler,
+        action => "get_test_params"
+    };
+
+    connect "get_test_results" => {
+        handler => $handler,
+        action => "get_test_results"
+    };
+
+    connect "get_test_history" => {
+        handler => $handler,
+        action => "get_test_history"
+    };
 
 ############ BATCH MODE ####################
 
-	connect "add_api_user" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "add_api_user"
-	};
+    connect "add_api_user" => {
+        handler => $handler,
+        action => "add_api_user"
+    };
 
-	connect "add_batch_job" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "add_batch_job"
-	};
+    connect "add_batch_job" => {
+        handler => $handler,
+        action => "add_batch_job"
+    };
 
-	connect "get_batch_job_result" => {
-		handler => "+Zonemaster::Backend::RPCAPI",
-		action => "get_batch_job_result"
-	};
+    connect "get_batch_job_result" => {
+        handler => $handler,
+        action => "get_batch_job_result"
+    };
 };
 
 # Returns a Log::Any-compatible log level string, or throws an exception.
@@ -136,7 +139,7 @@ Log::Any::Adapter->set(
 );
 
 my $dispatch = JSON::RPC::Dispatch->new(
-	router => $router,
+    router => $router,
 );
 
 sub {
@@ -160,7 +163,7 @@ sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
-            $dispatch->handle_psgi($env, $env->{REMOTE_HOST} );
+            $dispatch->handle_psgi($env, $env->{REMOTE_HOST});
         }
     } else {
         $res = Plack::Response->new(200);

@@ -266,7 +266,7 @@ sub test_results {
     }
 
     my $result;
-    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, datetime(creation_time,'localtime') AS creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
+    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
     $result            = $hrefs->{$test_id};
     $result->{params}  = decode_json( $result->{params} );
     $result->{results} = decode_json( $result->{results} );

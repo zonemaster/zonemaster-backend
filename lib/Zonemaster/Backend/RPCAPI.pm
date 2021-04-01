@@ -675,7 +675,7 @@ sub jsonrpc_validate {
         my @error = $json_schemas{$jsonrpc_request->{method}}->validate($jsonrpc_request->{params});
         return {
                 jsonrpc => '2.0',
-                id => undef,
+                id => $jsonrpc_request->{id},
                 error => {
                     code => '-32602',
                     message => 'Invalid method parameter(s).',

@@ -670,10 +670,22 @@ sub jsonrpc_validate {
         }
     }
 
-    if (exists $jsonrpc_request->{params}) {
-
-        my @error = $json_schemas{$jsonrpc_request->{method}}->validate($jsonrpc_request->{params});
-        return {
+    my $method_schema = $json_schemas{$jsonrpc_request->{method}};
+    # the JSON schema for the method has a 'required' key
+    if ( exists $method_schema->{required} ) {
+        if ( not exists $jsonrpc_request->{params} ) {
+            return {
+                jsonrpc => '2.0',
+                id => $jsonrpc_request->{id},
+                error => {
+                    code => '-32602',
+                    message => "Missing 'params' object",
+                }
+            };
+        }
+        my @error = $method_schema->validate($jsonrpc_request->{params});
+        if ( @error ) {
+            return {
                 jsonrpc => '2.0',
                 id => $jsonrpc_request->{id},
                 error => {
@@ -681,8 +693,10 @@ sub jsonrpc_validate {
                     message => 'Invalid method parameter(s).',
                     data => "@error"
                 }
-            } if @error;
+            };
+        }
     }
+
     return '';
 }
 1;

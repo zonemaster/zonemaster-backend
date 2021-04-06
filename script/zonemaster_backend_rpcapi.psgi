@@ -54,18 +54,19 @@ Log::Any::Adapter->set(
     ),
 );
 
+my $config = Zonemaster::Backend::Config->load_config();
+
 builder {
     enable sub {
         my $app = shift;
 
         # Make sure we can connect to the database
-        Zonemaster::Backend::Config->load_config()->new_DB();
+        $config->new_DB();
 
         return $app;
     };
 };
 
-my $config = Zonemaster::Backend::Config->load_config;
 my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
 
 my $router = router {

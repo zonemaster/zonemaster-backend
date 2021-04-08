@@ -382,6 +382,31 @@ An array of *Profile names* in lower case. `"default"` is always included.
 Returns all valid [language tags][language tag] generated from the setting in
 the configuration file.
 
+The `language tags` are generated from the configured [locale tags].
+Each `locale tag` will generate two `language tags`, a short tag
+equal to the first two letters (usually the same as a language
+code) and a long tag which is equal to the full `locale tag`.
+If "en_US" is the `locale tag` then "en" and "en_US" are the
+`language tags`.
+
+If there are two `locale tags` that would give the same short
+`language tag` then that is excluded. E.g. "en_US en_UK" will
+only give "en_US" and "en_UK" as `language tags`.
+
+The following `language tags` are generated using the default configuration:
+* da
+* da_DK
+* en
+* en_US
+* fi
+* fi_FI
+* fr
+* fr_FR
+* nb
+* nb_NO
+* sv
+* sv_SE
+
 Example request:
 ```json
 {

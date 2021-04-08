@@ -563,26 +563,14 @@ sub maximal_number_of_retries {
 }
 
 
-=head2 age_reuse_previous_test
+=head2 ZONEMASTER_age_reuse_previous_test
 
-=head3 INPUT
+Get the value of
+L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
 
-'age_reuse_previous_test' from [ZONEMASTER] section in ini file (in seconds). See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
-
-=head3 RETURNS
-
-A scalar value of the number of seconds old the previous test with the same
-parameters can be when it is reused instead of starting a new test.
+Returns an integer.
 
 =cut
-
-sub age_reuse_previous_test {
-    my ($self) = @_;
-
-    return $self->{_ZONEMASTER_age_reuse_previous_test};
-}
-
 
 sub ReadProfilesInfo {
     my ($self) = @_;

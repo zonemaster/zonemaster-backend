@@ -298,8 +298,8 @@ Default value: `0`.
 ### age_reuse_previous_test
 
 Positive integer.
-How old (in seconds) a previous test of the same zone name and parameters must
-be before we start a new test.
+How old (in seconds) a previous test of the same zone name and parameters can be
+when it is reused instead of starting a new test.
 Default value: `600`.
 
 Internally the value is converted to whole minutes.

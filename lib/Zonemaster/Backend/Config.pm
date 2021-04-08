@@ -454,11 +454,10 @@ sub ListLanguageTags {
     return @langtags;
 }
 
-sub PollingInterval {
-    my ($self) = @_;
 
-    return $self->DB_polling_interval;
-}
+=head2 DB_polling_interval
+
+Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
 
 
 =head2 MaxZonemasterExecutionTime

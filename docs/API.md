@@ -393,20 +393,6 @@ If there are two `locale tags` that would give the same short
 `language tag` then that is excluded. E.g. "en_US en_UK" will
 only give "en_US" and "en_UK" as `language tags`.
 
-The following `language tags` are generated using the default configuration:
-* da
-* da_DK
-* en
-* en_US
-* fi
-* fi_FI
-* fr
-* fr_FR
-* nb
-* nb_NO
-* sv
-* sv_SE
-
 Example request:
 ```json
 {
@@ -416,16 +402,22 @@ Example request:
 }
 ```
 
-Example response:
+Example response (as generated using the default configuration):
 ```json
 {
   "jsonrpc": "2.0",
   "id": 1,
   "result": [
+    "da",
+    "da_DK",
     "en",
     "en_US",
+    "fi",
+    "fi_FI",
     "fr",
     "fr_FR",
+    "nb",
+    "nb_NO",
     "sv",
     "sv_SE"
   ]

@@ -174,11 +174,15 @@ It is an error to repeat the same `locale tag`.
 If the `locale` key is empty or absent, the `locale tag` value
 "en_US" is set by default.
 
+#### Design
+
 The two first characters of a `locale tag` are intended to be an
 [ISO 639-1] two-character language code and the two last characters
 are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 A `locale tag` is a locale setting for the available translation
 of messages without ".UTF-8", which is implied.
+
+#### Usage
 
 Removing a language from the configuration file just blocks that
 language from being allowed. If there are more than one `locale tag`

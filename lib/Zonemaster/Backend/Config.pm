@@ -1,9 +1,9 @@
 package Zonemaster::Backend::Config;
-our $VERSION = '1.1.0';
-
 use strict;
 use warnings;
 use 5.14.2;
+
+our $VERSION = '1.1.0';
 
 use Config;
 use Config::IniFiles;
@@ -29,29 +29,30 @@ Readonly my @SIG_NAME => split ' ', $Config{sig_name};
 =cut
 
 sub load_config {
-    my ( $class, $params ) = @_;
-    my $self = {};
+    my ( $class ) = @_;
 
+    my $obj = bless( {}, $class );
+
+    # Load file
     $log->notice( "Loading config: $path" );
 
-    $self->{cfg} = Config::IniFiles->new( -file => $path );
-    die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
-    bless( $self, $class );
+    $obj->{cfg} = Config::IniFiles->new( -file => $path )
+      or die "UNABLE TO LOAD $path ERRORS:[" . join( '; ', @Config::IniFiles::errors ) . "]\n";
 
-    if ( defined $self->{cfg}->val( 'DB', 'database_host' ) ) {
+    if ( defined $obj->{cfg}->val( 'DB', 'database_host' ) ) {
         $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
     }
-    if ( defined $self->{cfg}->val( 'DB', 'user' ) ) {
+    if ( defined $obj->{cfg}->val( 'DB', 'user' ) ) {
         $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
     }
-    if ( defined $self->{cfg}->val( 'DB', 'password' ) ) {
+    if ( defined $obj->{cfg}->val( 'DB', 'password' ) ) {
         $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
     }
-    if ( defined $self->{cfg}->val( 'DB', 'database_name' ) ) {
+    if ( defined $obj->{cfg}->val( 'DB', 'database_name' ) ) {
         $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
     }
 
-    return $self;
+    return $obj;
 }
 
 sub check_db {

@@ -483,44 +483,21 @@ sub MaxZonemasterExecutionTime {
 }
 
 
-=head2 NumberOfProcessesForFrontendTesting
 
-=head3 INPUT
+=head2 ZONEMASTER_number_of_processes_for_frontend_testing
 
-'number_of_processes_for_frontend_testing' from [ZONEMASTER] section in ini file. See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
+Get the value of
+L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
 
-=head3 RETURNS
-
-Positive integer.
-
-=cut
-
-sub NumberOfProcessesForFrontendTesting {
-    my ($self) = @_;
-
-    return $self->ZONEMASTER_number_of_processes_for_frontend_testing;
-}
+Returns a positive integer.
 
 
-=head2 NumberOfProcessesForBatchTesting
+=head2 ZONEMASTER_number_of_processes_for_batch_testing
 
-=head3 INPUT
+Get the value of
+L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
 
-'number_of_processes_for_batch_testing' from [ZONEMASTER] section in ini file. See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
-
-=head3 RETURNS
-
-Integer.
-
-=cut
-
-sub NumberOfProcessesForBatchTesting {
-    my ($self) = @_;
-
-    return $self->ZONEMASTER_number_of_processes_for_batch_testing;
-}
+Returns an integer.
 
 
 =head2 lock_on_queue
@@ -668,9 +645,9 @@ The values of the following attributes affect the construction of the returned o
 
 =item MaxZonemasterExecutionTime
 
-=item NumberOfProcessesForBatchTesting
+=item ZONEMASTER_number_of_processes_for_batch_testing
 
-=item NumberOfProcessesForFrontendTesting
+=item ZONEMASTER_number_of_processes_for_frontend_testing
 
 =back
 
@@ -683,7 +660,7 @@ A configured L<Parallel::ForkManager> object.
 sub new_PM {
     my $self = shift;
 
-    my $maximum_processes = $self->NumberOfProcessesForFrontendTesting() + $self->NumberOfProcessesForBatchTesting();
+    my $maximum_processes = $self->ZONEMASTER_number_of_processes_for_frontend_testing + $self->ZONEMASTER_number_of_processes_for_batch_testing;
 
     my $timeout = $self->MaxZonemasterExecutionTime();
 

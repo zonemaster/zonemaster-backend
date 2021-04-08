@@ -120,9 +120,12 @@ $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
-    my @lang = $self->{config}->ListLanguageTags();
-
-    return \@lang;
+    my %locale_tags = $self->{config}->Language_Locale_hash();
+    my @langtags;
+    foreach my $key (keys %locale_tags) {
+        push @langtags, $key unless $locale_tags{$key} eq 'NOT-UNIQUE';
+    }
+    return \@langtags;
 }
 
 $json_schemas{get_host_by_name} = joi->object->strict->props(

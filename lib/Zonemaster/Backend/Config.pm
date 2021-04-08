@@ -595,31 +595,6 @@ sub Language_Locale_hash {
     return %locale;
 }
 
-=head2 ListLanguageTags
-
-Read indirectly LANGUAGE.locale from the configuration (.ini) file
-and returns a list of valid language tags for RPCAPI. The list can
-be retrieved via an RPCAPI method.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-An array of valid language tags. The array is never empty.
-
-=cut
-
-sub ListLanguageTags {
-    my ($self) = @_;
-    my %locale = &Language_Locale_hash($self);
-    my @langtags;
-    foreach my $key (keys %locale) {
-        push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
-    }
-    return @langtags;
-}
 
 sub ReadProfilesInfo {
     my ($self) = @_;

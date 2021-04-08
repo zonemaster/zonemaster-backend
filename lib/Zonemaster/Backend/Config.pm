@@ -576,47 +576,6 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
 }
 
-=head2 Language_Locale_hash
-
-Read LANGUAGE.locale from the configuration (.ini) file and returns
-the valid language tags for RPCAPI. The incoming language tag
-from RPCAPI is compared to those. The language tags are mapped to
-locale setting value.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-A hash of valid language tags as keys with set locale value as value.
-The hash is never empty.
-
-=cut
-
-sub Language_Locale_hash {
-    # There is one special value to capture ambiguous (and therefore
-    # not permitted) translation language tags.
-    my ($self) = @_;
-    my @localetags = map { keys %{$_} } values %{ { $self->LANGUAGE_locale } };
-    my %locale;
-    foreach my $la (@localetags) {
-        (my $a) = split (/_/,$la); # $a is the language code only
-        my $lo = "$la.UTF-8";
-        # Set special value if the same language code is used more than once
-        # with different country codes.
-        if ( $locale{$a} and $locale{$a} ne $lo ) {
-            $locale{$a} = 'NOT-UNIQUE';
-        }
-        else {
-            $locale{$a} = $lo;
-        }
-        $locale{$la} = $lo;
-    }
-    return %locale;
-}
-
-
 sub ReadProfilesInfo {
     my ($self) = @_;
 

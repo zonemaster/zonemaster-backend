@@ -10,7 +10,7 @@ use Zonemaster::Backend::Config;
 use Zonemaster::Backend::DB::MySQL;
 
 my $config = Zonemaster::Backend::Config->load_config();
-if ( $config->BackendDBType() ne 'MySQL' ) {
+if ( $config->DB_engine ne 'MySQL' ) {
     die "The configuration file does not contain the MySQL backend";
 }
 my $dbh = Zonemaster::Backend::DB::MySQL->new( { config => $config } )->dbh;

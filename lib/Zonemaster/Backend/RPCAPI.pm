@@ -50,7 +50,7 @@ sub new {
     if ( $params->{dbtype} ) {
         $dbtype = $self->{config}->check_db($params->{dbtype});
     } else {
-        $dbtype = $self->{config}->BackendDBType();
+        $dbtype = $self->{config}->DB_engine;
     }
 
     $self->_init_db($dbtype);

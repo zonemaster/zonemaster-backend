@@ -300,10 +300,6 @@ sub check_db {
     }
 }
 
-sub BackendDBType {
-    my ($self) = @_;
-    return $self->DB_engine;
-}
 
 =head2 MYSQL_database
 
@@ -453,6 +449,13 @@ sub ListLanguageTags {
     }
     return @langtags;
 }
+
+
+=head2 DB_engine
+
+Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
+
+Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 
 
 =head2 DB_polling_interval
@@ -612,14 +615,6 @@ Returns a normalized string based on the supported databases.
 
 Dies if the value is not one of SQLite, PostgreSQL or MySQL.
 
-=head2 BackendDBType
-
-Returns a normalized string based on the DB.engine value in the config.
-
-=head3 EXCEPTION
-
-Dies if the value of DB.engine is unrecognized.
-
 =head2 new_DB
 
 Create a new database adapter object according to configuration.
@@ -629,7 +624,7 @@ The adapter connects to the database before it is returned.
 =head3 INPUT
 
 The database adapter class is selected based on the return value of
-BackendDBType().
+L<DB_engine>.
 The database adapter class constructor is called without arguments and is
 expected to configure itself according to available global configuration.
 
@@ -655,7 +650,7 @@ sub new_DB {
     my ($self) = @_;
 
     # Get DB type from config
-    my $dbtype = $self->BackendDBType();
+    my $dbtype = $self->DB_engine;
     if (!defined $dbtype) {
         die "Unrecognized DB.engine in backend config";
     }

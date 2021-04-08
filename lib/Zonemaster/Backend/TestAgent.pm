@@ -32,7 +32,7 @@ sub new {
         $dbtype = $self->{config}->check_db($params->{dbtype});
     }
     else {
-        $dbtype = $self->{config}->BackendDBType();
+        $dbtype = $self->{config}->DB_engine;
     }
 
     my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;

@@ -169,6 +169,8 @@ The value of the `locale` key is a space separated list of
 `locale tags` where each tag must match the regular expression
 `/^[a-z]{2}_[A-Z]{2}$/`.
 
+It is an error to repeat the same `locale tag`.
+
 If the `locale` key is empty or absent, the `locale tag` value
 "en_US" is set by default.
 
@@ -224,8 +226,6 @@ The following `language tags` are generated:
 * nb_NO
 * sv
 * sv_SE
-
-It is an error to repeat the same `locale tag`.
 
 Setting in the default configuration file:
 

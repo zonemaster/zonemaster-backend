@@ -412,9 +412,9 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 
 =head3 RETURNS
 
-A scalar value of the number of minutes old the previous test with the same
+A scalar value of the number of seconds old the previous test with the same
 parameters can be when it is reused instead of starting a new test (default
-10). Note that it returns in minutes, whereas the input is in seconds.
+600).
 
 =cut
 
@@ -423,7 +423,6 @@ sub age_reuse_previous_test {
     my $default = 600; # in seconds
     my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test', $default );
     $val = ($val > 0) ? $val : 0;
-    $val = int ( ($val / 60) + 0.5); # in minutes
     return $val;
 }
 

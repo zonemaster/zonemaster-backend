@@ -463,25 +463,11 @@ Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
 
 
-=head2 MaxZonemasterExecutionTime
+=head2 ZONEMASTER_max_zonemaster_execution_time
 
-=head3 INPUT
+Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
 
-'max_zonemaster_execution_time' from [ZONEMASTER] section in ini file. See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
-
-=head3 RETURNS
-
-Integer (number of seconds).
-
-=cut
-
-sub MaxZonemasterExecutionTime {
-    my ($self) = @_;
-
-    return $self->ZONEMASTER_max_zonemaster_execution_time;
-}
-
+Returns an integer (number of seconds).
 
 
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
@@ -500,44 +486,20 @@ L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster
 Returns an integer.
 
 
-=head2 lock_on_queue
+=head2 ZONEMASTER_lock_on_queue
 
-=head3 INPUT
+Get the value of
+L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
 
-'lock_on_queue' from [ZONEMASTER] section in ini file. See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
-
-=head3 RETURNS
-
-Integer.
-
-=cut
-
-sub lock_on_queue {
-    my ($self) = @_;
-
-    return $self->ZONEMASTER_lock_on_queue;
-}
+Returns an integer.
 
 
-=head2 maximal_number_of_retries
+=head2 ZONEMASTER_maximal_number_of_retries
 
-=head3 INPUT
+Get the value of
+L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
 
-'maximal_number_of_retries' from [ZONEMASTER] section in ini file. See
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
-
-=head3 RETURNS
-
-A scalar value of the number of retries.
-
-=cut
-
-sub maximal_number_of_retries {
-    my ($self) = @_;
-
-    return $self->ZONEMASTER_maximal_number_of_retries;
-}
+Returns an integer.
 
 
 =head2 ZONEMASTER_age_reuse_previous_test
@@ -643,7 +605,7 @@ The values of the following attributes affect the construction of the returned o
 
 =over
 
-=item MaxZonemasterExecutionTime
+=item ZONEMASTER_max_zonemaster_execution_time
 
 =item ZONEMASTER_number_of_processes_for_batch_testing
 
@@ -662,7 +624,7 @@ sub new_PM {
 
     my $maximum_processes = $self->ZONEMASTER_number_of_processes_for_frontend_testing + $self->ZONEMASTER_number_of_processes_for_batch_testing;
 
-    my $timeout = $self->MaxZonemasterExecutionTime();
+    my $timeout = $self->ZONEMASTER_max_zonemaster_execution_time;
 
     my %times;
 

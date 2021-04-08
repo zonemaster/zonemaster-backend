@@ -56,7 +56,7 @@ sub get_test_request {
     
     
     my ( $id, $hash_id );
-    my $lock_on_queue = $self->config->lock_on_queue();
+    my $lock_on_queue = $self->config->ZONEMASTER_lock_on_queue;
     if ( defined $lock_on_queue ) {
         ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $lock_on_queue );
     }
@@ -107,7 +107,7 @@ sub process_unfinished_tests {
     my $sth1 = $self->select_unfinished_tests();
         
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
+        if ( $h->{nb_retries} < $self->config->ZONEMASTER_maximal_number_of_retries ) {
             $self->schedule_for_retry($h->{hash_id});
         }
         else {

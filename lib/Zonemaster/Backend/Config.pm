@@ -100,6 +100,8 @@ sub parse {
     my ( $class, $text ) = @_;
 
     my $obj = bless( {}, $class );
+    $obj->{_public_profiles}  = {};
+    $obj->{_private_profiles} = {};
 
     my $ini = Config::IniFiles->new( -file => \$text )
       or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
@@ -132,6 +134,7 @@ sub parse {
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
+    $obj->_add_public_profile( 'default', undef );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -269,15 +272,14 @@ sub parse {
         }
     }
 
-    $obj->{_public_profiles} = {
-        default => undef,
-    };
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
-        $obj->{_public_profiles}{lc $name} = $get_and_clear->( 'PUBLIC PROFILES', $name );
+        my $path = $get_and_clear->( 'PUBLIC PROFILES', $name );
+        $obj->_add_public_profile( $name, $path );
     }
-    $obj->{_private_profiles} = {};
+
     for my $name ( $ini->Parameters( 'PRIVATE PROFILES' ) ) {
-        $obj->{_private_profiles}{lc $name} = $get_and_clear->( 'PRIVATE PROFILES', $name );
+        my $path = $get_and_clear->( 'PRIVATE PROFILES', $name );
+        $obj->_add_private_profile( $name, $path );
     }
 
     # Check required propertys (part 2/2)
@@ -486,6 +488,25 @@ E.g.:
     )
 
 
+=head2 PUBLIC_PROFILES
+
+Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+
+Returns a hash mapping profile names to profile paths.
+The profile names are normalized to lowercase.
+Profile paths are either strings or C<undef>.
+C<undef> means that the Zonemaster Engine default profile should be used.
+
+
+=head2 PRIVATE_PROFILES
+
+Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+
+Returns a hash mapping profile names to profile paths.
+The profile names are normalized to lowercase.
+Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
+
+
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
@@ -548,6 +569,8 @@ sub POSTGRESQL_password                                 { return $_[0]->{_POSTGR
 sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
 sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
 sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
+sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
+sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
 sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
@@ -738,6 +761,24 @@ sub _reset_LANGUAGE_locale {
 
     delete $self->{_LANGUAGE_locale};
 
+    return;
+}
+
+sub _add_public_profile {
+    my ( $self, $name, $path ) = @_;
+
+    $name = lc $name;
+
+    $self->{_public_profiles}{$name} = $path;
+    return;
+}
+
+sub _add_private_profile {
+    my ( $self, $name, $path ) = @_;
+
+    $name = lc $name;
+
+    $self->{_private_profiles}{$name} = $path;
     return;
 }
 

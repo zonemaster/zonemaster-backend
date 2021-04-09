@@ -31,7 +31,7 @@ sub BUILD {
     my ( $self ) = @_;
 
     if ( !defined $self->dbh ) {
-        my $file = $self->config->SQLITE_file;
+        my $file = $self->config->SQLITE_database_file;
 
         $log->notice( "Opening SQLite: file=$file" ) if $log->is_notice;
         my $dbh = DBI->connect(

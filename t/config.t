@@ -112,8 +112,7 @@ subtest 'Everything but NoWarnings' => sub {
             [DB]
             engine = Excel
         };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $config->BackendDBType;
+        Zonemaster::Backend::Config->parse( $text );
     }
     qr/DB\.engine.*Excel/, 'die: Invalid DB.engine value';
 
@@ -128,8 +127,7 @@ subtest 'Everything but NoWarnings' => sub {
             [LANGUAGE]
             locale = English
         };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $config->Language_Locale_hash;
+        Zonemaster::Backend::Config->parse( $text );
     }
     qr/LANGUAGE\.locale.*English/, 'die: Invalid locale_tag in LANGUAGE.locale';
 
@@ -144,8 +142,7 @@ subtest 'Everything but NoWarnings' => sub {
             [LANGUAGE]
             locale = en_US en_US
         };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $config->Language_Locale_hash;
+        Zonemaster::Backend::Config->parse( $text );
     }
     qr/LANGUAGE\.locale.*en_US/, 'die: Repeated locale_tag in LANGUAGE.locale';
 };

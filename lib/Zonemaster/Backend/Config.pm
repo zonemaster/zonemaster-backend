@@ -59,6 +59,8 @@ file.
         }
     );
 
+Throws an exception if the given configuration file contains errors.
+
 =cut
 
 sub parse {
@@ -66,20 +68,111 @@ sub parse {
 
     my $obj = bless( {}, $class );
 
-    $obj->{cfg} = Config::IniFiles->new( -file => \$text )
+    my $ini = Config::IniFiles->new( -file => \$text )
       or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
 
-    if ( defined $obj->{cfg}->val( 'DB', 'database_host' ) ) {
+    # Validate, normalize, and apply default values
+    {
+        my $engine = $ini->val( 'DB', 'engine' );
+        eval {
+            $engine = $obj->check_db($engine);
+        };
+        if ($@) {
+            die "Unknown config value DB.engine: $engine\n";
+        }
+        $obj->{_DB_engine} = $engine;
+    }
+
+    $obj->{_DB_polling_interval}                                 = $ini->val( 'DB',         'polling_interval',                         undef );
+    $obj->{_MYSQL_host}                                          = $ini->val( 'MYSQL',      'host',                                     undef );
+    $obj->{_MYSQL_user}                                          = $ini->val( 'MYSQL',      'user',                                     undef );
+    $obj->{_MYSQL_password}                                      = $ini->val( 'MYSQL',      'password',                                 undef );
+    $obj->{_MYSQL_database}                                      = $ini->val( 'MYSQL',      'database',                                 undef );
+    $obj->{_POSTGRESQL_host}                                     = $ini->val( 'POSTGRESQL', 'host',                                     undef );
+    $obj->{_POSTGRESQL_user}                                     = $ini->val( 'POSTGRESQL', 'user',                                     undef );
+    $obj->{_POSTGRESQL_password}                                 = $ini->val( 'POSTGRESQL', 'password',                                 undef );
+    $obj->{_POSTGRESQL_database}                                 = $ini->val( 'POSTGRESQL', 'database',                                 undef );
+    $obj->{_SQLITE_database_file}                                = $ini->val( 'SQLITE',     'database_file',                            undef );
+    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = $ini->val( 'ZONEMASTER', 'max_zonemaster_execution_time',            '600' );
+    $obj->{_ZONEMASTER_maximal_number_of_retries}                = $ini->val( 'ZONEMASTER', 'maximal_number_of_retries',                '0' );
+    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $ini->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing', undef );
+    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $ini->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing',    undef );
+    $obj->{_ZONEMASTER_lock_on_queue}                            = $ini->val( 'ZONEMASTER', 'lock_on_queue',                            undef );
+    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = $ini->val( 'ZONEMASTER', 'age_reuse_previous_test',                  '600' );
+
+    $obj->{_LANGUAGE_locale} = {};
+    for my $locale_tag ( split /\s+/, $ini->val( 'LANGUAGE', 'locale' ) || 'en_US' ) {
+        $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
+          or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+
+        !exists $obj->{_LANGUAGE_locale}{$locale_tag}
+          or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
+
+        $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+    }
+
+    $obj->{_public_profiles} = {
+        default => '',
+    };
+    for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
+        $obj->{_public_profiles}{lc $name} = $ini->val( 'PUBLIC PROFILES', $name );
+    }
+    $obj->{_private_profiles} = {};
+    for my $name ( $ini->Parameters( 'PRIVATE PROFILES' ) ) {
+        $obj->{_private_profiles}{lc $name} = $ini->val( 'PRIVATE PROFILES', $name );
+    }
+
+    # Handle deprecated properties and precedence
+    if ( defined( my $value = $ini->val( 'DB', 'database_host' ) ) ) {
         $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
+
+        $obj->{_MYSQL_host} = $value
+          if !defined $obj->MYSQL_host;
+
+        $obj->{_POSTGRESQL_host} = $value
+          if !defined $obj->POSTGRESQL_host;
     }
-    if ( defined $obj->{cfg}->val( 'DB', 'user' ) ) {
+    if ( defined( my $value = $ini->val( 'DB', 'user' ) ) ) {
         $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
+
+        $obj->{_MYSQL_user} = $value
+          if !defined $obj->MYSQL_user;
+
+        $obj->{_POSTGRESQL_user} = $value
+          if !defined $obj->POSTGRESQL_user;
     }
-    if ( defined $obj->{cfg}->val( 'DB', 'password' ) ) {
+    if ( defined( my $value = $ini->val( 'DB', 'password' ) ) ) {
         $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
+
+        $obj->{_MYSQL_password} = $value
+          if !defined $obj->MYSQL_password;
+
+        $obj->{_POSTGRESQL_password} = $value
+          if !defined $obj->POSTGRESQL_password;
     }
-    if ( defined $obj->{cfg}->val( 'DB', 'database_name' ) ) {
+    if ( defined( my $value = $ini->val( 'DB', 'database_name' ) ) ) {
         $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
+
+        $obj->{_MYSQL_database} = $value
+          if !defined $obj->MYSQL_database;
+
+        $obj->{_POSTGRESQL_database} = $value
+          if !defined $obj->POSTGRESQL_database;
+
+        $obj->{_SQLITE_database_file} = $value
+          if !defined $obj->SQLITE_database_file;
+    }
+    if ( defined( my $value = $ini->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
+        $log->warning( "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead." );
+
+        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value
+          if !defined $obj->NumberOfProcessesForFrontendTesting;
+    }
+    if ( defined( my $value = $ini->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
+        $log->warning( "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead." );
+
+        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value
+          if !defined $obj->NumberOfProcessesForBatchTesting;
     }
 
     return $obj;
@@ -105,14 +198,7 @@ sub check_db {
 sub BackendDBType {
     my ($self) = @_;
 
-    my $engine = $self->{cfg}->val( 'DB', 'engine' );
-    eval {
-        $engine = $self->check_db($engine);
-    };
-    if ($@) {
-        die "Unknown config value DB.engine: $engine\n";
-    }
-    return $engine;
+    return $self->{_DB_engine};
 }
 
 =head2 MYSQL_database
@@ -126,7 +212,7 @@ property if it is unspecified.
 sub MYSQL_database {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'MYSQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
+    return $self->{_MYSQL_database};
 }
 
 =head2 MySQL_host
@@ -140,7 +226,7 @@ property if it is unspecified.
 sub MYSQL_host {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'MYSQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
+    return $self->{_MYSQL_host};
 }
 
 =head2 MYSQL_password
@@ -154,7 +240,7 @@ property if it is unspecified.
 sub MYSQL_password {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'MYSQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
+    return $self->{_MYSQL_password};
 }
 
 =head2 MYSQL_user
@@ -168,7 +254,7 @@ property if it is unspecified.
 sub MYSQL_user {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'MYSQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
+    return $self->{_MYSQL_user};
 }
 
 =head2 POSTGRESQL_database
@@ -182,7 +268,7 @@ property if it is unspecified.
 sub POSTGRESQL_database {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'POSTGRESQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
+    return $self->{_POSTGRESQL_database};
 }
 
 =head2 POSTGRESQL_host
@@ -196,7 +282,7 @@ property if it is unspecified.
 sub POSTGRESQL_host {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'POSTGRESQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
+    return $self->{_POSTGRESQL_host};
 }
 
 =head2 POSTGRESQL_password
@@ -210,7 +296,7 @@ property if it is unspecified.
 sub POSTGRESQL_password {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'POSTGRESQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
+    return $self->{_POSTGRESQL_password};
 }
 
 =head2 POSTGRESQL_user
@@ -224,7 +310,7 @@ property if it is unspecified.
 sub POSTGRESQL_user {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'POSTGRESQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
+    return $self->{_POSTGRESQL_user};
 }
 
 =head2 SQLITE_database_file
@@ -238,7 +324,7 @@ property if it is unspecified.
 sub SQLITE_database_file {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'SQLITE', 'database_file' ) // $self->{cfg}->val( 'DB', 'database_name' );
+    return $self->{_SQLITE_database_file};
 }
 
 =head2 Language_Locale_hash
@@ -263,13 +349,9 @@ sub Language_Locale_hash {
     # There is one special value to capture ambiguous (and therefore
     # not permitted) translation language tags.
     my ($self) = @_;
-    my $data = $self->{cfg}->val( 'LANGUAGE', 'locale' );
-    $data = 'en_US' unless $data;
-    my @localetags = split (/\s+/,$data);
+    my @localetags = keys %{ $self->{_LANGUAGE_locale} };
     my %locale;
     foreach my $la (@localetags) {
-        die "Incorrect locale tag in LANGUAGE.locale: $la\n" unless $la =~ /^[a-z]{2}_[A-Z]{2}$/;
-        die "Repeated locale tag in LANGUAGE.locale: $la\n" if $locale{$la};
         (my $a) = split (/_/,$la); # $a is the language code only
         my $lo = "$la.UTF-8";
         # Set special value if the same language code is used more than once
@@ -314,7 +396,7 @@ sub ListLanguageTags {
 sub PollingInterval {
     my ($self) = @_;
 
-    return $self->{cfg}->val( 'DB', 'polling_interval' );
+    return $self->{_DB_polling_interval};
 }
 
 
@@ -334,9 +416,7 @@ Integer (number of seconds), default 600.
 sub MaxZonemasterExecutionTime {
     my ($self) = @_;
 
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'max_zonemaster_execution_time' );
-
-    return ($val)?($val):(10*60);
+    return $self->{_ZONEMASTER_max_zonemaster_execution_time};
 }
 
 
@@ -356,10 +436,7 @@ Positive integer.
 sub NumberOfProcessesForFrontendTesting {
     my ($self) = @_;
 
-    my $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' );
-    $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) unless ($nb);
-
-    return $nb;
+    return $self->{_ZONEMASTER_number_of_processes_for_frontend_testing};
 }
 
 
@@ -379,10 +456,7 @@ Integer.
 sub NumberOfProcessesForBatchTesting {
     my ($self) = @_;
 
-    my $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' );
-    $nb = $self->{cfg}->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) unless ($nb);
-
-    return $nb;
+    return $self->{_ZONEMASTER_number_of_processes_for_batch_testing};
 }
 
 
@@ -402,9 +476,7 @@ Integer (default 0).
 sub lock_on_queue {
     my ($self) = @_;
 
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'lock_on_queue' );
-
-    return $val;
+    return $self->{_ZONEMASTER_lock_on_queue};
 }
 
 
@@ -427,9 +499,7 @@ A scalar value of the number of retries (default 0).
 sub maximal_number_of_retries {
     my ($self) = @_;
 
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'maximal_number_of_retries' );
-
-    return ($val)?($val):(0);
+    return $self->{_ZONEMASTER_maximal_number_of_retries};
 }
 
 
@@ -450,10 +520,8 @@ parameters can be when it is reused instead of starting a new test (default
 
 sub age_reuse_previous_test {
     my ($self) = @_;
-    my $default = 600; # in seconds
-    my $val = $self->{cfg}->val( 'ZONEMASTER', 'age_reuse_previous_test', $default );
-    $val = ($val > 0) ? $val : 0;
-    return $val;
+
+    return $self->{_ZONEMASTER_age_reuse_previous_test};
 }
 
 
@@ -461,16 +529,14 @@ sub ReadProfilesInfo {
     my ($self) = @_;
 
     my $profiles;
-    $profiles->{'default'}->{type} = 'public';
-    $profiles->{'default'}->{profile_file_name} = '';
-    foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
-        $profiles->{lc($public_profile)}->{type} = 'public';
-        $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
+    foreach my $public_profile ( keys %{ $self->{_public_profiles} } ) {
+        $profiles->{$public_profile}->{type} = 'public';
+        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile};
     }
 
-    foreach my $private_profile ($self->{cfg}->Parameters('PRIVATE PROFILES')) {
-        $profiles->{lc($private_profile)}->{type} = 'private';
-        $profiles->{lc($private_profile)}->{profile_file_name} = $self->{cfg}->val('PRIVATE PROFILES', $private_profile);
+    foreach my $private_profile ( keys %{ $self->{_private_profiles} } ) {
+        $profiles->{$private_profile}->{type} = 'private';
+        $profiles->{$private_profile}->{profile_file_name} = $self->{_private_profiles}{$private_profile};
     }
 
     return $profiles;
@@ -479,14 +545,7 @@ sub ReadProfilesInfo {
 sub ListPublicProfiles {
     my ($self) = @_;
 
-    my $profiles;
-    $profiles->{'default'}->{type} = 'public';
-    foreach my $public_profile ($self->{cfg}->Parameters('PUBLIC PROFILES')) {
-        $profiles->{lc($public_profile)}->{type} = 'public';
-        $profiles->{lc($public_profile)}->{profile_file_name} = $self->{cfg}->val('PUBLIC PROFILES', $public_profile);
-    }
-
-    return keys %$profiles;
+    return keys %{ $self->{_public_profiles} };
 }
 
 =head2 check_db

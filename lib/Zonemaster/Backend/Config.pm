@@ -48,7 +48,7 @@ sub load_config {
         $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
     }
     if ( defined $self->{cfg}->val( 'DB', 'database_name' ) ) {
-        $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.file instead." );
+        $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
     }
 
     return $self;
@@ -196,18 +196,18 @@ sub POSTGRESQL_user {
     return $self->{cfg}->val( 'POSTGRESQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
 }
 
-=head2 SQLITE_file
+=head2 SQLITE_database_file
 
-Returns the L<SQLITE.file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#file>
+Returns the L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>
 property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
 property if it is unspecified.
 
 =cut
 
-sub SQLITE_file {
+sub SQLITE_database_file {
     my ( $self ) = @_;
 
-    return $self->{cfg}->val( 'SQLITE', 'file' ) // $self->{cfg}->val( 'DB', 'database_name' );
+    return $self->{cfg}->val( 'SQLITE', 'database_file' ) // $self->{cfg}->val( 'DB', 'database_name' );
 }
 
 =head2 Language_Locale_hash

@@ -121,11 +121,11 @@ If this property is unspecified, the value of [DB.database_name] is used instead
 
 ## SQLITE section
 
-Available keys : `file`.
+Available keys : `database_file`.
 
-### file
+### database_file
 
-The full path to the SQLite database file.
+The full path to the SQLite main database file.
 
 If this property is unspecified, the value of [DB.database_name] is used instead.
 

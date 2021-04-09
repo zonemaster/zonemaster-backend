@@ -583,6 +583,7 @@ path:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:

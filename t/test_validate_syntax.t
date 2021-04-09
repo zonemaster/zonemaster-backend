@@ -40,55 +40,95 @@ $frontend_params->{nameservers} = [    # list of the namaserves up to 32
 	{ ns => 'ns2.nic.fr', ip => '192.134.4.1' },
 ];
 
-# domain present?
-$frontend_params->{domain} = 'afnic.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'domain present' );
+subtest 'domain present' => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => 'afnic.fr'
+        }
+    );
 
-# idn
-$frontend_params->{domain} = 'é';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'idn domain=[é]' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $res->{status}, 'ok' );
+};
 
-# idn
-$frontend_params->{domain} = 'éé';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'idn domain=[éé]' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+subtest encode_utf8( 'idn domain=[é]' ) => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => 'é'
+        }
+    );
 
-# 253 characters long domain without dot
-$frontend_params->{domain} =
-'123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com';
-ok(
-	$engine->validate_syntax( $frontend_params )->{status} eq 'ok',
-	encode_utf8( '253 characters long domain without dot' )
-) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $res->{status}, 'ok' )
+        or diag( $res->{message} );
+};
 
-# 254 characters long domain with trailing dot
-$frontend_params->{domain} =
-'123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.';
-ok(
-	$engine->validate_syntax( $frontend_params )->{status} eq 'ok',
-	encode_utf8( '254 characters long domain with trailing dot' )
-) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+subtest encode_utf8( 'idn domain=[éé]' ) => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => 'éé'
+        }
+    );
 
-# 254 characters long domain without trailing
-$frontend_params->{domain} =
-'123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club';
-ok(
-	$engine->validate_syntax( $frontend_params )->{status} eq 'nok',
-	encode_utf8( '254 characters long domain without trailing dot' )
-) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $res->{status}, 'ok' )
+        or diag( $res->{message} );
+};
 
-# 63 characters long domain label
-$frontend_params->{domain} = '012345678901234567890123456789012345678901234567890123456789-63.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok',
-	encode_utf8( '63 characters long domain label' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+subtest '253 characters long domain without dot' => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com'
+        }
+    );
 
-# 64 characters long domain label
-$frontend_params->{domain} = '012345678901234567890123456789012345678901234567890123456789--64.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
-	encode_utf8( '64 characters long domain label' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is(
+        $res->{status}, 'ok'
+    ) or diag( $res->{message} );
+};
+
+subtest '254 characters long domain with trailing dot' => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.'
+        }
+    );
+
+    is(
+        $res->{status}, 'ok'
+    ) or diag( $res->{message} );
+};
+
+subtest '254 characters long domain without trailing dot' => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club'
+        }
+    );
+
+    is(
+        $res->{status}, 'nok'
+    ) or diag( $res->{message} );
+};
+
+subtest '63 characters long domain label' => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789-63.fr'
+        }
+    );
+
+    is( $res->{status}, 'ok' )
+        or diag( $res->{message} );
+};
+
+subtest '64 characters long domain label' => sub {
+    my $res = $engine->validate_syntax(
+        {
+            %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789--64.fr'
+        }
+    );
+
+    is( $res->{status}, 'nok')
+        or diag( $res->{message} );
+};
 
 #TEST NS
 $frontend_params->{domain} = 'afnic.fr';
@@ -96,51 +136,51 @@ $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
 
 # domain present?
 $frontend_params->{nameservers}->[0]->{ns} = 'afnic.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', 'domain present' );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', 'domain present' );
 
 # idn
 $frontend_params->{nameservers}->[0]->{ns} = 'é';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'idn domain=[é]' ) )
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[é]' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # idn
 $frontend_params->{nameservers}->[0]->{ns} = 'éé';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'idn domain=[éé]' ) )
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[éé]' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # 253 characters long domain without dot
 $frontend_params->{nameservers}->[0]->{ns} =
 '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com';
-ok(
-	$engine->validate_syntax( $frontend_params )->{status} eq 'ok',
+is(
+	$engine->validate_syntax( $frontend_params )->{status}, 'ok',
 	encode_utf8( '253 characters long domain without dot' )
 ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # 254 characters long domain with trailing dot
 $frontend_params->{nameservers}->[0]->{ns} =
 '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.';
-ok(
-	$engine->validate_syntax( $frontend_params )->{status} eq 'ok',
+is(
+	$engine->validate_syntax( $frontend_params )->{status}, 'ok',
 	encode_utf8( '254 characters long domain with trailing dot' )
 ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # 254 characters long domain without trailing
 $frontend_params->{nameservers}->[0]->{ns} =
 '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club';
-ok(
-	$engine->validate_syntax( $frontend_params )->{status} eq 'nok',
+is(
+	$engine->validate_syntax( $frontend_params )->{status}, 'nok',
 	encode_utf8( '254 characters long domain without trailing dot' )
 ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # 63 characters long domain label
 $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-63.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok',
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok',
 	encode_utf8( '63 characters long domain label' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # 64 characters long domain label
 $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-64-.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
+is( $engine->validate_syntax( $frontend_params )->{status}, 'nok',
 	encode_utf8( '64 characters long domain label' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
@@ -148,7 +188,7 @@ ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok',
 delete( $frontend_params->{nameservers} );
 
 $frontend_params->{domain} = 'afnic.fr';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'delegated domain exists' ) )
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'delegated domain exists' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # IP ADDRESS FORMAT
@@ -156,20 +196,20 @@ $frontend_params->{domain} = 'afnic.fr';
 $frontend_params->{nameservers}->[0]->{ns} = 'ns1.nic.fr';
 
 $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'Valid IPV4' ) )
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV4' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4444';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid IPV4' ) )
+is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV4' ) )
 	or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 $frontend_params->{nameservers}->[0]->{ip} = 'fe80::6ef0:49ff:fe7b:e4bb';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'Valid IPV6' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV6' ) )
+    or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 $frontend_params->{nameservers}->[0]->{ip} = 'fe80::6ef0:49ff:fe7b:e4bbffffff';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid IPV6' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV6' ) )
+    or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 # DS
 $frontend_params->{domain}                 = 'afnic.fr';
@@ -178,22 +218,22 @@ $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
 
 $frontend_params->{ds_info}->[0]->{algorithm} = 1;
 $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'ok', encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
+    or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 $frontend_params->{ds_info}->[0]->{algorithm} = 'a';
 $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid Algorithm Type' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid Algorithm Type' ) )
+    or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 $frontend_params->{ds_info}->[0]->{algorithm} = 1;
 $frontend_params->{ds_info}->[0]->{digest}    = '01234567890123456789012345678901234567890';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid digest length' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid digest length' ) )
+    or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 $frontend_params->{ds_info}->[0]->{algorithm} = 1;
 $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
-ok( $engine->validate_syntax( $frontend_params )->{status} eq 'nok', encode_utf8( 'Invalid digest format' ) )
-	or diag( $engine->validate_syntax( $frontend_params )->{message} );
+is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid digest format' ) )
+    or diag( $engine->validate_syntax( $frontend_params )->{message} );
 
 done_testing();

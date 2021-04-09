@@ -196,65 +196,55 @@ sub get_data_from_parent_zone {
 
 
 sub _check_domain {
-    my ( $self, $dn, $type ) = @_;
+    my ( $self, $domain, $type ) = @_;
 
-    my $result = eval {
-        if ( !defined( $dn ) ) {
-            return ( $dn, { status => 'nok', message => encode_entities( "$type required" ) } );
-        }
+    if ( !defined( $domain ) ) {
+        return ( $domain, { status => 'nok', message => encode_entities( "$type required" ) } );
+    }
 
-        if ( $dn =~ m/[^[:ascii:]]+/ ) {
-            if ( Zonemaster::LDNS::has_idn() ) {
-                eval { $dn = Zonemaster::LDNS::to_idn( $dn ); };
-                if ( $@ ) {
-                    return (
-                        $dn,
-                        {
-                            status  => 'nok',
-                            message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
-                        }
-                    );
-                }
-            }
-            else {
+    if ( $domain =~ m/[^[:ascii:]]+/ ) {
+        if ( Zonemaster::LDNS::has_idn() ) {
+            eval { $domain = Zonemaster::LDNS::to_idn( $domain ); };
+            if ( $@ ) {
                 return (
-                    $dn,
+                    $domain,
                     {
-                        status => 'nok',
-                        message =>
-                        encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
+                        status  => 'nok',
+                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
                     }
                 );
             }
         }
-
-        if( $dn !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+        else {
             return (
-                $dn,
+                $domain,
                 {
-                status  => 'nok',
-                message => encode_entities( "The domain name character(s) not supported")
+                    status  => 'nok',
+                    message => encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
                 }
             );
         }
-
-    };
-    if ($@) {
-        handle_exception('_check_domain', $@, '007');
     }
-    elsif ($result) {
-        return $result;
+
+    if ( $domain !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+        return (
+            $domain,
+            {
+                status  => 'nok',
+                message => encode_entities( "The domain name character(s) not supported" )
+            }
+        );
     }
 
     my %levels = Zonemaster::Engine::Logger::Entry::levels();
     my @res;
-    @res = Zonemaster::Engine::Test::Basic->basic00($dn);
+    @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
     @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
-    if (@res != 0) {
-        return ( $dn, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
+    if ( @res != 0 ) {
+        return ( $domain, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
     }
 
-    return ( $dn, { status => 'ok', message => 'Syntax ok' } );
+    return ( $domain, { status => 'ok', message => 'Syntax ok' } );
 }
 
 sub validate_syntax {
@@ -309,7 +299,7 @@ sub validate_syntax {
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 
-        my ( $dn, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );
+        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );
 
         return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
 

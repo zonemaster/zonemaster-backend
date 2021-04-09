@@ -4,6 +4,7 @@ use utf8;
 
 use Test::More tests => 2;
 use Test::NoWarnings;
+use Test::Differences;
 use Test::Exception;
 use Log::Any::Test;    # Must come before use Log::Any
 
@@ -39,6 +40,9 @@ subtest 'Everything but NoWarnings' => sub {
             [SQLITE]
             database_file = /var/db/zonemaster.sqlite
 
+            [LANGUAGE]
+            locale = sv_FI
+
             [ZONEMASTER]
             max_zonemaster_execution_time            = 1200
             number_of_processes_for_frontend_testing = 30
@@ -49,25 +53,26 @@ subtest 'Everything but NoWarnings' => sub {
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
         isa_ok $config, 'Zonemaster::Backend::Config', 'parse() return value';
-        is $config->DB_engine,                                           'SQLite',                    'set: DB.engine';
-        is $config->DB_polling_interval,                                 1.5,                         'set: DB.polling_interval';
-        is $config->MYSQL_host,                                          'mysql-host',                'set: MYSQL.host';
-        is $config->MYSQL_port,                                          3456,                        'set: MYSQL.port';
-        is $config->MYSQL_user,                                          'mysql_user',                'set: MYSQL.user';
-        is $config->MYSQL_password,                                      'mysql_password',            'set: MYSQL.password';
-        is $config->MYSQL_database,                                      'mysql_database',            'set: MYSQL.database';
-        is $config->POSTGRESQL_host,                                     'postgresql-host',           'set: POSTGRESQL.host';
-        is $config->POSTGRESQL_port,                                     6543,                        'set: POSTGRESQL.port';
-        is $config->POSTGRESQL_user,                                     'postgresql_user',           'set: POSTGRESQL.user';
-        is $config->POSTGRESQL_password,                                 'postgresql_password',       'set: POSTGRESQL.password';
-        is $config->POSTGRESQL_database,                                 'postgresql_database',       'set: POSTGRESQL.database';
-        is $config->SQLITE_database_file,                                '/var/db/zonemaster.sqlite', 'set: SQLITE.database_file';
-        is $config->ZONEMASTER_max_zonemaster_execution_time,            1200,                        'set: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->ZONEMASTER_maximal_number_of_retries,                2,                           'set: ZONEMASTER.maximal_number_of_retries';
-        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 30,                          'set: ZONEMASTER.number_of_processes_for_frontend_testing';
-        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    40,                          'set: ZONEMASTER.number_of_processes_for_batch_testing';
-        is $config->ZONEMASTER_lock_on_queue,                            1,                           'set: ZONEMASTER.lock_on_queue';
-        is $config->ZONEMASTER_age_reuse_previous_test,                  800,                         'set: ZONEMASTER.age_reuse_previous_test';
+        is $config->DB_engine,            'SQLite',                    'set: DB.engine';
+        is $config->DB_polling_interval,  1.5,                         'set: DB.polling_interval';
+        is $config->MYSQL_host,           'mysql-host',                'set: MYSQL.host';
+        is $config->MYSQL_port,           3456,                        'set: MYSQL.port';
+        is $config->MYSQL_user,           'mysql_user',                'set: MYSQL.user';
+        is $config->MYSQL_password,       'mysql_password',            'set: MYSQL.password';
+        is $config->MYSQL_database,       'mysql_database',            'set: MYSQL.database';
+        is $config->POSTGRESQL_host,      'postgresql-host',           'set: POSTGRESQL.host';
+        is $config->POSTGRESQL_port,      6543,                        'set: POSTGRESQL.port';
+        is $config->POSTGRESQL_user,      'postgresql_user',           'set: POSTGRESQL.user';
+        is $config->POSTGRESQL_password,  'postgresql_password',       'set: POSTGRESQL.password';
+        is $config->POSTGRESQL_database,  'postgresql_database',       'set: POSTGRESQL.database';
+        is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'set: SQLITE.database_file';
+        eq_or_diff { $config->LANGUAGE_locale }, { sv => { sv_FI => 1 } }, 'set: LANGUAGE.locale';
+        is $config->ZONEMASTER_max_zonemaster_execution_time,            1200, 'set: ZONEMASTER.max_zonemaster_execution_time';
+        is $config->ZONEMASTER_maximal_number_of_retries,                2,    'set: ZONEMASTER.maximal_number_of_retries';
+        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 30,   'set: ZONEMASTER.number_of_processes_for_frontend_testing';
+        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    40,   'set: ZONEMASTER.number_of_processes_for_batch_testing';
+        is $config->ZONEMASTER_lock_on_queue,                            1,    'set: ZONEMASTER.lock_on_queue';
+        is $config->ZONEMASTER_age_reuse_previous_test,                  800,  'set: ZONEMASTER.age_reuse_previous_test';
     };
 
     lives_and {
@@ -80,14 +85,15 @@ subtest 'Everything but NoWarnings' => sub {
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
         cmp_ok abs( $config->DB_polling_interval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
-        is $config->ZONEMASTER_max_zonemaster_execution_time,            600,  'default: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->ZONEMASTER_maximal_number_of_retries,                0,    'default: ZONEMASTER.maximal_number_of_retries';
-        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,   'default: ZONEMASTER.number_of_processes_for_frontend_testing';
-        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,   'default: ZONEMASTER.number_of_processes_for_batch_testing';
-        is $config->ZONEMASTER_lock_on_queue,                            0,    'default: ZONEMASTER.lock_on_queue';
-        is $config->ZONEMASTER_age_reuse_previous_test,                  600,  'default: ZONEMASTER.age_reuse_previous_test';
-        is $config->MYSQL_port,                                          3306, 'default: MYSQL.port';
-        is $config->POSTGRESQL_port,                                     5432, 'default: POSTGRESQL.port';
+        is $config->MYSQL_port,      3306, 'default: MYSQL.port';
+        is $config->POSTGRESQL_port, 5432, 'default: POSTGRESQL.port';
+        eq_or_diff { $config->LANGUAGE_locale }, { en => { en_US => 1 } }, 'default: LANGUAGE.locale';
+        is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
+        is $config->ZONEMASTER_maximal_number_of_retries,                0,   'default: ZONEMASTER.maximal_number_of_retries';
+        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,  'default: ZONEMASTER.number_of_processes_for_frontend_testing';
+        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
+        is $config->ZONEMASTER_lock_on_queue,                            0,   'default: ZONEMASTER.lock_on_queue';
+        is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
     };
 
     lives_and {
@@ -153,6 +159,8 @@ subtest 'Everything but NoWarnings' => sub {
             engine = SQLite
             [SQLITE]
             database_file = /var/db/zonemaster.sqlite
+            [LANGUAGE]
+            locale =
             [ZONEMASTER]
             number_of_professes_for_frontend_testing = 21
             number_of_professes_for_batch_testing    = 22
@@ -160,6 +168,7 @@ subtest 'Everything but NoWarnings' => sub {
         my $config = Zonemaster::Backend::Config->parse( $text );
         $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_frontend_testing/, 'deprecated: ZONEMASTER.number_of_professes_for_frontend_testing' );
         $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_batch_testing/,    'deprecated: ZONEMASTER.number_of_professes_for_batch_testing' );
+        $log->contains_ok( qr/deprecated.*LANGUAGE\.locale/,                                     'deprecated empty LANGUAGE.locale' );
         is $config->ZONEMASTER_number_of_processes_for_frontend_testing, '21', 'fallback: ZONEMASTER.number_of_processes_for_frontend_testing';
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    '22', 'fallback: ZONEMASTER.number_of_processes_for_batch_testing';
     };

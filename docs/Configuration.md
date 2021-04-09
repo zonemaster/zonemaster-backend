@@ -51,9 +51,9 @@ The [MYSQL.host] and [POSTGRESQL.host] properties take precedence over this.
 
 ### database_name
 
-**Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLite.file] instead.
+**Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLITE.database_file] instead.
 
-The [MYSQL.database], [POSTGRESQL.database], [SQLite.file] properties take precedence
+The [MYSQL.database], [POSTGRESQL.database], [SQLITE.database_file] properties take precedence
 over this.
 
 ### polling_interval
@@ -298,7 +298,7 @@ zero minutes, then the default value (600 seconds) is used.
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile names]:                      API.md#profile-name
 [Profiles]:                           Architecture.md#profile
-[SQLite.file]:                        #file
+[SQLITE.database_file]:               #database_file
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
 

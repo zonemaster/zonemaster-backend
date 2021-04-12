@@ -97,7 +97,7 @@ sub run_zonemaster_test_with_backend_API {
     is( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ), $test_id , 'API start_domain_test -> Test inserted in the DB' );
 
     # test test_progress API
-    is( $engine->test_progress( $hash_id ), 0 , 'API test_progress -> OK');
+    is( $engine->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
 
     if ( not $ENV{ZONEMASTER_RECORD} ) {
         Zonemaster::Engine->preload_cache( $datafile );
@@ -113,7 +113,7 @@ sub run_zonemaster_test_with_backend_API {
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
-    is( $engine->test_progress( $hash_id ), 100 , 'API test_progress -> Test finished' );
+    is( $engine->test_progress( { test_id => $hash_id } ), 100 , 'API test_progress -> Test finished' );
 
     my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );
     ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );

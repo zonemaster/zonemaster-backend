@@ -17,11 +17,16 @@ if ( not $db_backend ) {
     BAIL_OUT( "Unsupported database backend: $db_backend" );
 }
 
+diag "database: $db_backend";
+
 my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
     die q{Stored data file missing} if not -r $datafile;
     Zonemaster::Engine->preload_cache( $datafile );
     Zonemaster::Engine->profile->set( q{no_network}, 1 );
+    diag "not recording";
+} else {
+    diag "recording";
 }
 
 # The configuration file should be the default

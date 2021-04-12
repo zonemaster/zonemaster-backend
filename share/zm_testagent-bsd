@@ -16,10 +16,10 @@ load_rc_config $name
 : ${zm_testagent_pidfile="/var/run/zonemaster/${name}.pid"}
 
 export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini"
-#export ZM_BACKEND_TESTAGENT_LOGLEVEL='warning'  # Set this variable to override the default log level
+#export ZM_BACKEND_TESTAGENT_LOGLEVEL='info'  # Set this variable to override the default log level
 
 command="/usr/local/bin/zonemaster_backend_testagent"
-command_args="--user=${zm_testagent_user} --group=${zm_testagent_group} --pidfile=${zm_testagent_pidfile}"
+command_args="--loglevel=${ZM_BACKEND_TESTAGENT_LOGLEVEL} --user=${zm_testagent_user} --group=${zm_testagent_group} --pidfile=${zm_testagent_pidfile}"
 pidfile="${zm_testagent_pidfile}"
 procname="/usr/local/bin/perl"
 required_files="/usr/local/etc/zonemaster/backend_config.ini"

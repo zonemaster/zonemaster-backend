@@ -55,7 +55,7 @@ isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
 if ( $db_backend eq 'SQLite' ) {
     # create a new memory SQLite database
-    ok( $engine->{db}->create_db() );
+    ok( $engine->{db}->create_db(), "$db_backend database created");
 }
 
 # add test user

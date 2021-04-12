@@ -73,5 +73,4 @@ share/zm_rpcapi-bsd
 share/zm_testagent-bsd
 t/test01.data
 t/test01.t
-t/test_DB_backend.pl
 t/test_validate_syntax.t

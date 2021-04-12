@@ -105,19 +105,14 @@ sub run_zonemaster_test_with_backend_API {
     }
 
     use_ok( 'Zonemaster::Backend::TestAgent' );
-    Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } )->run( $hash_id );
+    my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
+    isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
+
+    diag "running the agent on test $hash_id";
+    $agent->run( $hash_id );
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
-    sleep( 5 ) unless ( $ENV{ZONEMASTER_RECORD} );
-    cmp_ok( $engine->test_progress( $hash_id ), '>',  0 , 'API test_progress -> Test started');
-
-    foreach my $i ( 1 .. 12 ) {
-        sleep( 5 ) unless ( $ENV{ZONEMASTER_RECORD} );
-        my $progress = $engine->test_progress( $hash_id );
-        diag "progress: $progress" unless ( $ENV{ZONEMASTER_RECORD} );
-        last if ( $progress == 100 );
-    }
     is( $engine->test_progress( $hash_id ), 100 , 'API test_progress -> Test finished' );
 
     my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );

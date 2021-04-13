@@ -26,18 +26,47 @@ use Zonemaster::Backend::Config;
 
 local $| = 1;
 
+# Returns a Log::Any-compatible log level string, or throws an exception.
+sub get_loglevel {
+    my $value = $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL} || 'warning';
+    for my $method ( logging_methods(), logging_aliases() ) {
+        if ( $value eq $method ) {
+            return $method;
+        }
+    }
+    die "Error: Unrecognized ZM_BACKEND_RPCAPI_LOGLEVEL $value\n";
+}
+
+Log::Any::Adapter->set(
+    'Dispatch',
+    dispatcher => Log::Dispatch->new(
+        outputs => [
+            [
+                'Screen',
+                min_level => get_loglevel(),
+                stderr    => 1,
+                callbacks => sub {
+                    my %args = @_;
+                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
+                },
+            ],
+        ]
+    ),
+);
+
+my $config = Zonemaster::Backend::Config->load_config();
+
 builder {
     enable sub {
         my $app = shift;
 
         # Make sure we can connect to the database
-        Zonemaster::Backend::Config->load_config()->new_DB();
+        $config->new_DB();
 
         return $app;
     };
 };
 
-my $config = Zonemaster::Backend::Config->load_config;
 my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
 
 my $router = router {
@@ -109,34 +138,6 @@ my $router = router {
         action => "get_batch_job_result"
     };
 };
-
-# Returns a Log::Any-compatible log level string, or throws an exception.
-sub get_loglevel {
-    my $value = $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL} || 'warning';
-    for my $method ( logging_methods(), logging_aliases() ) {
-        if ( $value eq $method ) {
-            return $method;
-        }
-    }
-    die "Error: Unrecognized ZM_BACKEND_RPCAPI_LOGLEVEL $value\n";
-}
-
-Log::Any::Adapter->set(
-    'Dispatch',
-    dispatcher => Log::Dispatch->new(
-        outputs => [
-            [
-                'Screen',
-                min_level => get_loglevel(),
-                stderr    => 1,
-                callbacks => sub {
-                    my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
-                },
-            ],
-        ]
-    ),
-);
 
 my $dispatch = JSON::RPC::Dispatch->new(
     router => $router,

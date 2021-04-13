@@ -126,7 +126,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -156,7 +155,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -206,7 +204,6 @@ path:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:
@@ -338,7 +335,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -366,7 +362,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -394,7 +389,6 @@ path:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:
@@ -504,7 +498,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
-sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -560,7 +553,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
-sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -592,7 +584,7 @@ path:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/backend_config.ini
-sed -i '' '/[[:<:]]database_name[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:

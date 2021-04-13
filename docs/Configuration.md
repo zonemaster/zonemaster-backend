@@ -12,7 +12,6 @@ made to the `backend_config.ini` file.
 
 ## DB section
 
-The DB section has a number of keys.
 Available keys : `engine`, `user`, `password`, `database_name`,
 `database_host`, `polling_interval`.
 
@@ -34,30 +33,101 @@ SQLite            | `SQLite`
 
 ### user
 
+**Deprecated.** Use [MYSQL.user] or [POSTGRESQL.user] instead.
+
+The [MYSQL.user] and [POSTGRESQL.user] properties take precedence over this.
+
+### password
+
+**Deprecated.** Use [MYSQL.password] or [POSTGRESQL.password] instead.
+
+The [MYSQL.password] and [POSTGRESQL.password] properties take precedence over this.
+
+### database_host
+
+**Deprecated.** Use [MYSQL.host] or [POSTGRESQL.host] instead.
+
+The [MYSQL.host] and [POSTGRESQL.host] properties take precedence over this.
+
+### database_name
+
+**Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLITE.database_file] instead.
+
+The [MYSQL.database], [POSTGRESQL.database], [SQLITE.database_file] properties take precedence
+over this.
+
+### polling_interval
+
+Time in seconds between database lookups by Test Agent.
+
+
+## MYSQL section
+
+Available keys : `host`, `user`, `password`, `database`.
+
+### host
+
+The host name of the machine on which the MySQL server is running.
+
+If this property is unspecified, the value of [DB.database_host] is used instead.
+
+### user
+
 The name of the user with sufficient permission to access the database.
 
-Ignored by the SQLite database engine.
+If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
 The password of the configured user.
 
-Ignored by the SQLite database engine.
+If this property is unspecified, the value of [DB.password] is used instead.
 
-### database_host
+### database
 
-The host name of the machine on which the engine is running.
+The name of the database to use.
 
-Ignored by the SQLite database engine.
+If this property is unspecified, the value of [DB.database_name] is used instead.
 
-### database_name
 
-The name of the database to use, except for SQLite database engine where
-it holds the full path to the SQLite database file.
+## POSTGRESQL section
 
-### polling_interval
+Available keys : `host`, `user`, `password`, `database`.
 
-Time in seconds between database lookups by Test Agent.
+### host
+
+The host name of the machine on which the PostgreSQL server is running.
+
+If this property is unspecified, the value of [DB.database_host] is used instead.
+
+### user
+
+The name of the user with sufficient permission to access the database.
+
+If this property is unspecified, the value of [DB.user] is used instead.
+
+### password
+
+The password of the configured user.
+
+If this property is unspecified, the value of [DB.password] is used instead.
+
+### database
+
+The name of the database to use.
+
+If this property is unspecified, the value of [DB.database_name] is used instead.
+
+
+## SQLITE section
+
+Available keys : `database_file`.
+
+### database_file
+
+The full path to the SQLite main database file.
+
+If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## LANGUAGE section
@@ -211,15 +281,28 @@ zero minutes, then the default value (600 seconds) is used.
 
 --------
 
-[Installation instructions]:          Installation.md
+[DB.database_host]:                   #database_host
+[DB.database_name]:                   #database_name
+[DB.password]:                        #password
+[DB.user]:                            #user
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[Installation instructions]:          Installation.md
+[Language tag]:                       API.md#language-tag
+[MYSQL.database]:                     #database
+[MYSQL.host]:                         #host
+[MYSQL.password]:                     #password-1
+[MYSQL.user]:                         #user-1
+[POSTGRESQL.database]:                #database-1
+[POSTGRESQL.host]:                    #host-1
+[POSTGRESQL.password]:                #password-2
+[POSTGRESQL.user]:                    #user-2
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile names]:                      API.md#profile-name
 [Profiles]:                           Architecture.md#profile
+[SQLITE.database_file]:               #database_file
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
-[Language tag]:                       API.md#language-tag
 
 

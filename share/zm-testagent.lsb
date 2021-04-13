@@ -20,7 +20,12 @@ PIDFILE=${ZM_BACKEND_PIDFILE:-/var/run/zonemaster/zm-testagent.pid}
 USER=${ZM_BACKEND_USER:-zonemaster}
 GROUP=${ZM_BACKEND_GROUP:-zonemaster}
 
+#ZM_BACKEND_TESTAGENT_LOGLEVEL='info'  # Set this variable to override the default log level
+
 testagent_args="--logfile=$LOGFILE --outfile=$OUTFILE --pidfile=$PIDFILE --user=$USER --group=$GROUP"
+if [ -n "$ZM_BACKEND_TESTAGENT_LOGLEVEL" ] ; then
+    testagent_args="$testagent_args --loglevel=$ZM_BACKEND_TESTAGENT_LOGLEVEL"
+fi
 
 start () {
     $BINDIR/zonemaster_backend_testagent $testagent_args start

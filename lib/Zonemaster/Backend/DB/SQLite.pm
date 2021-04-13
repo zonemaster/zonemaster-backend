@@ -5,12 +5,12 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use DBI qw(:utils);
-use JSON::PP;
-use Digest::MD5 qw(md5_hex);
-use Log::Any qw( $log );
-use Encode;
 use Data::Dumper;
+use DBI qw(:utils);
+use Digest::MD5 qw(md5_hex);
+use Encode;
+use JSON::PP;
+use Log::Any qw( $log );
 
 use Zonemaster::Backend::Config;
 
@@ -31,18 +31,17 @@ sub BUILD {
     my ( $self ) = @_;
 
     if ( !defined $self->dbh ) {
-        my $connection_string = $self->config->DB_connection_string( 'sqlite' );
-        $log->debug( "Connection string: " . $connection_string );
+        my $file = $self->config->SQLITE_database_file;
 
+        $log->notice( "Opening SQLite: file=$file" ) if $log->is_notice;
         my $dbh = DBI->connect(
-            $connection_string,
+            "DBI:SQLite:dbname=$file",
             undef, undef,
             {
                 AutoCommit => 1,
                 RaiseError => 1,
             }
-        ) or die $DBI::errstr;
-        $log->debug( "Database filename: " . $dbh->sqlite_db_filename );
+        );
 
         $self->dbh( $dbh );
     }

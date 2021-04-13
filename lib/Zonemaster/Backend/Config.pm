@@ -37,6 +37,20 @@ sub load_config {
     $self->{cfg} = Config::IniFiles->new( -file => $path );
     die "UNABLE TO LOAD $path ERRORS:[".join('; ', @Config::IniFiles::errors)."] \n" unless ( $self->{cfg} );
     bless( $self, $class );
+
+    if ( defined $self->{cfg}->val( 'DB', 'database_host' ) ) {
+        $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
+    }
+    if ( defined $self->{cfg}->val( 'DB', 'user' ) ) {
+        $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
+    }
+    if ( defined $self->{cfg}->val( 'DB', 'password' ) ) {
+        $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
+    }
+    if ( defined $self->{cfg}->val( 'DB', 'database_name' ) ) {
+        $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
+    }
+
     return $self;
 }
 
@@ -70,22 +84,130 @@ sub BackendDBType {
     return $engine;
 }
 
-sub DB_user {
-    my ($self) = @_;
+=head2 MYSQL_database
 
-    return $self->{cfg}->val( 'DB', 'user' );
+Returns the L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
+property if it is unspecified.
+
+=cut
+
+sub MYSQL_database {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
 }
 
-sub DB_password {
-    my ($self) = @_;
+=head2 MySQL_host
 
-    return $self->{cfg}->val( 'DB', 'password' );
+Returns the L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>
+property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_host>
+property if it is unspecified.
+
+=cut
+
+sub MYSQL_host {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
 }
 
-sub DB_name {
-    my ($self) = @_;
+=head2 MYSQL_password
 
-    return $self->{cfg}->val( 'DB', 'database_name' );
+Returns the L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>
+property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>
+property if it is unspecified.
+
+=cut
+
+sub MYSQL_password {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
+}
+
+=head2 MYSQL_user
+
+Returns the L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>
+property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>
+property if it is unspecified.
+
+=cut
+
+sub MYSQL_user {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'MYSQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
+}
+
+=head2 POSTGRESQL_database
+
+Returns the L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_database {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'database' ) // $self->{cfg}->val( 'DB', 'database_name' );
+}
+
+=head2 POSTGRESQL_host
+
+Returns the L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>
+property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_host>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_host {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'host' ) // $self->{cfg}->val( 'DB', 'database_host' );
+}
+
+=head2 POSTGRESQL_password
+
+Returns the L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>
+property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_password {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'password' ) // $self->{cfg}->val( 'DB', 'password' );
+}
+
+=head2 POSTGRESQL_user
+
+Returns the L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>
+property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>
+property if it is unspecified.
+
+=cut
+
+sub POSTGRESQL_user {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'POSTGRESQL', 'user' ) // $self->{cfg}->val( 'DB', 'user' );
+}
+
+=head2 SQLITE_database_file
+
+Returns the L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>
+property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
+property if it is unspecified.
+
+=cut
+
+sub SQLITE_database_file {
+    my ( $self ) = @_;
+
+    return $self->{cfg}->val( 'SQLITE', 'database_file' ) // $self->{cfg}->val( 'DB', 'database_name' );
 }
 
 =head2 Language_Locale_hash
@@ -156,27 +278,6 @@ sub ListLanguageTags {
         push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
     }
     return @langtags;
-}
-
-
-sub DB_connection_string {
-    my ($self) = @_;
-
-    my $db_engine = $_[1] || $self->{cfg}->val( 'DB', 'engine' );
-
-    my $result;
-
-    if ( lc( $db_engine ) eq 'sqlite' ) {
-        $result = sprintf('DBI:SQLite:dbname=%s', $self->{cfg}->val( 'DB', 'database_name' ));
-    }
-    elsif ( lc( $db_engine ) eq 'postgresql' ) {
-        $result = sprintf('DBI:Pg:database=%s;host=%s', $self->{cfg}->val( 'DB', 'database_name' ), $self->{cfg}->val( 'DB', 'database_host' ));
-    }
-    elsif ( lc( $db_engine ) eq 'mysql' ) {
-        $result = sprintf('DBI:mysql:database=%s;host=%s', $self->{cfg}->val( 'DB', 'database_name' ), $self->{cfg}->val( 'DB', 'database_host' ));
-    }
-
-    return $result;
 }
 
 sub PollingInterval {
@@ -418,7 +519,6 @@ sub new_DB {
     my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
     require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
     $dbclass->import();
-    $log->notice("Constructing database adapter: $dbclass");
 
     my $db = $dbclass->new({ config => $self });
 

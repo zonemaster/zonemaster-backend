@@ -151,15 +151,11 @@ $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
 );
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
-    my $domain = "";
 
     my $result = eval {
         my %result;
-        if (ref \$params eq "SCALAR") {
-            $domain = $params;
-        } else {
-            $domain = $params->{domain};
-        }
+
+        my $domain = $params->{domain};
 
         my ( $dn, $dn_syntax ) = $self->_check_domain( $domain, 'Domain name' );
         return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
@@ -408,13 +404,7 @@ sub test_progress {
 
     my $result = 0;
     eval {
-        my $test_id = "";
-        if (ref \$params eq "SCALAR") {
-            $test_id = $params;
-        } else {
-            $test_id = $params->{test_id};
-        }
-
+        my $test_id = $params->{test_id};
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {

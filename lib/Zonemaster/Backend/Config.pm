@@ -5,9 +5,10 @@ use 5.14.2;
 
 our $VERSION = '1.1.0';
 
-use Config;
 use Config::IniFiles;
+use Config;
 use File::ShareDir qw[dist_file];
+use File::Slurp qw( read_file );
 use Log::Any qw( $log );
 use Readonly;
 
@@ -31,13 +32,42 @@ Readonly my @SIG_NAME => split ' ', $Config{sig_name};
 sub load_config {
     my ( $class ) = @_;
 
+    $log->notice( "Loading config: $path" );
+    my $text = read_file $path;
+
+    my $obj = eval { $class->parse( $text ) };
+    if ( $@ ) {
+        die "File $path: $@";
+    }
+
+    return $obj;
+}
+
+=head2 parse
+
+Parse a new Zonemaster::Backend::Config from the contents of a
+L<configuration|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>
+file.
+
+    my $config = Zonemaster::Backend::Config->parse(
+        q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+        }
+    );
+
+=cut
+
+sub parse {
+    my ( $class, $text ) = @_;
+
     my $obj = bless( {}, $class );
 
-    # Load file
-    $log->notice( "Loading config: $path" );
-
-    $obj->{cfg} = Config::IniFiles->new( -file => $path )
-      or die "UNABLE TO LOAD $path ERRORS:[" . join( '; ', @Config::IniFiles::errors ) . "]\n";
+    $obj->{cfg} = Config::IniFiles->new( -file => \$text )
+      or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
 
     if ( defined $obj->{cfg}->val( 'DB', 'database_host' ) ) {
         $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );

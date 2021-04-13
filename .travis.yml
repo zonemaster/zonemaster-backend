@@ -65,6 +65,7 @@ addons:
     - libfile-slurp-perl
     - libhtml-parser-perl
     - libio-captureoutput-perl
+    - libio-stringy-perl
     - libjson-pp-perl
     - libjson-rpc-perl
     - liblog-any-adapter-dispatch-perl
@@ -75,6 +76,7 @@ addons:
     - librole-tiny-perl
     - librouter-simple-perl
     - libstring-shellquote-perl
+    - libtest-nowarnings-perl
     - libtry-tiny-perl
     - starman
 

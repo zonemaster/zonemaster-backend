@@ -59,6 +59,7 @@ over this.
 ### polling_interval
 
 Time in seconds between database lookups by Test Agent.
+Default value: `0.5`.
 
 
 ## MYSQL section
@@ -272,11 +273,15 @@ A positive integer.
 
 used -> todo
 
+Default value: `20`.
+
 ### number_of_processes_for_batch_testing
 
 An integer.
 
 used -> todo
+
+Default value: `20`.
 
 ### lock_on_queue
 

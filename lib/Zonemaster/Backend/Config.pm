@@ -69,7 +69,7 @@ The configuration is interpreted according to the
 L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
 
 Returns a new Z::B::Config instance with its properties set to values according
-to the given configuration.
+to the given configuration with defaults according to the configuration format.
 
 Emits a log warning with a deprecation message for each deprecated property that
 is present.
@@ -99,7 +99,7 @@ sub parse {
         $obj->{_DB_engine} = $engine;
     }
 
-    $obj->{_DB_polling_interval}                                 = $ini->val( 'DB',         'polling_interval',                         undef );
+    $obj->{_DB_polling_interval}                                 = $ini->val( 'DB',         'polling_interval',                         '0.5' );
     $obj->{_MYSQL_host}                                          = $ini->val( 'MYSQL',      'host',                                     undef );
     $obj->{_MYSQL_user}                                          = $ini->val( 'MYSQL',      'user',                                     undef );
     $obj->{_MYSQL_password}                                      = $ini->val( 'MYSQL',      'password',                                 undef );
@@ -111,9 +111,9 @@ sub parse {
     $obj->{_SQLITE_database_file}                                = $ini->val( 'SQLITE',     'database_file',                            undef );
     $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = $ini->val( 'ZONEMASTER', 'max_zonemaster_execution_time',            '600' );
     $obj->{_ZONEMASTER_maximal_number_of_retries}                = $ini->val( 'ZONEMASTER', 'maximal_number_of_retries',                '0' );
-    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $ini->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing', undef );
-    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $ini->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing',    undef );
-    $obj->{_ZONEMASTER_lock_on_queue}                            = $ini->val( 'ZONEMASTER', 'lock_on_queue',                            undef );
+    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $ini->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing', '20' );
+    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $ini->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing',    '20' );
+    $obj->{_ZONEMASTER_lock_on_queue}                            = $ini->val( 'ZONEMASTER', 'lock_on_queue',                            '0' );
     $obj->{_ZONEMASTER_age_reuse_previous_test}                  = $ini->val( 'ZONEMASTER', 'age_reuse_previous_test',                  '600' );
 
     $obj->{_LANGUAGE_locale} = {};
@@ -429,7 +429,7 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 
 =head3 RETURNS
 
-Integer (number of seconds), default 600.
+Integer (number of seconds).
 
 =cut
 
@@ -489,7 +489,7 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 
 =head3 RETURNS
 
-Integer (default 0).
+Integer.
 
 =cut
 
@@ -509,7 +509,7 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 
 =head3 RETURNS
 
-A scalar value of the number of retries (default 0).
+A scalar value of the number of retries.
 
 =cut
 
@@ -530,8 +530,7 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuratio
 =head3 RETURNS
 
 A scalar value of the number of seconds old the previous test with the same
-parameters can be when it is reused instead of starting a new test (default
-600).
+parameters can be when it is reused instead of starting a new test.
 
 =cut
 

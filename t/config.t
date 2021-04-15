@@ -71,9 +71,13 @@ subtest 'Everything but NoWarnings' => sub {
             database_file = /var/db/zonemaster.sqlite
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
-        is $config->MaxZonemasterExecutionTime, 600, 'default: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->maximal_number_of_retries,  0,   'default: ZONEMASTER.maximal_number_of_retries';
-        is $config->age_reuse_previous_test,    600, 'default: ZONEMASTER.age_reuse_previous_test';
+        cmp_ok abs( $config->PollingInterval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
+        is $config->MaxZonemasterExecutionTime,          600, 'default: ZONEMASTER.max_zonemaster_execution_time';
+        is $config->maximal_number_of_retries,           0,   'default: ZONEMASTER.maximal_number_of_retries';
+        is $config->NumberOfProcessesForFrontendTesting, 20,  'default: ZONEMASTER.number_of_processes_for_frontend_testing';
+        is $config->NumberOfProcessesForBatchTesting,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
+        is $config->lock_on_queue,                       0,   'default: ZONEMASTER.lock_on_queue';
+        is $config->age_reuse_previous_test,             600, 'default: ZONEMASTER.age_reuse_previous_test';
     };
 
     lives_and {

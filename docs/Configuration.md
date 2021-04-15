@@ -59,6 +59,7 @@ over this.
 ### polling_interval
 
 Time in seconds between database lookups by Test Agent.
+Default value: `0.5`.
 
 
 ## MYSQL section
@@ -264,20 +265,27 @@ Number of time a test is allowed to be run again if unfinished after
 
 used -> todo
 
+Default value: `20`.
+
 ### number_of_processes_for_batch_testing
 
 used -> todo
+
+Default value: `20`.
 
 ### lock_on_queue
 
 Integer working as a label to associate a test to a specific Test Agent.
 
+Default value: `0`.
+
 ### age_reuse_previous_test
 
-Positiv integer (in seconds) for how old a previous test of the same
-zone name and parameters must be before we start a new test. Internally
-the value is converted to whole minutes. If the conversion results in
-zero minutes, then the default value (600 seconds) is used.
+Positive integer (in seconds) for how old a previous test of the same
+zone name and parameters must be before we start a new test.
+Default value: `600`.
+
+Internally the value is converted to the nearest whole number of minutes.
 
 --------
 

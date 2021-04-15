@@ -767,7 +767,19 @@ sub _reset_LANGUAGE_locale {
 sub _add_public_profile {
     my ( $self, $name, $path ) = @_;
 
+    $name = untaint_profile_name( $name )    #
+      // die "Invalid profile name in PUBLIC PROFILES section: $name\n";
+
     $name = lc $name;
+
+    if ( defined $self->{_public_profiles}{$name} || exists $self->{_private_profiles}{$name} ) {
+        die "Profile name not unique: $name\n";
+    }
+
+    if ( defined $path ) {
+        $path = untaint_abs_path( $path )    #
+          // die "Path must be absolute for profile: $name\n";
+    }
 
     $self->{_public_profiles}{$name} = $path;
     return;
@@ -776,7 +788,21 @@ sub _add_public_profile {
 sub _add_private_profile {
     my ( $self, $name, $path ) = @_;
 
+    $name = untaint_profile_name( $name )    #
+      // die "Invalid profile name in PRIVATE PROFILES section: $name\n";
+
     $name = lc $name;
+
+    if ( $name eq 'default' ) {
+        die "Profile name must not be present in PRIVATE PROFILES section: $name\n";
+    }
+
+    if ( exists $self->{_public_profiles}{$name} || exists $self->{_private_profiles}{$name} ) {
+        die "Profile name not unique: $name\n";
+    }
+
+    $path = untaint_abs_path( $path )    #
+      // die "Path must be absolute for profile: $name\n";
 
     $self->{_private_profiles}{$name} = $path;
     return;

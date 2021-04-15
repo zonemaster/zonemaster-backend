@@ -42,7 +42,6 @@ sub new {
     foreach my $name ( keys %all_profiles ) {
         my $path = $all_profiles{$name}{profile_file_name};
 
-        die "default profile cannot be private" if ( $name eq 'default' && $all_profiles{$name}{type} eq 'private' );
         my $full_profile = Zonemaster::Engine::Profile->default;
         if ( $path ne "" ) {
             my $json = eval { read_file( $path, err_mode => 'croak' ) }    #

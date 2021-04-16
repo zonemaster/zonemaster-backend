@@ -19,13 +19,13 @@ subtest 'Everything but NoWarnings' => sub {
             polling_interval = 1.5
 
             [MYSQL]
-            host     = mysql_host
+            host     = mysql-host
             user     = mysql_user
             password = mysql_password
             database = mysql_database
 
             [POSTGRESQL]
-            host     = postgresql_host
+            host     = postgresql-host
             user     = postgresql_user
             password = postgresql_password
             database = postgresql_database
@@ -45,11 +45,11 @@ subtest 'Everything but NoWarnings' => sub {
         isa_ok $config, 'Zonemaster::Backend::Config', 'parse() return value';
         is $config->BackendDBType,                       'SQLite',                    'set: DB.engine';
         is $config->PollingInterval,                     1.5,                         'set: DB.polling_interval';
-        is $config->MYSQL_host,                          'mysql_host',                'set: MYSQL.host';
+        is $config->MYSQL_host,                          'mysql-host',                'set: MYSQL.host';
         is $config->MYSQL_user,                          'mysql_user',                'set: MYSQL.user';
         is $config->MYSQL_password,                      'mysql_password',            'set: MYSQL.password';
         is $config->MYSQL_database,                      'mysql_database',            'set: MYSQL.database';
-        is $config->POSTGRESQL_host,                     'postgresql_host',           'set: POSTGRESQL.host';
+        is $config->POSTGRESQL_host,                     'postgresql-host',           'set: POSTGRESQL.host';
         is $config->POSTGRESQL_user,                     'postgresql_user',           'set: POSTGRESQL.user';
         is $config->POSTGRESQL_password,                 'postgresql_password',       'set: POSTGRESQL.password';
         is $config->POSTGRESQL_database,                 'postgresql_database',       'set: POSTGRESQL.database';
@@ -80,21 +80,21 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine        = SQLite
-            database_host = db_host
+            database_host = db-host
             user          = db_user
             password      = db_password
             database_name = db_database
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
+        $log->contains_ok( qr/deprecated.*DB\.database-host/, 'deprecated: DB.database_host' );
         $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
         $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
         $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
-        is $config->MYSQL_host,           'db_host',     'fallback: MYSQL.host';
+        is $config->MYSQL_host,           'db-host',     'fallback: MYSQL.host';
         is $config->MYSQL_user,           'db_user',     'fallback: MYSQL.user';
         is $config->MYSQL_password,       'db_password', 'fallback: MYSQL.password';
         is $config->MYSQL_database,       'db_database', 'fallback: MYSQL.database';
-        is $config->POSTGRESQL_host,      'db_host',     'fallback: POSTGRESQL.host';
+        is $config->POSTGRESQL_host,      'db-host',     'fallback: POSTGRESQL.host';
         is $config->POSTGRESQL_user,      'db_user',     'fallback: POSTGRESQL.user';
         is $config->POSTGRESQL_password,  'db_password', 'fallback: POSTGRESQL.password';
         is $config->POSTGRESQL_database,  'db_database', 'fallback: POSTGRESQL.database';

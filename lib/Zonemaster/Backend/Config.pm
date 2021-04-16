@@ -122,45 +122,45 @@ sub parse {
         $obj->{_private_profiles}{lc $name} = $ini->val( 'PRIVATE PROFILES', $name );
     }
 
-    # Handle deprecated properties and precedence
+    # Handle deprecated properties
     if ( defined( my $value = $ini->val( 'DB', 'database_host' ) ) ) {
         $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
 
         $obj->{_MYSQL_host} = $value
-          if !defined $obj->MYSQL_host;
+          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_host;
 
         $obj->{_POSTGRESQL_host} = $value
-          if !defined $obj->POSTGRESQL_host;
+          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_host;
     }
     if ( defined( my $value = $ini->val( 'DB', 'user' ) ) ) {
         $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
 
         $obj->{_MYSQL_user} = $value
-          if !defined $obj->MYSQL_user;
+          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_user;
 
         $obj->{_POSTGRESQL_user} = $value
-          if !defined $obj->POSTGRESQL_user;
+          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_user;
     }
     if ( defined( my $value = $ini->val( 'DB', 'password' ) ) ) {
         $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
 
         $obj->{_MYSQL_password} = $value
-          if !defined $obj->MYSQL_password;
+          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_password;
 
         $obj->{_POSTGRESQL_password} = $value
-          if !defined $obj->POSTGRESQL_password;
+          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_password;
     }
     if ( defined( my $value = $ini->val( 'DB', 'database_name' ) ) ) {
         $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
 
         $obj->{_MYSQL_database} = $value
-          if !defined $obj->MYSQL_database;
+          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_database;
 
         $obj->{_POSTGRESQL_database} = $value
-          if !defined $obj->POSTGRESQL_database;
+          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_database;
 
         $obj->{_SQLITE_database_file} = $value
-          if !defined $obj->SQLITE_database_file;
+          if $obj->BackendDBType eq 'SQLite' && !defined $obj->SQLITE_database_file;
     }
     if ( defined( my $value = $ini->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
         $log->warning( "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead." );

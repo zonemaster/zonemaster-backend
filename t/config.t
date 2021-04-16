@@ -79,26 +79,58 @@ subtest 'Everything but NoWarnings' => sub {
     lives_and {
         my $text = q{
             [DB]
-            engine        = SQLite
+            engine        = MySQL
             database_host = db-host
             user          = db_user
             password      = db_password
             database_name = db_database
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*DB\.database-host/, 'deprecated: DB.database_host' );
+        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
         $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
         $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
         $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
-        is $config->MYSQL_host,           'db-host',     'fallback: MYSQL.host';
-        is $config->MYSQL_user,           'db_user',     'fallback: MYSQL.user';
-        is $config->MYSQL_password,       'db_password', 'fallback: MYSQL.password';
-        is $config->MYSQL_database,       'db_database', 'fallback: MYSQL.database';
-        is $config->POSTGRESQL_host,      'db-host',     'fallback: POSTGRESQL.host';
-        is $config->POSTGRESQL_user,      'db_user',     'fallback: POSTGRESQL.user';
-        is $config->POSTGRESQL_password,  'db_password', 'fallback: POSTGRESQL.password';
-        is $config->POSTGRESQL_database,  'db_database', 'fallback: POSTGRESQL.database';
-        is $config->SQLITE_database_file, 'db_database', 'fallback: SQLITE.database_file';
+        is $config->MYSQL_host,     'db-host',     'fallback: MYSQL.host';
+        is $config->MYSQL_user,     'db_user',     'fallback: MYSQL.user';
+        is $config->MYSQL_password, 'db_password', 'fallback: MYSQL.password';
+        is $config->MYSQL_database, 'db_database', 'fallback: MYSQL.database';
+    };
+
+    lives_and {
+        my $text = q{
+            [DB]
+            engine        = PostgreSQL
+            database_host = db-host
+            user          = db_user
+            password      = db_password
+            database_name = db_database
+        };
+        my $config = Zonemaster::Backend::Config->parse( $text );
+        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
+        $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
+        $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
+        $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
+        is $config->POSTGRESQL_host,     'db-host',     'fallback: POSTGRESQL.host';
+        is $config->POSTGRESQL_user,     'db_user',     'fallback: POSTGRESQL.user';
+        is $config->POSTGRESQL_password, 'db_password', 'fallback: POSTGRESQL.password';
+        is $config->POSTGRESQL_database, 'db_database', 'fallback: POSTGRESQL.database';
+    };
+
+    lives_and {
+        my $text = q{
+            [DB]
+            engine        = SQLite
+            database_host = db-host
+            user          = db_user
+            password      = db_password
+            database_name = /var/db/zonemaster.sqlite
+        };
+        my $config = Zonemaster::Backend::Config->parse( $text );
+        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
+        $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
+        $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
+        $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
+        is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'fallback: SQLITE.database_file';
     };
 
     throws_ok {

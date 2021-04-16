@@ -71,8 +71,8 @@ The configuration is interpreted according to the
 L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
 
 Returns a new Zonemaster::Backend::Config instance with its properties set to
-values according to the given configuration with defaults according to the
-configuration format.
+normalized and untainted values according to the given configuration with
+defaults according to the configuration format.
 
 Emits a log warning with a deprecation message for each deprecated property that
 is present.
@@ -481,22 +481,22 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
-    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval' );
-    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host' );
-    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user' );
-    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password' );
-    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database' );
-    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host' );
-    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user' );
-    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password' );
-    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database' );
-    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file' );
-    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time' );
-    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries' );
-    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue' );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing' );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing' );
-    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test' );
+    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_positive_millis );
+    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_domain_name );
+    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
+    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
+    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );
+    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_domain_name );
+    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user',                                     \&untaint_postgresql_ident );
+    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
+    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
+    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
+    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_unsigned_int );
+    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries',                \&untaint_unsigned_int );
+    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_unsigned_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_positive_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_positive_int );
+    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_positive_int );
 }
 
 =head2 Language_Locale_hash
@@ -718,14 +718,20 @@ sub new_PM {
     return $pm;
 }
 
-# Create a setter method with a given name using the given field
+# Create a setter method with a given name using the given field and validator
 sub _create_setter {
-    my ( $setter, $field ) = @_;
+    my ( $setter, $field, $validate ) = @_;
+
+    $setter =~ /^_set_([A-Z_]*)_([a-z_]*)$/
+      or confess "Invalid setter name";
+    my $section  = $1;
+    my $property = $2;
 
     my $setter_impl = sub {
         my ( $self, $value ) = @_;
 
-        $self->{$field} = $value;
+        $self->{$field} = $validate->( $value )    #
+          // die "Invalid value for $section.$property: $value\n";
 
         return;
     };

@@ -5,10 +5,13 @@ Zonemaster *Backend* is configured in
 `/usr/local/etc/zonemaster/backend_config.ini` (FreeBSD). Following
 [Installation instructions] will create the file with factory settings.
 
-Each section in `backend_config.ini` is documented below.
-
 Restart the `zm-rpcapi` and `zm-testagent` daemons to load the changes
 made to the `backend_config.ini` file.
+
+The `backend_config.ini` file uses a file format in the INI family that is
+described in detail [here][File format].
+
+Each section in `backend_config.ini` is documented below.
 
 ## DB section
 
@@ -58,6 +61,9 @@ over this.
 
 ### polling_interval
 
+A positive decimal number. Max 5 and 3 digits in the integer and fraction
+components respectively.
+
 Time in seconds between database lookups by Test Agent.
 Default value: `0.5`.
 
@@ -68,11 +74,16 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
+An ASCII domain name.
+
 The host name of the machine on which the MySQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
 
 ### user
+
+An ASCII-only [MariaDB unquoted identifier].
+Max length [80 characters][MariaDB identifier max lengths].
 
 The name of the user with sufficient permission to access the database.
 
@@ -80,11 +91,18 @@ If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
+A string of US ASCII printable characters.
+The first character must be neither space nor `<`.
+Max length 100 characters.
+
 The password of the configured user.
 
 If this property is unspecified, the value of [DB.password] is used instead.
 
 ### database
+
+A US ASCII-only [MariaDB unquoted identifier].
+Max length [64 characters][MariaDB identifier max lengths].
 
 The name of the database to use.
 
@@ -97,11 +115,15 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
+An ASCII domain name.
+
 The host name of the machine on which the PostgreSQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
 
 ### user
+
+A US ASCII-only [PostgreSQL identifier].
 
 The name of the user with sufficient permission to access the database.
 
@@ -109,11 +131,17 @@ If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
+A string of US ASCII printable characters.
+The first character must be neither space nor `<`.
+Max length 100 characters.
+
 The password of the configured user.
 
 If this property is unspecified, the value of [DB.password] is used instead.
 
 ### database
+
+A US ASCII-only [PostgreSQL identifier].
 
 The name of the database to use.
 
@@ -125,6 +153,8 @@ If this property is unspecified, the value of [DB.database_name] is used instead
 Available keys : `database_file`.
 
 ### database_file
+
+An absolute path.
 
 The full path to the SQLite main database file.
 
@@ -253,13 +283,15 @@ The ZONEMASTER section has several keys :
 
 ### max_zonemaster_execution_time
 
-An integer.
+A positive integer. Max length 5 digits.
+
 Time in seconds before reporting an unfinished test as failed.
 Default value: `600`.
 
 ### maximal_number_of_retries
 
-An integer.
+A non-negative integer. Max length 5 digits.
+
 Number of time a test is allowed to be run again if unfinished after
 `max_zonemaster_execution_time`.
 Default value: `0`.
@@ -269,7 +301,8 @@ Do not use it (keep the default value "0"), or use it with care.
 
 ### number_of_processes_for_frontend_testing
 
-A positive integer.
+A positive integer. Max length 5 digits.
+
 Number of processes allowed to run in parallel (added with
 `number_of_processes_for_batch_testing`).
 Default value: `20`.
@@ -280,7 +313,8 @@ frontend, but is used in combination of
 
 ### number_of_processes_for_batch_testing
 
-An integer.
+A non-negative integer. Max length 5 digits.
+
 Number of processes allowed to run in parallel (added with
 `number_of_processes_for_frontend_testing`).
 Default value: `20`.
@@ -291,13 +325,15 @@ batch pool of tests, but is used in combination of
 
 ### lock_on_queue
 
-An integer.
+A non-negative integer. Max length 5 digits.
+
 A label to associate a test to a specific Test Agent.
 Default value: `0`.
 
 ### age_reuse_previous_test
 
-A positive integer.
+A positive integer. Max length 5 digits.
+
 The shelf life of a test in seconds after its creation.
 Default value: `600`.
 
@@ -312,14 +348,18 @@ Otherwise a new test request is enqueued.
 [DB.password]:                        #password
 [DB.user]:                            #user
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
+[File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
 [Installation instructions]:          Installation.md
 [Language tag]:                       API.md#language-tag
+[MariaDB identifier max lengths]:     https://mariadb.com/kb/en/identifier-names/#maximum-length
+[MariaDB unquoted identifier]:        https://mariadb.com/kb/en/identifier-names/#unquoted
 [MYSQL.database]:                     #database
 [MYSQL.host]:                         #host
 [MYSQL.password]:                     #password-1
 [MYSQL.user]:                         #user-1
+[PostgreSQL identifier]:              https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
 [POSTGRESQL.database]:                #database-1
 [POSTGRESQL.host]:                    #host-1
 [POSTGRESQL.password]:                #password-2

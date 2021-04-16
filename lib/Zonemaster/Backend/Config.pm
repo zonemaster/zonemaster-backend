@@ -60,6 +60,7 @@ file.
     );
 
 Throws an exception if the given configuration file contains errors.
+Unrecognized sections and properties are silently ignored.
 
 =cut
 

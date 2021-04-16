@@ -52,13 +52,23 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 
 Construct a new instance from a conig file specified by path.
 
-Loads the config file from disk.
+Loads the config file from disk and validates it.
 Emits a log warning with a deprecation message for each deprecated property that
 is present.
 Returns a new Z::B::Config instance with its properties set to untainted and
 normalized values according to the config file.
 
-Throws an exception if the config cannot be read or parsed.
+Throws an exception if the given configuration file contains errors.
+
+In a valid config file:
+
+=over 4
+
+=item
+
+all sections and properties are recognized.
+
+=back
 
 =cut
 
@@ -93,7 +103,6 @@ file.
     );
 
 Throws an exception if the given configuration file contains errors.
-Unrecognized sections and properties are silently ignored.
 
 =cut
 
@@ -105,9 +114,25 @@ sub parse {
     my $ini = Config::IniFiles->new( -file => \$text )
       or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
 
-    # Store property values or defaults
+    my $get_and_clear = sub {    # Read and clear a property from a Config::IniFiles object.
+        my ( $section, $param ) = @_;
+        my $value = $ini->val( $section, $param );
+        $ini->delval( $section, $param );
+        return $value;
+    };
+
+    # Validate section names
     {
-        my $engine = $ini->val( 'DB', 'engine' );
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER' );
+        for my $section ( $ini->Sections ) {
+            if ( !exists $sections{$section} ) {
+                die "config: unrecognized section: $section\n";
+            }
+        }
+    }
+
+    {
+        my $engine = $get_and_clear->( 'DB', 'engine' );
         eval {
             $engine = $obj->check_db($engine);
         };
@@ -117,25 +142,25 @@ sub parse {
         $obj->{_DB_engine} = $engine;
     }
 
-    $obj->{_DB_polling_interval}                                 = $ini->val( 'DB',         'polling_interval',                         '0.5' );
-    $obj->{_MYSQL_host}                                          = $ini->val( 'MYSQL',      'host',                                     undef );
-    $obj->{_MYSQL_user}                                          = $ini->val( 'MYSQL',      'user',                                     undef );
-    $obj->{_MYSQL_password}                                      = $ini->val( 'MYSQL',      'password',                                 undef );
-    $obj->{_MYSQL_database}                                      = $ini->val( 'MYSQL',      'database',                                 undef );
-    $obj->{_POSTGRESQL_host}                                     = $ini->val( 'POSTGRESQL', 'host',                                     undef );
-    $obj->{_POSTGRESQL_user}                                     = $ini->val( 'POSTGRESQL', 'user',                                     undef );
-    $obj->{_POSTGRESQL_password}                                 = $ini->val( 'POSTGRESQL', 'password',                                 undef );
-    $obj->{_POSTGRESQL_database}                                 = $ini->val( 'POSTGRESQL', 'database',                                 undef );
-    $obj->{_SQLITE_database_file}                                = $ini->val( 'SQLITE',     'database_file',                            undef );
-    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = $ini->val( 'ZONEMASTER', 'max_zonemaster_execution_time',            '600' );
-    $obj->{_ZONEMASTER_maximal_number_of_retries}                = $ini->val( 'ZONEMASTER', 'maximal_number_of_retries',                '0' );
-    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $ini->val( 'ZONEMASTER', 'number_of_processes_for_frontend_testing', '20' );
-    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $ini->val( 'ZONEMASTER', 'number_of_processes_for_batch_testing',    '20' );
-    $obj->{_ZONEMASTER_lock_on_queue}                            = $ini->val( 'ZONEMASTER', 'lock_on_queue',                            '0' );
-    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = $ini->val( 'ZONEMASTER', 'age_reuse_previous_test',                  '600' );
+    $obj->{_DB_polling_interval}                                 = $get_and_clear->( 'DB',         'polling_interval' )                         // '0.5';
+    $obj->{_MYSQL_host}                                          = $get_and_clear->( 'MYSQL',      'host' )                                     // undef;
+    $obj->{_MYSQL_user}                                          = $get_and_clear->( 'MYSQL',      'user' )                                     // undef;
+    $obj->{_MYSQL_password}                                      = $get_and_clear->( 'MYSQL',      'password' )                                 // undef;
+    $obj->{_MYSQL_database}                                      = $get_and_clear->( 'MYSQL',      'database' )                                 // undef;
+    $obj->{_POSTGRESQL_host}                                     = $get_and_clear->( 'POSTGRESQL', 'host' )                                     // undef;
+    $obj->{_POSTGRESQL_user}                                     = $get_and_clear->( 'POSTGRESQL', 'user' )                                     // undef;
+    $obj->{_POSTGRESQL_password}                                 = $get_and_clear->( 'POSTGRESQL', 'password' )                                 // undef;
+    $obj->{_POSTGRESQL_database}                                 = $get_and_clear->( 'POSTGRESQL', 'database' )                                 // undef;
+    $obj->{_SQLITE_database_file}                                = $get_and_clear->( 'SQLITE',     'database_file' )                            // undef;
+    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' )            // '600';
+    $obj->{_ZONEMASTER_maximal_number_of_retries}                = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' )                // '0';
+    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) // '20';
+    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' )    // '20';
+    $obj->{_ZONEMASTER_lock_on_queue}                            = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' )                            // '0';
+    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' )                  // '600';
 
     $obj->{_LANGUAGE_locale} = {};
-    for my $locale_tag ( split /\s+/, $ini->val( 'LANGUAGE', 'locale' ) || 'en_US' ) {
+    for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
         $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
           or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
 
@@ -149,16 +174,17 @@ sub parse {
         default => '',
     };
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
-        $obj->{_public_profiles}{lc $name} = $ini->val( 'PUBLIC PROFILES', $name );
+        $obj->{_public_profiles}{lc $name} = $get_and_clear->( 'PUBLIC PROFILES', $name );
     }
     $obj->{_private_profiles} = {};
     for my $name ( $ini->Parameters( 'PRIVATE PROFILES' ) ) {
-        $obj->{_private_profiles}{lc $name} = $ini->val( 'PRIVATE PROFILES', $name );
+        $obj->{_private_profiles}{lc $name} = $get_and_clear->( 'PRIVATE PROFILES', $name );
     }
 
     # Handle deprecated properties
-    if ( defined( my $value = $ini->val( 'DB', 'database_host' ) ) ) {
-        $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
+    my @warnings;
+    if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
 
         $obj->{_MYSQL_host} = $value
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_host;
@@ -166,8 +192,8 @@ sub parse {
         $obj->{_POSTGRESQL_host} = $value
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_host;
     }
-    if ( defined( my $value = $ini->val( 'DB', 'user' ) ) ) {
-        $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
+    if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
 
         $obj->{_MYSQL_user} = $value
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_user;
@@ -175,8 +201,8 @@ sub parse {
         $obj->{_POSTGRESQL_user} = $value
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_user;
     }
-    if ( defined( my $value = $ini->val( 'DB', 'password' ) ) ) {
-        $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
+    if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
 
         $obj->{_MYSQL_password} = $value
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_password;
@@ -184,8 +210,8 @@ sub parse {
         $obj->{_POSTGRESQL_password} = $value
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_password;
     }
-    if ( defined( my $value = $ini->val( 'DB', 'database_name' ) ) ) {
-        $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
+    if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
 
         $obj->{_MYSQL_database} = $value
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_database;
@@ -196,17 +222,33 @@ sub parse {
         $obj->{_SQLITE_database_file} = $value
           if $obj->DB_engine eq 'SQLite' && !defined $obj->SQLITE_database_file;
     }
-    if ( defined( my $value = $ini->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
-        $log->warning( "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead." );
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
+        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
 
         $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value
           if !defined $obj->NumberOfProcessesForFrontendTesting;
     }
-    if ( defined( my $value = $ini->val( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
-        $log->warning( "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead." );
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
+        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
 
         $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value
           if !defined $obj->NumberOfProcessesForBatchTesting;
+    }
+
+    # Check unknown property names
+    my @unrecognized;
+    for my $section ( $ini->Sections ) {
+        for my $param ( $ini->Parameters( $section ) ) {
+            push @unrecognized, "$section.$param";
+        }
+    }
+    if ( @unrecognized ) {
+        die "config: unrecognized property(s): " . join( ", ", sort @unrecognized ) . "\n";
+    }
+
+    # Emit deprecation warnings
+    for my $message ( @warnings ) {
+        $log->warning( $message );
     }
 
     return $obj;

@@ -147,6 +147,34 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = Excel
+
+            [SQLITE]
+            databse_file = /var/db/zonemaster.sqlite
+
+            [ZNMEOTAESR]
+            lock_on_queue = 1
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{section.*ZNMEOTAESR}, 'die: Invalid section name';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+            pnlilog_iatnvrel = 0.5
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{property.*pnlilog_iatnvrel}, 'die: Invalid property name';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = Excel
         };
         Zonemaster::Backend::Config->parse( $text );
     }

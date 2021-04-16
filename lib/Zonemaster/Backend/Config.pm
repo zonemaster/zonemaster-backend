@@ -47,6 +47,23 @@ sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMA
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 
+sub _set_DB_engine                                           { $_[0]->{_DB_engine}                                           = _check_engine_type( $_[1] )      // die "Invalid value for DB.engine: $_[1]\n";                                           return; }
+sub _set_DB_polling_interval                                 { $_[0]->{_DB_polling_interval}                                 = _check_positive_real( $_[1] )    // die "Invalid value for DB.polling_interval: $_[1]\n";                                 return; }
+sub _set_MYSQL_host                                          { $_[0]->{_MYSQL_host}                                          = _check_hostname( $_[1] )         // die "Invalid value for MYSQL.host: $_[1]\n";                                          return; }
+sub _set_MYSQL_user                                          { $_[0]->{_MYSQL_user}                                          = _check_mariadb_ident( $_[1] )    // die "Invalid value for MYSQL.user: $_[1]\n";                                          return; }
+sub _set_MYSQL_password                                      { $_[0]->{_MYSQL_password}                                      = _check_password( $_[1] )         // die "Invalid value for MYSQL.password: $_[1]\n";                                      return; }
+sub _set_MYSQL_database                                      { $_[0]->{_MYSQL_database}                                      = _check_mariadb_ident( $_[1] )    // die "Invalid value for MYSQL.database: $_[1]\n";                                      return; }
+sub _set_POSTGRESQL_host                                     { $_[0]->{_POSTGRESQL_host}                                     = _check_hostname( $_[1] )         // die "Invalid value for POSTGRESQL.host: $_[1]\n";                                     return; }
+sub _set_POSTGRESQL_user                                     { $_[0]->{_POSTGRESQL_user}                                     = _check_postgresql_ident( $_[1] ) // die "Invalid value for POSTGRESQL.user: $_[1]\n";                                     return; }
+sub _set_POSTGRESQL_password                                 { $_[0]->{_POSTGRESQL_password}                                 = _check_password( $_[1] )         // die "Invalid value for POSTGRESQL.password: $_[1]\n";                                 return; }
+sub _set_POSTGRESQL_database                                 { $_[0]->{_POSTGRESQL_database}                                 = _check_postgresql_ident( $_[1] ) // die "Invalid value for POSTGRESQL.database: $_[1]\n";                                 return; }
+sub _set_SQLITE_database_file                                { $_[0]->{_SQLITE_database_file}                                = _check_abs_path( $_[1] )         // die "Invalid value for SQLITE.database_file: $_[1]\n";                                return; }
+sub _set_ZONEMASTER_max_zonemaster_execution_time            { $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}            = _check_unsigned_int( $_[1] )     // die "Invalid value for ZONEMASTER.max_zonemaster_execution_time: $_[1]\n";            return; }
+sub _set_ZONEMASTER_maximal_number_of_retries                { $_[0]->{_ZONEMASTER_maximal_number_of_retries}                = _check_unsigned_int( $_[1] )     // die "Invalid value for ZONEMASTER.maximal_number_of_retries: $_[1]\n";                return; }
+sub _set_ZONEMASTER_lock_on_queue                            { $_[0]->{_ZONEMASTER_lock_on_queue}                            = _check_unsigned_int( $_[1] )     // die "Invalid value for ZONEMASTER.lock_on_queue: $_[1]\n";                            return; }
+sub _set_ZONEMASTER_number_of_processes_for_frontend_testing { $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing} = _check_positive_int( $_[1] )     // die "Invalid value for ZONEMASTER.number_of_processes_for_frontend_testing: $_[1]\n"; return; }
+sub _set_ZONEMASTER_number_of_processes_for_batch_testing    { $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}    = _check_positive_int( $_[1] )     // die "Invalid value for ZONEMASTER.number_of_processes_for_batch_testing: $_[1]\n";    return; }
+sub _set_ZONEMASTER_age_reuse_previous_test                  { $_[0]->{_ZONEMASTER_age_reuse_previous_test}                  = _check_positive_int( $_[1] )     // die "Invalid value for ZONEMASTER.age_reuse_previous_test: $_[1]\n";                  return; }
 
 =head2 load_config
 
@@ -63,6 +80,14 @@ Throws an exception if the given configuration file contains errors.
 In a valid config file:
 
 =over 4
+
+=item
+
+All property values are valid, and
+
+=item
+
+all required properties are present, and
 
 =item
 
@@ -106,6 +131,7 @@ Throws an exception if the given configuration file contains errors.
 
 =cut
 
+
 sub parse {
     my ( $class, $text ) = @_;
 
@@ -142,22 +168,58 @@ sub parse {
         $obj->{_DB_engine} = $engine;
     }
 
-    $obj->{_DB_polling_interval}                                 = $get_and_clear->( 'DB',         'polling_interval' )                         // '0.5';
-    $obj->{_MYSQL_host}                                          = $get_and_clear->( 'MYSQL',      'host' )                                     // undef;
-    $obj->{_MYSQL_user}                                          = $get_and_clear->( 'MYSQL',      'user' )                                     // undef;
-    $obj->{_MYSQL_password}                                      = $get_and_clear->( 'MYSQL',      'password' )                                 // undef;
-    $obj->{_MYSQL_database}                                      = $get_and_clear->( 'MYSQL',      'database' )                                 // undef;
-    $obj->{_POSTGRESQL_host}                                     = $get_and_clear->( 'POSTGRESQL', 'host' )                                     // undef;
-    $obj->{_POSTGRESQL_user}                                     = $get_and_clear->( 'POSTGRESQL', 'user' )                                     // undef;
-    $obj->{_POSTGRESQL_password}                                 = $get_and_clear->( 'POSTGRESQL', 'password' )                                 // undef;
-    $obj->{_POSTGRESQL_database}                                 = $get_and_clear->( 'POSTGRESQL', 'database' )                                 // undef;
-    $obj->{_SQLITE_database_file}                                = $get_and_clear->( 'SQLITE',     'database_file' )                            // undef;
-    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' )            // '600';
-    $obj->{_ZONEMASTER_maximal_number_of_retries}                = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' )                // '0';
-    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) // '20';
-    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' )    // '20';
-    $obj->{_ZONEMASTER_lock_on_queue}                            = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' )                            // '0';
-    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' )                  // '600';
+    # Validate, untaint, normalize and store property values or defaults
+    if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
+        $obj->_set_DB_engine( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) // '0.5' ) ) {
+        $obj->_set_DB_polling_interval( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
+        $obj->_set_MYSQL_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {
+        $obj->_set_MYSQL_user( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'password' ) ) ) {
+        $obj->_set_MYSQL_password( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'database' ) ) ) {
+        $obj->_set_MYSQL_database( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'host' ) ) ) {
+        $obj->_set_POSTGRESQL_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'user' ) ) ) {
+        $obj->_set_POSTGRESQL_user( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'password' ) ) ) {
+        $obj->_set_POSTGRESQL_password( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'database' ) ) ) {
+        $obj->_set_POSTGRESQL_database( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'SQLITE', 'database_file' ) ) ) {
+        $obj->_set_SQLITE_database_file( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) // '600' ) ) {
+        $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) // '0' ) ) {
+        $obj->_set_ZONEMASTER_maximal_number_of_retries( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) // '20' ) ) {
+        $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) // '20' ) ) {
+        $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' ) // '0' ) ) {
+        $obj->_set_ZONEMASTER_lock_on_queue( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) // '600' ) ) {
+        $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
+    }
 
     $obj->{_LANGUAGE_locale} = {};
     for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
@@ -181,58 +243,96 @@ sub parse {
         $obj->{_private_profiles}{lc $name} = $get_and_clear->( 'PRIVATE PROFILES', $name );
     }
 
+    # Check required propertys (part 1/2)
+    die "config: missing required property DB.engine\n"
+      if !defined $obj->DB_engine;
+
     # Handle deprecated properties
     my @warnings;
     if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
         push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
 
-        $obj->{_MYSQL_host} = $value
+        $obj->_set_MYSQL_host( $value )
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_host;
 
-        $obj->{_POSTGRESQL_host} = $value
+        $obj->_set_POSTGRESQL_host( $value )
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_host;
     }
+
     if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
         push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
 
-        $obj->{_MYSQL_user} = $value
+        $obj->_set_MYSQL_user( $value )
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_user;
 
-        $obj->{_POSTGRESQL_user} = $value
+        $obj->_set_POSTGRESQL_user( $value )
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_user;
     }
+
     if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
         push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
 
-        $obj->{_MYSQL_password} = $value
+        $obj->_set_MYSQL_password( $value )
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_password;
 
-        $obj->{_POSTGRESQL_password} = $value
+        $obj->_set_POSTGRESQL_password( $value )
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_password;
     }
     if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
         push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
 
-        $obj->{_MYSQL_database} = $value
+        $obj->_set_MYSQL_database( $value )
           if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_database;
 
-        $obj->{_POSTGRESQL_database} = $value
+        $obj->_set_POSTGRESQL_database( $value )
           if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_database;
 
-        $obj->{_SQLITE_database_file} = $value
+        $obj->_set_SQLITE_database_file( $value )
           if $obj->DB_engine eq 'SQLite' && !defined $obj->SQLITE_database_file;
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
         push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
 
-        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value
+        $obj->_set_ZONEMASTER_maximal_number_of_processes_for_frontend_testing( $value )
           if !defined $obj->NumberOfProcessesForFrontendTesting;
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
         push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
 
-        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value
+        $obj->_set_ZONEMASTER_maximal_number_of_processes_for_batch_testing( $value )
           if !defined $obj->NumberOfProcessesForBatchTesting;
+    }
+
+    # Check required propertys (part 2/2)
+    if ( $obj->DB_engine eq 'MySQL' ) {
+        die "config: missing required property MYSQL.host (required when DB.engine = MySQL and DB.database_host is unset)\n"
+          if !defined $obj->MYSQL_host;
+
+        die "config: missing required property MYSQL.user (required when DB.engine = MySQL and DB.user is unset)\n"
+          if !defined $obj->MYSQL_user;
+
+        die "config: missing required property MYSQL.password (required when DB.engine = MySQL and DB.password is unset)\n"
+          if !defined $obj->MYSQL_password;
+
+        die "config: missing required property MYSQL.database (required when DB.engine = MySQL and DB.database_name is unset)\n"
+          if !defined $obj->MYSQL_database;
+    }
+    elsif ( $obj->DB_engine eq 'PostgreSQL' ) {
+        die "config: missing required property POSTGRESQL.host (required when DB.engine = PostgreSQL and DB.database_host is unset)\n"
+          if !defined $obj->POSTGRESQL_host;
+
+        die "config: missing required property POSTGRESQL.user (required when DB.engine = PostgreSQL and DB.user is unset)\n"
+          if !defined $obj->POSTGRESQL_user;
+
+        die "config: missing required property POSTGRESQL.password (required when DB.engine = PostgreSQL and DB.password is unset)\n"
+          if !defined $obj->POSTGRESQL_password;
+
+        die "config: missing required property POSTGRESQL.database (required when DB.engine = PostgreSQL and DB.database_name is unset)\n"
+          if !defined $obj->POSTGRESQL_database;
+    }
+    elsif ( $obj->DB_engine eq 'SQLite' ) {
+        die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite and DB.database_name is unset)\n"
+          if !defined $obj->SQLITE_database_file;
     }
 
     # Check unknown property names
@@ -257,17 +357,121 @@ sub parse {
 sub check_db {
     my ( $self, $db ) = @_;
 
-    if ( lc $db eq 'sqlite' ) {
+    return _check_engine_type( $db )    #
+      // die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
+}
+
+sub _check_engine_type {
+    my ( $value ) = @_;
+
+    $value = lc $value;
+
+    if ( $value eq 'sqlite' ) {
         return 'SQLite';
     }
-    elsif ( lc $db eq 'postgresql' ) {
+    elsif ( $value eq 'postgresql' ) {
         return 'PostgreSQL';
     }
-    elsif ( lc $db eq 'mysql' ) {
+    elsif ( $value eq 'mysql' ) {
         return 'MySQL';
     }
     else {
-        die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
+        return;
+    }
+}
+
+sub _check_positive_real {
+    my ( $value ) = @_;
+
+    if ( $value =~ qr/^((?:0|[1-9][0-9]{0,14})(?:\.[0-9]{1,6})?)$/i ) {
+        return 0.0 + $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_mariadb_ident {
+    my ( $value ) = @_;
+
+    # See: https://mariadb.com/kb/en/identifier-names/#unquoted
+    if ( $value =~ qr/^([0-9,a-z,A-Z\$_\x{0080}-\x{FFFF}]+)$/u ) {
+        return $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_postgresql_ident {
+    my ( $value ) = @_;
+
+    # See: https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
+    if ( $value =~ qr/^([\pL_][\pL_\d\$]*)$/u ) {
+        return $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_hostname {
+    my ( $value ) = @_;
+
+    if ( $value =~ qr/^([A-Za-z0-9-.]{1,254})$/ ) {
+        return $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_password {
+    my ( $value ) = @_;
+
+    if ( $value =~ qr/^([\x21-\x7e]{0,1024})$/ ) {
+        return $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_abs_path {
+    my ( $value ) = @_;
+
+    if ( File::Spec->file_name_is_absolute( $value ) ) {
+        $value =~ qr/(.*)/;
+        return $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_unsigned_int {
+    my ( $value ) = @_;
+
+    # Integer precision limit for double-precision floating point numbers,
+    # rounded down to nearest whole decimal digit.
+    if ( $value =~ qr/^(0|[1-9][0-9]{0,14})$/i ) {
+        return 0 + $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_positive_int {
+    my ( $value ) = @_;
+
+    # Integer precision limit for double-precision floating point numbers,
+    # rounded down to nearest whole decimal digit.
+    if ( $value =~ qr/^([1-9][0-9]{0,14})$/i ) {
+        return 0 + $1;
+    }
+    else {
+        return;
     }
 }
 

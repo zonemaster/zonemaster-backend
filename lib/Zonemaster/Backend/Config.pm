@@ -25,7 +25,15 @@ else {
 
 Readonly my @SIG_NAME => split ' ', $Config{sig_name};
 
-=head1 SUBROUTINES
+=head1 CONSTRUCTORS
+
+=head2 load_config
+
+A wrapper around L<parse> that also determines where the config file is located
+in the file system and reads it.
+
+Throws an exception if the determined configuration file cannot be read.
+See L<parse> for details on additional parsing-related error modes.
 
 =cut
 
@@ -45,9 +53,7 @@ sub load_config {
 
 =head2 parse
 
-Parse a new Zonemaster::Backend::Config from the contents of a
-L<configuration|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>
-file.
+Construct a new Zonemaster::Backend::Config based on a given configuration.
 
     my $config = Zonemaster::Backend::Config->parse(
         q{
@@ -59,7 +65,16 @@ file.
         }
     );
 
-Throws an exception if the given configuration file contains errors.
+The configuration is interpreted according to the
+L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
+
+Returns a new Z::B::Config instance with its properties set to values according
+to the given configuration.
+
+Emits a log warning with a deprecation message for each deprecated property that
+is present.
+
+Throws an exception if the given configuration contains errors.
 Unrecognized sections and properties are silently ignored.
 
 =cut
@@ -178,6 +193,10 @@ sub parse {
 
     return $obj;
 }
+
+=head1 METHODS
+
+=cut
 
 sub check_db {
     my ( $self, $db ) = @_;

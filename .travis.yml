@@ -3,14 +3,14 @@ language: perl
 jobs:
   include:
   # Cover MySQL and PostgreSQL with the latest supported Perl version
-  - perl: "5.32"
+  - perl: "5.32.0"
     env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
     services: mysql
-  - perl: "5.32"
+  - perl: "5.32.0"
     env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
     services: postgresql
   # Cover all Perl versions with SQLite
-  - perl: "5.32"
+  - perl: "5.32.0"
     env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
   - perl: "5.30"
     env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
@@ -65,6 +65,7 @@ addons:
     - libfile-slurp-perl
     - libhtml-parser-perl
     - libio-captureoutput-perl
+    - libio-stringy-perl
     - libjson-pp-perl
     - libjson-rpc-perl
     - liblog-any-adapter-dispatch-perl
@@ -75,6 +76,7 @@ addons:
     - librole-tiny-perl
     - librouter-simple-perl
     - libstring-shellquote-perl
+    - libtest-nowarnings-perl
     - libtry-tiny-perl
     - starman
 

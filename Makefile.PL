@@ -36,6 +36,7 @@ requires
   ;
 
 test_requires 'DBD::SQLite';
+test_requires 'Test::NoWarnings';
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';

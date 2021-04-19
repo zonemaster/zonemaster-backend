@@ -143,40 +143,40 @@ sub parse {
         $log->warning( "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead." );
 
         $obj->{_MYSQL_host} = $value
-          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_host;
+          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_host;
 
         $obj->{_POSTGRESQL_host} = $value
-          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_host;
+          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_host;
     }
     if ( defined( my $value = $ini->val( 'DB', 'user' ) ) ) {
         $log->warning( "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead." );
 
         $obj->{_MYSQL_user} = $value
-          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_user;
+          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_user;
 
         $obj->{_POSTGRESQL_user} = $value
-          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_user;
+          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_user;
     }
     if ( defined( my $value = $ini->val( 'DB', 'password' ) ) ) {
         $log->warning( "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead." );
 
         $obj->{_MYSQL_password} = $value
-          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_password;
+          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_password;
 
         $obj->{_POSTGRESQL_password} = $value
-          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_password;
+          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_password;
     }
     if ( defined( my $value = $ini->val( 'DB', 'database_name' ) ) ) {
         $log->warning( "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead." );
 
         $obj->{_MYSQL_database} = $value
-          if $obj->BackendDBType eq 'MySQL' && !defined $obj->MYSQL_database;
+          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_database;
 
         $obj->{_POSTGRESQL_database} = $value
-          if $obj->BackendDBType eq 'PostgreSQL' && !defined $obj->POSTGRESQL_database;
+          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_database;
 
         $obj->{_SQLITE_database_file} = $value
-          if $obj->BackendDBType eq 'SQLite' && !defined $obj->SQLITE_database_file;
+          if $obj->DB_engine eq 'SQLite' && !defined $obj->SQLITE_database_file;
     }
     if ( defined( my $value = $ini->val( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
         $log->warning( "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead." );
@@ -217,8 +217,7 @@ sub check_db {
 
 sub BackendDBType {
     my ($self) = @_;
-
-    return $self->{_DB_engine};
+    return $self->DB_engine;
 }
 
 =head2 MYSQL_database
@@ -227,13 +226,6 @@ Returns the L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/bl
 property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
 property if it is unspecified.
 
-=cut
-
-sub MYSQL_database {
-    my ( $self ) = @_;
-
-    return $self->{_MYSQL_database};
-}
 
 =head2 MySQL_host
 
@@ -241,13 +233,6 @@ Returns the L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/m
 property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_host>
 property if it is unspecified.
 
-=cut
-
-sub MYSQL_host {
-    my ( $self ) = @_;
-
-    return $self->{_MYSQL_host};
-}
 
 =head2 MYSQL_password
 
@@ -255,13 +240,6 @@ Returns the L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/bl
 property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>
 property if it is unspecified.
 
-=cut
-
-sub MYSQL_password {
-    my ( $self ) = @_;
-
-    return $self->{_MYSQL_password};
-}
 
 =head2 MYSQL_user
 
@@ -269,13 +247,6 @@ Returns the L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/m
 property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>
 property if it is unspecified.
 
-=cut
-
-sub MYSQL_user {
-    my ( $self ) = @_;
-
-    return $self->{_MYSQL_user};
-}
 
 =head2 POSTGRESQL_database
 
@@ -283,13 +254,6 @@ Returns the L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backe
 property from the loaded config, or the L<DB.database_name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_name>
 property if it is unspecified.
 
-=cut
-
-sub POSTGRESQL_database {
-    my ( $self ) = @_;
-
-    return $self->{_POSTGRESQL_database};
-}
 
 =head2 POSTGRESQL_host
 
@@ -297,13 +261,6 @@ Returns the L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/b
 property from the loaded config, or the L<DB.database_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_host>
 property if it is unspecified.
 
-=cut
-
-sub POSTGRESQL_host {
-    my ( $self ) = @_;
-
-    return $self->{_POSTGRESQL_host};
-}
 
 =head2 POSTGRESQL_password
 
@@ -311,13 +268,6 @@ Returns the L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backe
 property from the loaded config, or the L<DB.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>
 property if it is unspecified.
 
-=cut
-
-sub POSTGRESQL_password {
-    my ( $self ) = @_;
-
-    return $self->{_POSTGRESQL_password};
-}
 
 =head2 POSTGRESQL_user
 
@@ -325,13 +275,6 @@ Returns the L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/b
 property from the loaded config, or the L<DB.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>
 property if it is unspecified.
 
-=cut
-
-sub POSTGRESQL_user {
-    my ( $self ) = @_;
-
-    return $self->{_POSTGRESQL_user};
-}
 
 =head2 SQLITE_database_file
 
@@ -341,11 +284,24 @@ property if it is unspecified.
 
 =cut
 
-sub SQLITE_database_file {
-    my ( $self ) = @_;
+sub DB_engine                                           { return $_[0]->{_DB_engine}; }
+sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
+sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
+sub MYSQL_user                                          { return $_[0]->{_MYSQL_user}; }
+sub MYSQL_password                                      { return $_[0]->{_MYSQL_password}; }
+sub MYSQL_database                                      { return $_[0]->{_MYSQL_database}; }
+sub POSTGRESQL_host                                     { return $_[0]->{_POSTGRESQL_host}; }
+sub POSTGRESQL_user                                     { return $_[0]->{_POSTGRESQL_user}; }
+sub POSTGRESQL_password                                 { return $_[0]->{_POSTGRESQL_password}; }
+sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
+sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
+sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
+sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
+sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
+sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
+sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
+sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 
-    return $self->{_SQLITE_database_file};
-}
 
 =head2 Language_Locale_hash
 
@@ -416,7 +372,7 @@ sub ListLanguageTags {
 sub PollingInterval {
     my ($self) = @_;
 
-    return $self->{_DB_polling_interval};
+    return $self->DB_polling_interval;
 }
 
 
@@ -436,7 +392,7 @@ Integer (number of seconds).
 sub MaxZonemasterExecutionTime {
     my ($self) = @_;
 
-    return $self->{_ZONEMASTER_max_zonemaster_execution_time};
+    return $self->ZONEMASTER_max_zonemaster_execution_time;
 }
 
 
@@ -456,7 +412,7 @@ Positive integer.
 sub NumberOfProcessesForFrontendTesting {
     my ($self) = @_;
 
-    return $self->{_ZONEMASTER_number_of_processes_for_frontend_testing};
+    return $self->ZONEMASTER_number_of_processes_for_frontend_testing;
 }
 
 
@@ -476,7 +432,7 @@ Integer.
 sub NumberOfProcessesForBatchTesting {
     my ($self) = @_;
 
-    return $self->{_ZONEMASTER_number_of_processes_for_batch_testing};
+    return $self->ZONEMASTER_number_of_processes_for_batch_testing;
 }
 
 
@@ -496,7 +452,7 @@ Integer.
 sub lock_on_queue {
     my ($self) = @_;
 
-    return $self->{_ZONEMASTER_lock_on_queue};
+    return $self->ZONEMASTER_lock_on_queue;
 }
 
 
@@ -516,7 +472,7 @@ A scalar value of the number of retries.
 sub maximal_number_of_retries {
     my ($self) = @_;
 
-    return $self->{_ZONEMASTER_maximal_number_of_retries};
+    return $self->ZONEMASTER_maximal_number_of_retries;
 }
 
 

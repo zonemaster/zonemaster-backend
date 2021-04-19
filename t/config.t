@@ -66,12 +66,10 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = SQLite
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
         cmp_ok abs( $config->DB_polling_interval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
+        is $config->SQLITE_database_file,                                '',  'default: SQLITE.database_file';
         is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
         is $config->ZONEMASTER_maximal_number_of_retries,                0,   'default: ZONEMASTER.maximal_number_of_retries';
         is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,  'default: ZONEMASTER.number_of_processes_for_frontend_testing';
@@ -163,9 +161,6 @@ subtest 'Everything but NoWarnings' => sub {
             [DB]
             engine = SQLite
             pnlilog_iatnvrel = 0.5
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
         };
         Zonemaster::Backend::Config->parse( $text );
     }
@@ -330,9 +325,6 @@ subtest 'Everything but NoWarnings' => sub {
             [DB]
             engine = SQLite
 
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
-
             [ZONEMASTER]
             max_zonemaster_execution_time = -1
         };
@@ -344,9 +336,6 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = SQLite
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
 
             [ZONEMASTER]
             maximal_number_of_retries = -1
@@ -360,9 +349,6 @@ subtest 'Everything but NoWarnings' => sub {
             [DB]
             engine = SQLite
 
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
-
             [ZONEMASTER]
             lock_on_queue = -1
         };
@@ -374,9 +360,6 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = SQLite
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
 
             [ZONEMASTER]
             number_of_processes_for_frontend_testing = 0
@@ -390,9 +373,6 @@ subtest 'Everything but NoWarnings' => sub {
             [DB]
             engine = SQLite
 
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
-
             [ZONEMASTER]
             number_of_processes_for_batch_testing = 0
         };
@@ -404,9 +384,6 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = SQLite
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
 
             [ZONEMASTER]
             age_reuse_previous_test = 0
@@ -532,20 +509,6 @@ subtest 'Everything but NoWarnings' => sub {
             [DB]
             engine = SQLite
 
-            [SQLITE]
-        };
-        Zonemaster::Backend::Config->parse( $text );
-    }
-    qr/SQLITE\.database_file/, 'die: Missing SQLITE.database_file value';
-
-    throws_ok {
-        my $text = q{
-            [DB]
-            engine = SQLite
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
-
             [LANGUAGE]
             locale = English
         };
@@ -557,9 +520,6 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = SQLite
-
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
 
             [LANGUAGE]
             locale = en_US en_US

@@ -47,23 +47,23 @@ sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMA
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 
-sub _set_DB_engine                                           { $_[0]->{_DB_engine}                                           = _check_engine_type( $_[1] )      // die "Invalid value for DB.engine: $_[1]\n";                                           return; }
-sub _set_DB_polling_interval                                 { $_[0]->{_DB_polling_interval}                                 = _check_positive_real( $_[1] )    // die "Invalid value for DB.polling_interval: $_[1]\n";                                 return; }
-sub _set_MYSQL_host                                          { $_[0]->{_MYSQL_host}                                          = _check_hostname( $_[1] )         // die "Invalid value for MYSQL.host: $_[1]\n";                                          return; }
-sub _set_MYSQL_user                                          { $_[0]->{_MYSQL_user}                                          = _check_mariadb_ident( $_[1] )    // die "Invalid value for MYSQL.user: $_[1]\n";                                          return; }
-sub _set_MYSQL_password                                      { $_[0]->{_MYSQL_password}                                      = _check_password( $_[1] )         // die "Invalid value for MYSQL.password: $_[1]\n";                                      return; }
-sub _set_MYSQL_database                                      { $_[0]->{_MYSQL_database}                                      = _check_mariadb_ident( $_[1] )    // die "Invalid value for MYSQL.database: $_[1]\n";                                      return; }
-sub _set_POSTGRESQL_host                                     { $_[0]->{_POSTGRESQL_host}                                     = _check_hostname( $_[1] )         // die "Invalid value for POSTGRESQL.host: $_[1]\n";                                     return; }
-sub _set_POSTGRESQL_user                                     { $_[0]->{_POSTGRESQL_user}                                     = _check_postgresql_ident( $_[1] ) // die "Invalid value for POSTGRESQL.user: $_[1]\n";                                     return; }
-sub _set_POSTGRESQL_password                                 { $_[0]->{_POSTGRESQL_password}                                 = _check_password( $_[1] )         // die "Invalid value for POSTGRESQL.password: $_[1]\n";                                 return; }
-sub _set_POSTGRESQL_database                                 { $_[0]->{_POSTGRESQL_database}                                 = _check_postgresql_ident( $_[1] ) // die "Invalid value for POSTGRESQL.database: $_[1]\n";                                 return; }
-sub _set_SQLITE_database_file                                { $_[0]->{_SQLITE_database_file}                                = _check_abs_path( $_[1] )         // die "Invalid value for SQLITE.database_file: $_[1]\n";                                return; }
-sub _set_ZONEMASTER_max_zonemaster_execution_time            { $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}            = _check_unsigned_int( $_[1] )     // die "Invalid value for ZONEMASTER.max_zonemaster_execution_time: $_[1]\n";            return; }
-sub _set_ZONEMASTER_maximal_number_of_retries                { $_[0]->{_ZONEMASTER_maximal_number_of_retries}                = _check_unsigned_int( $_[1] )     // die "Invalid value for ZONEMASTER.maximal_number_of_retries: $_[1]\n";                return; }
-sub _set_ZONEMASTER_lock_on_queue                            { $_[0]->{_ZONEMASTER_lock_on_queue}                            = _check_unsigned_int( $_[1] )     // die "Invalid value for ZONEMASTER.lock_on_queue: $_[1]\n";                            return; }
-sub _set_ZONEMASTER_number_of_processes_for_frontend_testing { $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing} = _check_positive_int( $_[1] )     // die "Invalid value for ZONEMASTER.number_of_processes_for_frontend_testing: $_[1]\n"; return; }
-sub _set_ZONEMASTER_number_of_processes_for_batch_testing    { $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}    = _check_positive_int( $_[1] )     // die "Invalid value for ZONEMASTER.number_of_processes_for_batch_testing: $_[1]\n";    return; }
-sub _set_ZONEMASTER_age_reuse_previous_test                  { $_[0]->{_ZONEMASTER_age_reuse_previous_test}                  = _check_positive_int( $_[1] )     // die "Invalid value for ZONEMASTER.age_reuse_previous_test: $_[1]\n";                  return; }
+sub _set_DB_engine           { $_[0]->{_DB_engine}           = _check_engine_type( $_[1] )      // die "Invalid value for DB.engine: $_[1]\n";           return; }
+sub _set_DB_polling_interval { $_[0]->{_DB_polling_interval} = _check_positive_real( $_[1] )    // die "Invalid value for DB.polling_interval: $_[1]\n"; return; }
+sub _set_MYSQL_host          { $_[0]->{_MYSQL_host}          = _check_hostname( $_[1] )         // die "Invalid value for MYSQL.host: $_[1]\n";          return; }
+sub _set_MYSQL_user          { $_[0]->{_MYSQL_user}          = _check_mariadb_ident( $_[1] )    // die "Invalid value for MYSQL.user: $_[1]\n";          return; }
+sub _set_MYSQL_password      { $_[0]->{_MYSQL_password}      = _check_password( $_[1] )         // die "Invalid value for MYSQL.password: $_[1]\n";      return; }
+sub _set_MYSQL_database      { $_[0]->{_MYSQL_database}      = _check_mariadb_ident( $_[1] )    // die "Invalid value for MYSQL.database: $_[1]\n";      return; }
+sub _set_POSTGRESQL_host     { $_[0]->{_POSTGRESQL_host}     = _check_hostname( $_[1] )         // die "Invalid value for POSTGRESQL.host: $_[1]\n";     return; }
+sub _set_POSTGRESQL_user     { $_[0]->{_POSTGRESQL_user}     = _check_postgresql_ident( $_[1] ) // die "Invalid value for POSTGRESQL.user: $_[1]\n";     return; }
+sub _set_POSTGRESQL_password { $_[0]->{_POSTGRESQL_password} = _check_password( $_[1] )         // die "Invalid value for POSTGRESQL.password: $_[1]\n"; return; }
+sub _set_POSTGRESQL_database { $_[0]->{_POSTGRESQL_database} = _check_postgresql_ident( $_[1] ) // die "Invalid value for POSTGRESQL.database: $_[1]\n"; return; }
+sub _set_SQLITE_database_file { $_[0]->{_SQLITE_database_file} = _check_abs_path( $_[1] ) // _check_empty_string( $_[1] ) // die "Invalid value for SQLITE.database_file: $_[1]\n"; return; }
+sub _set_ZONEMASTER_max_zonemaster_execution_time            { $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}            = _check_unsigned_int( $_[1] ) // die "Invalid value for ZONEMASTER.max_zonemaster_execution_time: $_[1]\n";            return; }
+sub _set_ZONEMASTER_maximal_number_of_retries                { $_[0]->{_ZONEMASTER_maximal_number_of_retries}                = _check_unsigned_int( $_[1] ) // die "Invalid value for ZONEMASTER.maximal_number_of_retries: $_[1]\n";                return; }
+sub _set_ZONEMASTER_lock_on_queue                            { $_[0]->{_ZONEMASTER_lock_on_queue}                            = _check_unsigned_int( $_[1] ) // die "Invalid value for ZONEMASTER.lock_on_queue: $_[1]\n";                            return; }
+sub _set_ZONEMASTER_number_of_processes_for_frontend_testing { $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing} = _check_positive_int( $_[1] ) // die "Invalid value for ZONEMASTER.number_of_processes_for_frontend_testing: $_[1]\n"; return; }
+sub _set_ZONEMASTER_number_of_processes_for_batch_testing    { $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}    = _check_positive_int( $_[1] ) // die "Invalid value for ZONEMASTER.number_of_processes_for_batch_testing: $_[1]\n";    return; }
+sub _set_ZONEMASTER_age_reuse_previous_test                  { $_[0]->{_ZONEMASTER_age_reuse_previous_test}                  = _check_positive_int( $_[1] ) // die "Invalid value for ZONEMASTER.age_reuse_previous_test: $_[1]\n";                  return; }
 
 =head2 load_config
 
@@ -168,11 +168,11 @@ sub parse {
         $obj->{_DB_engine} = $engine;
     }
 
-    # Validate, untaint, normalize and store property values or defaults
+    # Validate, untaint, normalize and store property values
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
         $obj->_set_DB_engine( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) // '0.5' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
         $obj->_set_DB_polling_interval( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
@@ -202,22 +202,22 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'SQLITE', 'database_file' ) ) ) {
         $obj->_set_SQLITE_database_file( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) // '600' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
         $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) // '0' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) ) ) {
         $obj->_set_ZONEMASTER_maximal_number_of_retries( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) // '20' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) ) ) {
         $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) // '20' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) ) ) {
         $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' ) // '0' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' ) ) ) {
         $obj->_set_ZONEMASTER_lock_on_queue( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) // '600' ) ) {
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
 
@@ -301,6 +301,32 @@ sub parse {
 
         $obj->_set_ZONEMASTER_maximal_number_of_processes_for_batch_testing( $value )
           if !defined $obj->NumberOfProcessesForBatchTesting;
+    }
+
+    # Assign defaults
+    if ( !defined $obj->DB_polling_interval ) {
+        $obj->_set_DB_polling_interval( '0.5' );
+    }
+    if ( !defined $obj->SQLITE_database_file ) {
+        $obj->_set_SQLITE_database_file( '' );
+    }
+    if ( !defined $obj->ZONEMASTER_max_zonemaster_execution_time ) {
+        $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
+    }
+    if ( !defined $obj->ZONEMASTER_maximal_number_of_retries ) {
+        $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
+    }
+    if ( !defined $obj->ZONEMASTER_number_of_processes_for_frontend_testing ) {
+        $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
+    }
+    if ( !defined $obj->ZONEMASTER_number_of_processes_for_batch_testing ) {
+        $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
+    }
+    if ( !defined $obj->ZONEMASTER_lock_on_queue ) {
+        $obj->_set_ZONEMASTER_lock_on_queue( '0' );
+    }
+    if ( !defined $obj->ZONEMASTER_age_reuse_previous_test ) {
+        $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     }
 
     # Check required propertys (part 2/2)
@@ -443,6 +469,17 @@ sub _check_abs_path {
     if ( File::Spec->file_name_is_absolute( $value ) ) {
         $value =~ qr/(.*)/;
         return $1;
+    }
+    else {
+        return;
+    }
+}
+
+sub _check_empty_string {
+    my ( $value ) = @_;
+
+    if ( $value eq "" ) {
+        return "";
     }
     else {
         return;

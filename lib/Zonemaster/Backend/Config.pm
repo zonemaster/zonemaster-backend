@@ -502,9 +502,6 @@ sub lock_on_queue {
 
 =head2 maximal_number_of_retries
 
-This option is experimental and all edge cases are not fully tested.
-Do not use it (keep the default value "0"), or use it with care.
-
 =head3 INPUT
 
 'maximal_number_of_retries' from [ZONEMASTER] section in ini file. See

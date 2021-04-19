@@ -22,10 +22,11 @@ unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
 # Create Zonemaster::Backend::RPCAPI object
+my $config = Zonemaster::Backend::Config->load_config();
 my $engine = Zonemaster::Backend::RPCAPI->new(
     {
-        dbtype => 'SQLite',
-        config => Zonemaster::Backend::Config->load_config(),
+        dbtype => $config->DB_engine,
+        config => $config,
     }
 );
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );

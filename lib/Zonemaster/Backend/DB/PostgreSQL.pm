@@ -130,7 +130,7 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
@@ -157,7 +157,7 @@ sub create_new_test {
         $test_params_deterministic_hash,
         $encoded_params,
         $test_params_deterministic_hash,
-        sprintf( "%d minutes", $minutes_between_tests_with_same_params ),
+        sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
     );
 
     my ( undef, $hash_id ) = $dbh->selectrow_array(

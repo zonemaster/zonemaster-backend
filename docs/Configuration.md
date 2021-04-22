@@ -305,9 +305,6 @@ If a new test is requested for the same zone name and parameters within the
 shelf life of a previous test result, that test result is reused.
 Otherwise a new test request is enqueued.
 
-Internally the value is converted to whole minutes.
-If the conversion results in zero minutes, then the default value is used.
-
 
 
 [DB.database_host]:                   #database_host

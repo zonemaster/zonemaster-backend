@@ -114,7 +114,7 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
 
     my $dbh = $self->dbh;
 
@@ -133,7 +133,7 @@ sub create_new_test {
             q[
             SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
             ],
-            undef, $test_params_deterministic_hash, 60 * $minutes_between_tests_with_same_params,
+            undef, $test_params_deterministic_hash, $seconds_between_tests_with_same_params,
         );
 
         if ( $recent_hash_id ) {

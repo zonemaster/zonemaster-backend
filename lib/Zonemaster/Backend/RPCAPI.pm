@@ -385,10 +385,8 @@ sub start_domain_test {
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
-        my $shelf_life_seconds = $self->{config}->ZONEMASTER_age_reuse_previous_test;
-        my $shelf_life_minutes = int ( ($shelf_life_seconds / 60) + 0.5);
 
-        $result = $self->{db}->create_new_test( $params->{domain}, $params, $shelf_life_minutes );
+        $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
     if ($@) {
         handle_exception('start_domain_test', $@, '009');

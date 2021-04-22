@@ -343,23 +343,30 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
-            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ".$self->config->MaxZonemasterExecutionTime()." SECOND)
-            AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ? SECOND)
+            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100
-            AND queue = ".$self->config->lock_on_queue() );
-        $sth->execute();
+            AND queue = ?" );
+        $sth->execute(    #
+            $self->config->MaxZonemasterExecutionTime,
+            $self->config->maximal_number_of_retries,
+            $self->config->lock_on_queue,
+        );
         return $sth;
     }
     else {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
-            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ".$self->config->MaxZonemasterExecutionTime()." SECOND)
-            AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ? SECOND)
+            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100" );
-        $sth->execute();
+        $sth->execute(    #
+            $self->config->MaxZonemasterExecutionTime,
+            $self->config->maximal_number_of_retries,
+        );
         return $sth;
     }
 }

@@ -9,8 +9,20 @@ use 5.14.2;
 use JSON::PP;
 use Data::Dumper;
 
-requires 'add_api_user_to_db', 'user_exists_in_db', 'user_authorized', 'test_progress', 'test_results',
-  'create_new_batch_job', 'create_new_test', 'get_test_params', 'get_test_history', 'add_batch_job', 'build_process_unfinished_tests_select_query', 'process_unfinished_tests_give_up';
+requires qw(
+  add_api_user_to_db
+  add_batch_job
+  build_process_unfinished_tests_select_query
+  create_new_batch_job
+  create_new_test
+  get_test_history
+  get_test_params
+  process_unfinished_tests_give_up
+  test_progress
+  test_results
+  user_authorized
+  user_exists_in_db
+);
 
 sub user_exists {
     my ( $self, $user ) = @_;

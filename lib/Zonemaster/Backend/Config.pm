@@ -68,8 +68,9 @@ Construct a new Zonemaster::Backend::Config based on a given configuration.
 The configuration is interpreted according to the
 L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
 
-Returns a new Z::B::Config instance with its properties set to values according
-to the given configuration with defaults according to the configuration format.
+Returns a new Zonemaster::Backend::Config instance with its properties set to
+values according to the given configuration with defaults according to the
+configuration format.
 
 Emits a log warning with a deprecation message for each deprecated property that
 is present.

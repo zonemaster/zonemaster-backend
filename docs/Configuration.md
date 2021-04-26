@@ -59,6 +59,7 @@ over this.
 ### polling_interval
 
 Time in seconds between database lookups by Test Agent.
+Default value: `0.5`.
 
 
 ## MYSQL section
@@ -252,34 +253,53 @@ The ZONEMASTER section has several keys :
 
 ### max_zonemaster_execution_time
 
-Time in seconds before reporting an unfinished test as failed. Default
-value: `600`.
+An integer.
+Time in seconds before reporting an unfinished test as failed.
+Default value: `600`.
 
 ### maximal_number_of_retries
 
+An integer.
 Number of time a test is allowed to be run again if unfinished after
-`max_zonemaster_execution_time`. Default value: `0`.
+`max_zonemaster_execution_time`.
+Default value: `0`.
+
+This option is experimental and all edge cases are not fully tested.
+Do not use it (keep the default value "0"), or use it with care.
 
 ### number_of_processes_for_frontend_testing
 
+A positive integer.
+
 used -> todo
+
+Default value: `20`.
 
 ### number_of_processes_for_batch_testing
 
+An integer.
+
 used -> todo
+
+Default value: `20`.
 
 ### lock_on_queue
 
-Integer working as a label to associate a test to a specific Test Agent.
+An integer.
+A label to associate a test to a specific Test Agent.
+Default value: `0`.
 
 ### age_reuse_previous_test
 
-Positiv integer (in seconds) for how old a previous test of the same
-zone name and parameters must be before we start a new test. Internally
-the value is converted to whole minutes. If the conversion results in
-zero minutes, then the default value (600 seconds) is used.
+Positive integer.
+How old (in seconds) a previous test of the same zone name and parameters must
+be before we start a new test.
+Default value: `600`.
 
---------
+Internally the value is converted to whole minutes.
+If the conversion results in zero minutes, then the default value is used.
+
+
 
 [DB.database_host]:                   #database_host
 [DB.database_name]:                   #database_name

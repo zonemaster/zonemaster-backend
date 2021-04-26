@@ -371,27 +371,31 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub build_process_unfinished_tests_select_query {
+sub select_unfinished_tests {
     my ( $self ) = @_;
 
     if ($self->config->lock_on_queue()) {
-        return "
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
             WHERE test_start_time < DATETIME('now', '-".$self->config->MaxZonemasterExecutionTime()." seconds')
             AND nb_retries <= ".$self->config->maximal_number_of_retries()."
             AND progress > 0
             AND progress < 100
-            AND queue=".$self->config->lock_on_queue();
+            AND queue=".$self->config->lock_on_queue() );
+        $sth->execute();
+        return $sth;
     }
     else {
-        return "
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
             WHERE test_start_time < DATETIME('now', '-".$self->config->MaxZonemasterExecutionTime()." seconds')
             AND nb_retries <= ".$self->config->maximal_number_of_retries()."
             AND progress > 0
-            AND progress < 100";
+            AND progress < 100" );
+        $sth->execute();
+        return $sth;
     }
 }
 

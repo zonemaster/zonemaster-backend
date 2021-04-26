@@ -270,18 +270,24 @@ Do not use it (keep the default value "0"), or use it with care.
 ### number_of_processes_for_frontend_testing
 
 A positive integer.
-
-used -> todo
-
+Number of processes allowed to run in parallel (added with
+`number_of_processes_for_batch_testing`).
 Default value: `20`.
+
+Despite its name, this key does not limit the number of process used by the
+frontend, but is used in combination of
+`number_of_processes_for_batch_testing`.
 
 ### number_of_processes_for_batch_testing
 
 An integer.
-
-used -> todo
-
+Number of processes allowed to run in parallel (added with
+`number_of_processes_for_frontend_testing`).
 Default value: `20`.
+
+Despite its name, this key does not limit the number of process used by any
+batch pool of tests, but is used in combination of
+`number_of_processes_for_frontend_testing`.
 
 ### lock_on_queue
 

@@ -383,7 +383,7 @@ sub select_unfinished_tests {
             AND nb_retries <= ?
             AND progress > 0
             AND progress < 100
-            AND queue=?" );
+            AND queue = ?" );
         $sth->execute(    #
             sprintf( "-%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
             $self->config->ZONEMASTER_maximal_number_of_retries,

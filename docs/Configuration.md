@@ -298,9 +298,11 @@ Default value: `0`.
 ### age_reuse_previous_test
 
 Positive integer.
-How old (in seconds) a previous test of the same zone name and parameters can be
-when it is reused instead of starting a new test.
-Default value: `600`.
+
+The shelf life of a test in seconds after its creation.
+If a new test is requested for the same zone name and parameters within the
+shelf life of a previous test result, that test result is reused.
+Otherwise a new test request is enqueued.
 
 Internally the value is converted to whole minutes.
 If the conversion results in zero minutes, then the default value is used.

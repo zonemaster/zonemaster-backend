@@ -281,6 +281,14 @@ sub parse {
 
 =head1 METHODS
 
+=head2 check_db
+
+Returns a normalized string based on the supported databases.
+
+=head3 EXCEPTION
+
+Dies if the value is not one of SQLite, PostgreSQL or MySQL.
+
 =cut
 
 sub check_db {
@@ -299,6 +307,18 @@ sub check_db {
         die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
     }
 }
+
+
+=head2 DB_engine
+
+Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
+
+Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
+
+
+=head2 DB_polling_interval
+
+Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
 
 
 =head2 MYSQL_database
@@ -344,6 +364,53 @@ Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-back
 =head2 SQLITE_database_file
 
 Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>.
+
+
+=head2 ZONEMASTER_max_zonemaster_execution_time
+
+Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
+
+Returns an integer.
+
+
+=head2 ZONEMASTER_number_of_processes_for_frontend_testing
+
+Get the value of
+L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
+
+Returns a positive integer.
+
+
+=head2 ZONEMASTER_number_of_processes_for_batch_testing
+
+Get the value of
+L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
+
+Returns an integer.
+
+
+=head2 ZONEMASTER_lock_on_queue
+
+Get the value of
+L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
+
+Returns an integer.
+
+
+=head2 ZONEMASTER_maximal_number_of_retries
+
+Get the value of
+L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
+
+Returns an integer.
+
+
+=head2 ZONEMASTER_age_reuse_previous_test
+
+Get the value of
+L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
+
+Returns an integer.
 
 =cut
 
@@ -432,67 +499,6 @@ sub ListLanguageTags {
     return @langtags;
 }
 
-
-=head2 DB_engine
-
-Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
-
-Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
-
-
-=head2 DB_polling_interval
-
-Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
-
-
-=head2 ZONEMASTER_max_zonemaster_execution_time
-
-Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
-
-Returns an integer.
-
-
-=head2 ZONEMASTER_number_of_processes_for_frontend_testing
-
-Get the value of
-L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
-
-Returns a positive integer.
-
-
-=head2 ZONEMASTER_number_of_processes_for_batch_testing
-
-Get the value of
-L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
-
-Returns an integer.
-
-
-=head2 ZONEMASTER_lock_on_queue
-
-Get the value of
-L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
-
-Returns an integer.
-
-
-=head2 ZONEMASTER_maximal_number_of_retries
-
-Get the value of
-L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
-
-Returns an integer.
-
-
-=head2 ZONEMASTER_age_reuse_previous_test
-
-Get the value of
-L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
-
-Returns an integer.
-
-=cut
-
 sub ReadProfilesInfo {
     my ($self) = @_;
 
@@ -515,14 +521,6 @@ sub ListPublicProfiles {
 
     return keys %{ $self->{_public_profiles} };
 }
-
-=head2 check_db
-
-Returns a normalized string based on the supported databases.
-
-=head3 EXCEPTION
-
-Dies if the value is not one of SQLite, PostgreSQL or MySQL.
 
 =head2 new_DB
 

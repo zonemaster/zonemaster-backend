@@ -449,7 +449,7 @@ Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
 
-Returns an integer (number of seconds).
+Returns an integer.
 
 
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing

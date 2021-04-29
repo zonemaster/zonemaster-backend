@@ -24,12 +24,14 @@ subtest 'Everything but NoWarnings' => sub {
 
             [MYSQL]
             host     = mysql-host
+            port     = 3456
             user     = mysql_user
             password = mysql_password
             database = mysql_database
 
             [POSTGRESQL]
             host     = postgresql-host
+            port     = 6543
             user     = postgresql_user
             password = postgresql_password
             database = postgresql_database
@@ -50,10 +52,12 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->DB_engine,                                           'SQLite',                    'set: DB.engine';
         is $config->DB_polling_interval,                                 1.5,                         'set: DB.polling_interval';
         is $config->MYSQL_host,                                          'mysql-host',                'set: MYSQL.host';
+        is $config->MYSQL_port,                                          3456,                        'set: MYSQL.port';
         is $config->MYSQL_user,                                          'mysql_user',                'set: MYSQL.user';
         is $config->MYSQL_password,                                      'mysql_password',            'set: MYSQL.password';
         is $config->MYSQL_database,                                      'mysql_database',            'set: MYSQL.database';
         is $config->POSTGRESQL_host,                                     'postgresql-host',           'set: POSTGRESQL.host';
+        is $config->POSTGRESQL_port,                                     6543,                        'set: POSTGRESQL.port';
         is $config->POSTGRESQL_user,                                     'postgresql_user',           'set: POSTGRESQL.user';
         is $config->POSTGRESQL_password,                                 'postgresql_password',       'set: POSTGRESQL.password';
         is $config->POSTGRESQL_database,                                 'postgresql_database',       'set: POSTGRESQL.database';

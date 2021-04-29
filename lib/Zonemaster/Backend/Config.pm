@@ -377,7 +377,7 @@ Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backe
 Returns a string.
 
 
-=head2 MySQL_host
+=head2 MYSQL_host
 
 Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
 

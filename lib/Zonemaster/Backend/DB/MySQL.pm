@@ -38,8 +38,8 @@ sub dbh {
     else {
         my $database = $self->config->MYSQL_database;
         my $host     = $self->config->MYSQL_host;
-        my $user     = $self->config->MYSQL_user();
-        my $password = $self->config->MYSQL_password();
+        my $user     = $self->config->MYSQL_user;
+        my $password = $self->config->MYSQL_password;
 
         $log->notice( "Connecting to MySQL: database=$database host=$host user=$user" ) if $log->is_notice;
 

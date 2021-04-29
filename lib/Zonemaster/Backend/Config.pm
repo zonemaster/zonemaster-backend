@@ -118,7 +118,16 @@ sub parse {
         }
     }
 
-    # Validate, normalize, and apply default values
+    # Assign default values
+    $obj->{_DB_polling_interval}                                 = '0.5';
+    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = '600';
+    $obj->{_ZONEMASTER_maximal_number_of_retries}                = '0';
+    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = '20';
+    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = '20';
+    $obj->{_ZONEMASTER_lock_on_queue}                            = '0';
+    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = '600';
+
+    # Assign property values (part 1/2)
     {
         my $engine = $get_and_clear->( 'DB', 'engine' );
         eval {
@@ -130,22 +139,112 @@ sub parse {
         $obj->{_DB_engine} = $engine;
     }
 
-    $obj->{_DB_polling_interval}                                 = $get_and_clear->( 'DB',         'polling_interval' )                         // '0.5';
-    $obj->{_MYSQL_host}                                          = $get_and_clear->( 'MYSQL',      'host' )                                     // undef;
-    $obj->{_MYSQL_user}                                          = $get_and_clear->( 'MYSQL',      'user' )                                     // undef;
-    $obj->{_MYSQL_password}                                      = $get_and_clear->( 'MYSQL',      'password' )                                 // undef;
-    $obj->{_MYSQL_database}                                      = $get_and_clear->( 'MYSQL',      'database' )                                 // undef;
-    $obj->{_POSTGRESQL_host}                                     = $get_and_clear->( 'POSTGRESQL', 'host' )                                     // undef;
-    $obj->{_POSTGRESQL_user}                                     = $get_and_clear->( 'POSTGRESQL', 'user' )                                     // undef;
-    $obj->{_POSTGRESQL_password}                                 = $get_and_clear->( 'POSTGRESQL', 'password' )                                 // undef;
-    $obj->{_POSTGRESQL_database}                                 = $get_and_clear->( 'POSTGRESQL', 'database' )                                 // undef;
-    $obj->{_SQLITE_database_file}                                = $get_and_clear->( 'SQLITE',     'database_file' )                            // undef;
-    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' )            // '600';
-    $obj->{_ZONEMASTER_maximal_number_of_retries}                = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' )                // '0';
-    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) // '20';
-    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' )    // '20';
-    $obj->{_ZONEMASTER_lock_on_queue}                            = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' )                            // '0';
-    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' )                  // '600';
+    # Check required propertys (part 1/2)
+    if ( !defined $obj->DB_engine ) {
+        die "config: missing required property DB.engine\n";
+    }
+
+    # Check deprecated properties and assign fallback values
+    my @warnings;
+    if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
+
+        $obj->{_MYSQL_host} = $value
+          if $obj->DB_engine eq 'MySQL';
+
+        $obj->{_POSTGRESQL_host} = $value
+          if $obj->DB_engine eq 'PostgreSQL';
+    }
+    if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
+
+        $obj->{_MYSQL_user} = $value
+          if $obj->DB_engine eq 'MySQL';
+
+        $obj->{_POSTGRESQL_user} = $value
+          if $obj->DB_engine eq 'PostgreSQL';
+    }
+    if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
+
+        $obj->{_MYSQL_password} = $value
+          if $obj->DB_engine eq 'MySQL';
+
+        $obj->{_POSTGRESQL_password} = $value
+          if $obj->DB_engine eq 'PostgreSQL';
+    }
+    if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
+        push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
+
+        $obj->{_MYSQL_database} = $value
+          if $obj->DB_engine eq 'MySQL';
+
+        $obj->{_POSTGRESQL_database} = $value
+          if $obj->DB_engine eq 'PostgreSQL';
+
+        $obj->{_SQLITE_database_file} = $value
+          if $obj->DB_engine eq 'SQLite';
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
+        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
+
+        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
+        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
+
+        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value;
+    }
+
+    # Assign property values (part 2/2)
+    if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
+        $obj->{_DB_polling_interval} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
+        $obj->{_MYSQL_host} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {
+        $obj->{_MYSQL_user} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'password' ) ) ) {
+        $obj->{_MYSQL_password} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'database' ) ) ) {
+        $obj->{_MYSQL_database} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'host' ) ) ) {
+        $obj->{_POSTGRESQL_host} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'user' ) ) ) {
+        $obj->{_POSTGRESQL_user} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'password' ) ) ) {
+        $obj->{_POSTGRESQL_password} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'database' ) ) ) {
+        $obj->{_POSTGRESQL_database} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'SQLITE', 'database_file' ) ) ) {
+        $obj->{_SQLITE_database_file} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
+        $obj->{_ZONEMASTER_max_zonemaster_execution_time} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) ) ) {
+        $obj->{_ZONEMASTER_maximal_number_of_retries} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) ) ) {
+        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) ) ) {
+        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' ) ) ) {
+        $obj->{_ZONEMASTER_lock_on_queue} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
+        $obj->{_ZONEMASTER_age_reuse_previous_test} = $value;
+    }
 
     $obj->{_LANGUAGE_locale} = {};
     for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
@@ -167,65 +266,6 @@ sub parse {
     $obj->{_private_profiles} = {};
     for my $name ( $ini->Parameters( 'PRIVATE PROFILES' ) ) {
         $obj->{_private_profiles}{lc $name} = $get_and_clear->( 'PRIVATE PROFILES', $name );
-    }
-
-    # Check required propertys (part 1/2)
-    if ( !defined $obj->DB_engine ) {
-        die "config: missing required property DB.engine\n";
-    }
-
-    # Handle deprecated properties
-    my @warnings;
-    if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
-
-        $obj->{_MYSQL_host} = $value
-          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_host;
-
-        $obj->{_POSTGRESQL_host} = $value
-          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_host;
-    }
-    if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
-
-        $obj->{_MYSQL_user} = $value
-          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_user;
-
-        $obj->{_POSTGRESQL_user} = $value
-          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_user;
-    }
-    if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
-
-        $obj->{_MYSQL_password} = $value
-          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_password;
-
-        $obj->{_POSTGRESQL_password} = $value
-          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_password;
-    }
-    if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
-
-        $obj->{_MYSQL_database} = $value
-          if $obj->DB_engine eq 'MySQL' && !defined $obj->MYSQL_database;
-
-        $obj->{_POSTGRESQL_database} = $value
-          if $obj->DB_engine eq 'PostgreSQL' && !defined $obj->POSTGRESQL_database;
-
-        $obj->{_SQLITE_database_file} = $value
-          if $obj->DB_engine eq 'SQLite' && !defined $obj->SQLITE_database_file;
-    }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
-        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
-
-        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value
-          if !defined $obj->NumberOfProcessesForFrontendTesting;
-    }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
-        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
-
-        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value
-          if !defined $obj->NumberOfProcessesForBatchTesting;
     }
 
     # Check required propertys (part 2/2)

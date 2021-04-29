@@ -122,6 +122,7 @@ sub parse {
 
     # Assign default values
     $obj->_set_DB_polling_interval( '0.5' );
+    $obj->_set_MYSQL_port( '3306' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
     $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
@@ -199,6 +200,9 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
         $obj->_set_MYSQL_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'port' ) ) ) {
+        $obj->{_MYSQL_port} = $value;
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {
         $obj->_set_MYSQL_user( $value );
@@ -384,6 +388,14 @@ Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/b
 Returns a string.
 
 
+=head2 MYSQL_port
+
+Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port>
+property from the loaded config.
+
+Returns a number.
+
+
 =head2 MYSQL_password
 
 Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
@@ -484,6 +496,7 @@ Returns a number.
 # Getters for the properties documented above
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
+sub MYSQL_port                                          { return $_[0]->{_MYSQL_port}; }
 sub MYSQL_user                                          { return $_[0]->{_MYSQL_user}; }
 sub MYSQL_password                                      { return $_[0]->{_MYSQL_password}; }
 sub MYSQL_database                                      { return $_[0]->{_MYSQL_database}; }
@@ -503,6 +516,7 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 UNITCHECK {
     _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
     _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_host );
+    _create_setter( '_set_MYSQL_port',                                          '_MYSQL_port',                                          \&untaint_strictly_positive_int );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
     _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
     _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );

@@ -70,7 +70,7 @@ Default value: `0.5`.
 
 ## MYSQL section
 
-Available keys : `host`, `user`, `password`, `database`.
+Available keys : `host`, `port`, `user`, `password`, `database`.
 
 ### host
 
@@ -79,6 +79,13 @@ An [LDH domain name] or IP address.
 The host name of the machine on which the MySQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
+
+### port
+
+The port the MySQL server is listening on. If the server is on the local
+machine, then the [MYSQL.host] value must contain the loopback IP
+address (127.0.0.1).
+Default value: `3306`.
 
 ### user
 
@@ -111,7 +118,7 @@ If this property is unspecified, the value of [DB.database_name] is used instead
 
 ## POSTGRESQL section
 
-Available keys : `host`, `user`, `password`, `database`.
+Available keys : `host`, `port`, `user`, `password`, `database`.
 
 ### host
 
@@ -120,6 +127,11 @@ An [LDH domain name] or IP address.
 The host name of the machine on which the PostgreSQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
+
+### port
+
+The port the PostgreSQL server is listening on.
+Default value: `5432`.
 
 ### user
 

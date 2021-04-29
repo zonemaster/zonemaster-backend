@@ -311,7 +311,7 @@ sub check_db {
 
 =head2 DB_engine
 
-Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
+Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#engine>.
 
 Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 

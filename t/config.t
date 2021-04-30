@@ -147,10 +147,150 @@ subtest 'Everything but NoWarnings' => sub {
         my $text = q{
             [DB]
             engine = Excel
+
+            [SQLITE]
+            databse_file = /var/db/zonemaster.sqlite
+
+            [ZNMEOTAESR]
+            lock_on_queue = 1
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{section.*ZNMEOTAESR}, 'die: Invalid section name';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+            pnlilog_iatnvrel = 0.5
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{property.*pnlilog_iatnvrel}, 'die: Invalid property name';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = Excel
         };
         Zonemaster::Backend::Config->parse( $text );
     }
     qr/DB\.engine.*Excel/, 'die: Invalid DB.engine value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            user = zonemaster_user
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.host/, 'die: Missing MYSQL.host value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.user/, 'die: Missing MYSQL.user value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.password/, 'die: Missing MYSQL.password value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            password = zonemaster_password
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.database/, 'die: Missing MYSQL.database value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            user = zonemaster_user
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.host/, 'die: Missing POSTGRESQL.host value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.user/, 'die: Missing POSTGRESQL.user value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.password/, 'die: Missing POSTGRESQL.password value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            password = zonemaster_password
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.database/, 'die: Missing POSTGRESQL.database value';
 
     throws_ok {
         my $text = q{

@@ -228,17 +228,6 @@ sub parse {
           if !defined $obj->NumberOfProcessesForBatchTesting;
     }
 
-    # Check unknown property names
-    my @unrecognized;
-    for my $section ( $ini->Sections ) {
-        for my $param ( $ini->Parameters( $section ) ) {
-            push @unrecognized, "$section.$param";
-        }
-    }
-    if ( @unrecognized ) {
-        die "config: unrecognized property(s): " . join( ", ", sort @unrecognized ) . "\n";
-    }
-
     # Check required propertys (part 2/2)
     if ( $obj->DB_engine eq 'MySQL' ) {
         die "config: missing required property MYSQL.host (required when DB.engine = MySQL and DB.database_host is unset)\n"
@@ -269,6 +258,19 @@ sub parse {
     elsif ( $obj->DB_engine eq 'SQLite' ) {
         die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite and DB.database_name is unset)\n"
           if !defined $obj->SQLITE_database_file;
+    }
+
+    # Check unknown property names
+    {
+        my @unrecognized;
+        for my $section ( $ini->Sections ) {
+            for my $param ( $ini->Parameters( $section ) ) {
+                push @unrecognized, "$section.$param";
+            }
+        }
+        if ( @unrecognized ) {
+            die "config: unrecognized property(s): " . join( ", ", sort @unrecognized ) . "\n";
+        }
     }
 
     # Emit deprecation warnings

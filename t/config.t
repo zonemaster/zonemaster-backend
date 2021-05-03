@@ -137,6 +137,23 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'fallback: SQLITE.database_file';
     };
 
+    lives_and {
+        my $text = q{
+            [DB]
+            engine = SQLite
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+            [ZONEMASTER]
+            number_of_professes_for_frontend_testing = 21
+            number_of_professes_for_batch_testing    = 22
+        };
+        my $config = Zonemaster::Backend::Config->parse( $text );
+        $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_frontend_testing/, 'deprecated: ZONEMASTER.number_of_professes_for_frontend_testing' );
+        $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_batch_testing/,    'deprecated: ZONEMASTER.number_of_professes_for_batch_testing' );
+        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, '21', 'fallback: ZONEMASTER.number_of_processes_for_frontend_testing';
+        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    '22', 'fallback: ZONEMASTER.number_of_processes_for_batch_testing';
+    };
+
     throws_ok {
         my $text = '{"this":"is","not":"a","valid":"ini","file":"!"}';
         Zonemaster::Backend::Config->parse( $text );

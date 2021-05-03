@@ -9,8 +9,20 @@ use 5.14.2;
 use JSON::PP;
 use Data::Dumper;
 
-requires 'add_api_user_to_db', 'user_exists_in_db', 'user_authorized', 'test_progress', 'test_results',
-  'create_new_batch_job', 'create_new_test', 'get_test_params', 'get_test_history', 'add_batch_job', 'build_process_unfinished_tests_select_query', 'process_unfinished_tests_give_up';
+requires qw(
+  add_api_user_to_db
+  add_batch_job
+  create_new_batch_job
+  create_new_test
+  get_test_history
+  get_test_params
+  process_unfinished_tests_give_up
+  select_unfinished_tests
+  test_progress
+  test_results
+  user_authorized
+  user_exists_in_db
+);
 
 sub user_exists {
     my ( $self, $user ) = @_;
@@ -44,7 +56,7 @@ sub get_test_request {
     
     
     my ( $id, $hash_id );
-    my $lock_on_queue = $self->config->lock_on_queue();
+    my $lock_on_queue = $self->config->ZONEMASTER_lock_on_queue;
     if ( defined $lock_on_queue ) {
         ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $lock_on_queue );
     }
@@ -92,14 +104,10 @@ sub get_batch_job_result {
 sub process_unfinished_tests {
     my ( $self ) = @_;
     
-    my $dbh = $self->dbh;
-    
-    my $query = $self->build_process_unfinished_tests_select_query();
+    my $sth1 = $self->select_unfinished_tests();
         
-    my $sth1 = $dbh->prepare( $query );
-    $sth1->execute( );
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
+        if ( $h->{nb_retries} < $self->config->ZONEMASTER_maximal_number_of_retries ) {
             $self->schedule_for_retry($h->{hash_id});
         }
         else {

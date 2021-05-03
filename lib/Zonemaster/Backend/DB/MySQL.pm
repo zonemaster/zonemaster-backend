@@ -336,27 +336,38 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub build_process_unfinished_tests_select_query {
+sub select_unfinished_tests {
     my ( $self ) = @_;
-    
-    if ($self->config->lock_on_queue()) {
-        return "
+
+    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
-            FROM test_results 
-            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ".$self->config->MaxZonemasterExecutionTime()." SECOND) 
-            AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+            FROM test_results
+            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ? SECOND)
+            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100
-            AND queue = ".$self->config->lock_on_queue();
+            AND queue = ?" );
+        $sth->execute(    #
+            $self->config->ZONEMASTER_max_zonemaster_execution_time,
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+            $self->config->ZONEMASTER_lock_on_queue,
+        );
+        return $sth;
     }
     else {
-        return "
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
-            FROM test_results 
-            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ".$self->config->MaxZonemasterExecutionTime()." SECOND) 
-            AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
+            FROM test_results
+            WHERE test_start_time < DATE_SUB(NOW(), INTERVAL ? SECOND)
+            AND nb_retries <= ?
             AND progress > 0
-            AND progress < 100";
+            AND progress < 100" );
+        $sth->execute(    #
+            $self->config->ZONEMASTER_max_zonemaster_execution_time,
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+        );
+        return $sth;
     }
 }
 

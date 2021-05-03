@@ -10,7 +10,7 @@ use Zonemaster::Backend::Config;
 use Zonemaster::Backend::DB::PostgreSQL;
 
 my $config = Zonemaster::Backend::Config->load_config();
-if ( $config->BackendDBType() ne 'PostgreSQL' ) {
+if ( $config->DB_engine ne 'PostgreSQL' ) {
     die "The configuration file does not contain the MySQL backend";
 }
 my $dbh     = Zonemaster::Backend::DB::PostgreSQL->new( { config => $config } )->dbh;

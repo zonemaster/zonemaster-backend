@@ -151,7 +151,7 @@ sub main {
             }
         }
         else {
-            sleep $self->config->PollingInterval();
+            sleep $self->config->DB_polling_interval;
         }
     }
 

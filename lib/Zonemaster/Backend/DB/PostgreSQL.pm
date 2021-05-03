@@ -142,16 +142,23 @@ sub create_new_test {
     my $priority = $test_params->{priority};
     my $queue = $test_params->{queue};
 
-    my $query =
-        "INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
-      . $dbh->quote( $batch_id ) . ", "
-      . $dbh->quote( $priority ) . ", "
-      . $dbh->quote( $queue ) . ", "
-      . $dbh->quote( $test_params_deterministic_hash ) . ", "
-      . $dbh->quote( $encoded_params )
-      . " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > NOW()-'$minutes_between_tests_with_same_params minutes'::interval)";
-
-    my $nb_inserted = $dbh->do( $query );
+    my $sth = $dbh->prepare( "
+        INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params)
+        SELECT ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+            SELECT * FROM test_results
+            WHERE params_deterministic_hash = ?
+              AND creation_time > NOW() - ?::interval
+        )" );
+    my $nb_inserted = $sth->execute(    #
+        $batch_id,
+        $priority,
+        $queue,
+        $test_params_deterministic_hash,
+        $encoded_params,
+        $test_params_deterministic_hash,
+        sprintf( "%d minutes", $minutes_between_tests_with_same_params ),
+    );
 
     my ( undef, $hash_id ) = $dbh->selectrow_array(
         "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $test_params_deterministic_hash );
@@ -307,25 +314,38 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub build_process_unfinished_tests_select_query {
+sub select_unfinished_tests {
     my ( $self ) = @_;
-    
-    if ($self->config->lock_on_queue()) {
-        return "
+
+    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
-            FROM test_results 
-            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            FROM test_results
+            WHERE test_start_time < NOW() - ?::interval
+            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100
-            AND queue=".$self->config->lock_on_queue();
+            AND queue = ?" );
+        $sth->execute(    #
+            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+            $self->config->ZONEMASTER_lock_on_queue,
+        );
+        return $sth;
     }
     else {
-        return "
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
-            FROM test_results 
-            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            FROM test_results
+            WHERE test_start_time < NOW() - ?::interval
+            AND nb_retries <= ?
             AND progress > 0
-            AND progress < 100";
+            AND progress < 100" );
+        $sth->execute(    #
+            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+        );
+        return $sth;
     }
 }
 

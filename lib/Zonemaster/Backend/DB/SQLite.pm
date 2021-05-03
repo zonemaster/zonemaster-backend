@@ -188,9 +188,10 @@ sub create_new_test {
     # Search for recent test result with the test same parameters, where "$minutes"
     # gives the time limit for how old test result that is accepted.
     my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', '-$minutes minutes')",
+        "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', ?)",
         undef,
         $test_params_deterministic_hash,
+        "-$minutes minutes"
     );
 
     if ( $recent_hash_id ) {
@@ -371,28 +372,39 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub build_process_unfinished_tests_select_query {
-     my ( $self ) = @_;
-     
-     if ($self->config->lock_on_queue()) {
-          return "
-               SELECT hash_id, results, nb_retries
-               FROM test_results 
-               WHERE test_start_time < DATETIME('now', '-".$self->config->MaxZonemasterExecutionTime()." seconds')
-               AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
-               AND progress > 0
-               AND progress < 100
-               AND queue=".$self->config->lock_on_queue();
-     }
-     else {
-          return "
-               SELECT hash_id, results, nb_retries
-               FROM test_results 
-               WHERE test_start_time < DATETIME('now', '-".$self->config->MaxZonemasterExecutionTime()." seconds')
-               AND nb_retries <= ".$self->config->maximal_number_of_retries()." 
-               AND progress > 0
-               AND progress < 100";
-     }
+sub select_unfinished_tests {
+    my ( $self ) = @_;
+
+    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+        my $sth = $self->dbh->prepare( "
+            SELECT hash_id, results, nb_retries
+            FROM test_results
+            WHERE test_start_time < DATETIME('now', ?)
+            AND nb_retries <= ?
+            AND progress > 0
+            AND progress < 100
+            AND queue = ?" );
+        $sth->execute(    #
+            sprintf( "-%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+            $self->config->ZONEMASTER_lock_on_queue,
+        );
+        return $sth;
+    }
+    else {
+        my $sth = $self->dbh->prepare( "
+            SELECT hash_id, results, nb_retries
+            FROM test_results
+            WHERE test_start_time < DATETIME('now', ?)
+            AND nb_retries <= ?
+            AND progress > 0
+            AND progress < 100" );
+        $sth->execute(    #
+            sprintf( "-%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+        );
+        return $sth;
+    }
 }
 
 sub process_unfinished_tests_give_up {

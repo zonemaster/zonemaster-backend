@@ -50,7 +50,7 @@ sub new {
     if ( $params->{dbtype} ) {
         $dbtype = $self->{config}->check_db($params->{dbtype});
     } else {
-        $dbtype = $self->{config}->BackendDBType();
+        $dbtype = $self->{config}->DB_engine;
     }
 
     $self->_init_db($dbtype);
@@ -385,7 +385,7 @@ sub start_domain_test {
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
-        my $shelf_life_seconds = $self->{config}->age_reuse_previous_test;
+        my $shelf_life_seconds = $self->{config}->ZONEMASTER_age_reuse_previous_test;
         my $shelf_life_minutes = int ( ($shelf_life_seconds / 60) + 0.5);
 
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $shelf_life_minutes );

@@ -745,7 +745,7 @@ sub _normalize_engine_type {
         sqlite     => 'SQLite',
     };
 
-    return scalar $db_module_names->{ lc $value };
+    return $db_module_names->{ lc $value };
 }
 
 1;

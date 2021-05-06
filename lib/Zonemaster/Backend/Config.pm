@@ -5,6 +5,7 @@ use 5.14.2;
 
 our $VERSION = '1.1.0';
 
+use Carp qw( confess );
 use Config::IniFiles;
 use Config;
 use File::ShareDir qw[dist_file];
@@ -119,13 +120,13 @@ sub parse {
     }
 
     # Assign default values
-    $obj->{_DB_polling_interval}                                 = '0.5';
-    $obj->{_ZONEMASTER_max_zonemaster_execution_time}            = '600';
-    $obj->{_ZONEMASTER_maximal_number_of_retries}                = '0';
-    $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = '20';
-    $obj->{_ZONEMASTER_number_of_processes_for_batch_testing}    = '20';
-    $obj->{_ZONEMASTER_lock_on_queue}                            = '0';
-    $obj->{_ZONEMASTER_age_reuse_previous_test}                  = '600';
+    $obj->_set_DB_polling_interval( '0.5' );
+    $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
+    $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
+    $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
+    $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
+    $obj->_set_ZONEMASTER_lock_on_queue( '0' );
+    $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
 
     # Assign property values (part 1/2)
     {
@@ -136,7 +137,7 @@ sub parse {
         if ($@) {
             die "Unknown config value DB.engine: $engine\n";
         }
-        $obj->{_DB_engine} = $engine;
+        $obj->_set_DB_engine( $engine );
     }
 
     # Check required propertys (part 1/2)
@@ -149,101 +150,103 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
         push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
 
-        $obj->{_MYSQL_host} = $value
+        $obj->_set_MYSQL_host( $value )
           if $obj->DB_engine eq 'MySQL';
 
-        $obj->{_POSTGRESQL_host} = $value
+        $obj->_set_POSTGRESQL_host( $value )
           if $obj->DB_engine eq 'PostgreSQL';
     }
+
     if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
         push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
 
-        $obj->{_MYSQL_user} = $value
+        $obj->_set_MYSQL_user( $value )
           if $obj->DB_engine eq 'MySQL';
 
-        $obj->{_POSTGRESQL_user} = $value
+        $obj->_set_POSTGRESQL_user( $value )
           if $obj->DB_engine eq 'PostgreSQL';
     }
+
     if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
         push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
 
-        $obj->{_MYSQL_password} = $value
+        $obj->_set_MYSQL_password( $value )
           if $obj->DB_engine eq 'MySQL';
 
-        $obj->{_POSTGRESQL_password} = $value
+        $obj->_set_POSTGRESQL_password( $value )
           if $obj->DB_engine eq 'PostgreSQL';
     }
     if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
         push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
 
-        $obj->{_MYSQL_database} = $value
+        $obj->_set_MYSQL_database( $value )
           if $obj->DB_engine eq 'MySQL';
 
-        $obj->{_POSTGRESQL_database} = $value
+        $obj->_set_POSTGRESQL_database( $value )
           if $obj->DB_engine eq 'PostgreSQL';
 
-        $obj->{_SQLITE_database_file} = $value
+        $obj->_set_SQLITE_database_file( $value )
           if $obj->DB_engine eq 'SQLite';
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
         push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
 
-        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value;
+        $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
         push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
 
-        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value;
+        $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( $value );
     }
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
-        $obj->{_DB_polling_interval} = $value;
+        $obj->_set_DB_polling_interval( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
-        $obj->{_MYSQL_host} = $value;
+        $obj->_set_MYSQL_host( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {
-        $obj->{_MYSQL_user} = $value;
+        $obj->_set_MYSQL_user( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'password' ) ) ) {
-        $obj->{_MYSQL_password} = $value;
+        $obj->_set_MYSQL_password( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'database' ) ) ) {
-        $obj->{_MYSQL_database} = $value;
+        $obj->_set_MYSQL_database( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'host' ) ) ) {
-        $obj->{_POSTGRESQL_host} = $value;
+        $obj->_set_POSTGRESQL_host( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'user' ) ) ) {
-        $obj->{_POSTGRESQL_user} = $value;
+        $obj->_set_POSTGRESQL_user( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'password' ) ) ) {
-        $obj->{_POSTGRESQL_password} = $value;
+        $obj->_set_POSTGRESQL_password( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'database' ) ) ) {
-        $obj->{_POSTGRESQL_database} = $value;
+        $obj->_set_POSTGRESQL_database( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'SQLITE', 'database_file' ) ) ) {
-        $obj->{_SQLITE_database_file} = $value;
+        $obj->_set_SQLITE_database_file( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
-        $obj->{_ZONEMASTER_max_zonemaster_execution_time} = $value;
+        $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) ) ) {
-        $obj->{_ZONEMASTER_maximal_number_of_retries} = $value;
+        $obj->_set_ZONEMASTER_maximal_number_of_retries( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) ) ) {
-        $obj->{_ZONEMASTER_number_of_processes_for_frontend_testing} = $value;
+        $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_batch_testing' ) ) ) {
-        $obj->{_ZONEMASTER_number_of_processes_for_batch_testing} = $value;
+        $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'lock_on_queue' ) ) ) {
-        $obj->{_ZONEMASTER_lock_on_queue} = $value;
+        $obj->_set_ZONEMASTER_lock_on_queue( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
-        $obj->{_ZONEMASTER_age_reuse_previous_test} = $value;
+        $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
 
     $obj->{_LANGUAGE_locale} = {};
@@ -456,6 +459,7 @@ Returns an integer.
 
 =cut
 
+# Getters for the properties documented above
 sub DB_engine                                           { return $_[0]->{_DB_engine}; }
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
@@ -474,6 +478,26 @@ sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMA
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 
+# Compile time generation of setters for the properties documented above
+UNITCHECK {
+    _create_setter( '_set_DB_engine',                                           '_DB_engine' );
+    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval' );
+    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host' );
+    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user' );
+    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password' );
+    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database' );
+    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host' );
+    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user' );
+    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password' );
+    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database' );
+    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file' );
+    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time' );
+    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries' );
+    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue' );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing' );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing' );
+    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test' );
+}
 
 =head2 Language_Locale_hash
 
@@ -692,6 +716,24 @@ sub new_PM {
     );
 
     return $pm;
+}
+
+# Create a setter method with a given name using the given field
+sub _create_setter {
+    my ( $setter, $field ) = @_;
+
+    my $setter_impl = sub {
+        my ( $self, $value ) = @_;
+
+        $self->{$field} = $value;
+
+        return;
+    };
+
+    no strict 'refs';
+    *$setter = $setter_impl;
+
+    return;
 }
 
 1;

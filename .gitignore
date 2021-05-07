@@ -1,4 +1,4 @@
-Makefile
+/Makefile
 Makefile.old
 Build
 Build.bat
@@ -15,7 +15,9 @@ pod2htm*.tmp
 pm_to_blib
 Zonemaster-*
 Zonemaster-*.tar.gz
-*.bak
 .orig
-.*~
 inc
+
+# Ignore Emacs and other backup files
+*.bak
+*~

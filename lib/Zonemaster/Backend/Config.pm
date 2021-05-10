@@ -12,6 +12,7 @@ use File::ShareDir qw[dist_file];
 use File::Slurp qw( read_file );
 use Log::Any qw( $log );
 use Readonly;
+use Zonemaster::Backend::Validator qw( :untaint );
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -129,15 +130,8 @@ sub parse {
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
 
     # Assign property values (part 1/2)
-    {
-        my $engine = $get_and_clear->( 'DB', 'engine' );
-        eval {
-            $engine = $obj->check_db($engine);
-        };
-        if ($@) {
-            die "Unknown config value DB.engine: $engine\n";
-        }
-        $obj->_set_DB_engine( $engine );
+    if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
+        $obj->_set_DB_engine( $value );
     }
 
     # Check required propertys (part 1/2)
@@ -339,18 +333,10 @@ Dies if the value is not one of SQLite, PostgreSQL or MySQL.
 sub check_db {
     my ( $self, $db ) = @_;
 
-    if ( lc $db eq 'sqlite' ) {
-        return 'SQLite';
-    }
-    elsif ( lc $db eq 'postgresql' ) {
-        return 'PostgreSQL';
-    }
-    elsif ( lc $db eq 'mysql' ) {
-        return 'MySQL';
-    }
-    else {
-        die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
-    }
+    $db = untaint_engine_type( $db )    #
+      // die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
+
+    return _normalize_engine_type( $db );
 }
 
 
@@ -360,6 +346,22 @@ Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/bl
 
 Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 
+=cut
+
+sub DB_engine {
+    my ( $self ) = @_;
+    return $self->{_DB_engine};
+}
+
+sub _set_DB_engine {
+    my ( $self, $value ) = @_;
+
+    $value = untaint_engine_type( $value )    #
+      // die "Invalid value for DB.engine: $value\n";
+
+    $self->{_DB_engine} = _normalize_engine_type( $value );
+    return;
+}
 
 =head2 DB_polling_interval
 
@@ -460,7 +462,6 @@ Returns an integer.
 =cut
 
 # Getters for the properties documented above
-sub DB_engine                                           { return $_[0]->{_DB_engine}; }
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
 sub MYSQL_user                                          { return $_[0]->{_MYSQL_user}; }
@@ -480,7 +481,6 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
-    _create_setter( '_set_DB_engine',                                           '_DB_engine' );
     _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval' );
     _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host' );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user' );
@@ -734,6 +734,18 @@ sub _create_setter {
     *$setter = $setter_impl;
 
     return;
+}
+
+sub _normalize_engine_type {
+    my ( $value ) = @_;
+
+    state $db_module_names = {
+        mysql      => 'MySQL',
+        postgresql => 'PostgreSQL',
+        sqlite     => 'SQLite',
+    };
+
+    return scalar $db_module_names->{ lc $value };
 }
 
 1;

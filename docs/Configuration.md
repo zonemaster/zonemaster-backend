@@ -123,7 +123,7 @@ If this property is unspecified, the value of [DB.database_host] is used instead
 
 ### user
 
-A US ASCII-only [PostgreSQL identifier].
+A US ASCII-only [PostgreSQL identifier]. Max length 63 characters.
 
 The name of the user with sufficient permission to access the database.
 
@@ -141,7 +141,7 @@ If this property is unspecified, the value of [DB.password] is used instead.
 
 ### database
 
-A US ASCII-only [PostgreSQL identifier].
+A US ASCII-only [PostgreSQL identifier]. Max length 63 characters.
 
 The name of the database to use.
 

@@ -63,13 +63,13 @@ Readonly my $MARIADB_DATABASE_LENGTH_RE => qr/^.{1,64}$/;
 Readonly my $MARIADB_IDENT_RE       => qr/^[0-9a-z\$_]+$/i;
 Readonly my $MARIADB_USER_LENGTH_RE => qr/^.{1,80}$/u;
 
-# Up to 9 and 6 digits in the integer and fraction components respectively
+# Up to 5 and 3 digits in the integer and fraction components respectively
 Readonly my $MILLIS_RE => qr/^(?:0|[1-9][0-9]{0,4})(?:[.][0-9]{1,3})?$/;
 
 # Printable ASCII but first character must not be space or '<'
 Readonly my $PASSWORD_RE => qr/^(?:[\x21-\x3b\x3d-\x7e][\x20-\x7e]{0,99})?$/;
 
-# Allow for 15 significant digits
+# Allow for 5 significant digits
 Readonly my $POSITIVE_INT_RE => qr/^[1-9][0-9]{0,4}$/;
 
 # At least one non-zero digit
@@ -81,7 +81,7 @@ Readonly my $PROFILE_NAME_RE        => qr/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a
 Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 
-# Allow for 15 significant digits
+# Allow for 5 significant digits
 Readonly my $UNSIGNED_INT_RE => qr/^(?:0|[1-9][0-9]{0,4})$/;
 Readonly my $USERNAME_RE     => qr/^[a-z0-9-.@]{1,50}$/i;
 

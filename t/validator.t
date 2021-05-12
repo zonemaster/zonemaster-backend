@@ -67,6 +67,7 @@ subtest 'Everything but NoWarnings' => sub {
     subtest 'untaint_mariadb_database' => sub {
         is scalar untaint_mariadb_database( 'zonemaster' ),    'zonemaster',  'accept: zonemaster';
         is scalar untaint_mariadb_database( 'ZONEMASTER' ),    'ZONEMASTER',  'accept: ZONEMASTER';
+        is scalar untaint_mariadb_database( 'dollar$' ),       'dollar$',     'accept: dollar$';
         is scalar untaint_mariadb_database( '$dollar' ),       '$dollar',     'accept: $dollar';
         is scalar untaint_mariadb_database( '0zonemaster' ),   '0zonemaster', 'accept: 0zonemaster';
         is scalar untaint_mariadb_database( 'zm_backend' ),    'zm_backend',  'accept: zm_backend';
@@ -139,6 +140,7 @@ subtest 'Everything but NoWarnings' => sub {
         is scalar untaint_postgresql_ident( 'zonemaster' ),    'zonemaster', 'accept: zonemaster';
         is scalar untaint_postgresql_ident( 'ZONEMASTER' ),    'ZONEMASTER', 'accept: ZONEMASTER';
         is scalar untaint_postgresql_ident( 'zm_backend' ),    'zm_backend', 'accept: zm_backend';
+        is scalar untaint_postgresql_ident( 'dollar$' ),       'dollar$',    'accept: dollar$';
         is scalar untaint_postgresql_ident( '$dollar' ),       undef,        'reject: $dollar';
         is scalar untaint_postgresql_ident( 'zm backend' ),    undef,        'reject: zm backend';
         is scalar untaint_postgresql_ident( '0zonemaster' ),   undef,        'reject: 0zonemaster';

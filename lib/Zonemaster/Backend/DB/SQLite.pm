@@ -172,7 +172,7 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $seconds, $batch_id ) = @_;
 
     my $dbh = $self->dbh;
 
@@ -185,13 +185,13 @@ sub create_new_test {
     my $priority = $test_params->{priority};
     my $queue = $test_params->{queue};
 
-    # Search for recent test result with the test same parameters, where "$minutes"
+    # Search for recent test result with the test same parameters, where "$seconds"
     # gives the time limit for how old test result that is accepted.
     my ( $recent_hash_id ) = $dbh->selectrow_array(
         "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', ?)",
         undef,
         $test_params_deterministic_hash,
-        "-$minutes minutes"
+        "-$seconds seconds"
     );
 
     if ( $recent_hash_id ) {

@@ -4,9 +4,11 @@ use 5.14.2;
 
 use Test::More;    # see done_testing()
 use Test::Exception;
+
 use Zonemaster::Engine;
 use JSON::PP;
 use File::ShareDir qw[dist_file];
+use File::Temp qw[tempdir];
 
 # Use the TARGET environment variable to set the database to use
 # default to SQLite
@@ -19,6 +21,8 @@ if ( not $db_backend ) {
 
 diag "database: $db_backend";
 
+my $tempdir = tempdir( CLEANUP => 1 );
+
 my $datafile = q{t/test01.data};
 if ( not $ENV{ZONEMASTER_RECORD} ) {
     die q{Stored data file missing} if not -r $datafile;
@@ -29,20 +33,30 @@ if ( not $ENV{ZONEMASTER_RECORD} ) {
     diag "recording";
 }
 
-# The configuration file should be the default
-# configuration file, unless the ENV variable below is already
-# set (e.g. for Travis). Set the ENV variable, and this must
-# be done before Zonemaster::Backend::Config is loaded.
-unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
-       $ENV{ZONEMASTER_BACKEND_CONFIG_FILE} =
-       dist_file('Zonemaster-Backend', "backend_config.ini");
-};
-
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
 use_ok( 'Zonemaster::Backend::Config' );
-my $config = Zonemaster::Backend::Config->load_config();
+
+my $config = Zonemaster::Backend::Config->parse( <<EOF );
+[DB]
+engine = $db_backend
+
+[MYSQL]
+host     = localhost
+user     = travis_zm
+password = travis_zonemaster
+database = travis_zonemaster
+
+[POSTGRESQL]
+host     = localhost
+user     = travis_zonemaster
+password = travis_zonemaster
+database = travis_zonemaster
+
+[SQLITE]
+database_file = $tempdir/zonemaster.sqlite
+EOF
 
 # Create Zonemaster::Backend::RPCAPI object
 my $engine = Zonemaster::Backend::RPCAPI->new(
@@ -115,7 +129,7 @@ sub run_zonemaster_test_with_backend_API {
 
     is( $engine->test_progress( { test_id => $hash_id } ), 100 , 'API test_progress -> Test finished' );
 
-    my $test_results = $engine->get_test_results( { id => $hash_id, language => 'fr_FR' } );
+    my $test_results = $engine->get_test_results( { id => $hash_id, language => 'en_US' } );
     ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
     ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );

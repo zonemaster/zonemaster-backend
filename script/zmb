@@ -270,6 +270,34 @@ sub cmd_test_progress {
 }
 
 
+=head2 get_test_params
+
+ zmb [GLOBAL OPTIONS] get_test_params [OPTIONS]
+
+ Options:
+   --test-id TEST_ID
+
+=cut
+
+sub cmd_get_test_params {
+    my @opts = @_;
+
+    my $opt_test_id;
+    GetOptionsFromArray(    #
+        \@opts,
+        'test-id|t=s' => \$opt_test_id,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_test_params',
+        params => {
+            test_id => $opt_test_id,
+        },
+    );
+}
+
+
 =head2 get_test_results
 
  zmb [GLOBAL OPTIONS] get_test_results [OPTIONS]

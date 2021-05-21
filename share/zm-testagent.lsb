@@ -28,7 +28,7 @@ if [ -n "$ZM_BACKEND_TESTAGENT_LOGLEVEL" ] ; then
 fi
 
 start () {
-    $BINDIR/zonemaster_backend_testagent $testagent_args start
+    $BINDIR/zonemaster_backend_testagent $testagent_args start || exit 1
 }
 
 stop () {

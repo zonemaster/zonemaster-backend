@@ -6,6 +6,10 @@ use Test::More tests => 2;
 use Test::NoWarnings;
 use Test::Exception;
 use Log::Any::Test;    # Must come before use Log::Any
+
+use File::Basename qw( dirname );
+use File::Slurp qw( read_file );
+use File::Spec::Functions qw( catfile );
 use Log::Any qw( $log );
 
 subtest 'Everything but NoWarnings' => sub {
@@ -338,4 +342,13 @@ subtest 'Everything but NoWarnings' => sub {
         Zonemaster::Backend::Config->parse( $text );
     }
     qr/LANGUAGE\.locale.*en_US/, 'die: Repeated locale_tag in LANGUAGE.locale';
+
+    {
+        my $path = catfile( dirname( $0 ), '..', 'share', 'backend_config.ini' );
+        my $text = read_file( $path );
+        lives_ok {
+            Zonemaster::Backend::Config->parse( $text );
+        } 'default config is valid';
+    }
+
 };

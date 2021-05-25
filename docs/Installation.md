@@ -60,7 +60,7 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-NoWarnings perl-Test-Warn redhat-lsb-core
+sudo yum -y install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-NoWarnings perl-Test-Warn perl-Try-Tiny redhat-lsb-core
 ```
 
 > **Note:** perl-Net-Server and perl-Test-Warn are listed here even though they
@@ -70,7 +70,7 @@ sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQ
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman Try::Tiny
+sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman
 ```
 
 Install Zonemaster::Backend:
@@ -133,7 +133,7 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 Install, configure and start database engine:
 
 ```sh
-sudo yum install mariadb-server
+sudo yum -y install mariadb-server
 sudo systemctl enable mariadb
 sudo systemctl start mariadb
 ```
@@ -210,7 +210,7 @@ Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
 sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```

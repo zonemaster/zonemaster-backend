@@ -624,7 +624,11 @@ To check the running daemons run:
 
 ```sh
 service mysql-server status      # If mysql-server is installed
+```
+```sh
 service postgresql status        # If postgresql is installed
+```
+```sh
 service zm_rpcapi status
 service zm_testagent status
 ```

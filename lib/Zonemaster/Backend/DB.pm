@@ -118,7 +118,13 @@ sub process_unfinished_tests {
             else {
                 $result = [];
             }
-            push(@$result, {"level" => "CRITICAL", "module" => "BACKEND_TEST_AGENT", "tag" => "UNABLE_TO_FINISH_TEST", "timestamp" => $self->config->MaxZonemasterExecutionTime()});
+            push @$result,
+              {
+                "level"     => "CRITICAL",
+                "module"    => "BACKEND_TEST_AGENT",
+                "tag"       => "UNABLE_TO_FINISH_TEST",
+                "timestamp" => $self->config->ZONEMASTER_max_zonemaster_execution_time
+              };
             $self->process_unfinished_tests_give_up($result, $h->{hash_id});
         }
     }

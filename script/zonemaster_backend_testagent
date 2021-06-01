@@ -125,6 +125,8 @@ sub main {
     };
     local $SIG{TERM} = $catch_sigterm;
 
+    my $agent = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
+
     while ( !$caught_sigterm ) {
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
@@ -136,8 +138,7 @@ sub main {
             $log->info( "Test found: $id" );
             if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
                 $log->info( "Test starting: $id" );
-                my $ta = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
-                eval { $ta->run( $id ) };
+                eval { $agent->run( $id ) };
                 if ( $@ ) {
                     chomp $@;
                     $log->error( "Test died: $id: $@" );
@@ -145,12 +146,12 @@ sub main {
                 else {
                     $log->info( "Test completed: $id" );
                 }
-                $ta->reset();
+                $agent->reset();
                 $self->pm->finish;                   # Terminates child process
             }
         }
         else {
-            sleep $self->config->PollingInterval();
+            sleep $self->config->DB_polling_interval;
         }
     }
 

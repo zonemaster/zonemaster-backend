@@ -6,9 +6,10 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
-use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use JSON::PP;
+use Log::Any qw($log);
 
 use Zonemaster::Backend::DB;
 use Zonemaster::Backend::Config;
@@ -34,13 +35,22 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $connection_string   = $self->config->DB_connection_string( 'postgresql' );
-        my $connection_args     = { RaiseError => 1, AutoCommit => 1 };
-        my $connection_user     = $self->config->DB_user();
-        my $connection_password = $self->config->DB_password();
-        $dbh = DBI->connect( $connection_string, $connection_user, $connection_password, $connection_args );
-#        $dbh->{InactiveDestroy} = 1;
-# This line vas introduced to fix a non-trivial, hard to reproduce problem, it is causing giant memory leaks. It is kept here commented out for a while in case the initial problem occurs again.
+        my $database = $self->config->POSTGRESQL_database;
+        my $host     = $self->config->POSTGRESQL_host;
+        my $user     = $self->config->POSTGRESQL_user;
+        my $password = $self->config->POSTGRESQL_password;
+
+        $log->notice( "Connecting to PostgreSQL: database=$database host=$host user=$user" ) if $log->is_notice;
+        $dbh = DBI->connect(
+            "DBI:Pg:database=$database;host=$host",
+            $user,
+            $password,
+            {
+                RaiseError => 1,
+                AutoCommit => 1
+            }
+        );
+
         $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;
@@ -79,18 +89,17 @@ sub user_authorized {
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
     my $dbh = $self->dbh;
     if ( $progress ) {
         if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE $id_field=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
     
-    my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
 }
@@ -121,8 +130,7 @@ sub create_new_batch_job {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $minutes_between_tests_with_same_params, $batch_id ) = @_;
-    my $result;
+    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
@@ -134,28 +142,28 @@ sub create_new_test {
     my $priority = $test_params->{priority};
     my $queue = $test_params->{queue};
 
-    my $query =
-        "INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params) SELECT "
-      . $dbh->quote( $batch_id ) . ", "
-      . $dbh->quote( $priority ) . ", "
-      . $dbh->quote( $queue ) . ", "
-      . $dbh->quote( $test_params_deterministic_hash ) . ", "
-      . $dbh->quote( $encoded_params )
-      . " WHERE NOT EXISTS (SELECT * FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' AND creation_time > NOW()-'$minutes_between_tests_with_same_params minutes'::interval)";
+    my $sth = $dbh->prepare( "
+        INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params)
+        SELECT ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+            SELECT * FROM test_results
+            WHERE params_deterministic_hash = ?
+              AND creation_time > NOW() - ?::interval
+        )" );
+    my $nb_inserted = $sth->execute(    #
+        $batch_id,
+        $priority,
+        $queue,
+        $test_params_deterministic_hash,
+        $encoded_params,
+        $test_params_deterministic_hash,
+        sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
+    );
 
-    my $nb_inserted = $dbh->do( $query );
+    my ( undef, $hash_id ) = $dbh->selectrow_array(
+        "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $test_params_deterministic_hash );
 
-    my ( $id, $hash_id ) = $dbh->selectrow_array(
-        "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash='$test_params_deterministic_hash' ORDER BY id DESC LIMIT 1" );
-        
-    if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
-        $result = $hash_id;
-    }
-    else {
-        $result = $id;
-    }
-
-    return $result;
+    return $hash_id;
 }
 
 sub get_test_params {
@@ -164,8 +172,7 @@ sub get_test_params {
     my $result;
 
     my $dbh = $self->dbh;
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE $id_field=?", undef, $test_id );
+    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
     die "$@ \n" if $@;
 
@@ -176,14 +183,13 @@ sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
     my $dbh = $self->dbh;
-    my $id_field = $self->_get_allowed_id_field_name($test_id);
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE $id_field=? AND progress < 100",
+    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100",
         undef, $results, $test_id )
       if ( $results );
 
     my $result;
     eval {
-        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE $id_field=?", $id_field, undef, $test_id );
+        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
         $result            = $hrefs->{$test_id};
         
         # This workaround is needed to properly handle all versions of perl and the DBD::Pg module 
@@ -212,7 +218,6 @@ sub get_test_history {
 
     my $dbh = $self->dbh;
 
-    my $use_hash_id_from_id = $self->config->force_hash_id_use_in_API_starting_from_id();
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
         $undelegated = "AND (params->'nameservers') IS NOT NULL";
@@ -250,7 +255,7 @@ sub get_test_history {
         push(
             @results,
             {
-                id               => ($h->{id} > $use_hash_id_from_id)?($h->{hash_id}):($h->{id}),
+                id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
                 overall_result   => $overall_result,
             }
@@ -309,25 +314,38 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub build_process_unfinished_tests_select_query {
+sub select_unfinished_tests {
     my ( $self ) = @_;
-    
-    if ($self->config->lock_on_queue()) {
-        return "
+
+    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
-            FROM test_results 
-            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            FROM test_results
+            WHERE test_start_time < NOW() - ?::interval
+            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100
-            AND queue=".$self->config->lock_on_queue();
+            AND queue = ?" );
+        $sth->execute(    #
+            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+            $self->config->ZONEMASTER_lock_on_queue,
+        );
+        return $sth;
     }
     else {
-        return "
+        my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
-            FROM test_results 
-            WHERE test_start_time < NOW() - '".$self->config->MaxZonemasterExecutionTime()." seconds'::interval AND nb_retries <= ".$self->config->maximal_number_of_retries()."
+            FROM test_results
+            WHERE test_start_time < NOW() - ?::interval
+            AND nb_retries <= ?
             AND progress > 0
-            AND progress < 100";
+            AND progress < 100" );
+        $sth->execute(    #
+            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+        );
+        return $sth;
     }
 }
 

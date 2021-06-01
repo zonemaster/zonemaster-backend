@@ -1,6 +1,21 @@
 Release history for Zonemaster component Zonemaster-Backend
 
-v6.1.0 2020-11-06 (public release version)
+v6.2.0 2021-05-28 (public release version)
+
+ [Features]
+ - Adds support for Finnish translation (#712, #711)
+
+ [Fixes]
+ - Updates installation document (#771, #766, #714)
+ - Improves daemon and configuration handling (#782, #781 #767, #756, #759
+   #752, #753, #685, #754, #749, #745, #730, #719, #734, #725, #724, #717,
+   #727, #726, #692, #713)
+ - Improves database layer (#732, #715, #723, #722)
+ - Updates unit tests (#764, #738, #731, #720, #721, #490)
+ - Cleans-up (#739, #733, #627, #654, #718)
+
+
+v6.1.0 2021-02-06 (public release version)
 
  [Features]
  - Adds full support of a light weight SQLite database backend

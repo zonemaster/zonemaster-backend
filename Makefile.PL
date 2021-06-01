@@ -30,12 +30,13 @@ requires
   'Router::Simple::Declare'     => 0,
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
-  'Try::Tiny'                   => 0.24,
-  'Zonemaster::Engine'          => 4.001,
-  'Zonemaster::LDNS'            => 2.001,
+  'Try::Tiny'                   => 0.12,
+  'Zonemaster::Engine'          => 4.002,
+  'Zonemaster::LDNS'            => 2.002,
   ;
 
 test_requires 'DBD::SQLite';
+test_requires 'Test::NoWarnings';
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';

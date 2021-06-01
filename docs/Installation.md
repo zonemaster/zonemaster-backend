@@ -60,7 +60,7 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-Warn redhat-lsb-core
+sudo yum -y install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-NoWarnings perl-Test-Warn perl-Try-Tiny redhat-lsb-core
 ```
 
 > **Note:** perl-Net-Server and perl-Test-Warn are listed here even though they
@@ -70,7 +70,7 @@ sudo yum install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQ
 Install dependencies not available from binary packages:
 
 ```sh
-sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman Try::Tiny
+sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman
 ```
 
 Install Zonemaster::Backend:
@@ -95,7 +95,6 @@ cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -d /etc/zonemaster
 sudo install -v -m 640 -g zonemaster ./backend_config.ini /etc/zonemaster/
 sudo install -v -m 775 -g zonemaster -d /var/log/zonemaster
-sudo install -v -m 775 -g zonemaster -d /var/run/zonemaster
 sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
@@ -127,7 +126,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -135,7 +133,7 @@ sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_co
 Install, configure and start database engine:
 
 ```sh
-sudo yum install mariadb-server
+sudo yum -y install mariadb-server
 sudo systemctl enable mariadb
 sudo systemctl start mariadb
 ```
@@ -157,7 +155,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -207,14 +204,13 @@ path:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:
 
 ```sh
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-sudo install -v -m 755 -u zonemaster -g zonemaster -d /var/lib/zonemaster
+sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
 sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```
@@ -255,7 +251,7 @@ See the [post-installation] section for post-installation matters.
 Install required locales:
 
 ```sh
-sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
+sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|fi_FI\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
 sudo locale-gen
 ```
 
@@ -263,6 +259,7 @@ After the update, `locale -a` should at least list the following locales:
 ```
 da_DK.utf8
 en_US.utf8
+fi_FI.utf8
 fr_FR.utf8
 nb_NO.utf8
 sv_SE.utf8
@@ -271,8 +268,11 @@ sv_SE.utf8
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtry-tiny-perl starman
+sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-stringy-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-nowarnings-perl libtry-tiny-perl starman
 ```
+
+> **Note**: libio-stringy-perl is listed here even though it's not a direct
+> dependency. It's an undeclared dependency of libconfig-inifiles-perl.
 
 Install dependencies not available from binary packages:
 
@@ -338,7 +338,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -366,7 +365,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s/=.*/= zonemaster/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
@@ -394,7 +392,6 @@ path:
 
 ```sh
 sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
-sudo sed -i '/\bdatabase_name\b/ s:=.*:= /var/lib/zonemaster/db.sqlite:' /etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:
@@ -450,7 +447,7 @@ su -l
 Install dependencies available from binary packages:
 
 ```sh
-pkg install jq p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML
+pkg install jq p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML p5-Test-NoWarnings
 ```
 <!-- JSON::Validator requires YAML::PP, but p5-JSON-Validator currently lacks a dependency on p5-YAML-LibYAML -->
 
@@ -504,7 +501,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/backend_config.ini
-sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -560,7 +556,6 @@ Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster/backend_config.ini
-sed -i '' '/[[:<:]]database_name[[:>:]]/ s/=.*/= zonemaster/' /usr/local/etc/zonemaster/backend_config.ini
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
@@ -592,7 +587,7 @@ path:
 
 ```sh
 sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/backend_config.ini
-sed -i '' '/[[:<:]]database_name[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
+sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
 Create database directory, set correct ownership and create database:
@@ -600,7 +595,7 @@ Create database directory, set correct ownership and create database:
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
-ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini" su -m zonemaster -c "perl create_db_sqlite.pl"
+env ZONEMASTER_BACKEND_CONFIG_FILE=/usr/local/etc/zonemaster/backend_config.ini su -m zonemaster -c "perl create_db_sqlite.pl"
 ```
 
 > SQLite will not run as a daemon and does not need to be started.

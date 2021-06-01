@@ -9,8 +9,20 @@ use 5.14.2;
 use JSON::PP;
 use Data::Dumper;
 
-requires 'add_api_user_to_db', 'user_exists_in_db', 'user_authorized', 'test_progress', 'test_results',
-  'create_new_batch_job', 'create_new_test', 'get_test_params', 'get_test_history', 'add_batch_job', 'build_process_unfinished_tests_select_query', 'process_unfinished_tests_give_up';
+requires qw(
+  add_api_user_to_db
+  add_batch_job
+  create_new_batch_job
+  create_new_test
+  get_test_history
+  get_test_params
+  process_unfinished_tests_give_up
+  select_unfinished_tests
+  test_progress
+  test_results
+  user_authorized
+  user_exists_in_db
+);
 
 sub user_exists {
     my ( $self, $user ) = @_;
@@ -35,24 +47,7 @@ sub add_api_user {
     return $result;
 }
 
-sub _get_allowed_id_field_name {
-	my ( $self, $test_id ) = @_;
-	
-    my $id_field;
-    if (length($test_id) == 16) {
-		$id_field = 'hash_id';
-    }
-    else {
-		if ($test_id <= $self->config->force_hash_id_use_in_API_starting_from_id()) {
-			$id_field = 'id';
-		}
-		else {
-			die "Querying test results with the [id] field is dissallowed by the current configuration values\n";
-		}
-    }
-}
-
-# Standatd SQL, can be here
+# Standard SQL, can be here
 sub get_test_request {
     my ( $self ) = @_;
 
@@ -61,26 +56,19 @@ sub get_test_request {
     
     
     my ( $id, $hash_id );
-    my $lock_on_queue = $self->config->lock_on_queue();
-	if ( defined $lock_on_queue ) {
-		( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $lock_on_queue );
-	}
-	else {
-		( $id, $hash_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
-	}
+    my $lock_on_queue = $self->config->ZONEMASTER_lock_on_queue;
+    if ( defined $lock_on_queue ) {
+        ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $lock_on_queue );
+    }
+    else {
+        ( $id, $hash_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
+    }
         
     if ($id) {
-		$dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
-
-		if ( $id > $self->config->force_hash_id_use_in_API_starting_from_id() ) {
-			$result_id = $hash_id;
-		}
-		else {
-			$result_id = $id;
-		}
-	}
-   
-	return $result_id;
+        $dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
+        $result_id = $hash_id;
+    }
+    return $result_id;
 }
 
 # Standatd SQL, can be here
@@ -116,14 +104,10 @@ sub get_batch_job_result {
 sub process_unfinished_tests {
     my ( $self ) = @_;
     
-    my $dbh = $self->dbh;
-    
-    my $query = $self->build_process_unfinished_tests_select_query();
+    my $sth1 = $self->select_unfinished_tests();
         
-    my $sth1 = $dbh->prepare( $query );
-    $sth1->execute( );
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{nb_retries} < $self->config->maximal_number_of_retries() ) {
+        if ( $h->{nb_retries} < $self->config->ZONEMASTER_maximal_number_of_retries ) {
             $self->schedule_for_retry($h->{hash_id});
         }
         else {
@@ -134,7 +118,13 @@ sub process_unfinished_tests {
             else {
                 $result = [];
             }
-            push(@$result, {"level" => "CRITICAL", "module" => "BACKEND_TEST_AGENT", "tag" => "UNABLE_TO_FINISH_TEST", "timestamp" => $self->config->MaxZonemasterExecutionTime()});
+            push @$result,
+              {
+                "level"     => "CRITICAL",
+                "module"    => "BACKEND_TEST_AGENT",
+                "tag"       => "UNABLE_TO_FINISH_TEST",
+                "timestamp" => $self->config->ZONEMASTER_max_zonemaster_execution_time
+              };
             $self->process_unfinished_tests_give_up($result, $h->{hash_id});
         }
     }

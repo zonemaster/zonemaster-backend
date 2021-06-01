@@ -1,10 +1,13 @@
-maint
+^maint/
 ^tags$
-.last_cover_stats
+^\.last_cover_stats$
 ^t.*sessions
 ^.*\.log
 ^.*\.swp$
 ^MANIFEST\.SKIP$
+^\.github/pull_request_template\.md$
+^\.travis\.yml$
+^docs/internal-documentation/
 
 #!start included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.

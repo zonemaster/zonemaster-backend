@@ -22,12 +22,12 @@ USER=${ZM_BACKEND_USER:-zonemaster}
 GROUP=${ZM_BACKEND_GROUP:-zonemaster}
 
 STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
-export ZM_BACKEND_RPCAPI_LOGLEVEL='warning' # Lowest level that will be logged
+#export ZM_BACKEND_RPCAPI_LOGLEVEL='warning'  # Set this variable to override the default log level
 
 . /lib/lsb/init-functions
 
 start () {
-    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGFILE --pid=$PIDFILE --listen=$LISTENIP:$LISTENPORT --preload-app --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi
+    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGFILE --pid=$PIDFILE --listen=$LISTENIP:$LISTENPORT --preload-app --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi || exit 1
 }
 
 stop () {

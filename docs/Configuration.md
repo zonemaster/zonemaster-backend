@@ -74,7 +74,7 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
-An ASCII domain name.
+An [LDH domain name] extended with underscore (`_`) and slash (`/`).
 
 The host name of the machine on which the MySQL server is running.
 
@@ -91,7 +91,7 @@ If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
-A string of US ASCII printable characters.
+A string of [US ASCII printable characters].
 The first character must be neither space nor `<`.
 Max length 100 characters.
 
@@ -115,7 +115,7 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
-An ASCII domain name.
+An [LDH domain name] extended with underscore (`_`) and slash (`/`).
 
 The host name of the machine on which the PostgreSQL server is running.
 
@@ -131,7 +131,7 @@ If this property is unspecified, the value of [DB.user] is used instead.
 
 ### password
 
-A string of US ASCII printable characters.
+A string of [US ASCII printable characters].
 The first character must be neither space nor `<`.
 Max length 100 characters.
 
@@ -353,6 +353,7 @@ Otherwise a new test request is enqueued.
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
 [Installation instructions]:          Installation.md
 [Language tag]:                       API.md#language-tag
+[LDH domain name]:                    https://datatracker.ietf.org/doc/html/rfc3696#section-2
 [MariaDB identifier max lengths]:     https://mariadb.com/kb/en/identifier-names/#maximum-length
 [MariaDB unquoted identifier]:        https://mariadb.com/kb/en/identifier-names/#unquoted
 [MYSQL.database]:                     #database
@@ -368,6 +369,7 @@ Otherwise a new test request is enqueued.
 [Profile names]:                      API.md#profile-name
 [Profiles]:                           Architecture.md#profile
 [SQLITE.database_file]:               #database_file
+[US ASCII printable characters]:      https://en.wikipedia.org/wiki/ASCII#Printable_characters
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
 

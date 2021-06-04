@@ -44,13 +44,15 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_abs_path( taint( 'localhost' ) ) ), 'launder taint';
     };
 
-    subtest 'untaint_domain_name' => sub {
-        is scalar untaint_domain_name( 'localhost' ),      'localhost',    'accept: localhost';
-        is scalar untaint_domain_name( 'example.com' ),    'example.com',  'accept: example.com';
-        is scalar untaint_domain_name( 'example.com.' ),   'example.com.', 'accept: example.com.';
-        is scalar untaint_domain_name( '192.0.2.1' ),      '192.0.2.1',    'accept: 192.0.2.1';
-        is scalar untaint_domain_name( '192.0.2.1:3306' ), undef,          'reject: 192.0.2.1:3306';
-        ok !tainted( untaint_domain_name( taint( 'localhost' ) ) ), 'launder taint';
+    subtest 'untaint_ldh_domain' => sub {
+        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',    'accept: localhost';
+        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',  'accept: example.com';
+        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.', 'accept: example.com.';
+        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',    'accept: 192.0.2.1';
+        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,          'reject: 192.0.2.1:3306';
+        is scalar untaint_ldh_domain( '1/26.2.0.192.in-addr.arpa' ), undef,          'reject: 1/26.2.0.192.in-addr.arpa';
+        is scalar untaint_ldh_domain( '_http.example.com' ),         undef,          'reject: _http.example.com';
+        ok !tainted( untaint_ldh_domain( taint( 'localhost' ) ) ), 'launder taint';
     };
 
     subtest 'untaint_engine_type' => sub {

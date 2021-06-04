@@ -482,11 +482,11 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
     _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_positive_millis );
-    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_domain_name );
+    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_ldh_domain );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
     _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
     _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );
-    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_domain_name );
+    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_ldh_domain );
     _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user',                                     \&untaint_postgresql_ident );
     _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );

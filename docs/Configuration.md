@@ -74,7 +74,7 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
-An [LDH domain name] extended with underscore (`_`) and slash (`/`).
+An [LDH domain name].
 
 The host name of the machine on which the MySQL server is running.
 
@@ -115,7 +115,7 @@ Available keys : `host`, `user`, `password`, `database`.
 
 ### host
 
-An [LDH domain name] extended with underscore (`_`) and slash (`/`).
+An [LDH domain name].
 
 The host name of the machine on which the PostgreSQL server is running.
 

@@ -13,7 +13,7 @@ use Readonly;
 
 our @EXPORT_OK = qw(
   untaint_abs_path
-  untaint_domain_name
+  untaint_ldh_domain
   untaint_engine_type
   untaint_mariadb_database
   untaint_mariadb_user
@@ -28,7 +28,7 @@ our %EXPORT_TAGS = (
     untaint => [
         qw(
           untaint_abs_path
-          untaint_domain_name
+          untaint_ldh_domain
           untaint_engine_type
           untaint_mariadb_database
           untaint_mariadb_user
@@ -51,12 +51,12 @@ Readonly my $API_KEY_RE                 => qr/^[a-z0-9-_]{1,512}$/i;
 Readonly my $CLIENT_ID_RE               => qr/^[a-z0-9-+~_.: ]{1,50}$/i;
 Readonly my $CLIENT_VERSION_RE          => qr/^[a-z0-9-+~_.: ]{1,50}$/i;
 Readonly my $DIGEST_RE                  => qr/^[a-f0-9]{40}$|^[a-f0-9]{64}$/i;
-Readonly my $DOMAIN_NAME_RE1            => qr{^[a-z0-9-_/.]{1,253}[.]?$}i;
-Readonly my $DOMAIN_NAME_RE2            => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
 Readonly my $ENGINE_TYPE_RE             => qr/^(?:mysql|postgresql|sqlite)$/i;
 Readonly my $IPADDR_RE                  => qr/^$|$IPV4_RE|$IPV6_RE/;
 Readonly my $JSONRPC_METHOD_RE          => qr/^[a-z0-9_-]*$/i;
 Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}(_[A-Z]{2})?$/;
+Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9-.]{1,253}[.]?$}i;
+Readonly my $LDH_DOMAIN_RE2             => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
 Readonly my $MARIADB_DATABASE_LENGTH_RE => qr/^.{1,64}$/;
 
 # See: https://mariadb.com/kb/en/identifier-names/#unquoted
@@ -178,9 +178,9 @@ sub untaint_abs_path {
     return _untaint_pred( $value, \&file_name_is_absolute );
 }
 
-sub untaint_domain_name {
+sub untaint_ldh_domain {
     my ( $value ) = @_;
-    return _untaint_pat( $value, $DOMAIN_NAME_RE1, $DOMAIN_NAME_RE2 );
+    return _untaint_pat( $value, $LDH_DOMAIN_RE1, $LDH_DOMAIN_RE2 );
 }
 
 =head2 untaint_engine_type

@@ -214,6 +214,7 @@ sub cmd_start_domain_test {
         my @nameserver_objects;
         for my $domain_ip_pair ( @opt_nameserver ) {
             my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
+            $ip = "" if not defined $ip;
             push @nameserver_objects,
               {
                 ns => $domain,

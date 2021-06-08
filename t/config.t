@@ -212,7 +212,7 @@ subtest 'Everything but NoWarnings' => sub {
         };
         Zonemaster::Backend::Config->parse( $text );
     }
-    qr{DB\.polling_interval.*hourly}, 'die: Invalid DB.polling_inteval value';
+    qr{DB\.polling_interval.*hourly}, 'die: Invalid DB.polling_interval value';
 
     throws_ok {
         my $text = q{

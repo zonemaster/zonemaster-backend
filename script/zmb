@@ -147,6 +147,7 @@ sub cmd_get_language_tags {
     --ipv4 true|false|null
     --ipv6 true|false|null
     --nameserver DOMAIN_NAME:IP_ADDRESS
+    --nameserver DOMAIN_NAME  # Trailing colon is optional when not specifing IP_ADDRESS
     --ds-info DS_INFO
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION

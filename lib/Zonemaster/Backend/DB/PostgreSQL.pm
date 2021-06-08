@@ -38,10 +38,18 @@ has 'dbhandle' => (
     required => 1,
 );
 
-around BUILDARGS => sub {
-    my ( $orig, $class, $args ) = @_;
+=head1 CLASS METHODS
 
-    my $config = $args->{config};
+=head2 from_config
+
+Construct a new instance from a Zonemaster::Backend::Config.
+
+    my $db = Zonemaster::Backend::DB::PostgreSQL->from_config( $config );
+
+=cut
+
+sub from_config {
+    my ( $class, $config ) = @_;
 
     my $database = $config->POSTGRESQL_database;
     my $host     = $config->POSTGRESQL_host;
@@ -57,7 +65,7 @@ around BUILDARGS => sub {
         $password,
     );
 
-    return $class->$orig(
+    return $class->new(
         {
             data_source_name => $data_source_name,
             user             => $user,
@@ -65,7 +73,7 @@ around BUILDARGS => sub {
             dbhandle         => $dbh,
         }
     );
-};
+}
 
 sub dbh {
     my ( $self ) = @_;

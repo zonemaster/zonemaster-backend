@@ -19,23 +19,31 @@ has 'dbh' => (
     isa => 'DBI::db',
 );
 
-around BUILDARGS => sub {
-    my ( $orig, $class, $args ) = @_;
+=head1 CLASS METHODS
 
-    my $config = $args->{config};
+=head2 from_config
+
+Construct a new instance from a Zonemaster::Backend::Config.
+
+    my $db = Zonemaster::Backend::DB::SQLite->from_config( $config );
+
+=cut
+
+sub from_config {
+    my ( $class, $config ) = @_;
 
     my $file = $config->SQLITE_database_file;
 
     my $data_source_name = "DBI:SQLite:dbname=$file";
 
-    my $dbh = $args->{dbh} // $class->_new_dbh( $data_source_name, '', '' );
+    my $dbh = $class->_new_dbh( $data_source_name, '', '' );
 
-    return $class->$orig(
+    return $class->new(
         {
             dbh => $dbh,
         }
     );
-};
+}
 
 sub DEMOLISH {
     my ( $self ) = @_;

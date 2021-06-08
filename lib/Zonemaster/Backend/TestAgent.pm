@@ -36,22 +36,22 @@ sub new {
     }
 
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
-    $self->{_db} = $dbclass->new( { config => $config } );
+    $self->{_db} = $dbclass->from_config( $config );
 
     my %all_profiles = %{ $config->ReadProfilesInfo() };
     foreach my $name ( keys %all_profiles ) {
         my $path = $all_profiles{$name}{profile_file_name};
 
         die "default profile cannot be private" if ( $name eq 'default' && $all_profiles{$name}{type} eq 'private' );
-        my $profile = Zonemaster::Engine::Profile->default;
+        my $full_profile = Zonemaster::Engine::Profile->default;
         if ( $path ne "" ) {
             my $json = eval { read_file( $path, err_mode => 'croak' ) }    #
               // die "Error loading profile '$name': $@";
             my $named_profile = eval { Zonemaster::Engine::Profile->from_json( $json ) }    #
               // die "Error loading profile '$name' at '$path': $@";
-            $profile->merge( $named_profile );
+            $full_profile->merge( $named_profile );
         }
-        $self->{_profiles}{$name} = $profile;
+        $self->{_profiles}{$name} = $full_profile;
     }
 
     bless( $self, $class );

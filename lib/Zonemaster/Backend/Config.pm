@@ -636,7 +636,7 @@ sub new_DB {
 
     # Load and construct DB adapter
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $self->DB_engine );
-    my $db      = $dbclass->new( { config => $self } );
+    my $db      = $dbclass->from_config( $self );
 
     return $db;
 }

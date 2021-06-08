@@ -63,7 +63,7 @@ sub _init_db {
 
     eval {
         my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
-        $self->{db} = $dbclass->new( { config => $self->{config} } );
+        $self->{db} = $dbclass->from_config( $self->{config} );
     };
     if ($@) {
         handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');

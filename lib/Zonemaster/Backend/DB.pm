@@ -14,6 +14,7 @@ requires qw(
   add_batch_job
   create_new_batch_job
   create_new_test
+  from_config
   get_test_history
   get_test_params
   process_unfinished_tests_give_up

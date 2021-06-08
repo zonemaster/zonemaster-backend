@@ -13,7 +13,7 @@ my $config = Zonemaster::Backend::Config->load_config();
 if ( $config->DB_engine ne 'PostgreSQL' ) {
     die "The configuration file does not contain the PostgreSQL backend";
 }
-my $dbh = Zonemaster::Backend::DB::PostgreSQL->new( { config => $config } )->dbh;
+my $dbh = Zonemaster::Backend::DB::PostgreSQL->from_config( $config )->dbh;
 
 sub patch_db {
 

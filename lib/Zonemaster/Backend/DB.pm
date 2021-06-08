@@ -68,16 +68,15 @@ sub add_api_user {
 
 # Standard SQL, can be here
 sub get_test_request {
-    my ( $self ) = @_;
+    my ( $self, $queue_label ) = @_;
 
     my $result_id;
     my $dbh = $self->dbh;
     
     
     my ( $id, $hash_id );
-    my $lock_on_queue = $self->config->ZONEMASTER_lock_on_queue;
-    if ( defined $lock_on_queue ) {
-        ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $lock_on_queue );
+    if ( defined $queue_label ) {
+        ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
     }
     else {
         ( $id, $hash_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
@@ -121,12 +120,16 @@ sub get_batch_job_result {
 }
 
 sub process_unfinished_tests {
-    my ( $self ) = @_;
+    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
     
-    my $sth1 = $self->select_unfinished_tests();
+    my $sth1 = $self->select_unfinished_tests(    #
+        $queue_label,
+        $test_run_timeout,
+        $test_run_max_retries,
+    );
         
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{nb_retries} < $self->config->ZONEMASTER_maximal_number_of_retries ) {
+        if ( $h->{nb_retries} < $test_run_max_retries ) {
             $self->schedule_for_retry($h->{hash_id});
         }
         else {
@@ -142,7 +145,7 @@ sub process_unfinished_tests {
                 "level"     => "CRITICAL",
                 "module"    => "BACKEND_TEST_AGENT",
                 "tag"       => "UNABLE_TO_FINISH_TEST",
-                "timestamp" => $self->config->ZONEMASTER_max_zonemaster_execution_time
+                "timestamp" => $test_run_timeout,
               };
             $self->process_unfinished_tests_give_up($result, $h->{hash_id});
         }

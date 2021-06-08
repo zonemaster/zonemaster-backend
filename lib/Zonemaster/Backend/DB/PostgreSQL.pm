@@ -318,9 +318,9 @@ sub add_batch_job {
 }
 
 sub select_unfinished_tests {
-    my ( $self ) = @_;
+    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
 
-    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+    if ( $queue_label ) {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
@@ -330,9 +330,9 @@ sub select_unfinished_tests {
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
-            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
-            $self->config->ZONEMASTER_maximal_number_of_retries,
-            $self->config->ZONEMASTER_lock_on_queue,
+            sprintf( "%d seconds", $test_run_timeout ),
+            $test_run_max_retries,
+            $queue_label,
         );
         return $sth;
     }
@@ -345,8 +345,8 @@ sub select_unfinished_tests {
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
-            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
-            $self->config->ZONEMASTER_maximal_number_of_retries,
+            sprintf( "%d seconds", $test_run_timeout ),
+            $test_run_max_retries,
         );
         return $sth;
     }

@@ -352,11 +352,11 @@ subtest 'Everything but NoWarnings' => sub {
             engine = SQLite
 
             [ZONEMASTER]
-            max_zonemaster_execution_time = -1
+            max_zonemaster_execution_time = 0
         };
         Zonemaster::Backend::Config->parse( $text );
     }
-    qr{ZONEMASTER\.max_zonemaster_execution_time.*-1}, 'die: Invalid ZONEMASTER.max_zonemaster_execution_time value';
+    qr{ZONEMASTER\.max_zonemaster_execution_time.*0}, 'die: Invalid ZONEMASTER.max_zonemaster_execution_time value';
 
     throws_ok {
         my $text = q{

@@ -400,11 +400,11 @@ subtest 'Everything but NoWarnings' => sub {
             engine = SQLite
 
             [ZONEMASTER]
-            number_of_processes_for_batch_testing = 0
+            number_of_processes_for_batch_testing = 100000
         };
         Zonemaster::Backend::Config->parse( $text );
     }
-    qr{ZONEMASTER\.number_of_processes_for_batch_testing.*0}, 'die: Invalid ZONEMASTER.number_of_processes_for_batch_testing value';
+    qr{ZONEMASTER\.number_of_processes_for_batch_testing.*100000}, 'die: Invalid ZONEMASTER.number_of_processes_for_batch_testing value';
 
     throws_ok {
         my $text = q{

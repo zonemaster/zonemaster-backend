@@ -69,11 +69,8 @@ Readonly my $MILLIS_RE => qr/^(?:0|[1-9][0-9]{0,4})(?:[.][0-9]{1,3})?$/;
 # Printable ASCII but first character must not be space or '<'
 Readonly my $PASSWORD_RE => qr/^(?:[\x21-\x3b\x3d-\x7e][\x20-\x7e]{0,99})?$/;
 
-# Allow for 5 significant digits
-Readonly my $POSITIVE_INT_RE => qr/^[1-9][0-9]{0,4}$/;
-
 # At least one non-zero digit
-Readonly my $POSITIVE_NUM_RE => qr/[^0.]/;
+Readonly my $NON_ZERO_NUM_RE => qr/[1-9]/;
 
 # See: https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
 Readonly my $POSTGRESQL_IDENT_RE    => qr/^[a-z_][a-z0-9_\$]{0,62}$/i;
@@ -81,7 +78,7 @@ Readonly my $PROFILE_NAME_RE        => qr/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a
 Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 
-# Allow for 5 significant digits
+# Up to 5 digits
 Readonly my $UNSIGNED_INT_RE => qr/^(?:0|[1-9][0-9]{0,4})$/;
 Readonly my $USERNAME_RE     => qr/^[a-z0-9-.@]{1,50}$/i;
 
@@ -212,12 +209,12 @@ sub untaint_password {
 
 sub untaint_positive_int {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $POSITIVE_INT_RE );
+    return _untaint_pat( $value,  $UNSIGNED_INT_RE, $NON_ZERO_NUM_RE );
 }
 
 sub untaint_positive_millis {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $MILLIS_RE, $POSITIVE_NUM_RE );
+    return _untaint_pat( $value,  $MILLIS_RE, $NON_ZERO_NUM_RE );
 }
 
 sub untaint_postgresql_ident {

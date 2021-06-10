@@ -154,13 +154,13 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_postgresql_ident( taint( 'zonemaster' ) ) ), 'launder taint';
     };
 
-    subtest 'untaint_unsigned_int' => sub {
-        is scalar untaint_unsigned_int( '1' ),      '1',     'accept: 1';
-        is scalar untaint_unsigned_int( '0' ),      '0',     'accept: 0';
-        is scalar untaint_unsigned_int( '99999' ),  '99999', 'accept: 99999';
-        is scalar untaint_unsigned_int( '100000' ), undef,   'reject: 100000';
-        is scalar untaint_unsigned_int( '0.5' ),    undef,   'reject: 0.5';
-        is scalar untaint_unsigned_int( '-1' ),     undef,   'reject: -1';
-        ok !tainted( untaint_unsigned_int( taint( '1' ) ) ), 'launder taint';
+    subtest 'untaint_non_negative_int' => sub {
+        is scalar untaint_non_negative_int( '1' ),      '1',     'accept: 1';
+        is scalar untaint_non_negative_int( '0' ),      '0',     'accept: 0';
+        is scalar untaint_non_negative_int( '99999' ),  '99999', 'accept: 99999';
+        is scalar untaint_non_negative_int( '100000' ), undef,   'reject: 100000';
+        is scalar untaint_non_negative_int( '0.5' ),    undef,   'reject: 0.5';
+        is scalar untaint_non_negative_int( '-1' ),     undef,   'reject: -1';
+        ok !tainted( untaint_non_negative_int( taint( '1' ) ) ), 'launder taint';
     };
 };

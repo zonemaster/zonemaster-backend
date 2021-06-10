@@ -21,7 +21,7 @@ our @EXPORT_OK = qw(
   untaint_positive_int
   untaint_positive_millis
   untaint_postgresql_ident
-  untaint_unsigned_int
+  untaint_non_negative_int
 );
 
 our %EXPORT_TAGS = (
@@ -36,7 +36,7 @@ our %EXPORT_TAGS = (
           untaint_positive_int
           untaint_positive_millis
           untaint_postgresql_ident
-          untaint_unsigned_int
+          untaint_non_negative_int
           )
     ],
 );
@@ -79,8 +79,8 @@ Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 
 # Up to 5 digits
-Readonly my $UNSIGNED_INT_RE => qr/^(?:0|[1-9][0-9]{0,4})$/;
-Readonly my $USERNAME_RE     => qr/^[a-z0-9-.@]{1,50}$/i;
+Readonly my $NON_NEGATIVE_INT_RE => qr/^(?:0|[1-9][0-9]{0,4})$/;
+Readonly my $USERNAME_RE         => qr/^[a-z0-9-.@]{1,50}$/i;
 
 sub joi {
     return JSON::Validator::Joi->new;
@@ -209,7 +209,7 @@ sub untaint_password {
 
 sub untaint_positive_int {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $UNSIGNED_INT_RE, $NON_ZERO_NUM_RE );
+    return _untaint_pat( $value,  $NON_NEGATIVE_INT_RE, $NON_ZERO_NUM_RE );
 }
 
 sub untaint_positive_millis {
@@ -222,9 +222,9 @@ sub untaint_postgresql_ident {
     return _untaint_pat( $value,  $POSTGRESQL_IDENT_RE );
 }
 
-sub untaint_unsigned_int {
+sub untaint_non_negative_int {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $UNSIGNED_INT_RE );
+    return _untaint_pat( $value,  $NON_NEGATIVE_INT_RE );
 }
 
 sub _untaint_pat {

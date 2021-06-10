@@ -367,57 +367,77 @@ sub _set_DB_engine {
 
 Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
 
+Returns a number.
+
 
 =head2 MYSQL_database
 
 Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>.
+
+Returns a string.
 
 
 =head2 MySQL_host
 
 Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
 
+Returns a string.
+
 
 =head2 MYSQL_password
 
 Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
+
+Returns a string.
 
 
 =head2 MYSQL_user
 
 Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
 
+Returns a string.
+
 
 =head2 POSTGRESQL_database
 
 Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>.
+
+Returns a string.
 
 
 =head2 POSTGRESQL_host
 
 Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>.
 
+Returns a string.
+
 
 =head2 POSTGRESQL_password
 
 Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>.
+
+Returns a string.
 
 
 =head2 POSTGRESQL_user
 
 Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>.
 
+Returns a string.
+
 
 =head2 SQLITE_database_file
 
 Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>.
+
+Returns a string.
 
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
@@ -425,7 +445,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
 
-Returns a strictly positive integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
@@ -433,7 +453,7 @@ Returns a strictly positive integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_lock_on_queue
@@ -441,7 +461,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_maximal_number_of_retries
@@ -449,7 +469,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_age_reuse_previous_test
@@ -457,7 +477,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
 
-Returns an integer.
+Returns a number.
 
 =cut
 

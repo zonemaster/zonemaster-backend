@@ -88,7 +88,7 @@ Represents the password of an authenticated account (see *[Privilege levels]*)
 
 Basic data type: number
 
-A positive integer.
+A strictly positive integer.
 
 The unique id of a *batch*.
 
@@ -290,8 +290,6 @@ A default installation will accept the following `language tags`:
 ### Non-negative integer
 
 Basic data type: number (integer)
- 
-An non-negative integer is either positive or zero.
  
 
 ### Username

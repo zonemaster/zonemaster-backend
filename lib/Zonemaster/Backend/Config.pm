@@ -425,7 +425,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
 
-Returns a positive integer.
+Returns a strictly positive integer.
 
 
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
@@ -481,7 +481,7 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
-    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_positive_millis );
+    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
     _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_ldh_domain );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
     _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
@@ -491,12 +491,12 @@ UNITCHECK {
     _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
-    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_positive_int );
+    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries',                \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_positive_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
-    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_positive_int );
+    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
 }
 
 =head2 Language_Locale_hash

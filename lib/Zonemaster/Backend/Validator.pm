@@ -18,8 +18,8 @@ our @EXPORT_OK = qw(
   untaint_mariadb_database
   untaint_mariadb_user
   untaint_password
-  untaint_positive_int
-  untaint_positive_millis
+  untaint_strictly_positive_int
+  untaint_strictly_positive_millis
   untaint_postgresql_ident
   untaint_non_negative_int
 );
@@ -33,8 +33,8 @@ our %EXPORT_TAGS = (
           untaint_mariadb_database
           untaint_mariadb_user
           untaint_password
-          untaint_positive_int
-          untaint_positive_millis
+          untaint_strictly_positive_int
+          untaint_strictly_positive_millis
           untaint_postgresql_ident
           untaint_non_negative_int
           )
@@ -207,12 +207,12 @@ sub untaint_password {
     return _untaint_pat( $value,  $PASSWORD_RE );
 }
 
-sub untaint_positive_int {
+sub untaint_strictly_positive_int {
     my ( $value ) = @_;
     return _untaint_pat( $value,  $NON_NEGATIVE_INT_RE, $NON_ZERO_NUM_RE );
 }
 
-sub untaint_positive_millis {
+sub untaint_strictly_positive_millis {
     my ( $value ) = @_;
     return _untaint_pat( $value,  $MILLIS_RE, $NON_ZERO_NUM_RE );
 }

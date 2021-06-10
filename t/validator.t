@@ -114,28 +114,28 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_password( taint( '123456' ) ) ), 'launder taint';
     };
 
-    subtest 'untaint_positive_int' => sub {
-        is scalar untaint_positive_int( '1' ),      '1',     'accept: 1';
-        is scalar untaint_positive_int( '99999' ),  '99999', 'accept: 99999';
-        is scalar untaint_positive_int( '100000' ), undef,   'reject: 100000';
-        is scalar untaint_positive_int( '0' ),      undef,   'reject: 0';
-        is scalar untaint_positive_int( '0.5' ),    undef,   'reject: 0.5';
-        is scalar untaint_positive_int( '-1' ),     undef,   'reject: -1';
-        ok !tainted( untaint_positive_int( taint( '1' ) ) ), 'launder taint';
+    subtest 'untaint_strictly_positive_int' => sub {
+        is scalar untaint_strictly_positive_int( '1' ),      '1',     'accept: 1';
+        is scalar untaint_strictly_positive_int( '99999' ),  '99999', 'accept: 99999';
+        is scalar untaint_strictly_positive_int( '100000' ), undef,   'reject: 100000';
+        is scalar untaint_strictly_positive_int( '0' ),      undef,   'reject: 0';
+        is scalar untaint_strictly_positive_int( '0.5' ),    undef,   'reject: 0.5';
+        is scalar untaint_strictly_positive_int( '-1' ),     undef,   'reject: -1';
+        ok !tainted( untaint_strictly_positive_int( taint( '1' ) ) ), 'launder taint';
     };
 
-    subtest 'untaint_positive_millis' => sub {
-        is scalar untaint_positive_millis( '0.5' ),       '0.5',       'accept: 0.5';
-        is scalar untaint_positive_millis( '0.001' ),     '0.001',     'accept: 0.001';
-        is scalar untaint_positive_millis( '99999.999' ), '99999.999', 'accept: 99999.999';
-        is scalar untaint_positive_millis( '1' ),         '1',         'accept: 1';
-        is scalar untaint_positive_millis( '99999' ),     '99999',     'accept: 99999';
-        is scalar untaint_positive_millis( '0.0009' ),    undef,       'reject: 0.0009';
-        is scalar untaint_positive_millis( '100000' ),    undef,       'reject: 100000';
-        is scalar untaint_positive_millis( '0' ),         undef,       'reject: 0';
-        is scalar untaint_positive_millis( '0.0' ),       undef,       'reject: 0.0';
-        is scalar untaint_positive_millis( '-1' ),        undef,       'reject: -1';
-        ok !tainted( untaint_positive_millis( taint( '0.5' ) ) ), 'launder taint';
+    subtest 'untaint_strictly_positive_millis' => sub {
+        is scalar untaint_strictly_positive_millis( '0.5' ),       '0.5',       'accept: 0.5';
+        is scalar untaint_strictly_positive_millis( '0.001' ),     '0.001',     'accept: 0.001';
+        is scalar untaint_strictly_positive_millis( '99999.999' ), '99999.999', 'accept: 99999.999';
+        is scalar untaint_strictly_positive_millis( '1' ),         '1',         'accept: 1';
+        is scalar untaint_strictly_positive_millis( '99999' ),     '99999',     'accept: 99999';
+        is scalar untaint_strictly_positive_millis( '0.0009' ),    undef,       'reject: 0.0009';
+        is scalar untaint_strictly_positive_millis( '100000' ),    undef,       'reject: 100000';
+        is scalar untaint_strictly_positive_millis( '0' ),         undef,       'reject: 0';
+        is scalar untaint_strictly_positive_millis( '0.0' ),       undef,       'reject: 0.0';
+        is scalar untaint_strictly_positive_millis( '-1' ),        undef,       'reject: -1';
+        ok !tainted( untaint_strictly_positive_millis( taint( '0.5' ) ) ), 'launder taint';
     };
 
     subtest 'untaint_postgresql_ident' => sub {

@@ -61,7 +61,7 @@ over this.
 
 ### polling_interval
 
-A positive decimal number. Max 5 and 3 digits in the integer and fraction
+A strictly positive decimal number. Max 5 and 3 digits in the integer and fraction
 components respectively.
 
 Time in seconds between database lookups by Test Agent.
@@ -283,7 +283,7 @@ The ZONEMASTER section has several keys :
 
 ### max_zonemaster_execution_time
 
-A positive integer. Max length 5 digits.
+A strictly positive integer. Max length 5 digits.
 
 Time in seconds before reporting an unfinished test as failed.
 Default value: `600`.
@@ -301,7 +301,7 @@ Do not use it (keep the default value "0"), or use it with care.
 
 ### number_of_processes_for_frontend_testing
 
-A positive integer. Max length 5 digits.
+A strictly positive integer. Max length 5 digits.
 
 Number of processes allowed to run in parallel (added with
 `number_of_processes_for_batch_testing`).
@@ -332,7 +332,7 @@ Default value: `0`.
 
 ### age_reuse_previous_test
 
-A positive integer. Max length 5 digits.
+A strictly positive integer. Max length 5 digits.
 
 The shelf life of a test in seconds after its creation.
 Default value: `600`.

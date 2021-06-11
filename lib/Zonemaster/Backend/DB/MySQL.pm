@@ -13,6 +13,7 @@ use JSON::PP;
 use Log::Any qw($log);
 
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Validator qw( untaint_ipv6_address );
 
 with 'Zonemaster::Backend::DB';
 
@@ -41,6 +42,11 @@ sub dbh {
         my $password = $self->config->MYSQL_password();
 
         $log->notice( "Connecting to MySQL: database=$database host=$host user=$user" ) if $log->is_notice;
+
+        if ( untaint_ipv6_address( $host ) ) {
+            $host = "[$host]";
+        }
+
         $dbh = DBI->connect(
             "DBI:mysql:database=$database;host=$host",
             $user,

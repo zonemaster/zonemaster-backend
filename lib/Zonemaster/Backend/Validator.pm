@@ -16,6 +16,8 @@ our @EXPORT_OK = qw(
   untaint_abs_path
   untaint_engine_type
   untaint_ip_address
+  untaint_ipv4_address
+  untaint_ipv6_address
   untaint_host
   untaint_ldh_domain
   untaint_mariadb_database
@@ -33,6 +35,8 @@ our %EXPORT_TAGS = (
           untaint_abs_path
           untaint_engine_type
           untaint_ip_address
+          untaint_ipv4_address
+          untaint_ipv6_address
           untaint_host
           untaint_ldh_domain
           untaint_mariadb_database
@@ -200,11 +204,33 @@ Accepts an IPv4 or IPv6 address.
 
 sub untaint_ip_address {
     my ( $value ) = @_;
+    return untaint_ipv4_address( $value ) // untaint_ipv6_address( $value );
+}
+
+=head2 untaint_ipv4_address
+
+Accepts an IPv4 address.
+
+=cut
+
+sub untaint_ipv4_address {
+    my ( $value ) = @_;
     if ( $value =~ /($IPV4_RE)/
         && Zonemaster::Engine::Net::IP::ip_is_ipv4( $value ) )
     {
         return $1;
     }
+    return;
+}
+
+=head2 untaint_ipv6_address
+
+Accepts an IPv6 address.
+
+=cut
+
+sub untaint_ipv6_address {
+    my ( $value ) = @_;
     if ( $value =~ /($IPV6_RE)/
         && Zonemaster::Engine::Net::IP::ip_is_ipv6( $value ) )
     {

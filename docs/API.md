@@ -291,6 +291,8 @@ A default installation will accept the following `language tags`:
 
 Basic data type: number (integer)
  
+A non-negative integer is either zero or strictly positive.
+
 
 ### Username
 

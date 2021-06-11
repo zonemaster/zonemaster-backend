@@ -44,17 +44,6 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_abs_path( taint( 'localhost' ) ) ), 'launder taint';
     };
 
-    subtest 'untaint_ldh_domain' => sub {
-        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',    'accept: localhost';
-        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',  'accept: example.com';
-        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.', 'accept: example.com.';
-        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',    'accept: 192.0.2.1';
-        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,          'reject: 192.0.2.1:3306';
-        is scalar untaint_ldh_domain( '1/26.2.0.192.in-addr.arpa' ), undef,          'reject: 1/26.2.0.192.in-addr.arpa';
-        is scalar untaint_ldh_domain( '_http.example.com' ),         undef,          'reject: _http.example.com';
-        ok !tainted( untaint_ldh_domain( taint( 'localhost' ) ) ), 'launder taint';
-    };
-
     subtest 'untaint_engine_type' => sub {
         is scalar untaint_engine_type( 'MySQL' ),      'MySQL',      'accept: MySQL';
         is scalar untaint_engine_type( 'mysql' ),      'mysql',      'accept: mysql';
@@ -78,6 +67,17 @@ subtest 'Everything but NoWarnings' => sub {
         is scalar untaint_ip_address( '2001:db8::255.255.255' ),                  undef,                                    'reject: 2001:db8::255.255.255';
         is scalar untaint_ip_address( '::1' ),                                    '::1',                                    'accept: ::1';
         ok !tainted( untaint_ip_address( taint( '192.0.2.1' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_ldh_domain' => sub {
+        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',    'accept: localhost';
+        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',  'accept: example.com';
+        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.', 'accept: example.com.';
+        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',    'accept: 192.0.2.1';
+        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,          'reject: 192.0.2.1:3306';
+        is scalar untaint_ldh_domain( '1/26.2.0.192.in-addr.arpa' ), undef,          'reject: 1/26.2.0.192.in-addr.arpa';
+        is scalar untaint_ldh_domain( '_http.example.com' ),         undef,          'reject: _http.example.com';
+        ok !tainted( untaint_ldh_domain( taint( 'localhost' ) ) ), 'launder taint';
     };
 
     subtest 'untaint_mariadb_database' => sub {
@@ -128,30 +128,6 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_password( taint( '123456' ) ) ), 'launder taint';
     };
 
-    subtest 'untaint_strictly_positive_int' => sub {
-        is scalar untaint_strictly_positive_int( '1' ),      '1',     'accept: 1';
-        is scalar untaint_strictly_positive_int( '99999' ),  '99999', 'accept: 99999';
-        is scalar untaint_strictly_positive_int( '100000' ), undef,   'reject: 100000';
-        is scalar untaint_strictly_positive_int( '0' ),      undef,   'reject: 0';
-        is scalar untaint_strictly_positive_int( '0.5' ),    undef,   'reject: 0.5';
-        is scalar untaint_strictly_positive_int( '-1' ),     undef,   'reject: -1';
-        ok !tainted( untaint_strictly_positive_int( taint( '1' ) ) ), 'launder taint';
-    };
-
-    subtest 'untaint_strictly_positive_millis' => sub {
-        is scalar untaint_strictly_positive_millis( '0.5' ),       '0.5',       'accept: 0.5';
-        is scalar untaint_strictly_positive_millis( '0.001' ),     '0.001',     'accept: 0.001';
-        is scalar untaint_strictly_positive_millis( '99999.999' ), '99999.999', 'accept: 99999.999';
-        is scalar untaint_strictly_positive_millis( '1' ),         '1',         'accept: 1';
-        is scalar untaint_strictly_positive_millis( '99999' ),     '99999',     'accept: 99999';
-        is scalar untaint_strictly_positive_millis( '0.0009' ),    undef,       'reject: 0.0009';
-        is scalar untaint_strictly_positive_millis( '100000' ),    undef,       'reject: 100000';
-        is scalar untaint_strictly_positive_millis( '0' ),         undef,       'reject: 0';
-        is scalar untaint_strictly_positive_millis( '0.0' ),       undef,       'reject: 0.0';
-        is scalar untaint_strictly_positive_millis( '-1' ),        undef,       'reject: -1';
-        ok !tainted( untaint_strictly_positive_millis( taint( '0.5' ) ) ), 'launder taint';
-    };
-
     subtest 'untaint_postgresql_ident' => sub {
         is scalar untaint_postgresql_ident( 'zonemaster' ),    'zonemaster', 'accept: zonemaster';
         is scalar untaint_postgresql_ident( 'ZONEMASTER' ),    'ZONEMASTER', 'accept: ZONEMASTER';
@@ -176,5 +152,29 @@ subtest 'Everything but NoWarnings' => sub {
         is scalar untaint_non_negative_int( '0.5' ),    undef,   'reject: 0.5';
         is scalar untaint_non_negative_int( '-1' ),     undef,   'reject: -1';
         ok !tainted( untaint_non_negative_int( taint( '1' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_strictly_positive_int' => sub {
+        is scalar untaint_strictly_positive_int( '1' ),      '1',     'accept: 1';
+        is scalar untaint_strictly_positive_int( '99999' ),  '99999', 'accept: 99999';
+        is scalar untaint_strictly_positive_int( '100000' ), undef,   'reject: 100000';
+        is scalar untaint_strictly_positive_int( '0' ),      undef,   'reject: 0';
+        is scalar untaint_strictly_positive_int( '0.5' ),    undef,   'reject: 0.5';
+        is scalar untaint_strictly_positive_int( '-1' ),     undef,   'reject: -1';
+        ok !tainted( untaint_strictly_positive_int( taint( '1' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_strictly_positive_millis' => sub {
+        is scalar untaint_strictly_positive_millis( '0.5' ),       '0.5',       'accept: 0.5';
+        is scalar untaint_strictly_positive_millis( '0.001' ),     '0.001',     'accept: 0.001';
+        is scalar untaint_strictly_positive_millis( '99999.999' ), '99999.999', 'accept: 99999.999';
+        is scalar untaint_strictly_positive_millis( '1' ),         '1',         'accept: 1';
+        is scalar untaint_strictly_positive_millis( '99999' ),     '99999',     'accept: 99999';
+        is scalar untaint_strictly_positive_millis( '0.0009' ),    undef,       'reject: 0.0009';
+        is scalar untaint_strictly_positive_millis( '100000' ),    undef,       'reject: 100000';
+        is scalar untaint_strictly_positive_millis( '0' ),         undef,       'reject: 0';
+        is scalar untaint_strictly_positive_millis( '0.0' ),       undef,       'reject: 0.0';
+        is scalar untaint_strictly_positive_millis( '-1' ),        undef,       'reject: -1';
+        ok !tainted( untaint_strictly_positive_millis( taint( '0.5' ) ) ), 'launder taint';
     };
 };

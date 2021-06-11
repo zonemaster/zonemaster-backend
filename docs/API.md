@@ -863,8 +863,8 @@ Example response:
 
 An object with the following properties:
 
-* `"offset"`: An *non-negative integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
-* `"limit"`: An *non-negative integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"offset"`: A *non-negative integer*, optional. (default: 0). Position of the first returned element from the database returned list.
+* `"limit"`: A *non-negative integer*, optional. (default: 200). Number of element returned from the *offset* element.
 * `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
 * `"frontend_params"`: An object, required.
 
@@ -1095,8 +1095,8 @@ An object with the property:
 
 An object with the following properties:
 
-* `"nb_finished"`: an *non-negative integer*. The number of finished tests.
-* `"nb_running"`: an *non-negative integer*. The number of running tests.
+* `"nb_finished"`: a *non-negative integer*. The number of finished tests.
+* `"nb_running"`: a *non-negative integer*. The number of running tests.
 * `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
 
 

@@ -263,37 +263,37 @@ sub untaint_ldh_domain {
 
 sub untaint_mariadb_database {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $MARIADB_IDENT_RE, $MARIADB_DATABASE_LENGTH_RE );
+    return _untaint_pat( $value, $MARIADB_IDENT_RE, $MARIADB_DATABASE_LENGTH_RE );
 }
 
 sub untaint_mariadb_user {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $MARIADB_IDENT_RE, $MARIADB_USER_LENGTH_RE );
+    return _untaint_pat( $value, $MARIADB_IDENT_RE, $MARIADB_USER_LENGTH_RE );
 }
 
 sub untaint_password {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $PASSWORD_RE );
+    return _untaint_pat( $value, $PASSWORD_RE );
 }
 
 sub untaint_strictly_positive_int {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $NON_NEGATIVE_INT_RE, $NON_ZERO_NUM_RE );
+    return _untaint_pat( $value, $NON_NEGATIVE_INT_RE, $NON_ZERO_NUM_RE );
 }
 
 sub untaint_strictly_positive_millis {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $MILLIS_RE, $NON_ZERO_NUM_RE );
+    return _untaint_pat( $value, $MILLIS_RE, $NON_ZERO_NUM_RE );
 }
 
 sub untaint_postgresql_ident {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $POSTGRESQL_IDENT_RE );
+    return _untaint_pat( $value, $POSTGRESQL_IDENT_RE );
 }
 
 sub untaint_non_negative_int {
     my ( $value ) = @_;
-    return _untaint_pat( $value,  $NON_NEGATIVE_INT_RE );
+    return _untaint_pat( $value, $NON_NEGATIVE_INT_RE );
 }
 
 sub _untaint_pat {

@@ -66,6 +66,19 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_engine_type( taint( 'SQLite' ) ) ), 'launder taint';
     };
 
+    subtest 'untaint_ip_address' => sub {
+        is scalar untaint_ip_address( '192.0.2.1' ),                              '192.0.2.1',                              'accept: 192.0.2.1';
+        is scalar untaint_ip_address( '192.0.2' ),                                undef,                                    'reject: 192.0.2';
+        is scalar untaint_ip_address( '192.0.2.1:3306' ),                         undef,                                    'reject: 192.0.2.1:3306';
+        is scalar untaint_ip_address( '2001:db8::' ),                             '2001:db8::',                             'accept: 2001:db8::';
+        is scalar untaint_ip_address( '2001:db8::/32' ),                          undef,                                    'reject: 2001:db8::/32';
+        is scalar untaint_ip_address( '2001:db8:ffff:ffff:ffff:ffff:ffff:ffff' ), '2001:db8:ffff:ffff:ffff:ffff:ffff:ffff', 'accept: 2001:db8:ffff:ffff:ffff:ffff:ffff:ffff';
+        is scalar untaint_ip_address( '2001:db8:ffff:ffff:ffff:ffff:ffff' ),      undef,                                    'reject: 2001:db8:ffff:ffff:ffff:ffff:ffff';
+        is scalar untaint_ip_address( '2001:db8::255.255.255.254' ),              '2001:db8::255.255.255.254',              'accept: 2001:db8::255.255.255.254';
+        is scalar untaint_ip_address( '2001:db8::255.255.255' ),                  undef,                                    'reject: 2001:db8::255.255.255';
+        ok !tainted( untaint_ip_address( taint( '192.0.2.1' ) ) ), 'launder taint';
+    };
+
     subtest 'untaint_mariadb_database' => sub {
         is scalar untaint_mariadb_database( 'zonemaster' ),    'zonemaster',  'accept: zonemaster';
         is scalar untaint_mariadb_database( 'ZONEMASTER' ),    'ZONEMASTER',  'accept: ZONEMASTER';

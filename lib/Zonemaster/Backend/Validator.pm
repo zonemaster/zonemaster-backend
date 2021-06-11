@@ -10,33 +10,38 @@ use Exporter qw( import );
 use File::Spec::Functions qw( file_name_is_absolute );
 use JSON::Validator::Joi;
 use Readonly;
+use Zonemaster::Engine::Net::IP;
 
 our @EXPORT_OK = qw(
   untaint_abs_path
-  untaint_ldh_domain
   untaint_engine_type
+  untaint_ip_address
+  untaint_host
+  untaint_ldh_domain
   untaint_mariadb_database
   untaint_mariadb_user
+  untaint_non_negative_int
   untaint_password
+  untaint_postgresql_ident
   untaint_strictly_positive_int
   untaint_strictly_positive_millis
-  untaint_postgresql_ident
-  untaint_non_negative_int
 );
 
 our %EXPORT_TAGS = (
     untaint => [
         qw(
           untaint_abs_path
-          untaint_ldh_domain
           untaint_engine_type
+          untaint_ip_address
+          untaint_host
+          untaint_ldh_domain
           untaint_mariadb_database
           untaint_mariadb_user
+          untaint_non_negative_int
           untaint_password
+          untaint_postgresql_ident
           untaint_strictly_positive_int
           untaint_strictly_positive_millis
-          untaint_postgresql_ident
-          untaint_non_negative_int
           )
     ],
 );
@@ -175,11 +180,6 @@ sub untaint_abs_path {
     return _untaint_pred( $value, \&file_name_is_absolute );
 }
 
-sub untaint_ldh_domain {
-    my ( $value ) = @_;
-    return _untaint_pat( $value, $LDH_DOMAIN_RE1, $LDH_DOMAIN_RE2 );
-}
-
 =head2 untaint_engine_type
 
 Accepts the strings C<"MySQL">, C<"PostgreSQL"> and C<"SQLite">,
@@ -190,6 +190,49 @@ case-insensitively.
 sub untaint_engine_type {
     my ( $value ) = @_;
     return _untaint_pat( $value , $ENGINE_TYPE_RE );
+}
+
+=head2 untaint_ip_address
+
+Accepts an IPv4 or IPv6 address.
+
+=cut
+
+sub untaint_ip_address {
+    my ( $value ) = @_;
+    if ( $value =~ /($IPV4_RE)/
+        && Zonemaster::Engine::Net::IP::ip_is_ipv4( $value ) )
+    {
+        return $1;
+    }
+    if ( $value =~ /($IPV6_RE)/
+        && Zonemaster::Engine::Net::IP::ip_is_ipv6( $value ) )
+    {
+        return $1;
+    }
+    return;
+}
+
+=head2 untaint_host
+
+Accepts an LDH domain name or an IPv4 or IPv6 address.
+
+=cut
+
+sub untaint_host {
+    my ( $value ) = @_;
+    return untaint_ldh_domain( $value ) // untaint_ip_address( $value );
+}
+
+=head2 untaint_ldh_domain
+
+Accepts an LDH domain name.
+
+=cut
+
+sub untaint_ldh_domain {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $LDH_DOMAIN_RE1, $LDH_DOMAIN_RE2 );
 }
 
 sub untaint_mariadb_database {

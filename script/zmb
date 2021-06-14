@@ -248,7 +248,8 @@ sub cmd_start_domain_test {
  zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
 
  Options:
-   --testid TEST_ID
+   --test-id TEST_ID
+   --testid TEST_ID   # deprecated, use --test-id instead
 
 =cut
 
@@ -257,14 +258,26 @@ sub cmd_test_progress {
 
     my $opt_lang;
     my $opt_testid;
-    GetOptionsFromArray( \@opts, 'testid|t=s' => \$opt_testid, )
-      or pod2usage( 2 );
+    my $opt_test_id;
+    GetOptionsFromArray(
+        \@opts,
+        'test-id|t=s' => \$opt_test_id,
+        'testid|t=s'  => \$opt_testid,
+    ) or pod2usage( 2 );
+
+    if ( defined $opt_testid ) {
+        warn( "The --testid parameter deprecated. Use --test-id instead.\n" );
+    }
+    if ( defined $opt_testid && defined $opt_test_id ) {
+        pod2usage( "The --testid parameter is forbidden when --test-id is present." );
+    }
+    $opt_test_id //= $opt_testid;
 
     return to_jsonrpc(
         id     => 1,
         method => 'test_progress',
         params => {
-            test_id => $opt_testid,
+            test_id => $opt_test_id,
         },
     );
 }
@@ -303,7 +316,8 @@ sub cmd_get_test_params {
  zmb [GLOBAL OPTIONS] get_test_results [OPTIONS]
 
  Options:
-   --testid TEST_ID
+   --test-id TEST_ID
+   --testid TEST_ID   # deprecated, use --test-id instead
    --lang LANGUAGE
 
 =cut
@@ -313,17 +327,27 @@ sub cmd_get_test_results {
 
     my $opt_lang;
     my $opt_testid;
+    my $opt_test_id;
     GetOptionsFromArray(
         \@opts,
-        'testid|t=s' => \$opt_testid,
-        'lang|l=s'   => \$opt_lang,
+        'testid|t=s'  => \$opt_testid,
+        'test-id|t=s' => \$opt_test_id,
+        'lang|l=s'    => \$opt_lang,
     ) or pod2usage( 2 );
+
+    if ( defined $opt_testid ) {
+        warn( "The --testid parameter deprecated. Use --test-id instead.\n" );
+    }
+    if ( defined $opt_testid && defined $opt_test_id ) {
+        pod2usage( "The --testid parameter is forbidden when --test-id is present." );
+    }
+    $opt_test_id //= $opt_testid;
 
     return to_jsonrpc(
         id     => 1,
         method => 'get_test_results',
         params => {
-            id       => $opt_testid,
+            id       => $opt_test_id,
             language => $opt_lang,
         },
     );

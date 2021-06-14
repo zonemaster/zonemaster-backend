@@ -147,6 +147,7 @@ sub cmd_get_language_tags {
     --ipv4 true|false|null
     --ipv6 true|false|null
     --nameserver DOMAIN_NAME:IP_ADDRESS
+    --nameserver DOMAIN_NAME  # Trailing colon is optional when not specifing IP_ADDRESS
     --ds-info DS_INFO
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
@@ -214,6 +215,7 @@ sub cmd_start_domain_test {
         my @nameserver_objects;
         for my $domain_ip_pair ( @opt_nameserver ) {
             my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
+            $ip //= "";
             push @nameserver_objects,
               {
                 ns => $domain,

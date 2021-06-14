@@ -66,6 +66,7 @@ subtest 'Everything but NoWarnings' => sub {
         is scalar untaint_ip_address( '2001:db8::255.255.255.254' ),              '2001:db8::255.255.255.254',              'accept: 2001:db8::255.255.255.254';
         is scalar untaint_ip_address( '2001:db8::255.255.255' ),                  undef,                                    'reject: 2001:db8::255.255.255';
         is scalar untaint_ip_address( '::1' ),                                    '::1',                                    'accept: ::1';
+        is scalar untaint_ip_address( ':::1' ),                                   undef,                                    'reject: :::1';
         ok !tainted( untaint_ip_address( taint( '192.0.2.1' ) ) ), 'launder taint';
     };
 

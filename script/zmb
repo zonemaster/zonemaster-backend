@@ -249,7 +249,6 @@ sub cmd_start_domain_test {
 
  Options:
    --test-id TEST_ID
-   --testid TEST_ID   # deprecated, use --test-id instead
 
 =cut
 
@@ -257,21 +256,11 @@ sub cmd_test_progress {
     my @opts = @_;
 
     my $opt_lang;
-    my $opt_testid;
     my $opt_test_id;
     GetOptionsFromArray(
         \@opts,
         'test-id|t=s' => \$opt_test_id,
-        'testid|t=s'  => \$opt_testid,
     ) or pod2usage( 2 );
-
-    if ( defined $opt_testid ) {
-        warn( "The --testid parameter deprecated. Use --test-id instead.\n" );
-    }
-    if ( defined $opt_testid && defined $opt_test_id ) {
-        pod2usage( "The --testid parameter is forbidden when --test-id is present." );
-    }
-    $opt_test_id //= $opt_testid;
 
     return to_jsonrpc(
         id     => 1,
@@ -317,7 +306,6 @@ sub cmd_get_test_params {
 
  Options:
    --test-id TEST_ID
-   --testid TEST_ID   # deprecated, use --test-id instead
    --lang LANGUAGE
 
 =cut
@@ -326,22 +314,12 @@ sub cmd_get_test_results {
     my @opts = @_;
 
     my $opt_lang;
-    my $opt_testid;
     my $opt_test_id;
     GetOptionsFromArray(
         \@opts,
-        'testid|t=s'  => \$opt_testid,
         'test-id|t=s' => \$opt_test_id,
         'lang|l=s'    => \$opt_lang,
     ) or pod2usage( 2 );
-
-    if ( defined $opt_testid ) {
-        warn( "The --testid parameter deprecated. Use --test-id instead.\n" );
-    }
-    if ( defined $opt_testid && defined $opt_test_id ) {
-        pod2usage( "The --testid parameter is forbidden when --test-id is present." );
-    }
-    $opt_test_id //= $opt_testid;
 
     return to_jsonrpc(
         id     => 1,

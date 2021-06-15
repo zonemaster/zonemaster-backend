@@ -80,12 +80,18 @@ The host name of the machine on which the MySQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
 
+If this property is set to `localhost`, then the [MYSQL.port] property
+is discarded as the driver connects using a UNIX socket (see the
+[DBD::mysql documentation]).
+
 ### port
 
-The port the MySQL server is listening on. If the server is on the local
-machine, then the [MYSQL.host] value must contain the loopback IP
-address (127.0.0.1).
+The port the MySQL server is listening on.
 Default value: `3306`.
+
+If [MYSQL.host] is set to `localhost`, then this property is discarded as
+the driver connects using a UNIX socket (see the [DBD::mysql
+documentation]).
 
 ### user
 
@@ -359,6 +365,7 @@ Otherwise a new test request is enqueued.
 [DB.database_name]:                   #database_name
 [DB.password]:                        #password
 [DB.user]:                            #user
+[DBD::mysql documentation]:           https://metacpan.org/pod/DBD::mysql#host
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2

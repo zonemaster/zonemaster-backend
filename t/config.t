@@ -80,12 +80,14 @@ subtest 'Everything but NoWarnings' => sub {
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
         cmp_ok abs( $config->DB_polling_interval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
-        is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->ZONEMASTER_maximal_number_of_retries,                0,   'default: ZONEMASTER.maximal_number_of_retries';
-        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,  'default: ZONEMASTER.number_of_processes_for_frontend_testing';
-        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
-        is $config->ZONEMASTER_lock_on_queue,                            0,   'default: ZONEMASTER.lock_on_queue';
-        is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
+        is $config->ZONEMASTER_max_zonemaster_execution_time,            600,  'default: ZONEMASTER.max_zonemaster_execution_time';
+        is $config->ZONEMASTER_maximal_number_of_retries,                0,    'default: ZONEMASTER.maximal_number_of_retries';
+        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,   'default: ZONEMASTER.number_of_processes_for_frontend_testing';
+        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,   'default: ZONEMASTER.number_of_processes_for_batch_testing';
+        is $config->ZONEMASTER_lock_on_queue,                            0,    'default: ZONEMASTER.lock_on_queue';
+        is $config->ZONEMASTER_age_reuse_previous_test,                  600,  'default: ZONEMASTER.age_reuse_previous_test';
+        is $config->MYSQL_port,                                          3306, 'default: MYSQL.port';
+        is $config->POSTGRESQL_port,                                     5432, 'default: POSTGRESQL.port';
     };
 
     lives_and {

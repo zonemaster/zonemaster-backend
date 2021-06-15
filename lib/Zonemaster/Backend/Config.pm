@@ -136,7 +136,7 @@ sub parse {
         $obj->_set_DB_engine( $value );
     }
 
-    # Check required propertys (part 1/2)
+    # Check required properties (part 1/2)
     if ( !defined $obj->DB_engine ) {
         die "config: missing required property DB.engine\n";
     }
@@ -203,6 +203,9 @@ sub parse {
         $obj->_set_MYSQL_host( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'port' ) ) ) {
+        if ( $obj->MYSQL_host eq 'localhost' ) {
+            push @warnings, "MYSQL.port is disregarded if MYSQL.host is set to 'localhost'";
+        }
         $obj->{_MYSQL_port} = $value;
     }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {

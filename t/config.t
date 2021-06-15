@@ -164,6 +164,24 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    '22', 'fallback: ZONEMASTER.number_of_processes_for_batch_testing';
     };
 
+    lives_and {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host     = localhost
+            port     = 3333
+            user     = mysql_user
+            password = mysql_password
+            database = mysql_database
+        };
+        my $config = Zonemaster::Backend::Config->parse( $text );
+        $log->contains_ok( qr/MYSQL\.port.*MYSQL\.host/, 'warning: MYSQL.host is "localhost" and MYSQL.port defined' );
+        is $config->MYSQL_host, 'localhost', 'set: MYSQL.host';
+        is $config->MYSQL_port, 3333,        'set: MYSQL.port';
+    };
+
     throws_ok {
         my $text = '{"this":"is","not":"a","valid":"ini","file":"!"}';
         Zonemaster::Backend::Config->parse( $text );

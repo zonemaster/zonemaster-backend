@@ -28,6 +28,7 @@ use Zonemaster::Backend::Validator;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
+my %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -248,16 +249,20 @@ sub validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
     my $result = eval {
+        my @errors;
+
         my @allowed_params_keys = (
             'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
             'client_id', 'client_version', 'config', 'priority', 'queue'
         );
 
+        # NOTE: Already covered in JSON validation? (strict mode)
         foreach my $k ( keys %$syntax_input ) {
-            return { status => 'nok', message => encode_entities( "Unknown option [$k] in parameters" ) }
+            push @errors, { path => '/', message => encode_entities( "Unknown option [$k] in parameters" ) }
             unless ( grep { $_ eq $k } @allowed_params_keys );
         }
 
+        # NOTE: Already covered in JSON validation? (strict mode)
         if ( ( defined $syntax_input->{nameservers} && @{ $syntax_input->{nameservers} } ) ) {
             foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
                 foreach my $k ( keys %$ns_ip ) {
@@ -269,21 +274,24 @@ sub validate_syntax {
         if ( ( defined $syntax_input->{ds_info} && @{ $syntax_input->{ds_info} } ) ) {
             foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
                 foreach my $k ( keys %$ds_digest ) {
+                    # NOTE: Already covered in JSON validation? (strict mode)
                     delete( $ds_digest->{$k} ) unless ( $k eq 'algorithm' || $k eq 'digest' || $k eq 'digtype' || $k eq 'keytag' );
                 }
             }
         }
 
+        # NOTE: Already covered in JSON validation?
         if ( defined $syntax_input->{ipv4} ) {
-            return { status => 'nok', message => encode_entities( "Invalid IPv4 transport option format" ) }
+            push @errors, { path => '/ipv4', message => encode_entities( "Invalid IPv4 transport option format" ) }
             unless ( $syntax_input->{ipv4} eq JSON::PP::false
                 || $syntax_input->{ipv4} eq JSON::PP::true
                 || $syntax_input->{ipv4} eq '1'
                 || $syntax_input->{ipv4} eq '0' );
         }
 
+        # NOTE: Already covered in JSON validation?
         if ( defined $syntax_input->{ipv6} ) {
-            return { status => 'nok', message => encode_entities( "Invalid IPv6 transport option format" ) }
+            push @errors, { path => '/ipv6', message => encode_entities( "Invalid IPv6 transport option format" ) }
             unless ( $syntax_input->{ipv6} eq JSON::PP::false
                 || $syntax_input->{ipv6} eq JSON::PP::true
                 || $syntax_input->{ipv6} eq '1'
@@ -292,42 +300,44 @@ sub validate_syntax {
 
         if ( defined $syntax_input->{profile} ) {
             my @profiles = map lc, $self->{config}->ListPublicProfiles();
-            return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
+            push @errors, { status => '/profile', message => encode_entities( "Unknown profile name" ) }
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 
         my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );
 
-        return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
+        push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
 
         if ( defined $syntax_input->{nameservers} && @{ $syntax_input->{nameservers} } ) {
-            foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
+            while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
                 my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns}, "NS [$ns_ip->{ns}]" );
-                return $ns_syntax if ( $ns_syntax->{status} eq 'nok' );
-            }
+                push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
 
-            foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
+                my $ip_error;
+
+                # NOTE: IP regex check already covered in JSON validation? (Regex differs a bit)
                 # Although counterintuitive both tests are necessary as Zonemaster::Engine::Net::IP accepts incomplete IP adresses (network adresses) as valid IP adresses
-                return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                $ip_error = { path => "/nameservers/$index/ns", message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
                     unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
 
-                return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-                unless ( !$ns_ip->{ip}
+                $ip_error = { path => "/nameservers/$index/ns", message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                unless ( $ip_error || !$ns_ip->{ip}
                     || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
                     || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
+
+                push @errors, $ip_error if $ip_error
             }
 
-            foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-                return {
-                    status  => 'nok',
+            # NOTE: Already covered in JSON validation? (emit warning when key do not exist)
+            while (my ($index, $ds_digest) = each @{ $syntax_input->{ds_info} }) {
+                push @errors, {
+                    path  => "/ds_info/$index/algorigthm",
                     message => encode_entities( "Invalid algorithm type: [$ds_digest->{algorithm}]" )
                 }
                 if ( $ds_digest->{algorithm} =~ /\D/ );
-            }
 
-            foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-                return {
-                    status  => 'nok',
+                push @errors, {
+                    path => "/ds_info/$index/digest",
                     message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
                 }
                 if (
@@ -337,6 +347,14 @@ sub validate_syntax {
                         $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
                 );
             }
+        }
+
+        if (@errors) {
+            return {
+                status => 'nok',
+                errors => \@errors,
+                message => 'Syntax validation error'
+            };
         }
     };
     if ($@) {
@@ -367,14 +385,13 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     priority => $zm_validator->priority,
     queue => $zm_validator->queue
 );
+$extra_validators{start_domain_test} = \&validate_syntax;
 sub start_domain_test {
     my ( $self, $params ) = @_;
 
     my $result = 0;
     eval {
         $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
-        my $syntax_result = $self->validate_syntax( $params );
-        die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
         die "No domain in parameters\n" unless ( $params->{domain} );
 
@@ -673,6 +690,15 @@ sub jsonrpc_validate {
             };
         }
         my @error = $method_schema->validate($jsonrpc_request->{params});
+
+        @error = map { { path => $_->path, message => $_->message } } @error;
+
+        if ( $extra_validators{$jsonrpc_request->{method}} ) {
+            my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
+            my $result = $self->$sub_validator($jsonrpc_request->{params});
+            push @error, @{$result->{errors}} if $result->{status} eq 'nok';
+        }
+
         if ( @error ) {
             return {
                 jsonrpc => '2.0',
@@ -680,7 +706,7 @@ sub jsonrpc_validate {
                 error => {
                     code => '-32602',
                     message => 'Invalid method parameter(s).',
-                    data => "@error"
+                    data => \@error
                 }
             };
         }

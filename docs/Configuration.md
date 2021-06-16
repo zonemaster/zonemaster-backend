@@ -80,18 +80,14 @@ The host name of the machine on which the MySQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
 
-If this property is set to `localhost`, then the [MYSQL.port] property
-is discarded as the driver connects using a UNIX socket (see the
-[DBD::mysql documentation]).
-
 ### port
 
 The port the MySQL server is listening on.
 Default value: `3306`.
 
-If [MYSQL.host] is set to `localhost`, then this property is discarded as
-the driver connects using a UNIX socket (see the [DBD::mysql
-documentation]).
+If [MYSQL.host] is set to `localhost` (but not `127.0.0.1` nor `::1`),
+then the value of the [MYSQL.port] property is discarded as the driver
+connects using a UNIX socket (see the [DBD::mysql documentation]).
 
 ### user
 

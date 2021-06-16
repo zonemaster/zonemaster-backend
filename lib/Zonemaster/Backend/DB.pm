@@ -73,7 +73,7 @@ sub get_test_request {
 
     my $result_id;
     my $dbh = $self->dbh;
-    
+
     my ( $id, $hash_id );
     if ( defined $queue_label ) {
         ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
@@ -81,7 +81,7 @@ sub get_test_request {
     else {
         ( $id, $hash_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
     }
-        
+
     if ($id) {
         $dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
         $result_id = $hash_id;
@@ -91,43 +91,43 @@ sub get_test_request {
 
 # Standatd SQL, can be here
 sub get_batch_job_result {
-	my ( $self, $batch_id ) = @_;
+    my ( $self, $batch_id ) = @_;
 
-	my $dbh = $self->dbh;
+    my $dbh = $self->dbh;
 
-	my %result;
-	$result{nb_running} = 0;
-	$result{nb_finished} = 0;
+    my %result;
+    $result{nb_running} = 0;
+    $result{nb_finished} = 0;
 
-	my $query = "
-		SELECT hash_id, progress
-		FROM test_results 
-		WHERE batch_id=?";
-		
-	my $sth1 = $dbh->prepare( $query );
-	$sth1->execute( $batch_id );
-	while ( my $h = $sth1->fetchrow_hashref ) {
-		if ( $h->{progress} eq '100' ) {
-			$result{nb_finished}++;
-			push(@{$result{finished_test_ids}}, $h->{hash_id});
-		}
-		else {
-			$result{nb_running}++;
-		}
-	}
-	
-	return \%result;
+    my $query = "
+        SELECT hash_id, progress
+        FROM test_results
+        WHERE batch_id=?";
+
+    my $sth1 = $dbh->prepare( $query );
+    $sth1->execute( $batch_id );
+    while ( my $h = $sth1->fetchrow_hashref ) {
+        if ( $h->{progress} eq '100' ) {
+            $result{nb_finished}++;
+            push(@{$result{finished_test_ids}}, $h->{hash_id});
+        }
+        else {
+            $result{nb_running}++;
+        }
+    }
+
+    return \%result;
 }
 
 sub process_unfinished_tests {
     my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
-    
+
     my $sth1 = $self->select_unfinished_tests(    #
         $queue_label,
         $test_run_timeout,
         $test_run_max_retries,
     );
-        
+
     while ( my $h = $sth1->fetchrow_hashref ) {
         if ( $h->{nb_retries} < $test_run_max_retries ) {
             $self->schedule_for_retry($h->{hash_id});

@@ -132,7 +132,7 @@ sub test_progress {
             $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
-    
+
     my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
@@ -143,14 +143,14 @@ sub create_new_batch_job {
 
     my $dbh = $self->dbh;
     my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
-            SELECT 
-                batch_id, 
-                batch_jobs.creation_time AS batch_creation_time 
-            FROM 
-                test_results 
-            JOIN batch_jobs 
-                ON batch_id=batch_jobs.id 
-                AND username=? WHERE 
+            SELECT
+                batch_id,
+                batch_jobs.creation_time AS batch_creation_time
+            FROM
+                test_results
+            JOIN batch_jobs
+                ON batch_id=batch_jobs.id
+                AND username=? WHERE
                 test_results.progress<>100
             LIMIT 1
             ", undef, $username );
@@ -225,8 +225,8 @@ sub test_results {
     eval {
         my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
         $result            = $hrefs->{$test_id};
-        
-        # This workaround is needed to properly handle all versions of perl and the DBD::Pg module 
+
+        # This workaround is needed to properly handle all versions of perl and the DBD::Pg module
         # More details in the zonemaster backend issue #570
         if (utf8::is_utf8($result->{params}) ) {
                 $result->{params}  = decode_json( encode_utf8($result->{params}) );
@@ -234,7 +234,7 @@ sub test_results {
         else {
                 $result->{params}  = decode_json( $result->{params} );
         }
-        
+
         if (utf8::is_utf8($result->{results} ) ) {
                 $result->{results}  = decode_json( encode_utf8($result->{results}) );
         }
@@ -261,7 +261,7 @@ sub get_test_history {
 
     my @results;
     my $query = "
-        SELECT 
+        SELECT
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
@@ -269,8 +269,8 @@ sub get_test_history {
             hash_id,
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
         FROM test_results
-        WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated 
-        ORDER BY id DESC 
+        WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
+        ORDER BY id DESC
         OFFSET $p->{offset} LIMIT $p->{limit}";
     my $sth1 = $dbh->prepare( $query );
     $sth1->execute;
@@ -322,7 +322,7 @@ sub add_batch_job {
         $dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
-        
+
         $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
@@ -338,7 +338,7 @@ sub add_batch_job {
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))" );
-        
+
         $dbh->commit();
     }
     else {

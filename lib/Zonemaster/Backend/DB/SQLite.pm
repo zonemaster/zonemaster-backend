@@ -139,7 +139,7 @@ sub user_authorized {
 
     my ( $id ) =
       $self->dbh->selectrow_array( q[SELECT id FROM users WHERE username = ? AND api_key = ?], undef, $user, $api_key );
-      
+
     return $id;
 }
 
@@ -147,14 +147,14 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
-               SELECT 
-                    batch_id, 
-                    batch_jobs.creation_time AS batch_creation_time 
-               FROM 
-                    test_results 
-               JOIN batch_jobs 
-                    ON batch_id=batch_jobs.id 
-                    AND username=" . $self->dbh->quote( $username ) . " WHERE 
+               SELECT
+                    batch_id,
+                    batch_jobs.creation_time AS batch_creation_time
+               FROM
+                    test_results
+               JOIN batch_jobs
+                    ON batch_id=batch_jobs.id
+                    AND username=" . $self->dbh->quote( $username ) . " WHERE
                     test_results.progress<>100
                LIMIT 1
                " );
@@ -247,7 +247,7 @@ sub get_test_params {
     eval {
         $result = decode_json( $params_json );
     };
-    
+
     $log->warn( "decoding of params_json failed (test_id: [$test_id]):".Dumper($params_json) ) if $@;
 
     return $result;
@@ -289,7 +289,7 @@ sub get_test_history {
                     hash_id,
                     creation_time,
                     params,
-                    results   
+                    results
                  FROM
                     test_results
                  WHERE
@@ -343,7 +343,7 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
-        
+
         my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
@@ -357,7 +357,7 @@ sub add_batch_job {
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
-       
+
         $dbh->commit();
         $dbh->{AutoCommit} = 1;
     }

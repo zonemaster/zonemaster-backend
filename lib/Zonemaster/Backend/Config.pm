@@ -71,8 +71,8 @@ The configuration is interpreted according to the
 L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
 
 Returns a new Zonemaster::Backend::Config instance with its properties set to
-values according to the given configuration with defaults according to the
-configuration format.
+normalized and untainted values according to the given configuration with
+defaults according to the configuration format.
 
 Emits a log warning with a deprecation message for each deprecated property that
 is present.
@@ -367,57 +367,77 @@ sub _set_DB_engine {
 
 Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
 
+Returns a number.
+
 
 =head2 MYSQL_database
 
 Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>.
+
+Returns a string.
 
 
 =head2 MySQL_host
 
 Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
 
+Returns a string.
+
 
 =head2 MYSQL_password
 
 Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
+
+Returns a string.
 
 
 =head2 MYSQL_user
 
 Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
 
+Returns a string.
+
 
 =head2 POSTGRESQL_database
 
 Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>.
+
+Returns a string.
 
 
 =head2 POSTGRESQL_host
 
 Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>.
 
+Returns a string.
+
 
 =head2 POSTGRESQL_password
 
 Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>.
+
+Returns a string.
 
 
 =head2 POSTGRESQL_user
 
 Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>.
 
+Returns a string.
+
 
 =head2 SQLITE_database_file
 
 Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>.
+
+Returns a string.
 
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
@@ -425,7 +445,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
 
-Returns a positive integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
@@ -433,7 +453,7 @@ Returns a positive integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_lock_on_queue
@@ -441,7 +461,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_maximal_number_of_retries
@@ -449,7 +469,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_age_reuse_previous_test
@@ -457,7 +477,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
 
-Returns an integer.
+Returns a number.
 
 =cut
 
@@ -481,22 +501,22 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
-    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval' );
-    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host' );
-    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user' );
-    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password' );
-    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database' );
-    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host' );
-    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user' );
-    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password' );
-    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database' );
-    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file' );
-    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time' );
-    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries' );
-    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue' );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing' );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing' );
-    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test' );
+    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
+    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_host );
+    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
+    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
+    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );
+    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_host );
+    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user',                                     \&untaint_postgresql_ident );
+    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
+    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
+    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
+    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
+    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries',                \&untaint_non_negative_int );
+    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
+    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
 }
 
 =head2 Language_Locale_hash
@@ -718,14 +738,20 @@ sub new_PM {
     return $pm;
 }
 
-# Create a setter method with a given name using the given field
+# Create a setter method with a given name using the given field and validator
 sub _create_setter {
-    my ( $setter, $field ) = @_;
+    my ( $setter, $field, $validate ) = @_;
+
+    $setter =~ /^_set_([A-Z_]*)_([a-z_]*)$/
+      or confess "Invalid setter name";
+    my $section  = $1;
+    my $property = $2;
 
     my $setter_impl = sub {
         my ( $self, $value ) = @_;
 
-        $self->{$field} = $value;
+        $self->{$field} = $validate->( $value )    #
+          // die "Invalid value for $section.$property: $value\n";
 
         return;
     };
@@ -745,7 +771,7 @@ sub _normalize_engine_type {
         sqlite     => 'SQLite',
     };
 
-    return scalar $db_module_names->{ lc $value };
+    return $db_module_names->{ lc $value };
 }
 
 1;

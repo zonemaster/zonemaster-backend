@@ -204,6 +204,335 @@ subtest 'Everything but NoWarnings' => sub {
     throws_ok {
         my $text = q{
             [DB]
+            engine = SQLite
+            polling_interval = hourly
+
+            [SQLITE]
+            databse_file = /var/db/zonemaster.sqlite
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{DB\.polling_interval.*hourly}, 'die: Invalid DB.polling_interval value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = 192.0.2.1:3306
+            user = zonemaster_user
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{MYSQL\.host.*192.0.2.1:3306}, 'die: Invalid MYSQL.host value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = Robert'); DROP TABLE Students;--
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{MYSQL\.user.*Robert'\); DROP TABLE Students;--}, 'die: Invalid MYSQL.user value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = zonemaster
+            password = (╯°□°)╯︵ ┻━┻
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{MYSQL\.password.*\(╯°□°\)╯︵ ┻━┻}, 'die: Invalid MYSQL.password value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            password = zonemaster_password
+            database = |)/-\'|'/-\|3/-\$[-
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{MYSQL\.database.*|\)/-\'|'/-\\|3/-\\$[-}, 'die: Invalid MYSQL.database value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = 192.0.2.1:5432
+            user = zonemaster_user
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{POSTGRESQL\.host.*192.0.2.1:5432}, 'die: Invalid POSTGRESQL.host value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = Robert'); DROP TABLE Students;--
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{POSTGRESQL\.user.*Robert'\); DROP TABLE Students;--}, 'die: Invalid POSTGRESQL.user value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = zonemaster
+            password = (╯°□°)╯︵ ┻━┻
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{POSTGRESQL\.password.*\(╯°□°\)╯︵ ┻━┻}, 'die: Invalid POSTGRESQL.password value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            password = zonemaster_password
+            database = |)/-\'|'/-\|3/-\$[-
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{POSTGRESQL\.database.*|\)/-\'|'/-\\|3/-\\$[-}, 'die: Invalid POSTGRESQL.database value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = ./relative/path/to/zonemaster.sqlite
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{SQLITE\.database_file.*\./relative/path/to/zonemaster.sqlite}, 'die: Invalid SQLITE.database_file value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [ZONEMASTER]
+            max_zonemaster_execution_time = 0
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{ZONEMASTER\.max_zonemaster_execution_time.*0}, 'die: Invalid ZONEMASTER.max_zonemaster_execution_time value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [ZONEMASTER]
+            maximal_number_of_retries = -1
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{ZONEMASTER\.maximal_number_of_retries.*-1}, 'die: Invalid ZONEMASTER.maximal_number_of_retries value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [ZONEMASTER]
+            lock_on_queue = -1
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{ZONEMASTER\.lock_on_queue.*-1}, 'die: Invalid ZONEMASTER.lock_on_queue value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [ZONEMASTER]
+            number_of_processes_for_frontend_testing = 0
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{ZONEMASTER\.number_of_processes_for_frontend_testing.*0}, 'die: Invalid ZONEMASTER.number_of_processes_for_frontend_testing value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [ZONEMASTER]
+            number_of_processes_for_batch_testing = 100000
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{ZONEMASTER\.number_of_processes_for_batch_testing.*100000}, 'die: Invalid ZONEMASTER.number_of_processes_for_batch_testing value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [ZONEMASTER]
+            age_reuse_previous_test = 0
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr{ZONEMASTER\.age_reuse_previous_test.*0}, 'die: Invalid ZONEMASTER.age_reuse_previous_test value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            user = zonemaster_user
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.host/, 'die: Missing MYSQL.host value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.user/, 'die: Missing MYSQL.user value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.password/, 'die: Missing MYSQL.password value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            password = zonemaster_password
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/MYSQL\.database/, 'die: Missing MYSQL.database value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            user = zonemaster_user
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.host/, 'die: Missing POSTGRESQL.host value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            password = zonemaster_password
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.user/, 'die: Missing POSTGRESQL.user value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            database = zonemaster_database
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.password/, 'die: Missing POSTGRESQL.password value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = PostgreSQL
+
+            [POSTGRESQL]
+            host = zonemaster-host
+            user = zonemaster_user
+            password = zonemaster_password
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/POSTGRESQL\.database/, 'die: Missing POSTGRESQL.database value';
+
+    throws_ok {
+        my $text = q{
+            [DB]
             engine = MySQL
 
             [MYSQL]

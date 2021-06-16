@@ -155,9 +155,9 @@ sub cmd_get_language_tags {
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
-    keytag=UNSIGNED_INTEGER
-    algorithm=UNSIGNED_INTEGER
-    digtype=UNSIGNED_INTEGER
+    keytag=NON_NEGATIVE_INTEGER
+    algorithm=NON_NEGATIVE_INTEGER
+    digtype=NON_NEGATIVE_INTEGER
     digest=HEX_STRING
 
 =cut

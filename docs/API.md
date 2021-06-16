@@ -88,7 +88,7 @@ Represents the password of an authenticated account (see *[Privilege levels]*)
 
 Basic data type: number
 
-A positive integer.
+A strictly positive integer.
 
 The unique id of a *batch*.
 
@@ -287,12 +287,12 @@ A default installation will accept the following `language tags`:
 * `sv` or `sv_SE` for Swedish language.
 
 
-### Unsigned integer
+### Non-negative integer
 
 Basic data type: number (integer)
  
-An unsigned integer is either positive or zero.
- 
+A non-negative integer is either zero or strictly positive.
+
 
 ### Username
 
@@ -865,8 +865,8 @@ Example response:
 
 An object with the following properties:
 
-* `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
-* `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"offset"`: A *non-negative integer*, optional. (default: 0). Position of the first returned element from the database returned list.
+* `"limit"`: A *non-negative integer*, optional. (default: 200). Number of element returned from the *offset* element.
 * `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
 * `"frontend_params"`: An object, required.
 
@@ -1097,8 +1097,8 @@ An object with the property:
 
 An object with the following properties:
 
-* `"nb_finished"`: an *unsigned integer*. The number of finished tests.
-* `"nb_running"`: an *unsigned integer*. The number of running tests.
+* `"nb_finished"`: a *non-negative integer*. The number of finished tests.
+* `"nb_running"`: a *non-negative integer*. The number of running tests.
 * `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
 
 

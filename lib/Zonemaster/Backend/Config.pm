@@ -765,6 +765,7 @@ sub _create_setter {
 sub _normalize_engine_type {
     my ( $value ) = @_;
 
+    # Normalized to camel case to match the database engine Perl module name, e.g. "SQLite.pm".
     state $db_module_names = {
         mysql      => 'MySQL',
         postgresql => 'PostgreSQL',

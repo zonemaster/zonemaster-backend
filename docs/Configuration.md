@@ -178,14 +178,6 @@ are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 A `locale tag` is a locale setting for the available translation
 of messages without ".UTF-8", which is implied.
 
-If a new `locale tag` is added to the configuration then the equivalent
-MO file should be added to Zonemaster-Engine at the correct place so
-that gettext can retrieve it, or else the added `locale tag` will not
-add any actual language support. See the
-[Zonemaster-Engine share directory] for the existing PO files that are
-converted to MO files. (Here we should have a link
-to documentation instead.)
-
 Removing a language from the configuration file just blocks that
 language from being allowed. If there are more than one `locale tag`
 (with different country codes) for the same language, then
@@ -240,6 +232,16 @@ Setting in the default configuration file:
 ```
 locale = da_DK en_US fi_FI fr_FR nb_NO sv_SE
 ```
+
+#### Installation considerations
+
+If a new `locale tag` is added to the configuration then the equivalent
+MO file should be added to Zonemaster-Engine at the correct place so
+that gettext can retrieve it, or else the added `locale tag` will not
+add any actual language support. See the
+[Zonemaster-Engine share directory] for the existing PO files that are
+converted to MO files. (Here we should have a link
+to documentation instead.)
 
 Each locale set in the configuration file, including the implied
 ".UTF-8", must also be installed or activate on the system

@@ -382,9 +382,9 @@ An array of *Profile names* in lower case. `"default"` is always included.
 Returns all valid [language tags][language tag] generated from the setting in
 the configuration file.
 
-The `language tags` are generated from the configured [locale tags].
-Each `locale tag` will generate two `language tags`, a short tag
-equal to the first two letters (usually the same as a language
+The `language tags` are generated from the [LANGUAGE.locale] property.
+Each `locale tag` in LANGUAGE.locale generates two `language tags`,
+a short tag equal to the first two letters (usually the same as a language
 code) and a long tag which is equal to the full `locale tag`.
 If "en_US" is the `locale tag` then "en" and "en_US" are the
 `language tags`.
@@ -1191,5 +1191,6 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [Available profiles]:           Configuration.md#profiles-section
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
-[Privilege levels]:             #privilege-levels
+[LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
+[Privilege levels]:             #privilege-levels

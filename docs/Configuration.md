@@ -165,9 +165,10 @@ If this property is unspecified, the value of [DB.database_name] is used instead
 
 The LANGUAGE section has one key, `locale`.
 
-The value of the `locale` key is a space separated list of
-`locale tags` where each tag must match the regular expression
-`/^[a-z]{2}_[A-Z]{2}$/`.
+### locale
+
+A space separated list of `locale tags` where each tag matches the regular
+expression `/^[a-z]{2}_[A-Z]{2}$/`.
 
 It is an error to repeat the same `locale tag`.
 

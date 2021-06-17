@@ -201,18 +201,6 @@ If there are two `locale tags` that would give the same short
 `language tag` then that is excluded. E.g. "en_US en_UK" will
 only give "en_US" and "en_UK" as `language tags`.
 
-The default installation and configuration supports the
-following languages.
-
-Language | Locale tag value   | Locale value used
----------|--------------------|------------------
-Danish   | da_DK              | da_DK.UTF-8
-English  | en_US              | en_US.UTF-8
-Finnish  | fi_FI              | fi_FI.UTF-8
-French   | fr_FR              | fr_FR.UTF-8
-Norwegian| nb_NO              | nb_NO.UTF-8
-Swedish  | sv_SE              | sv_SE.UTF-8
-
 The following `language tags` are generated:
 * da
 * da_DK
@@ -226,6 +214,20 @@ The following `language tags` are generated:
 * nb_NO
 * sv
 * sv_SE
+
+#### Out-of-the-box support
+
+The default installation and configuration supports the
+following languages.
+
+Language | Locale tag value   | Locale value used
+---------|--------------------|------------------
+Danish   | da_DK              | da_DK.UTF-8
+English  | en_US              | en_US.UTF-8
+Finnish  | fi_FI              | fi_FI.UTF-8
+French   | fr_FR              | fr_FR.UTF-8
+Norwegian| nb_NO              | nb_NO.UTF-8
+Swedish  | sv_SE              | sv_SE.UTF-8
 
 Setting in the default configuration file:
 

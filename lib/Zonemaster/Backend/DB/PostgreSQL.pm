@@ -302,8 +302,6 @@ sub add_batch_job {
     my $batch_id;
 
     my $dbh = $self->dbh;
-    my $js = JSON::PP->new;
-    $js->canonical( 1 );
 
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
@@ -324,8 +322,7 @@ sub add_batch_job {
         $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
-            my $encoded_params = $js->encode( $test_params );
-            my $fingerprint    = md5_hex( encode_utf8( $encoded_params ) );
+            my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
 
             $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\n");
         }

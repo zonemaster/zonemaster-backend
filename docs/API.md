@@ -379,10 +379,9 @@ An array of *Profile names* in lower case. `"default"` is always included.
 
 ## API method: `get_language_tags`
 
-Returns all valid [language tags][language tag] generated from the setting in
-the configuration file.
+Returns all valid [language tags][language tag] generated from the
+[LANGUAGE.locale] property in the configuration file.
 
-The `language tags` are generated from the [LANGUAGE.locale] property.
 Each `locale tag` in LANGUAGE.locale generates two `language tags`,
 a short tag equal to the first two letters (usually the same as a language
 code) and a long tag which is equal to the full `locale tag`.

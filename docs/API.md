@@ -266,13 +266,16 @@ Basic data type: string
 A string of A-Z, a-z and underscores matching the regular expression
 `/^[a-z]{2}(_[A-Z]{2})?$/`.
 
-The `language tag` must match a `locale tag` in the configuration file.
-If the `language tag` is a two-character string, it only needs to match the
-first two characters of the `locale tag` from the configuration file, if
-that is unique (there is only one `locale tag` starting with the same two
-characters), else it is an error.
+The set of valid `language tags` is further constrained by the
+[LANGUAGE.locale] property.
+* If the `language tag` is a five character string, it needs to match a `locale
+  tag` in LANGUAGE.locale.
+* If the `language tag` is a two-character string, it needs to match the
+  first two characters of a single `locale tag` in LANGUAGE.locale.
+  (So that it is unambiguous which *locale tag* is matched.)
 
-Any other string is an error.
+E.g. if LANGUAGE.locale is "en_US en_UK sv_SE", all the valid `language tags`
+are "en_US", "en_UK", "sv_SE" and "sv".
 
 The two first characters of the `language tag` are intended to be an
 [ISO 639-1] two-character language code and the optional two last characters
@@ -379,18 +382,8 @@ An array of *Profile names* in lower case. `"default"` is always included.
 
 ## API method: `get_language_tags`
 
-Returns all valid [language tags][language tag] generated from the
-[LANGUAGE.locale] property in the configuration file.
-
-Each `locale tag` in LANGUAGE.locale generates two `language tags`,
-a short tag equal to the first two letters (usually the same as a language
-code) and a long tag which is equal to the full `locale tag`.
-If "en_US" is the `locale tag` then "en" and "en_US" are the
-`language tags`.
-
-If there are two `locale tags` that would give the same short
-`language tag` then that is excluded. E.g. "en_US en_UK" will
-only give "en_US" and "en_UK" as `language tags`.
+Returns a list of all valid [language tags][language tag] that match `locale
+tags` according to the rules defined by the [language tag] data type.
 
 Example request:
 ```json

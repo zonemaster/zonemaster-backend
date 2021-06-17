@@ -37,12 +37,15 @@ sub dbh {
     else {
         my $database = $self->config->POSTGRESQL_database;
         my $host     = $self->config->POSTGRESQL_host;
+        my $port     = $self->config->POSTGRESQL_port;
         my $user     = $self->config->POSTGRESQL_user;
         my $password = $self->config->POSTGRESQL_password;
 
+        my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
+
         $log->notice( "Connecting to PostgreSQL: database=$database host=$host user=$user" ) if $log->is_notice;
         $dbh = DBI->connect(
-            "DBI:Pg:database=$database;host=$host",
+            $data_source_name,
             $user,
             $password,
             {

@@ -38,8 +38,11 @@ sub dbh {
     else {
         my $database = $self->config->MYSQL_database;
         my $host     = $self->config->MYSQL_host;
-        my $user     = $self->config->MYSQL_user();
-        my $password = $self->config->MYSQL_password();
+        my $port     = $self->config->MYSQL_port;
+        my $user     = $self->config->MYSQL_user;
+        my $password = $self->config->MYSQL_password;
+
+        my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
 
         $log->notice( "Connecting to MySQL: database=$database host=$host user=$user" ) if $log->is_notice;
 
@@ -48,7 +51,7 @@ sub dbh {
         }
 
         $dbh = DBI->connect(
-            "DBI:mysql:database=$database;host=$host",
+            $data_source_name,
             $user,
             $password,
             {

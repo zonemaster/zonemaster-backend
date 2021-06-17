@@ -173,9 +173,9 @@ sub create_new_test {
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
-    my $js             = JSON::PP->new->canonical;
-    my $encoded_params = $js->encode( $test_params );
-    my $fingerprint     = md5_hex( $encoded_params );
+
+    my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
+
     my $result_id;
 
     my $priority    = $test_params->{priority};

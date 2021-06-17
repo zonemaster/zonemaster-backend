@@ -7,6 +7,8 @@ use Moose::Role;
 use 5.14.2;
 
 use JSON::PP;
+use Digest::MD5 qw(md5_hex);
+use Encode;
 use Log::Any qw( $log );
 
 requires qw(
@@ -177,6 +179,18 @@ sub _new_dbh {
     $dbh->{AutoInactiveDestroy} = 1;
 
     return $dbh;
+}
+
+sub generate_fingerprint {
+    my ( $self, $params ) = @_;
+
+    my $js = JSON::PP->new;
+    $js->canonical( 1 );
+
+    my $encoded_params = $js->encode( $params );
+    my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
+
+    return ( $fingerprint, $encoded_params );
 }
 
 no Moose::Role;

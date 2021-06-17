@@ -168,10 +168,8 @@ sub create_new_test {
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
-    my $js = JSON::PP->new;
-    $js->canonical( 1 );
-    my $encoded_params = $js->encode( $test_params );
-    my $fingerprint    = md5_hex( encode_utf8( $encoded_params ) );
+
+    my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};

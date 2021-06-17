@@ -11,6 +11,8 @@ use Digest::MD5 qw(md5_hex);
 use Encode;
 use Log::Any qw( $log );
 
+use Zonemaster::Engine::Profile
+
 requires qw(
   add_api_user_to_db
   add_batch_job
@@ -184,10 +186,22 @@ sub _new_dbh {
 sub generate_fingerprint {
     my ( $self, $params ) = @_;
 
+    my $profile = Zonemaster::Engine::Profile->effective;
+
+    my %to_encode = ();
+    $to_encode{domain}      = $$params{domain}      // "";
+    $to_encode{ds_info}     = $$params{ds_info}     // [];
+    $to_encode{ipv4}        = $$params{ipv4}        // $profile->get( 'net.ipv4' );
+    $to_encode{ipv6}        = $$params{ipv6}        // $profile->get( 'net.ipv6' );
+    $to_encode{nameservers} = $$params{nameservers} // [];
+    $to_encode{priority}    = $$params{priority}    // 10;
+    $to_encode{profile}     = $$params{profile}     // "default";
+    $to_encode{queue}       = $$params{queue}       // 0;
+
     my $js = JSON::PP->new;
     $js->canonical( 1 );
 
-    my $encoded_params = $js->encode( $params );
+    my $encoded_params = $js->encode( \%to_encode );
     my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
 
     return ( $fingerprint, $encoded_params );

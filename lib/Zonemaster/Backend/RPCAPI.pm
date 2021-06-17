@@ -251,56 +251,9 @@ sub validate_syntax {
     my $result = eval {
         my @errors;
 
-        my @allowed_params_keys = (
-            'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
-            'client_id', 'client_version', 'config', 'priority', 'queue'
-        );
-
-        # NOTE: Already covered in JSON validation? (strict mode)
-        foreach my $k ( keys %$syntax_input ) {
-            push @errors, { path => '/', message => encode_entities( "Unknown option [$k] in parameters" ) }
-            unless ( grep { $_ eq $k } @allowed_params_keys );
-        }
-
-        # NOTE: Already covered in JSON validation? (strict mode)
-        if ( ( defined $syntax_input->{nameservers} && @{ $syntax_input->{nameservers} } ) ) {
-            foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
-                foreach my $k ( keys %$ns_ip ) {
-                    delete( $ns_ip->{$k} ) unless ( $k eq 'ns' || $k eq 'ip' );
-                }
-            }
-        }
-
-        if ( ( defined $syntax_input->{ds_info} && @{ $syntax_input->{ds_info} } ) ) {
-            foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-                foreach my $k ( keys %$ds_digest ) {
-                    # NOTE: Already covered in JSON validation? (strict mode)
-                    delete( $ds_digest->{$k} ) unless ( $k eq 'algorithm' || $k eq 'digest' || $k eq 'digtype' || $k eq 'keytag' );
-                }
-            }
-        }
-
-        # NOTE: Already covered in JSON validation?
-        if ( defined $syntax_input->{ipv4} ) {
-            push @errors, { path => '/ipv4', message => encode_entities( "Invalid IPv4 transport option format" ) }
-            unless ( $syntax_input->{ipv4} eq JSON::PP::false
-                || $syntax_input->{ipv4} eq JSON::PP::true
-                || $syntax_input->{ipv4} eq '1'
-                || $syntax_input->{ipv4} eq '0' );
-        }
-
-        # NOTE: Already covered in JSON validation?
-        if ( defined $syntax_input->{ipv6} ) {
-            push @errors, { path => '/ipv6', message => encode_entities( "Invalid IPv6 transport option format" ) }
-            unless ( $syntax_input->{ipv6} eq JSON::PP::false
-                || $syntax_input->{ipv6} eq JSON::PP::true
-                || $syntax_input->{ipv6} eq '1'
-                || $syntax_input->{ipv6} eq '0' );
-        }
-
         if ( defined $syntax_input->{profile} ) {
             my @profiles = map lc, $self->{config}->ListPublicProfiles();
-            push @errors, { status => '/profile', message => encode_entities( "Unknown profile name" ) }
+            push @errors, { status => '/profile', message => encode_entities( "Unknown profile" ) }
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 
@@ -308,44 +261,15 @@ sub validate_syntax {
 
         push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
 
-        if ( defined $syntax_input->{nameservers} && @{ $syntax_input->{nameservers} } ) {
+        if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
             while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
                 my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns}, "NS [$ns_ip->{ns}]" );
                 push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
 
-                my $ip_error;
-
-                # NOTE: IP regex check already covered in JSON validation? (Regex differs a bit)
-                # Although counterintuitive both tests are necessary as Zonemaster::Engine::Net::IP accepts incomplete IP adresses (network adresses) as valid IP adresses
-                $ip_error = { path => "/nameservers/$index/ns", message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-                    unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
-
-                $ip_error = { path => "/nameservers/$index/ns", message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-                unless ( $ip_error || !$ns_ip->{ip}
+                push @errors, { path => "/nameservers/$index/ip", message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                unless ( !$ns_ip->{ip}
                     || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
                     || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
-
-                push @errors, $ip_error if $ip_error
-            }
-
-            # NOTE: Already covered in JSON validation? (emit warning when key do not exist)
-            while (my ($index, $ds_digest) = each @{ $syntax_input->{ds_info} }) {
-                push @errors, {
-                    path  => "/ds_info/$index/algorigthm",
-                    message => encode_entities( "Invalid algorithm type: [$ds_digest->{algorithm}]" )
-                }
-                if ( $ds_digest->{algorithm} =~ /\D/ );
-
-                push @errors, {
-                    path => "/ds_info/$index/digest",
-                    message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
-                }
-                if (
-                    ( length( $ds_digest->{digest} ) != 96 &&
-                        length( $ds_digest->{digest} ) != 64 &&
-                        length( $ds_digest->{digest} ) != 40 ) ||
-                        $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
-                );
             }
         }
 
@@ -373,10 +297,11 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     ipv4 => joi->boolean,
     ipv6 => joi->boolean,
     nameservers => joi->array->items(
-        $zm_validator->nameserver
+        # NOTE: Array items are not compiled automatically, so to enforce all properties we need to do it by hand
+        $zm_validator->nameserver->compile
     ),
     ds_info => joi->array->items(
-        $zm_validator->ds_info
+        $zm_validator->ds_info->compile
     ),
     profile => $zm_validator->profile_name,
     client_id => $zm_validator->client_id,

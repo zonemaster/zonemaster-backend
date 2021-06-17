@@ -85,7 +85,7 @@ If this property is unspecified, the value of [DB.database_host] is used instead
 The port the MySQL server is listening on.
 Default value: `3306`.
 
-If [MYSQL.host] is set to `localhost` (but not `127.0.0.1` nor `::1`),
+If [MYSQL.host] is set to `localhost` (but neither `127.0.0.1` nor `::1`),
 then the value of the [MYSQL.port] property is discarded as the driver
 connects using a UNIX socket (see the [DBD::mysql documentation]).
 

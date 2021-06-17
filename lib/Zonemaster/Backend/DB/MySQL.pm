@@ -7,8 +7,6 @@ use 5.14.2;
 
 use Data::Dumper;
 use DBI qw(:utils);
-use Digest::MD5 qw(md5_hex);
-use Encode;
 use JSON::PP;
 
 use Zonemaster::Backend::Validator qw( untaint_ipv6_address );

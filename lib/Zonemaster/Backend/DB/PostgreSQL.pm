@@ -6,7 +6,6 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
-use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
 

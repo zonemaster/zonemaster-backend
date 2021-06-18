@@ -277,9 +277,13 @@ The set of valid *language tags* is further constrained by the
 E.g. if LANGUAGE.locale is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
+#### Design
+
 The two first characters of the *language tag* are intended to be an
 [ISO 639-1] two-character language code and the optional two last characters
 are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+
+#### Out-of-the box support
 
 A default installation will accept the following *language tags*:
 * `da` or `da_DK` for Danish language.

@@ -156,6 +156,41 @@ This parameter is a string that are an IPv4 or IPv6. It's validated with the fol
  - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
 
 
+### Language tag
+
+Basic data type: string
+
+A string of A-Z, a-z and underscores matching the regular expression
+`/^[a-z]{2}(_[A-Z]{2})?$/`.
+
+The set of valid *language tags* is further constrained by the
+[LANGUAGE.locale] property.
+* If the *language tag* is a five character string, it needs to match a *locale
+  tag* in LANGUAGE.locale.
+* If the *language tag* is a two-character string, it needs to match the
+  first two characters of exactly one *locale tag* in LANGUAGE.locale.
+  (So that it is unambiguous which *locale tag* is matched.)
+
+E.g. if LANGUAGE.locale is "en_US en_UK sv_SE", all the valid *language tags*
+are "en_US", "en_UK", "sv_SE" and "sv".
+
+#### Design
+
+The two first characters of the *language tag* are intended to be an
+[ISO 639-1] two-character language code and the optional two last characters
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+
+#### Out-of-the box support
+
+A default installation will accept the following *language tags*:
+* `da` or `da_DK` for Danish language.
+* `en` or `en_US` for English language.
+* `fi` or `fi_FI` for Finnish language.
+* `fr` or `fr_FR` for French language.
+* `nb` or `nb_NO` for Norwegian language.
+* `sv` or `sv_SE` for Swedish language.
+
+
 ### Name server
 
 Basic data type: object
@@ -164,6 +199,13 @@ Properties:
 
 * `"ns"`: A *domain name*, required.
 * `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: unset)
+
+
+### Non-negative integer
+
+Basic data type: number (integer)
+ 
+A non-negative integer is either zero or strictly positive.
 
 
 ### Priority
@@ -257,48 +299,6 @@ Basic data type: string
 
 Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
-
-
-### Language tag
-
-Basic data type: string
-
-A string of A-Z, a-z and underscores matching the regular expression
-`/^[a-z]{2}(_[A-Z]{2})?$/`.
-
-The set of valid *language tags* is further constrained by the
-[LANGUAGE.locale] property.
-* If the *language tag* is a five character string, it needs to match a *locale
-  tag* in LANGUAGE.locale.
-* If the *language tag* is a two-character string, it needs to match the
-  first two characters of exactly one *locale tag* in LANGUAGE.locale.
-  (So that it is unambiguous which *locale tag* is matched.)
-
-E.g. if LANGUAGE.locale is "en_US en_UK sv_SE", all the valid *language tags*
-are "en_US", "en_UK", "sv_SE" and "sv".
-
-#### Design
-
-The two first characters of the *language tag* are intended to be an
-[ISO 639-1] two-character language code and the optional two last characters
-are intended to be an [ISO 3166-1 alpha-2] two-character country code.
-
-#### Out-of-the box support
-
-A default installation will accept the following *language tags*:
-* `da` or `da_DK` for Danish language.
-* `en` or `en_US` for English language.
-* `fi` or `fi_FI` for Finnish language.
-* `fr` or `fr_FR` for French language.
-* `nb` or `nb_NO` for Norwegian language.
-* `sv` or `sv_SE` for Swedish language.
-
-
-### Non-negative integer
-
-Basic data type: number (integer)
- 
-A non-negative integer is either zero or strictly positive.
 
 
 ### Username

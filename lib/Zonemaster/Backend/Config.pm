@@ -261,12 +261,16 @@ sub parse {
             push @warnings, "Use of empty LANGUAGE.locale propery is deprecated.";
             $values = 'en_US';
         }
-        for my $locale_tag ( split /\s+/, $values ) {
+        for my $locale_tag ( split /\s+/, $values // 'en_US' ) {
             $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
-                or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
-            !exists $obj->{_LANGUAGE_locale}{$locale_tag}
-            or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
-            $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+              or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+
+            my $lang_code = $locale_tag =~ s/_..$//r;
+
+            !exists $obj->{_LANGUAGE_locale}{$lang_code}{$locale_tag}
+              or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
+
+            $obj->{_LANGUAGE_locale}{$lang_code}{$locale_tag} = 1;
         }
     }
 
@@ -577,7 +581,7 @@ sub Language_Locale_hash {
     # There is one special value to capture ambiguous (and therefore
     # not permitted) translation language tags.
     my ($self) = @_;
-    my @localetags = keys %{ $self->{_LANGUAGE_locale} };
+    my @localetags = map { keys %{$_} } values %{ $self->{_LANGUAGE_locale} };
     my %locale;
     foreach my $la (@localetags) {
         (my $a) = split (/_/,$la); # $a is the language code only

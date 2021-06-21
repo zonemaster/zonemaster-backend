@@ -44,7 +44,7 @@ sub new {
         die "default profile cannot be private" if ( $profile eq 'default' && $all_profiles{$profile}{type} eq 'private' );
         if ( -e $all_profiles{$profile}{profile_file_name} ) {
             my $json = read_file( $all_profiles{$profile}{profile_file_name}, err_mode => 'croak' );
-            $self->{profiles}{$profile}{zm_profile} = Zonemaster::Engine::Profile->from_json( $json );
+            $self->{profiles}{$profile} = Zonemaster::Engine::Profile->from_json( $json );
         }
         elsif ( $profile ne 'default' ) {
             die "the profile definition json file of the profile [$profile] defined in the backend config file can't be read";
@@ -138,9 +138,9 @@ sub run {
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
         $params->{profile} = lc($params->{profile});
-        if (defined $self->{profiles}->{$params->{profile}} && $self->{profiles}->{$params->{profile}}->{zm_profile}) { 
+        if ( defined $self->{profiles}{ $params->{profile} } ) {
             my $profile = Zonemaster::Engine::Profile->default;
-            $profile->merge( $self->{profiles}->{$params->{profile}}->{zm_profile} );
+            $profile->merge( $self->{profiles}{$params->{profile}} );
             Zonemaster::Engine::Profile->effective->merge( $profile );
         }
         else {

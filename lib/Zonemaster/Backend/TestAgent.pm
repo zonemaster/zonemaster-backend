@@ -35,19 +35,21 @@ sub new {
         $dbtype = $config->DB_engine;
     }
 
-    my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
-    eval "require $backend_module";
-    $self->{db} = $backend_module->new( { config => $config } );
+    my $db_module = "Zonemaster::Backend::DB::" . $dbtype;
+    eval "require $db_module";
+    $self->{_db} = $db_module->new( { config => $config } );
 
     my %all_profiles = %{ $config->ReadProfilesInfo() };
-    foreach my $profile ( keys %all_profiles ) {
-        die "default profile cannot be private" if ( $profile eq 'default' && $all_profiles{$profile}{type} eq 'private' );
-        if ( -e $all_profiles{$profile}{profile_file_name} ) {
-            my $json = read_file( $all_profiles{$profile}{profile_file_name}, err_mode => 'croak' );
-            $self->{profiles}{$profile} = Zonemaster::Engine::Profile->from_json( $json );
+    foreach my $name ( keys %all_profiles ) {
+        my $path = $all_profiles{$name}{profile_file_name};
+
+        die "default profile cannot be private" if ( $name eq 'default' && $all_profiles{$name}{type} eq 'private' );
+        if ( -e $path ) {
+            my $json = read_file( $path, err_mode => 'croak' );
+            $self->{_profiles}{$name} = Zonemaster::Engine::Profile->from_json( $json );
         }
-        elsif ( $profile ne 'default' ) {
-            die "the profile definition json file of the profile [$profile] defined in the backend config file can't be read";
+        elsif ( $name ne 'default' ) {
+            die "the profile definition json file of the profile [$name] defined in the backend config file can't be read";
         }
     }
 
@@ -63,9 +65,9 @@ sub run {
 
     my $params;
 
-    my $progress = $self->{db}->test_progress( $test_id, 1 );
+    my $progress = $self->{_db}->test_progress( $test_id, 1 );
 
-    $params = $self->{db}->get_test_params( $test_id );
+    $params = $self->{_db}->get_test_params( $test_id );
 
     my %methods = Zonemaster::Engine->all_methods;
 
@@ -114,7 +116,7 @@ sub run {
                                       scalar( keys %{ $counter_for_progress_indicator{planned} } )
                                 )
                             );
-                            $self->{db}->test_progress( $test_id, $percent_progress );
+                            $self->{_db}->test_progress( $test_id, $percent_progress );
 
                             $previous_method = $module_method;
                         }
@@ -138,9 +140,9 @@ sub run {
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
         $params->{profile} = lc($params->{profile});
-        if ( defined $self->{profiles}{ $params->{profile} } ) {
+        if ( defined $self->{_profiles}{ $params->{profile} } ) {
             my $profile = Zonemaster::Engine::Profile->default;
-            $profile->merge( $self->{profiles}{$params->{profile}} );
+            $profile->merge( $self->{_profiles}{$params->{profile}} );
             Zonemaster::Engine::Profile->effective->merge( $profile );
         }
         else {
@@ -170,9 +172,9 @@ sub run {
         }
     }
 
-    $self->{db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
+    $self->{_db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
 
-    $progress = $self->{db}->test_progress( $test_id );
+    $progress = $self->{_db}->test_progress( $test_id );
 
     return;
 } ## end sub run

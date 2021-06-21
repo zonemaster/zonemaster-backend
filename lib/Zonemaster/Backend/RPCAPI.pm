@@ -253,7 +253,7 @@ sub validate_syntax {
 
         if ( defined $syntax_input->{profile} ) {
             my @profiles = map lc, $self->{config}->ListPublicProfiles();
-            push @errors, { status => '/profile', message => encode_entities( "Unknown profile" ) }
+            push @errors, { path => '/profile', message => encode_entities( "Unknown profile" ) }
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 

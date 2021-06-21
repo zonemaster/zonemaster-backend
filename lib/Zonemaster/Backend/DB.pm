@@ -190,13 +190,34 @@ sub generate_fingerprint {
 
     my %to_encode = ();
     $to_encode{domain}      = lc $$params{domain}   // "";
-    $to_encode{ds_info}     = $$params{ds_info}     // [];
     $to_encode{ipv4}        = $$params{ipv4}        // $profile->get( 'net.ipv4' );
     $to_encode{ipv6}        = $$params{ipv6}        // $profile->get( 'net.ipv6' );
-    $to_encode{nameservers} = $$params{nameservers} // [];
     $to_encode{priority}    = $$params{priority}    // 10;
     $to_encode{profile}     = $$params{profile}     // "default";
     $to_encode{queue}       = $$params{queue}       // 0;
+
+    my $array_ds_info = $$params{ds_info} // [];
+    my @array_ds_info_sort = sort {
+        $a->{algorithm} cmp $b->{algorithm} or
+        $a->{digest}    cmp $b->{digest}    or
+        $a->{digtype}   <=> $b->{digtype}   or
+        $a->{keytag}    <=> $b->{keytag}
+    } @$array_ds_info;
+
+    $to_encode{ds_info} = \@array_ds_info_sort;
+
+    my $array_nameservers = $$params{nameservers} // [];
+    my @array_nameservers_sort = sort {
+        (
+            defined $a->{ip} and
+            defined $b->{ip} and
+            $a->{ip} cmp $b->{ip}
+        ) or
+        $a->{ns} cmp $b->{ns}
+    } @$array_nameservers;
+
+    $to_encode{nameservers} = \@array_nameservers_sort;
+
 
     my $js = JSON::PP->new;
     $js->canonical( 1 );

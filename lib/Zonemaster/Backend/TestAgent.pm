@@ -44,13 +44,15 @@ sub new {
         my $path = $all_profiles{$name}{profile_file_name};
 
         die "default profile cannot be private" if ( $name eq 'default' && $all_profiles{$name}{type} eq 'private' );
+        my $profile = Zonemaster::Engine::Profile->default;
         if ( -e $path ) {
             my $json = read_file( $path, err_mode => 'croak' );
-            $self->{_profiles}{$name} = Zonemaster::Engine::Profile->from_json( $json );
+            $profile->merge( Zonemaster::Engine::Profile->from_json( $json ) );
         }
         elsif ( $name ne 'default' ) {
             die "the profile definition json file of the profile [$name] defined in the backend config file can't be read";
         }
+        $self->{_profiles}{$name} = $profile;
     }
 
     bless( $self, $class );
@@ -141,12 +143,10 @@ sub run {
     if ( $params->{profile} ) {
         $params->{profile} = lc($params->{profile});
         if ( defined $self->{_profiles}{ $params->{profile} } ) {
-            my $profile = Zonemaster::Engine::Profile->default;
-            $profile->merge( $self->{_profiles}{$params->{profile}} );
-            Zonemaster::Engine::Profile->effective->merge( $profile );
+            Zonemaster::Engine::Profile->effective->merge( $self->{_profiles}{ $params->{profile} } );
         }
         else {
-            die "The profile [$params->{profile}] is not defined in the backend_config ini file" if ($params->{profile} ne 'default')
+            die "The profile [$params->{profile}] is not defined in the backend_config ini file";
         }
     }
 

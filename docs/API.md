@@ -166,12 +166,12 @@ A string of A-Z, a-z and underscores matching the regular expression
 The set of valid *language tags* is further constrained by the
 [LANGUAGE.locale] property.
 * If the *language tag* is a five character string, it needs to match a *locale
-  tag* in LANGUAGE.locale.
+  tag* in [LANGUAGE.locale].
 * If the *language tag* is a two-character string, it needs to match the
-  first two characters of exactly one *locale tag* in LANGUAGE.locale.
+  first two characters of exactly one *locale tag* in [LANGUAGE.locale].
   (So that it is unambiguous which *locale tag* is matched.)
 
-E.g. if LANGUAGE.locale is "en_US en_UK sv_SE", all the valid *language tags*
+E.g. if [LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
 #### Design

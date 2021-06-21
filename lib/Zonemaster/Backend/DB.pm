@@ -183,18 +183,18 @@ sub _new_dbh {
     return $dbh;
 }
 
-sub generate_fingerprint {
+sub _normalize_parameter_hash {
     my ( $self, $params ) = @_;
 
     my $profile = Zonemaster::Engine::Profile->effective;
 
-    my %to_encode = ();
-    $to_encode{domain}      = lc $$params{domain}   // "";
-    $to_encode{ipv4}        = $$params{ipv4}        // $profile->get( 'net.ipv4' );
-    $to_encode{ipv6}        = $$params{ipv6}        // $profile->get( 'net.ipv6' );
-    $to_encode{priority}    = $$params{priority}    // 10;
-    $to_encode{profile}     = $$params{profile}     // "default";
-    $to_encode{queue}       = $$params{queue}       // 0;
+    my %normalized = ();
+    $normalized{domain}   = lc $$params{domain} // "";
+    $normalized{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
+    $normalized{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
+    $normalized{profile}  = $$params{profile}   // "default";
+    $normalized{priority} = $$params{priority}  // 10;
+    $normalized{queue}    = $$params{queue}     // 0;
 
     my $array_ds_info = $$params{ds_info} // [];
     my @array_ds_info_sort = sort {
@@ -204,7 +204,7 @@ sub generate_fingerprint {
         $a->{keytag}    <=> $b->{keytag}
     } @$array_ds_info;
 
-    $to_encode{ds_info} = \@array_ds_info_sort;
+    $normalized{ds_info} = \@array_ds_info_sort;
 
     my $array_nameservers = $$params{nameservers} // [];
     my @array_nameservers_sort = sort {
@@ -216,16 +216,29 @@ sub generate_fingerprint {
         $a->{ns} cmp $b->{ns}
     } @$array_nameservers;
 
-    $to_encode{nameservers} = \@array_nameservers_sort;
+    $normalized{nameservers} = \@array_nameservers_sort;
 
+    return \%normalized;
+}
+
+sub encode_normalized_params {
+    my ( $self, $params ) = @_;
+
+    my $normalized_params = $self->_normalize_parameter_hash( $params );
 
     my $js = JSON::PP->new;
     $js->canonical( 1 );
 
-    my $encoded_params = $js->encode( \%to_encode );
+    my $encoded_params = $js->encode( $normalized_params );
+
+    return $encoded_params;
+}
+
+sub generate_fingerprint {
+    my ( $self, $encoded_params ) = @_;
     my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
 
-    return ( $fingerprint, $encoded_params );
+    return $fingerprint;
 }
 
 no Moose::Role;

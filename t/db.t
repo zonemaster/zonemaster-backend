@@ -6,8 +6,14 @@ use Test::More;    # see done_testing()
 use_ok( 'Zonemaster::Backend::DB' );
 use_ok( 'JSON::PP' );
 
-sub generate_fingerprint {
-    return Zonemaster::Backend::DB::generate_fingerprint( undef, shift );
+sub encode_and_fingerprint {
+    my $params = shift;
+
+    my $self = "Zonemaster::Backend::DB";
+    my $encoded_params = $self->encode_normalized_params( $params );
+    my $fingerprint = $self->generate_fingerprint( $encoded_params );
+
+    return ( $encoded_params, $fingerprint );
 }
 
 subtest 'encoding and fingerprint' => sub {
@@ -17,12 +23,12 @@ subtest 'encoding and fingerprint' => sub {
 
         my %params = ( domain => "example.com" );
 
-        my ( $fingerprint, $encoded_params ) = generate_fingerprint( \%params );
+        my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
         is $encoded_params, $expected_encoded_params, 'domain only: the encoded strings should match';
         #diag ($fingerprint);
 
         $params{ipv4} = JSON::PP->true;
-        my ( $fingerprint_ipv4, $encoded_params_ipv4 ) = generate_fingerprint( \%params );
+        my ( $encoded_params_ipv4, $fingerprint_ipv4 ) = encode_and_fingerprint( \%params );
         is $encoded_params_ipv4, $expected_encoded_params, 'add ipv4: the encoded strings should match';
         is $fingerprint_ipv4, $fingerprint, 'fingerprints should match';
     };
@@ -47,8 +53,8 @@ subtest 'encoding and fingerprint' => sub {
                 }],
                 domain => "example.com"
             );
-            my ( $encoded_params1, $fingerprint1 ) = generate_fingerprint( \%params1 );
-            my ( $encoded_params2, $fingerprint2 ) = generate_fingerprint( \%params2 );
+            my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
             is $fingerprint1, $fingerprint2, 'ds_info same fingerprint';
             is $encoded_params1, $encoded_params2, 'ds_info same encoded string';
         };
@@ -68,8 +74,8 @@ subtest 'encoding and fingerprint' => sub {
                 ],
                 domain => "example.com"
             );
-            my ( $encoded_params1, $fingerprint1 ) = generate_fingerprint( \%params1 );
-            my ( $encoded_params2, $fingerprint2 ) = generate_fingerprint( \%params2 );
+            my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
             is $fingerprint1, $fingerprint2, 'nameservers: same fingerprint';
             is $encoded_params1, $encoded_params2, 'nameservers: same encoded string';
         };
@@ -79,8 +85,8 @@ subtest 'encoding and fingerprint' => sub {
         my %params1 = ( domain => "example.com" );
         my %params2 = ( domain => "eXamPLe.COm" );
 
-        my ( $fingerprint1, $encoded_params1 ) = generate_fingerprint( \%params1 );
-        my ( $fingerprint2, $encoded_params2 ) = generate_fingerprint( \%params2 );
+        my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+        my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
         is $fingerprint1, $fingerprint2, 'same fingerprint';
         is $encoded_params1, $encoded_params2, 'same encoded string';
     };
@@ -91,7 +97,7 @@ subtest 'encoding and fingerprint' => sub {
             domain => "example.com",
             client => "GUI v3.3.0"
         );
-        my ( $fingerprint, $encoded_params ) = generate_fingerprint( \%params );
+        my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
         is $encoded_params, $expected_encoded_params, 'leave out garbage property';
     };
 };

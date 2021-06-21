@@ -168,7 +168,8 @@ sub create_new_test {
 
     $test_params->{domain} = $domain;
 
-    my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
+    my $encoded_params = $self->encode_normalized_params( $test_params );
+    my $fingerprint = $self->generate_fingerprint( $encoded_params );
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
@@ -321,7 +322,9 @@ sub add_batch_job {
         $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
-            my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
+
+            my $encoded_params = $self->encode_normalized_params( $test_params );
+            my $fingerprint = $self->generate_fingerprint( $encoded_params );
 
             $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\n");
         }

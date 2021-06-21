@@ -156,7 +156,10 @@ sub create_new_test {
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
-    my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
+
+    my $encoded_params = $self->encode_normalized_params( $test_params );
+    my $fingerprint = $self->generate_fingerprint( $encoded_params );
+
     my $result_id;
 
     my $priority    = $test_params->{priority};
@@ -348,7 +351,9 @@ sub add_batch_job {
         my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
-            my ( $fingerprint, $encoded_params ) = $self->generate_fingerprint( $test_params );
+
+            my $encoded_params = $self->encode_normalized_params( $test_params );
+            my $fingerprint = $self->generate_fingerprint( $encoded_params );
 
             $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
             $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );

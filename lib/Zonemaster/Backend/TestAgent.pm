@@ -25,25 +25,25 @@ sub new {
         die "missing 'config' parameter";
     }
 
-    $self->{config} = $params->{config};
+    my $config = $params->{config};
 
     my $dbtype;
     if ( $params->{dbtype} ) {
-        $dbtype = $self->{config}->check_db( $params->{dbtype} );
+        $dbtype = $config->check_db( $params->{dbtype} );
     }
     else {
-        $dbtype = $self->{config}->DB_engine;
+        $dbtype = $config->DB_engine;
     }
 
     my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
     eval "require $backend_module";
-    $self->{db} = $backend_module->new( { config => $self->{config} } );
+    $self->{db} = $backend_module->new( { config => $config } );
 
-    $self->{profiles} = $self->{config}->ReadProfilesInfo();
-    foreach my $profile ( keys %{ $self->{profiles} } ) {
-        die "default profile cannot be private" if ( $profile eq 'default' && $self->{profiles}{$profile}{type} eq 'private' );
-        if ( -e $self->{profiles}{$profile}{profile_file_name} ) {
-            my $json = read_file( $self->{profiles}{$profile}{profile_file_name}, err_mode => 'croak' );
+    my %all_profiles = %{ $config->ReadProfilesInfo() };
+    foreach my $profile ( keys %all_profiles ) {
+        die "default profile cannot be private" if ( $profile eq 'default' && $all_profiles{$profile}{type} eq 'private' );
+        if ( -e $all_profiles{$profile}{profile_file_name} ) {
+            my $json = read_file( $all_profiles{$profile}{profile_file_name}, err_mode => 'croak' );
             $self->{profiles}{$profile}{zm_profile} = Zonemaster::Engine::Profile->from_json( $json );
         }
         elsif ( $profile ne 'default' ) {

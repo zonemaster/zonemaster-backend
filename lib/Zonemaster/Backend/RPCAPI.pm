@@ -158,7 +158,7 @@ sub get_data_from_parent_zone {
 
         my $domain = $params->{domain};
 
-        my ( $dn, $dn_syntax ) = $self->_check_domain( $domain, 'Domain name' );
+        my ( $dn, $dn_syntax ) = $self->_check_domain( $domain );
         return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
 
         my @ns_list;
@@ -194,7 +194,7 @@ sub get_data_from_parent_zone {
 
 
 sub _check_domain {
-    my ( $self, $domain, $type ) = @_;
+    my ( $self, $domain ) = @_;
 
     if ( !defined( $domain ) ) {
         return ( $domain, { status => 'nok', message => encode_entities( "$type required" ) } );
@@ -218,7 +218,7 @@ sub _check_domain {
                 $domain,
                 {
                     status  => 'nok',
-                    message => encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
+                    message => encode_entities( "The domain name contains non-ascii characters and IDNA is not installed" )
                 }
             );
         }
@@ -229,7 +229,7 @@ sub _check_domain {
             $domain,
             {
                 status  => 'nok',
-                message => encode_entities( "The domain name character(s) not supported" )
+                message => encode_entities( "The domain name character(s) are not supported" )
             }
         );
     }
@@ -239,7 +239,7 @@ sub _check_domain {
     @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
     @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
     if ( @res != 0 ) {
-        return ( $domain, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
+        return ( $domain, { status => 'nok', message => encode_entities( "The domain name or label is too long" ) } );
     }
 
     return ( $domain, { status => 'ok', message => 'Syntax ok' } );
@@ -257,16 +257,16 @@ sub validate_syntax {
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 
-        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );
+        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
 
         push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
 
         if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
             while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
-                my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns}, "NS [$ns_ip->{ns}]" );
+                my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns} );
                 push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
 
-                push @errors, { path => "/nameservers/$index/ip", message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                push @errors, { path => "/nameservers/$index/ip", message => encode_entities( "Invalid IP address" ) }
                 unless ( !$ns_ip->{ip}
                     || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
                     || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );

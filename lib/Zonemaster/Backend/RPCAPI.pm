@@ -29,6 +29,7 @@ use Zonemaster::Backend::Validator;
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
 my %extra_validators;
+my %custom_messages_config;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -197,7 +198,7 @@ sub _check_domain {
     my ( $self, $domain ) = @_;
 
     if ( !defined( $domain ) ) {
-        return ( $domain, { status => 'nok', message => encode_entities( "$type required" ) } );
+        return ( $domain, { status => 'nok', message => encode_entities( "Domain name required" ) } );
     }
 
     if ( $domain =~ m/[^[:ascii:]]+/ ) {
@@ -257,9 +258,10 @@ sub validate_syntax {
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 
-        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
-
-        push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
+        if ( defined $syntax_input->{domain} ) {
+            my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
+            push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
+        }
 
         if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
             while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
@@ -310,6 +312,24 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     priority => $zm_validator->priority,
     queue => $zm_validator->queue
 );
+$custom_messages_config{start_domain_test} = {
+    "/nameservers/\\d+/ip" => {
+        string => {
+            pattern => "Invalid IP address"
+        }
+    },
+    "/ds_info/\\d+/keytag" => {
+        integer => {
+            type => "Keytag should be a positive integer",
+            minimum => "Keytag should be a positive integer"
+        }
+    },
+    "/ds_info/\\d+/digest" => {
+        string => {
+            pattern => "Invalid digest format"
+        }
+    }
+};
 $extra_validators{start_domain_test} = \&validate_syntax;
 sub start_domain_test {
     my ( $self, $params ) = @_;
@@ -616,12 +636,26 @@ sub jsonrpc_validate {
         }
         my @error = $method_schema->validate($jsonrpc_request->{params});
 
-        @error = map { { path => $_->path, message => $_->message } } @error;
+        my $error_config = $custom_messages_config{$jsonrpc_request->{method}};
+
+        my @error_response;
+
+        foreach my $err ( @error ) {
+            my $message = $err->message;
+            while (my ($pattern, $config) = each %{$error_config}) {
+                if ($err->{path} =~ /^$pattern$/) {
+                    my @details = @{$err->details};
+                    my $custom_message = $config->{@details[0]}->{@details[1]};
+                    $message = $custom_message if defined $custom_message;
+                }
+            }
+            push @error_response, { path => $err->path, message => $message };
+        }
 
         if ( $extra_validators{$jsonrpc_request->{method}} ) {
             my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
             my $result = $self->$sub_validator($jsonrpc_request->{params});
-            push @error, @{$result->{errors}} if $result->{status} eq 'nok';
+            push @error_response, @{$result->{errors}} if $result->{status} eq 'nok';
         }
 
         if ( @error ) {
@@ -631,7 +665,7 @@ sub jsonrpc_validate {
                 error => {
                     code => '-32602',
                     message => 'Invalid method parameter(s).',
-                    data => \@error
+                    data => \@error_response
                 }
             };
         }

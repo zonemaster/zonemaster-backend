@@ -386,7 +386,11 @@ An array of *Profile names* in lower case. `"default"` is always included.
 
 ## API method: `get_language_tags`
 
-Returns a list of all valid [*language tags*][language tag].
+Returns the set of valid [*language tags*][Language tag].
+
+> Note: If there are two [*locale tags*][LANGUAGE.locale] in [LANGUAGE.locale]
+> that would give the same [short language tag][Language tag] then the short tag
+> is excluded from the set of valid [*langauge tags*][Language tag].
 
 Example request:
 ```json

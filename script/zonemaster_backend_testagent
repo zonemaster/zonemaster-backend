@@ -163,20 +163,20 @@ sub main {
 }
 
 
+# Initialize logging
+my $dispatcher;
+if ( $logfile eq '-' ) {
+    $dispatcher = log_dispatcher_dup_stdout( $loglevel );
+}
+else {
+    $dispatcher = log_dispatcher_file( $loglevel, $logfile );
+    print STDERR "zonemaster-testagent logging to file $logfile\n";
+}
+Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
+
 # Make sure the environment is alright before forking
 my $initial_config;
 eval {
-    # Initialize logging
-    my $dispatcher;
-    if ( $logfile eq '-' ) {
-        $dispatcher = log_dispatcher_dup_stdout( $loglevel );
-    }
-    else {
-        $dispatcher = log_dispatcher_file( $loglevel, $logfile );
-        print STDERR "zonemaster-testagent logging to file $logfile\n";
-    }
-    Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
-
     # Make sure we can load the configuration file
     $log->debug("Starting pre-flight check");
     $initial_config = Zonemaster::Backend::Config->load_config();
@@ -189,6 +189,7 @@ eval {
     $log->debug("Completed pre-flight check");
 };
 if ( $@ ) {
+    $log->critical( "Aborting startup: $@" );
     print STDERR "Aborting startup: $@";
     exit 1;
 }

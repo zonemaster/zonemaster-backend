@@ -139,12 +139,12 @@ Basic data type: object
 DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
 
 Properties:
-* `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
+* `"digest"`: A string, required. Either 40, 64 or 96 hexadecimal characters (case insensitive).
 * `"algorithm"`: An non negative integer, required.
 * `"digtype"`: An non negative integer, required.
 * `"keytag"`: An non negative integer, required.
 
-Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
+No extra properties are allowed.
 
 
 ### IP address
@@ -153,8 +153,7 @@ Basic data type: string
 
 This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
  - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
- - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
-
+ - IPv6 : `/^[0-9a-f:]+(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$/i`
 
 ### Name server
 
@@ -187,12 +186,18 @@ When a method received an unknown *profile name* value for in parameter with thi
 
 ```json
 {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "message": "Invalid profile option format",
-        "status": "nok"
-    }
+  "error": {
+    "code": "-32602",
+    "data": [
+      {
+        "path": "/profile",
+        "message": "Unknown profile"
+      }
+    ],
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
 }
 ```
 
@@ -247,7 +252,7 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*. 
+* `"ns"`: a *domain name*. The name server used by the *test module*.
 This key is added when the module name is `"NAMESERVER"`.
 
 
@@ -290,7 +295,7 @@ A default installation will accept the following `language tags`:
 ### Non-negative integer
 
 Basic data type: number (integer)
- 
+
 A non-negative integer is either zero or strictly positive.
 
 
@@ -619,8 +624,8 @@ An object with the following properties:
 * `"ipv4"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv6 tests.
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify `"profile"` instead.
+* `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile. It must be a profile listed in the [available profiles].
+* `"config"`: **Deprecated**. Will cause an errror, specify `"profile"` instead.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
@@ -633,16 +638,50 @@ An object with the following properties:
 
 #### `"result"`
 
-A *test id*. 
+A *test id*.
 
-If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
+If the test has been run with the same domain name within an interval of 10 mins (hard coded),
 then the new request does not trigger a new test, but returns with the results of the last test
 
 
 #### `"error"`
 
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
+* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error.
+
+  Example of error response:
+
+```json
+{
+  "error": {
+    "code": "-32602",
+    "data": [
+      {
+        "message": "Expected integer - got string.",
+        "path": "/ds_info/0/algorithm"
+      },
+      {
+        "message": "Missing property.",
+        "path": "/ds_info/0/digest"
+      },
+      {
+        "path": "/profile",
+        "message": "Unknown profile"
+      },
+      {
+        "path": "/domain",
+        "message": "The domain name character(s) are not supported"
+      },
+      {
+        "path": "/nameservers/0/ip",
+        "message": "Invalid IP address"
+      }
+    ],
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
+}
+```
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -784,7 +823,7 @@ In the case of a test created with `start_domain_test`:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
+* `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
   was started.
 * `"results"`: A list of *test result* objects.
@@ -793,7 +832,7 @@ In the case of a test created with `start_domain_test`:
 In the case of a test created with `add_batch_job`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
+* `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
   was started.
 * `"results"`: the result is a list of *test id* corresponding to each tested domain.
@@ -905,7 +944,7 @@ In order to use advanced api features such as the *batch test*, it's necessaire 
 This key can be obtained with the creation of a user in the system.
 This function allow the creation of a new user and so, the creation of a new api key.
 
-Add a new *user* 
+Add a new *user*
 
 This method requires the *administrative* *privilege level*.
 
@@ -959,7 +998,7 @@ Trying to add a already existing user:
 ```
 
 Ommitting params:
-```json 
+```json
 {
   "message": "username or api_key not provided to the method add_api_user\n",
   "code": -32603

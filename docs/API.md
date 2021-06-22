@@ -390,7 +390,7 @@ Returns the set of valid [*language tags*][Language tag].
 
 > Note: If there are two [*locale tags*][LANGUAGE.locale] in [LANGUAGE.locale]
 > that would give the same [short language tag][Language tag] then the short tag
-> is excluded from the set of valid [*langauge tags*][Language tag].
+> is excluded from the set of valid [*language tags*][Language tag].
 
 Example request:
 ```json

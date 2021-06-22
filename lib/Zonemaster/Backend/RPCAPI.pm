@@ -103,12 +103,9 @@ sub profile_names {
     my ( $self ) = @_;
 
     my @profiles;
-    eval {
-        @profiles = $self->{config}->ListPublicProfiles();
-
-    };
-    if ($@) {
-        handle_exception('profile_names', $@, '004');
+    eval { @profiles = $self->{config}->ListPublicProfiles() };
+    if ( $@ ) {
+        handle_exception( 'profile_names', $@, '004' );
     }
 
     return \@profiles;

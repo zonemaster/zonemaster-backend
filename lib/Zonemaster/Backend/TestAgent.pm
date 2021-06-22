@@ -45,12 +45,12 @@ sub new {
 
         die "default profile cannot be private" if ( $name eq 'default' && $all_profiles{$name}{type} eq 'private' );
         my $profile = Zonemaster::Engine::Profile->default;
-        if ( -e $path ) {
-            my $json = read_file( $path, err_mode => 'croak' );
-            $profile->merge( Zonemaster::Engine::Profile->from_json( $json ) );
-        }
-        elsif ( $name ne 'default' ) {
-            die "the profile definition json file of the profile [$name] defined in the backend config file can't be read";
+        if ( $path ne "" ) {
+            my $json = eval { read_file( $path, err_mode => 'croak' ) }    #
+              // die "Error loading profile '$name': $@";
+            my $named_profile = eval { Zonemaster::Engine::Profile->from_json( $json ) }    #
+              // die "Error loading profile '$name' at '$path': $@";
+            $profile->merge( $named_profile );
         }
         $self->{_profiles}{$name} = $profile;
     }

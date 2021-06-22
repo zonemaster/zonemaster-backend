@@ -313,9 +313,19 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     queue => $zm_validator->queue
 );
 $custom_messages_config{start_domain_test} = {
+    "/domain" => {
+        string => {
+            pattern => "The domain name character(s) are not supported"
+        }
+    },
     "/nameservers/\\d+/ip" => {
         string => {
             pattern => "Invalid IP address"
+        }
+    },
+    "/nameservers/\\d+/ns" => {
+        string => {
+            pattern => "The domain name character(s) are not supported"
         }
     },
     "/ds_info/\\d+/keytag" => {

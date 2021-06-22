@@ -401,7 +401,7 @@ Example request:
 }
 ```
 
-Example response (as generated using the default configuration):
+Example response:
 ```json
 {
   "jsonrpc": "2.0",

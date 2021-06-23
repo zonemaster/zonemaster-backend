@@ -25,6 +25,11 @@ use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
+use Locale::TextDomain qw[Zonemaster-Backend];
+use Locale::Messages qw[textdomain bindtextdomain setlocale LC_MESSAGES];
+use Encode;
+
+#use Locale::Messages::Debug qw[debug_gettext];
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
@@ -198,7 +203,7 @@ sub _check_domain {
     my ( $self, $domain ) = @_;
 
     if ( !defined( $domain ) ) {
-        return ( $domain, { status => 'nok', message => encode_entities( "Domain name required" ) } );
+        return ( $domain, { status => 'nok', message => N__ 'Domain name required' } );
     }
 
     if ( $domain =~ m/[^[:ascii:]]+/ ) {
@@ -209,7 +214,7 @@ sub _check_domain {
                     $domain,
                     {
                         status  => 'nok',
-                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
+                        message => N__ 'The domain name is not a valid IDNA string and cannot be converted to an A-label'
                     }
                 );
             }
@@ -219,7 +224,7 @@ sub _check_domain {
                 $domain,
                 {
                     status  => 'nok',
-                    message => encode_entities( "The domain name contains non-ascii characters and IDNA is not installed" )
+                    message => N__ 'The domain name contains non-ascii characters and IDNA is not installed'
                 }
             );
         }
@@ -230,7 +235,7 @@ sub _check_domain {
             $domain,
             {
                 status  => 'nok',
-                message => encode_entities( "The domain name character(s) are not supported" )
+                message => N__ 'The domain name character(s) are not supported'
             }
         );
     }
@@ -240,7 +245,7 @@ sub _check_domain {
     @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
     @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
     if ( @res != 0 ) {
-        return ( $domain, { status => 'nok', message => encode_entities( "The domain name or label is too long" ) } );
+        return ( $domain, { status => 'nok', message => N__ 'The domain name or label is too long' } );
     }
 
     return ( $domain, { status => 'ok', message => 'Syntax ok' } );
@@ -254,7 +259,7 @@ sub validate_syntax {
 
         if ( defined $syntax_input->{profile} ) {
             my @profiles = map lc, $self->{config}->ListPublicProfiles();
-            push @errors, { path => '/profile', message => encode_entities( "Unknown profile" ) }
+            push @errors, { path => '/profile', message => N__ 'Unknown profile' }
             unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
         }
 
@@ -268,7 +273,7 @@ sub validate_syntax {
                 my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns} );
                 push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
 
-                push @errors, { path => "/nameservers/$index/ip", message => encode_entities( "Invalid IP address" ) }
+                push @errors, { path => "/nameservers/$index/ip", message => N__ 'Invalid IP address' }
                 unless ( !$ns_ip->{ip}
                     || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
                     || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
@@ -312,34 +317,75 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     priority => $zm_validator->priority,
     queue => $zm_validator->queue
 );
-$custom_messages_config{start_domain_test} = {
-    "/domain" => {
-        string => {
-            pattern => "The domain name character(s) are not supported"
+$custom_messages_config{start_domain_test} = [
+    {
+        pattern => "/domain",
+        config => {
+            string => {
+                pattern => N__ 'The domain name character(s) are not supported'
+            }
         }
     },
-    "/nameservers/\\d+/ip" => {
-        string => {
-            pattern => "Invalid IP address"
+    {
+        pattern => "/nameservers/\\d+/ip",
+        config => {
+            string => {
+                pattern => N__ 'Invalid IP address'
+            }
         }
     },
-    "/nameservers/\\d+/ns" => {
-        string => {
-            pattern => "The domain name character(s) are not supported"
+    {
+        pattern => "/nameservers/\\d+/ns",
+        config => {
+            string => {
+                pattern => N__ 'The domain name character(s) are not supported'
+            }
         }
     },
-    "/ds_info/\\d+/keytag" => {
-        integer => {
-            type => "Keytag should be a positive integer",
-            minimum => "Keytag should be a positive integer"
+    {
+        pattern => "/ds_info/\\d+/keytag",
+        config => {
+            integer => {
+                type => N__ 'Keytag should be a positive integer',
+                minimum => N__ 'Keytag should be a positive integer'
+            }
         }
     },
-    "/ds_info/\\d+/digest" => {
-        string => {
-            pattern => "Invalid digest format"
+    {
+        pattern => "/ds_info/\\d+/algorithm",
+        config => {
+            integer => {
+                type => N__ 'Algorithm should be a positive integer',
+                minimum => N__ 'Algorithm should be a positive integer'
+            }
+        }
+    },
+    {
+        pattern => "/ds_info/\\d+/digtype",
+        config => {
+            integer => {
+                type => N__ 'Digest type should be a positive integer',
+                minimum => N__ 'Digest type should be a positive integer'
+            }
+        }
+    },
+    {
+        pattern => "/ds_info/\\d+/digest",
+        config => {
+            string => {
+                pattern => N__ 'Invalid digest format'
+            }
+        }
+    },
+    {
+        pattern => ".*",
+        config => {
+            object => {
+                required => N__ 'Missing property'
+            }
         }
     }
-};
+];
 $extra_validators{start_domain_test} = \&validate_syntax;
 sub start_domain_test {
     my ( $self, $params ) = @_;
@@ -618,6 +664,17 @@ my $rpc_request = joi->object->props(
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 
+    # TODO: make this work
+    textdomain('Zonemaster-Backend');
+    bindtextdomain('Zonemaster-Backend', '.');
+    undef $ENV{LANGUAGE};
+    # TODO: Get language from request ( header? )
+    $ENV{LC_ALL} = "fr";
+    setlocale( LC_MESSAGES, "" );
+
+    # my @hints = debug_gettext 'Unknown profile';
+    # foreach (@hints) { print "$_\n" }
+
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
     if (!exists $jsonrpc_request->{id} || @error_rpc) {
         return {
@@ -650,23 +707,34 @@ sub jsonrpc_validate {
 
         my @error_response;
 
+        # Customize error message from json validation
         foreach my $err ( @error ) {
             my $message = $err->message;
-            while (my ($pattern, $config) = each %{$error_config}) {
+            foreach my $entry (@{$error_config}) {
+                my $pattern = $entry->{pattern};
+                my $config = $entry->{config};
+
                 if ($err->{path} =~ /^$pattern$/) {
                     my @details = @{$err->details};
-                    my $custom_message = $config->{@details[0]}->{@details[1]};
-                    $message = $custom_message if defined $custom_message;
+                    my $custom_message = $config->{@details[0]}->{@details[1]} if defined $config->{@details[0]};
+                    if (defined $custom_message) {
+                        $message = $custom_message;
+                        last;
+                    }
                 }
             }
             push @error_response, { path => $err->path, message => $message };
         }
 
+        # Add messages from extra validation function
         if ( $extra_validators{$jsonrpc_request->{method}} ) {
             my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
             my $result = $self->$sub_validator($jsonrpc_request->{params});
             push @error_response, @{$result->{errors}} if $result->{status} eq 'nok';
         }
+
+        # Translate messages
+        @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
 
         if ( @error ) {
             return {

@@ -207,12 +207,11 @@ sub _normalize_parameter_hash {
     $normalized{ds_info} = \@array_ds_info_sort;
 
     my $array_nameservers = $$params{nameservers} // [];
+    for my $nameserver (@$array_nameservers) {
+        $$nameserver{ip} = "" if ( not defined $$nameserver{ip} );
+    }
     my @array_nameservers_sort = sort {
-        (
-            defined $a->{ip} and
-            defined $b->{ip} and
-            $a->{ip} cmp $b->{ip}
-        ) or
+        $a->{ip} cmp $b->{ip} or
         $a->{ns} cmp $b->{ns}
     } @$array_nameservers;
 

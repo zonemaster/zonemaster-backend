@@ -28,7 +28,7 @@ For details on these, refer to the JSON-RPC 2.0 specification.
 ### Notes on the JSON-RPC 2.0 implementation
 
 * Extra top-level properties in request objects are allowed but ignored.
-* Extra properties in the `"params"` object are allowed for some methods but ignored for others.
+* No extra properties are allowed in the `"params"` object.
 * Error messages from the API should be considered sensitive as they sometimes leak details about the internals of the application and the system.
 * The error code -32601 is used when the `"method"` property is missing, rather than the perhaps expected error code -32600.
 
@@ -144,14 +144,16 @@ Properties:
 * `"digtype"`: An non negative integer, required.
 * `"keytag"`: An non negative integer, required.
 
-No extra properties are allowed.
-
 
 ### IP address
 
 Basic data type: string
 
-This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
+This parameter is a string that is either
+ - a valid IPv4 in [dot-decimal notation] ;
+ - a valid IPv6 in [recommend text format for IPv6 addresses].
+
+In addition a preliminary check is performed with the following regexes:
  - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
  - IPv6 : `/^[0-9a-f:]+(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$/i`
 
@@ -181,26 +183,6 @@ This parameter is a case-insensitive string validated with the case-insensitive
 regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i`.
 
 The name of a [*profile*](Architecture.md#profile).
-
-When a method received an unknown *profile name* value for in parameter with this type, it returns the following error message:
-
-```json
-{
-  "error": {
-    "code": "-32602",
-    "data": [
-      {
-        "path": "/profile",
-        "message": "Unknown profile"
-      }
-    ],
-    "message": "Invalid method parameter(s)."
-  },
-  "id": 1,
-  "jsonrpc": "2.0"
-}
-```
-
 
 ### Progress percentage
 
@@ -308,6 +290,14 @@ most 50 characters.
 I.e. a string matching `/^[a-zA-Z0-9-.@]{1,50}$/`.
 
 Represents the name of an authenticated account (see *[Privilege levels]*)
+
+### Validation error data
+
+Basic data type: array
+
+The items of the array are objects with two keys, `"path"` and `"message"`:
+* `"path"`: a string. The JSON path a element in the request's param object.
+* `"message"`: a string. The error message associated with the element referenced by `"path"`.
 
 
 ## API method: `version_info`
@@ -625,7 +615,6 @@ An object with the following properties:
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile. It must be a profile listed in the [available profiles].
-* `"config"`: **Deprecated**. Will cause an errror, specify `"profile"` instead.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
@@ -1215,3 +1204,5 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [Privilege levels]:             #privilege-levels
 [Language tag]:                 #language-tag
+[Dot-decimal notation]: https://en.wikipedia.org/wiki/Dot-decimal_notation
+[Recommend text format for IPv6 addresses]: https://datatracker.ietf.org/doc/html/rfc5952

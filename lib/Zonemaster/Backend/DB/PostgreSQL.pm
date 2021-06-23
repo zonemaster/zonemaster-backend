@@ -170,8 +170,8 @@ sub create_new_test {
     $test_params->{domain} = $domain;
     my $js = JSON::PP->new;
     $js->canonical( 1 );
-    my $encoded_params                 = $js->encode( $test_params );
-    my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+    my $encoded_params = $js->encode( $test_params );
+    my $fingerprint    = md5_hex( encode_utf8( $encoded_params ) );
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
@@ -188,14 +188,14 @@ sub create_new_test {
         $batch_id,
         $priority,
         $queue_label,
-        $test_params_deterministic_hash,
+        $fingerprint,
         $encoded_params,
-        $test_params_deterministic_hash,
+        $fingerprint,
         sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
     );
 
     my ( undef, $hash_id ) = $dbh->selectrow_array(
-        "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $test_params_deterministic_hash );
+        "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
 
     return $hash_id;
 }
@@ -326,10 +326,10 @@ sub add_batch_job {
         $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
-            my $encoded_params                 = $js->encode( $test_params );
-            my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+            my $encoded_params = $js->encode( $test_params );
+            my $fingerprint    = md5_hex( encode_utf8( $encoded_params ) );
 
-            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$test_params_deterministic_hash\t$encoded_params\n");
+            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );

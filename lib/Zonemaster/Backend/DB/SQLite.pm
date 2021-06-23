@@ -173,9 +173,9 @@ sub create_new_test {
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
-    my $js                             = JSON::PP->new->canonical;
-    my $encoded_params                 = $js->encode( $test_params );
-    my $test_params_deterministic_hash = md5_hex( $encoded_params );
+    my $js             = JSON::PP->new->canonical;
+    my $encoded_params = $js->encode( $test_params );
+    my $fingerprint     = md5_hex( $encoded_params );
     my $result_id;
 
     my $priority    = $test_params->{priority};
@@ -186,7 +186,7 @@ sub create_new_test {
     my ( $recent_hash_id ) = $dbh->selectrow_array(
         "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', ?)",
         undef,
-        $test_params_deterministic_hash,
+        $fingerprint,
         "-$seconds seconds"
     );
 
@@ -209,7 +209,7 @@ sub create_new_test {
             $batch_id,
             $priority,
             $queue_label,
-            $test_params_deterministic_hash,
+            $fingerprint,
             $encoded_params,
             $test_params->{domain},
             ($test_params->{nameservers})?(1):(0),
@@ -347,10 +347,10 @@ sub add_batch_job {
         my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
-            my $encoded_params                 = $js->encode( $test_params );
-            my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
+            my $encoded_params = $js->encode( $test_params );
+            my $fingerprint    = md5_hex( encode_utf8( $encoded_params ) );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $test_params_deterministic_hash, $encoded_params );
+            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );

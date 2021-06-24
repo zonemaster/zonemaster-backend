@@ -296,7 +296,7 @@ Represents the name of an authenticated account (see *[Privilege levels]*)
 Basic data type: array
 
 The items of the array are objects with two keys, `"path"` and `"message"`:
-* `"path"`: a string. The JSON path a element in the request's param object.
+* `"path"`: a string. A [JSON Pointer] to an element in the request's param object. Ex.: `"/nameservers/0/ip"`.
 * `"message"`: a string. The error message associated with the element referenced by `"path"`.
 
 
@@ -1204,5 +1204,6 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [Privilege levels]:             #privilege-levels
 [Language tag]:                 #language-tag
-[Dot-decimal notation]: https://en.wikipedia.org/wiki/Dot-decimal_notation
+[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
 [Recommend text format for IPv6 addresses]: https://datatracker.ietf.org/doc/html/rfc5952
+[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901

@@ -13,6 +13,7 @@ use File::Slurp qw( read_file );
 use Log::Any qw( $log );
 use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
+use Zonemaster::Backend::DB;
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -634,11 +635,8 @@ sub new_DB {
     my $dbtype = $self->DB_engine;
 
     # Load and construct DB adapter
-    my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
-    require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
-    $dbclass->import();
-
-    my $db = $dbclass->new({ config => $self });
+    my $dbclass = Zonemaster::Backend::DB->get_db_class( $self->DB_engine );
+    my $db      = $dbclass->new( { config => $self } );
 
     # Connect or die
     $db->dbh;

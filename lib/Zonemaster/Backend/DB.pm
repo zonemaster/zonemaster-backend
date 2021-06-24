@@ -24,6 +24,25 @@ requires qw(
   user_exists_in_db
 );
 
+=head2 get_db_class
+
+Get the database adapter class for the given database type.
+
+Throws and exception if the database adapter class cannot be loaded.
+
+=cut
+
+sub get_db_class {
+    my ( $class, $db_type ) = @_;
+
+    my $db_class = "Zonemaster::Backend::DB::$db_type";
+
+    require( "$db_class.pm" =~ s{::}{/}gr );
+    $db_class->import();
+
+    return $db_class;
+}
+
 sub user_exists {
     my ( $self, $user ) = @_;
 

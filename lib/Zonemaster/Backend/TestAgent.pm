@@ -35,9 +35,8 @@ sub new {
         $dbtype = $config->DB_engine;
     }
 
-    my $db_module = "Zonemaster::Backend::DB::" . $dbtype;
-    eval "require $db_module";
-    $self->{_db} = $db_module->new( { config => $config } );
+    my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
+    $self->{_db} = $dbclass->new( { config => $config } );
 
     my %all_profiles = %{ $config->ReadProfilesInfo() };
     foreach my $name ( keys %all_profiles ) {

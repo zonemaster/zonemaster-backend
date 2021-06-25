@@ -667,13 +667,6 @@ sub jsonrpc_validate {
     # TODO: make this work
     textdomain('Zonemaster-Backend');
     bindtextdomain('Zonemaster-Backend', '.');
-    undef $ENV{LANGUAGE};
-    # TODO: Get language from request ( header? )
-    $ENV{LC_ALL} = "fr";
-    setlocale( LC_MESSAGES, "" );
-
-    # my @hints = debug_gettext 'Unknown profile';
-    # foreach (@hints) { print "$_\n" }
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
     if (!exists $jsonrpc_request->{id} || @error_rpc) {
@@ -701,6 +694,21 @@ sub jsonrpc_validate {
                 }
             };
         }
+
+        my %locale = $self->{config}->Language_Locale_hash();
+
+        # NOTE: Default to first language in config
+        my $language = $jsonrpc_request->{params}->{language} // $self->{config}->{_LANGUAGE_locale}[0];
+
+        # NOTE: temporary workaround to not break everything
+        if (exists $jsonrpc_request->{params}->{language} && !exists $method_schema->{properties}->{language}) {
+            delete $jsonrpc_request->{params}->{language};
+        }
+
+        # TODO: Language validation
+        $ENV{LANGUAGE} = $locale{$language};
+        setlocale( LC_MESSAGES, $locale{$language} );
+
         my @error = $method_schema->validate($jsonrpc_request->{params});
 
         my $error_config = $custom_messages_config{$jsonrpc_request->{method}};

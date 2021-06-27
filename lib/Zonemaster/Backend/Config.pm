@@ -638,9 +638,6 @@ sub new_DB {
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $self->DB_engine );
     my $db      = $dbclass->new( { config => $self } );
 
-    # Connect or die
-    $db->dbh;
-
     return $db;
 }
 

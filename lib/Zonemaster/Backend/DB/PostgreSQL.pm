@@ -33,8 +33,9 @@ has 'password' => (
 );
 
 has 'dbhandle' => (
-    is  => 'rw',
-    isa => 'DBI::db',
+    is       => 'rw',
+    isa      => 'DBI::db',
+    required => 1,
 );
 
 around BUILDARGS => sub {
@@ -50,11 +51,18 @@ around BUILDARGS => sub {
 
     my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
 
+    my $dbh = $class->_new_dbh(
+        $data_source_name,
+        $user,
+        $password,
+    );
+
     return $class->$orig(
         {
             data_source_name => $data_source_name,
             user             => $user,
             password         => $password,
+            dbhandle         => $dbh,
         }
     );
 };

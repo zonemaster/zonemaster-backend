@@ -620,8 +620,6 @@ A configured L<Zonemaster::Backend::DB> object.
 
 =over 4
 
-=item Dies if no database engine type is defined in the configuration.
-
 =item Dies if no adapter for the configured database engine can be loaded.
 
 =item Dies if the adapter is unable to connect to the database.
@@ -633,11 +631,7 @@ A configured L<Zonemaster::Backend::DB> object.
 sub new_DB {
     my ($self) = @_;
 
-    # Get DB type from config
     my $dbtype = $self->DB_engine;
-    if (!defined $dbtype) {
-        die "Unrecognized DB.engine in backend config";
-    }
 
     # Load and construct DB adapter
     my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;

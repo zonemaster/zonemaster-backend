@@ -657,7 +657,7 @@ sub get_batch_job_result {
 
     return $result;
 }
-
+use Data::Dumper;
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
     method => $zm_validator->jsonrpc_method()->required);
@@ -705,14 +705,14 @@ sub jsonrpc_validate {
         $ENV{LANGUAGE} = $locale{$language};
         setlocale( LC_MESSAGES, $locale{$language} );
 
-        my @error = $method_schema->validate($jsonrpc_request->{params});
+        my @json_validation_error = $method_schema->validate($jsonrpc_request->{params});
 
         my $error_config = $custom_messages_config{$jsonrpc_request->{method}};
 
         my @error_response;
 
         # Customize error message from json validation
-        foreach my $err ( @error ) {
+        foreach my $err ( @json_validation_error ) {
             my $message = $err->message;
             foreach my $entry (@{$error_config}) {
                 my $pattern = $entry->{pattern};
@@ -740,7 +740,7 @@ sub jsonrpc_validate {
         # Translate messages
         @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
 
-        if ( @error ) {
+        if ( @error_response ) {
             return {
                 jsonrpc => '2.0',
                 id => $jsonrpc_request->{id},

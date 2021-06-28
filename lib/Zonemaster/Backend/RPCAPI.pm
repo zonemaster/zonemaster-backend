@@ -646,11 +646,11 @@ sub jsonrpc_validate {
 
         my @error_response;
 
-        # NOTE: Make that configurable
+        # TODO: Make that configurable
         my $default_language =  'en_US';
         my ($locale, $locale_error) = $self->_get_locale( $jsonrpc_request->{params} );
 
-        # NOTE: temporary workaround to not break everything
+        # remove language param if not present in the real method parameters
         if (exists $jsonrpc_request->{params}->{language} && !exists $method_schema->{properties}->{language}) {
             delete $jsonrpc_request->{params}->{language};
         }

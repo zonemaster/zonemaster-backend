@@ -160,9 +160,8 @@ This parameter is a string that are an IPv4 or IPv6. It's validated with the fol
 
 Basic data type: string
 
-A string of A-Z, a-z and underscores matching one of the regular expressions
-`/^[a-z]{2}$/` or `/^[a-z]{2}_[A-Z]{2}$/`. The first format is the preferred
-format, and the second format is *deprecated*.
+A string matching the regular expression `/^[a-z]{2}$/` (preferred format) or a string 
+matching the regular expressions `/^[a-z]{2}_[A-Z]{2}$/` (*deprecated* format).
 
 The set of valid *language tags* is further constrained by the
 [LANGUAGE.locale] property.

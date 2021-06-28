@@ -42,13 +42,13 @@ sub dbh {
         my $user     = $self->config->MYSQL_user;
         my $password = $self->config->MYSQL_password;
 
-        my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
-
         $log->notice( "Connecting to MySQL: database=$database host=$host user=$user" ) if $log->is_notice;
 
         if ( untaint_ipv6_address( $host ) ) {
             $host = "[$host]";
         }
+
+        my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
 
         $dbh = DBI->connect(
             $data_source_name,

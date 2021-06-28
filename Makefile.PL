@@ -52,4 +52,25 @@ install_script 'zmb';
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';
 
+requires_external_bin 'find';
+
+if ($^O eq "freebsd") {
+    requires_external_bin 'gmake';
+};
+
+sub MY::postamble {
+    my $text;
+    if ($^O eq "freebsd") {
+        # Make FreeBSD use gmake for share/Makefile
+        $text = 'GMAKE ?= "gmake"' . "\n"
+            . 'pure_all :: share/Makefile' . "\n"
+            . "\t" . 'cd share && $(GMAKE) touch-po all' . "\n";
+    } else {
+        $text = 'pure_all :: share/Makefile' . "\n"
+            . "\t" . 'cd share && $(MAKE) touch-po all' . "\n";
+    };
+    return $text;
+};
+
+
 WriteAll;

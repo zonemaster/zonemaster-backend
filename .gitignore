@@ -17,6 +17,7 @@ Zonemaster-*
 Zonemaster-*.tar.gz
 .orig
 inc
+*.mo
 
 # Ignore Emacs and other backup files
 *.bak

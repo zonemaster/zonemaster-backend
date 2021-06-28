@@ -664,10 +664,6 @@ my $rpc_request = joi->object->props(
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 
-    # TODO: make this work
-    textdomain('Zonemaster-Backend');
-    bindtextdomain('Zonemaster-Backend', '.');
-
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
     if (!exists $jsonrpc_request->{id} || @error_rpc) {
         return {

@@ -205,7 +205,7 @@ language from being allowed. If there are more than one `locale tag`
 all those must be removed to block that language.
 
 English is the Zonemaster default language, but it can be blocked
-from being allowed by RPC-API by including some `locale tag` it in the
+from being allowed by RPC-API by including some `locale tag` in the
 configuration, but none starting with language code for English ("en").
 
 #### Out-of-the-box support

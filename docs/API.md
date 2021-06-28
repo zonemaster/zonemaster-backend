@@ -644,7 +644,7 @@ An object with the following properties:
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify `"profile"` instead.
+* `"config"`: **No longer supported**. Use `"profile"` instead.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
@@ -1046,7 +1046,7 @@ The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
 * `"profile"`: A *profile name*, optional (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
+* `"config"`: **No longer supported**. Use `"profile"` instead.
 * `"client_version"`: A *client version*, optional. (default: unset)
 * `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
 * `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)

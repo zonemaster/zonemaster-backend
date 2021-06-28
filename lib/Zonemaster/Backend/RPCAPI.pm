@@ -382,11 +382,6 @@ sub start_domain_test {
 
         die "No domain in parameters\n" unless ( $params->{domain} );
 
-        if ($params->{config}) {
-            $params->{config} =~ s/[^\w_]//isg;
-            die "Unknown test configuration: [$params->{config}]\n" unless ( $self->{config}->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
-        }
-
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
 

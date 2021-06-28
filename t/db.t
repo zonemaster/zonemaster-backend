@@ -81,16 +81,27 @@ subtest 'encoding and fingerprint' => sub {
                     { ns => "ns2.nic.fr", ip => "192.134.4.1" }
                 ]
             );
+            my %params4 = (
+                domain => "example.com",
+                nameservers => [
+                    { ip => "192.134.4.1", ns => "nS2.Nic.FR"},
+                    { ns => "Ns1.nIC.fR", ip => "" }
+                ]
+            );
 
             my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
             my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
             my ( $encoded_params3, $fingerprint3 ) = encode_and_fingerprint( \%params3 );
+            my ( $encoded_params4, $fingerprint4 ) = encode_and_fingerprint( \%params4 );
 
             is $fingerprint1, $fingerprint2, 'nameservers: same fingerprint';
             is $encoded_params1, $encoded_params2, 'nameservers: same encoded string';
 
             is $fingerprint1, $fingerprint3, 'nameservers: same fingerprint (empty ip)';
             is $encoded_params1, $encoded_params3, 'nameservers: same encoded string (empty ip)';
+
+            is $fingerprint1, $fingerprint4, 'nameservers: same fingerprint (ignore nameservers\' ns case)';
+            is $encoded_params1, $encoded_params4, 'nameservers: same encoded string (ignore nameservers\' ns case)';
         };
     };
 

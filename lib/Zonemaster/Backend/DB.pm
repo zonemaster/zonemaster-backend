@@ -209,6 +209,7 @@ sub _normalize_parameter_hash {
     my $array_nameservers = $$params{nameservers} // [];
     for my $nameserver (@$array_nameservers) {
         $$nameserver{ip} = "" if ( not defined $$nameserver{ip} );
+        $$nameserver{ns} = lc $$nameserver{ns};
     }
     my @array_nameservers_sort = sort {
         $a->{ip} cmp $b->{ip} or

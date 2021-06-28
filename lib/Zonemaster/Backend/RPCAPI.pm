@@ -23,10 +23,11 @@ use Zonemaster::Engine::Net::IP;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::ErrorMessages;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 use Locale::TextDomain qw[Zonemaster-Backend];
-use Locale::Messages qw[textdomain bindtextdomain setlocale LC_MESSAGES];
+use Locale::Messages qw[setlocale LC_MESSAGES];
 use Encode;
 
 #use Locale::Messages::Debug qw[debug_gettext];
@@ -34,7 +35,6 @@ use Encode;
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
 my %extra_validators;
-my %custom_messages_config;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -317,75 +317,6 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     priority => $zm_validator->priority,
     queue => $zm_validator->queue
 );
-$custom_messages_config{start_domain_test} = [
-    {
-        pattern => "/domain",
-        config => {
-            string => {
-                pattern => N__ 'The domain name character(s) are not supported'
-            }
-        }
-    },
-    {
-        pattern => "/nameservers/\\d+/ip",
-        config => {
-            string => {
-                pattern => N__ 'Invalid IP address'
-            }
-        }
-    },
-    {
-        pattern => "/nameservers/\\d+/ns",
-        config => {
-            string => {
-                pattern => N__ 'The domain name character(s) are not supported'
-            }
-        }
-    },
-    {
-        pattern => "/ds_info/\\d+/keytag",
-        config => {
-            integer => {
-                type => N__ 'Keytag should be a positive integer',
-                minimum => N__ 'Keytag should be a positive integer'
-            }
-        }
-    },
-    {
-        pattern => "/ds_info/\\d+/algorithm",
-        config => {
-            integer => {
-                type => N__ 'Algorithm should be a positive integer',
-                minimum => N__ 'Algorithm should be a positive integer'
-            }
-        }
-    },
-    {
-        pattern => "/ds_info/\\d+/digtype",
-        config => {
-            integer => {
-                type => N__ 'Digest type should be a positive integer',
-                minimum => N__ 'Digest type should be a positive integer'
-            }
-        }
-    },
-    {
-        pattern => "/ds_info/\\d+/digest",
-        config => {
-            string => {
-                pattern => N__ 'Invalid digest format'
-            }
-        }
-    },
-    {
-        pattern => ".*",
-        config => {
-            object => {
-                required => N__ 'Missing property'
-            }
-        }
-    }
-];
 $extra_validators{start_domain_test} = \&validate_syntax;
 sub start_domain_test {
     my ( $self, $params ) = @_;
@@ -463,7 +394,7 @@ sub get_test_results {
     $translator = Zonemaster::Backend::Translator->new;
 
     # Already validated by json_validate
-    my ($locale) = $self->_get_locale($params);
+    my $locale = $self->_get_locale($params);
 
     my $previous_locale = $translator->locale;
     $translator->locale( $locale );
@@ -657,22 +588,27 @@ sub _get_locale {
 
     my %locale = $self->{config}->Language_Locale_hash();
     my $language = $params->{language};
+    my $ret;
 
-    if ( $locale{$language} ) {
-        if ( $locale{$language} eq 'NOT-UNIQUE') {
+    if ( defined $language ) {
+        if ( $locale{$language} ) {
+            if ( $locale{$language} eq 'NOT-UNIQUE') {
+                push @error, {
+                    path => "/language",
+                    message => N__ "Language string not unique"
+                };
+            } else {
+                $ret = $locale{$language};
+            }
+        } else {
             push @error, {
                 path => "/language",
-                message => N__ "Language string not unique"
+                message => N__ "Unkown language string"
             };
         }
-    } else {
-        push @error, {
-            path => "/language",
-            message => N__ "Unkown language string"
-        };
     }
 
-    return $locale{$language}, \@error,
+    return $ret, \@error,
 }
 
 my $rpc_request = joi->object->props(
@@ -688,7 +624,7 @@ sub jsonrpc_validate {
             id => undef,
             error => {
                 code => '-32600',
-                message => 'The JSON sent is not a valid request object.',
+                message => decode_utf8(__ 'The JSON sent is not a valid request object.'),
                 data => "@error_rpc"
             }
         }
@@ -703,7 +639,7 @@ sub jsonrpc_validate {
                 id => $jsonrpc_request->{id},
                 error => {
                     code => '-32602',
-                    message => "Missing 'params' object",
+                    message => decode_utf8(__ "Missing 'params' object"),
                 }
             };
         }
@@ -726,7 +662,7 @@ sub jsonrpc_validate {
 
         my @json_validation_error = $method_schema->validate($jsonrpc_request->{params});
 
-        my $error_config = $custom_messages_config{$jsonrpc_request->{method}};
+        my $error_config = Zonemaster::Backend::ErrorMessages::custom_messages_config;
 
         # Customize error message from json validation
         foreach my $err ( @json_validation_error ) {

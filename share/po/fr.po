@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-28 10:02+0200\n"
+"POT-Creation-Date: 2021-06-28 16:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,6 +58,15 @@ msgstr "Format de l'empreinte invalide"
 
 msgid "Missing property"
 msgstr "Champ manquant"
+
+msgid "Language string not unique"
+msgstr ""
+
+msgid "Unkown language string"
+msgstr ""
+
+msgid "Invalid method parameter(s)."
+msgstr "Paramètres incorrects"
 
 msgid ""
 "Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "

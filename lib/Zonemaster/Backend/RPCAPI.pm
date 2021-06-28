@@ -462,18 +462,11 @@ sub get_test_results {
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
-    my %locale = $self->{config}->Language_Locale_hash();
-    if ( $locale{$params->{language}} ) {
-        if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
-            die "Language string not unique: '$params->{language}'\n";
-        }
-    }
-    else {
-        die "Undefined language string: '$params->{language}'\n";
-    }
+    # Already validated by json_validate
+    my ($locale) = $self->_get_locale($params);
 
     my $previous_locale = $translator->locale;
-    $translator->locale( $locale{$params->{language}} );
+    $translator->locale( $locale );
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
@@ -657,7 +650,31 @@ sub get_batch_job_result {
 
     return $result;
 }
-use Data::Dumper;
+
+sub _get_locale {
+    my ( $self, $params ) = @_;
+    my @error;
+
+    my %locale = $self->{config}->Language_Locale_hash();
+    my $language = $params->{language};
+
+    if ( $locale{$language} ) {
+        if ( $locale{$language} eq 'NOT-UNIQUE') {
+            push @error, {
+                path => "/language",
+                message => N__ "Language string not unique"
+            };
+        }
+    } else {
+        push @error, {
+            path => "/language",
+            message => N__ "Unkown language string"
+        };
+    }
+
+    return $locale{$language}, \@error,
+}
+
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
     method => $zm_validator->jsonrpc_method()->required);
@@ -691,25 +708,25 @@ sub jsonrpc_validate {
             };
         }
 
-        my %locale = $self->{config}->Language_Locale_hash();
+        my @error_response;
 
-        # NOTE: Default to first language in config
-        my $language = $jsonrpc_request->{params}->{language} // $self->{config}->{_LANGUAGE_locale}[0];
+        # NOTE: Make that configurable
+        my $default_language =  'en_US';
+        my ($locale, $locale_error) = $self->_get_locale( $jsonrpc_request->{params} );
 
         # NOTE: temporary workaround to not break everything
         if (exists $jsonrpc_request->{params}->{language} && !exists $method_schema->{properties}->{language}) {
             delete $jsonrpc_request->{params}->{language};
         }
 
-        # TODO: Language validation
-        $ENV{LANGUAGE} = $locale{$language};
-        setlocale( LC_MESSAGES, $locale{$language} );
+        push @error_response, @{$locale_error};
+        $locale //= $default_language;
+        $ENV{LANGUAGE} = $locale;
+        setlocale( LC_MESSAGES, $locale );
 
         my @json_validation_error = $method_schema->validate($jsonrpc_request->{params});
 
         my $error_config = $custom_messages_config{$jsonrpc_request->{method}};
-
-        my @error_response;
 
         # Customize error message from json validation
         foreach my $err ( @json_validation_error ) {
@@ -746,7 +763,7 @@ sub jsonrpc_validate {
                 id => $jsonrpc_request->{id},
                 error => {
                     code => '-32602',
-                    message => 'Invalid method parameter(s).',
+                    message => decode_utf8(__ 'Invalid method parameter(s).'),
                     data => \@error_response
                 }
             };

@@ -221,6 +221,14 @@ sub _normalize_parameter_hash {
     return \%normalized;
 }
 
+=head2 encode_normalized_params
+
+Returns a normalized JSON string based on the provided parameters.
+Each entry is set to a default value, see
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
+
+=cut
+
 sub encode_normalized_params {
     my ( $self, $params ) = @_;
 
@@ -233,6 +241,13 @@ sub encode_normalized_params {
 
     return $encoded_params;
 }
+
+=head2 generate_fingerprint
+
+Returns a fingerprint of the normalized parameters passed in argument.
+Such fingerprint are usefull to find similar tests in the database.
+
+=cut
 
 sub generate_fingerprint {
     my ( $self, $encoded_params ) = @_;

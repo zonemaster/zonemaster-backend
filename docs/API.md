@@ -55,7 +55,7 @@ If the request object is invalid JSON, an error with code `-32700` is reported.
 
 If no method is specified or an invalid method is specified, an error with code `-32601` is reported.
 
-If no `params` object is specified, or the `param` object for the specified
+If no `params` object is specified, or the `params` object for the specified
 method is invalid, an error with code `-32602` is reported. For more information
 on the validation error data format see [Validation error data].
 
@@ -1228,11 +1228,8 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
-<<<<<<< HEAD
 [Validation error data]:        #validation-error-data
 [Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
 [Recommend text format for IPv6 addresses]: https://datatracker.ietf.org/doc/html/rfc5952
 [JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
-=======
 [Privilege levels]:             #privilege-levels
->>>>>>> origin/develop

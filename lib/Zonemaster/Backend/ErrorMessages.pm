@@ -66,6 +66,14 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         }
     },
     {
+        pattern => "/language",
+        config => {
+            string => {
+                pattern => N__ 'Invalid language tag format'
+            }
+        }
+    },
+    {
         pattern => ".*",
         config => {
             object => {

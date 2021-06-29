@@ -243,15 +243,17 @@ sub parse {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
 
-    $obj->{_LANGUAGE_locale} = {};
+    $obj->{_LANGUAGE_locale} = [];
+    my %locale_set = {};
     for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
         $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
           or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
 
-        !exists $obj->{_LANGUAGE_locale}{$locale_tag}
+        !exists $locale_set{$locale_tag}
           or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
 
-        $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+        $locale_set{$locale_tag} = 1;
+        push @{$obj->{_LANGUAGE_locale}}, $locale_tag;
     }
 
     $obj->{_public_profiles} = {
@@ -541,7 +543,7 @@ sub Language_Locale_hash {
     # There is one special value to capture ambiguous (and therefore
     # not permitted) translation language tags.
     my ($self) = @_;
-    my @localetags = keys %{ $self->{_LANGUAGE_locale} };
+    my @localetags = @{ $self->{_LANGUAGE_locale} };
     my %locale;
     foreach my $la (@localetags) {
         (my $a) = split (/_/,$la); # $a is the language code only
@@ -583,6 +585,26 @@ sub ListLanguageTags {
         push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
     }
     return @langtags;
+}
+
+=head2 GetDefaultLanguageTag
+
+Read indirectly LANGUAGE.locale from the configuration (.ini) file
+and returns the first language. This is used as the default language.
+
+=head3 INPUT
+
+None
+
+=head3 RETURNS
+
+The first valid language tag supported by the backend.
+
+=cut
+use Data::Dumper;
+sub GetDefaultLanguageTag {
+    my ($self) = @_;
+    return $self->{_LANGUAGE_locale}[0];
 }
 
 sub ReadProfilesInfo {

@@ -649,12 +649,11 @@ sub jsonrpc_validate {
 
         my @error_response;
 
-        # TODO: Make that configurable
-        my $default_language =  'en_US';
         my ($locale, $locale_error) = $self->_get_locale( $jsonrpc_request->{params} );
-
         push @error_response, @{$locale_error};
-        $locale //= $default_language;
+
+        $locale //= $self->{config}->GetDefaultLanguageTag;
+        print $locale . "\n";
         $ENV{LANGUAGE} = $locale;
         setlocale( LC_MESSAGES, $locale );
 

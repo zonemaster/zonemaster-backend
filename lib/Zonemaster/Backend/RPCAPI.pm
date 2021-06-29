@@ -154,20 +154,37 @@ sub get_host_by_name {
     return \@adresses;
 }
 
+sub get_data_from_parent_zone_validate_syntax {
+    my ( $self, $syntax_input ) = @_;
+    my @errors;
+
+    if ( defined $syntax_input->{domain} ) {
+        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
+        push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
+    }
+
+    if (@errors) {
+        return {
+            status => 'nok',
+            errors => \@errors,
+            message => 'Syntax validation error'
+        };
+    }
+    else {
+        return { status => 'ok', message => 'Syntax ok' };
+    }
+}
 $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
     domain   => $zm_validator->domain_name->required,
     language => $zm_validator->language_tag
 );
+$extra_validators{get_data_from_parent_zone} = \&get_data_from_parent_zone_validate_syntax;
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
     my $result = eval {
         my %result;
-
         my $domain = $params->{domain};
-
-        my ( $dn, $dn_syntax ) = $self->_check_domain( $domain );
-        return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
 
         my @ns_list;
         my @ns_names;
@@ -253,7 +270,7 @@ sub _check_domain {
     return ( $domain, { status => 'ok', message => 'Syntax ok' } );
 }
 
-sub validate_syntax {
+sub start_domain_test_validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
     my $result = eval {
@@ -297,7 +314,7 @@ sub validate_syntax {
         return $result;
     }
     else {
-        return { status => 'ok', message =>  encode_entities( 'Syntax ok' ) };
+        return { status => 'ok', message => 'Syntax ok' };
     }
 }
 
@@ -320,7 +337,7 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     queue => $zm_validator->queue,
     language => $zm_validator->language_tag
 );
-$extra_validators{start_domain_test} = \&validate_syntax;
+$extra_validators{start_domain_test} = \&start_domain_test_validate_syntax;
 sub start_domain_test {
     my ( $self, $params ) = @_;
 

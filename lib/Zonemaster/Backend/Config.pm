@@ -632,7 +632,7 @@ None
 The first valid language tag supported by the backend.
 
 =cut
-use Data::Dumper;
+
 sub GetDefaultLanguageTag {
     my ($self) = @_;
     return $self->{_LANGUAGE_locale}[0];

@@ -653,7 +653,7 @@ sub jsonrpc_validate {
         push @error_response, @{$locale_error};
 
         $locale //= $self->{config}->GetDefaultLanguageTag;
-        print $locale . "\n";
+
         $ENV{LANGUAGE} = $locale;
         setlocale( LC_MESSAGES, $locale );
 

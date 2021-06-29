@@ -8,6 +8,7 @@ use Test::NoWarnings;
 
 use Encode;
 use File::ShareDir qw[dist_file];
+use JSON::PP;
 
 subtest 'Everything but NoWarnings' => sub {
 
@@ -223,21 +224,37 @@ subtest 'Everything but NoWarnings' => sub {
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    $frontend_params->{ds_info}->[0]->{digtype}   = 1;
+    $frontend_params->{ds_info}->[0]->{keytag}   = 5000;
+
+    is( @{$engine->validate_params( "start_domain_test", $frontend_params )}, 0, encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
+        or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 'a';
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid Algorithm Type' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( @{$engine->validate_params( "start_domain_test", $frontend_params )}, 1, encode_utf8( 'Invalid Algorithm Type' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = '01234567890123456789012345678901234567890';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid digest length' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( @{$engine->validate_params( "start_domain_test", $frontend_params )}, 1, encode_utf8( 'Invalid digest length' ) )
+        or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid digest format' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( @{$engine->validate_params( "start_domain_test", $frontend_params )}, 1, encode_utf8( 'Invalid digest format' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
+    $frontend_params->{language} = "zz";
+    is( @{$engine->validate_params( "start_domain_test", $frontend_params )}, 1, encode_utf8( 'Invalid language, "zz" unknown' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{language} = "fr-FR";
+    cmp_ok( @{$engine->validate_params( "start_domain_test", $frontend_params )}, ">", 0, encode_utf8( 'Invalid language, should be underscore not hyphen' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{language} = "nb_NO";
+    is( @{$engine->validate_params( "start_domain_test", $frontend_params )}, 0, encode_utf8( 'Valid language' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 };

@@ -647,57 +647,16 @@ sub jsonrpc_validate {
             };
         }
 
-        my @error_response;
+        my  $error_response = $self->validate_params($jsonrpc_request->{method}, $jsonrpc_request->{params});
 
-        my ($locale, $locale_error) = $self->_get_locale( $jsonrpc_request->{params} );
-        push @error_response, @{$locale_error};
-
-        $locale //= $self->{config}->GetDefaultLanguageTag;
-
-        $ENV{LANGUAGE} = $locale;
-        setlocale( LC_MESSAGES, $locale );
-
-        my @json_validation_error = $method_schema->validate($jsonrpc_request->{params});
-
-        my $error_config = Zonemaster::Backend::ErrorMessages::custom_messages_config;
-
-        # Customize error message from json validation
-        foreach my $err ( @json_validation_error ) {
-            my $message = $err->message;
-            foreach my $entry (@{$error_config}) {
-                my $pattern = $entry->{pattern};
-                my $config = $entry->{config};
-
-                if ($err->{path} =~ /^$pattern$/) {
-                    my @details = @{$err->details};
-                    my $custom_message = $config->{@details[0]}->{@details[1]} if defined $config->{@details[0]};
-                    if (defined $custom_message) {
-                        $message = $custom_message;
-                        last;
-                    }
-                }
-            }
-            push @error_response, { path => $err->path, message => $message };
-        }
-
-        # Add messages from extra validation function
-        if ( $extra_validators{$jsonrpc_request->{method}} ) {
-            my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
-            my $result = $self->$sub_validator($jsonrpc_request->{params});
-            push @error_response, @{$result->{errors}} if $result->{status} eq 'nok';
-        }
-
-        # Translate messages
-        @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
-
-        if ( @error_response ) {
+        if ( @$error_response ) {
             return {
                 jsonrpc => '2.0',
                 id => $jsonrpc_request->{id},
                 error => {
                     code => '-32602',
                     message => decode_utf8(__ 'Invalid method parameter(s).'),
-                    data => \@error_response
+                    data => $error_response
                 }
             };
         }
@@ -705,4 +664,56 @@ sub jsonrpc_validate {
 
     return '';
 }
+
+sub validate_params {
+    my ( $self, $method, $params) = @_;
+    my $method_schema = $json_schemas{$method};
+
+    my @error_response = ();
+
+    my ($locale, $locale_error) = $self->_get_locale( $params );
+    push @error_response, @{$locale_error};
+
+    $locale //= $self->{config}->GetDefaultLanguageTag;
+
+    $ENV{LANGUAGE} = $locale;
+    setlocale( LC_MESSAGES, $locale );
+
+    my @json_validation_error = $method_schema->validate( $params );
+
+    my $error_config = Zonemaster::Backend::ErrorMessages::custom_messages_config;
+
+    # Customize error message from json validation
+    foreach my $err ( @json_validation_error ) {
+        my $message = $err->message;
+        foreach my $entry (@{$error_config}) {
+            my $pattern = $entry->{pattern};
+            my $config = $entry->{config};
+
+            if ($err->{path} =~ /^$pattern$/) {
+                my @details = @{$err->details};
+                # detail[0] => property type
+                # detail[1] => error name
+                my $custom_message = $config->{$details[0]}->{$details[1]} if defined $config->{$details[0]};
+                if (defined $custom_message) {
+                    $message = $custom_message;
+                    last;
+                }
+            }
+        }
+        push @error_response, { path => $err->path, message => $message };
+    }
+
+    # Add messages from extra validation function
+    if ( $extra_validators{$method} ) {
+        my $sub_validator = $extra_validators{$method};
+        my $result = $self->$sub_validator($params);
+        push @error_response, @{$result->{errors}} if $result->{status} eq 'nok';
+    }
+
+    # Translate messages
+    @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
+    return \@error_response;
+}
+
 1;

@@ -255,7 +255,7 @@ sub parse {
     }
 
     $obj->{_LANGUAGE_locale} = [];
-    my %locale_set = {};
+    my %locale_set = ();
     for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
         $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
           or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";

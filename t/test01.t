@@ -135,12 +135,6 @@ sub run_zonemaster_test_with_backend_API {
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
     ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
     cmp_ok( scalar( @{ $test_results->{results} } ), '>', 1, 'TEST1 got some results' );
-
-    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
-    'API get_test_results -> [results] parameter not present (wrong language tag: underscore not hyphen)'; # Should be underscore, not hyphen.
-
-    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'zz' } ); }
-    'API get_test_results -> [results] parameter not present (wrong language tag: "zz" unknown)'; # "zz" is not our configuration file.
 }
 
 run_zonemaster_test_with_backend_API(1);

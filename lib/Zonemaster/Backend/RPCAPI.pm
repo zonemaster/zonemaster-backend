@@ -133,7 +133,8 @@ sub get_language_tags {
 }
 
 $json_schemas{get_host_by_name} = joi->object->strict->props(
-    hostname   => $zm_validator->domain_name->required
+    hostname => $zm_validator->domain_name->required,
+    language => $zm_validator->language_tag
 );
 sub get_host_by_name {
     my ( $self, $params ) = @_;
@@ -154,7 +155,8 @@ sub get_host_by_name {
 }
 
 $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
-    domain   => $zm_validator->domain_name->required
+    domain   => $zm_validator->domain_name->required,
+    language => $zm_validator->language_tag
 );
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
@@ -315,7 +317,8 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     client_version => $zm_validator->client_version,
     config => joi->string,
     priority => $zm_validator->priority,
-    queue => $zm_validator->queue
+    queue => $zm_validator->queue,
+    language => $zm_validator->language_tag
 );
 $extra_validators{start_domain_test} = \&validate_syntax;
 sub start_domain_test {
@@ -649,11 +652,6 @@ sub jsonrpc_validate {
         # TODO: Make that configurable
         my $default_language =  'en_US';
         my ($locale, $locale_error) = $self->_get_locale( $jsonrpc_request->{params} );
-
-        # remove language param if not present in the real method parameters
-        if (exists $jsonrpc_request->{params}->{language} && !exists $method_schema->{properties}->{language}) {
-            delete $jsonrpc_request->{params}->{language};
-        }
 
         push @error_response, @{$locale_error};
         $locale //= $default_language;

@@ -7,7 +7,7 @@ use Locale::TextDomain qw[Zonemaster-Backend];
 
 Readonly my @CUSTOM_MESSAGES_CONFIG => (
     {
-        pattern => "/domain",
+        pattern => "/(domain|hostname)",
         config => {
             string => {
                 pattern => N__ 'The domain name character(s) are not supported'

@@ -55,7 +55,9 @@ If the request object is invalid JSON, an error with code `-32700` is reported.
 
 If no method is specified or an invalid method is specified, an error with code `-32601` is reported.
 
-If no `params` object is specified, or the `param` object for the specified method is invalid, an error with code `-32602` is reported. For more information on the validation error data format see [Validation error data]. If an optionnal `language` field containing a [Language tag] is specified within the `params` object, error messages will be translated to the target language,
+If no `params` object is specified, or the `param` object for the specified
+method is invalid, an error with code `-32602` is reported. For more information
+on the validation error data format see [Validation error data].
 
 All error states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
 
@@ -298,8 +300,10 @@ Represents the name of an authenticated account (see *[Privilege levels]*)
 Basic data type: array
 
 The items of the array are objects with two keys, `"path"` and `"message"`:
-* `"path"`: a string. A [JSON Pointer] to an element in the request's param object. Ex.: `"/nameservers/0/ip"`.
-* `"message"`: a string. The error message associated with the element referenced by `"path"`.
+* `"path"`: a string. A [JSON Pointer] to an element in the request's param
+  object. Ex.: `"/nameservers/0/ip"`.
+* `"message"`: a string. The error message associated with the element
+  referenced by `"path"`.
 
 
 ## API method: `version_info`
@@ -455,9 +459,10 @@ Example response:
 
 #### `"params"`
 
-An object with the property:
+An object with the properties:
 
-`"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
+* `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
+* `"language"`: A [Language Tag], optional, used for validation error messages translation.
 
 
 #### `"result"`
@@ -539,9 +544,10 @@ Example response:
 
 #### `"params"`
 
-An object with the property:
+An object with the properties:
 
-`"domain"`: A *domain name*, required. The domain whose DNS records are requested.
+* `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
+* `"language"`: A [Language Tag], optional, used for validation error messages translation.
 
 
 #### `"result"`
@@ -621,6 +627,7 @@ An object with the following properties:
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
+* `"language"`: A [Language Tag], optional, used for validation error message translation.
 
 >
 > TODO: Clarify the purpose of each `"params"` property.

@@ -36,7 +36,7 @@ msgid "Invalid digest format"
 msgstr "Format de l'empreinte invalide"
 
 msgid "Invalid language tag format"
-msgstr "Format de l'étiquette d'inditification de langue incorrect"
+msgstr "Format de l'étiquette d'indentification de langue incorrect"
 
 msgid "Missing property"
 msgstr "Champ manquant"
@@ -63,17 +63,16 @@ msgid "Unknown profile"
 msgstr "Profile inconnu"
 
 msgid "Language string not unique"
-msgstr "Étiquette d'inditification non unique"
+msgstr "Étiquette d'indentification de langue non unique"
 
 msgid "Unkown language string"
-msgstr "Étiquette d'inditification de langue inconnue"
+msgstr "Étiquette d'indentification de langue inconnue"
 
 msgid "The JSON sent is not a valid request object."
 msgstr "L'object JSON envoyé n'est pas un object de requête valide."
 
-#, fuzzy
 msgid "Missing 'params' object"
-msgstr "Champ manquant"
+msgstr "Objet 'params' manquant"
 
 msgid "Invalid method parameter(s)."
 msgstr "Paramètres incorrects"

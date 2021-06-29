@@ -204,6 +204,10 @@ language from being allowed. If there are more than one `locale tag`
 (with different country codes) for the same language, then
 all those must be removed to block that language.
 
+English is the Zonemaster default language, but it can be blocked
+from being allowed by RPC-API by not including it in the
+configuration.
+
 The first language in the list will be used as the default for the RPC API
 error messages. If translation not available, then the error messages will be
 send untranslated, i.e. in English. See the [API documentation] to know which

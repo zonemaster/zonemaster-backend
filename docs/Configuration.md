@@ -70,7 +70,7 @@ Default value: `0.5`.
 
 ## MYSQL section
 
-Available keys : `host`, `user`, `password`, `database`.
+Available keys : `host`, `port`, `user`, `password`, `database`.
 
 ### host
 
@@ -79,6 +79,15 @@ An [LDH domain name] or IP address.
 The host name of the machine on which the MySQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
+
+### port
+
+The port the MySQL server is listening on.
+Default value: `3306`.
+
+If [MYSQL.host] is set to `localhost` (but neither `127.0.0.1` nor `::1`),
+then the value of the [MYSQL.port] property is discarded as the driver
+connects using a UNIX socket (see the [DBD::mysql documentation]).
 
 ### user
 
@@ -111,7 +120,7 @@ If this property is unspecified, the value of [DB.database_name] is used instead
 
 ## POSTGRESQL section
 
-Available keys : `host`, `user`, `password`, `database`.
+Available keys : `host`, `port`, `user`, `password`, `database`.
 
 ### host
 
@@ -120,6 +129,11 @@ An [LDH domain name] or IP address.
 The host name of the machine on which the PostgreSQL server is running.
 
 If this property is unspecified, the value of [DB.database_host] is used instead.
+
+### port
+
+The port the PostgreSQL server is listening on.
+Default value: `5432`.
 
 ### user
 
@@ -165,12 +179,17 @@ If this property is unspecified, the value of [DB.database_name] is used instead
 
 The LANGUAGE section has one key, `locale`.
 
-The value of the `locale` key is a space separated list of
-`locale tags` where each tag must match the regular expression
-`/^[a-z]{2}_[A-Z]{2}$/`.
+### locale
+
+A space separated list of `locale tags` where each tag matches the regular
+expression `/^[a-z]{2}_[A-Z]{2}$/`.
+
+It is an error to repeat the same `locale tag`.
 
 If the `locale` key is empty or absent, the `locale tag` value
 "en_US" is set by default.
+
+#### Design
 
 The two first characters of a `locale tag` are intended to be an
 [ISO 639-1] two-character language code and the two last characters
@@ -178,13 +197,7 @@ are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 A `locale tag` is a locale setting for the available translation
 of messages without ".UTF-8", which is implied.
 
-If a new `locale tag` is added to the configuration then the equivalent
-MO file should be added to Zonemaster-Engine at the correct place so
-that gettext can retrieve it, or else the added `locale tag` will not
-add any actual language support. See the
-[Zonemaster-Engine share directory] for the existing PO files that are
-converted to MO files. (Here we should have a link
-to documentation instead.)
+#### Usage
 
 Removing a language from the configuration file just blocks that
 language from being allowed. If there are more than one `locale tag`
@@ -195,17 +208,7 @@ English is the Zonemaster default language, but it can be blocked
 from being allowed by RPC-API by not including it in the
 configuration.
 
-In the RPCAPI, `language tag` is used ([Language tag]). The
-`language tags` are generated from the `locale tags`. Each
-`locale tag` will generate two `language tags`, a short tag
-equal to the first two letters (usually the same as a language
-code) and a long tag which is equal to the full `locale tag`.
-If "en_US" is the `locale tag` then "en" and "en_US" are the
-`language tags`.
-
-If there are two `locale tags` that would give the same short
-`language tag` then that is excluded. E.g. "en_US en_UK" will
-only give "en_US" and "en_UK" as `language tags`.
+#### Out-of-the-box support
 
 The default installation and configuration supports the
 following languages.
@@ -219,27 +222,21 @@ French   | fr_FR              | fr_FR.UTF-8
 Norwegian| nb_NO              | nb_NO.UTF-8
 Swedish  | sv_SE              | sv_SE.UTF-8
 
-The following `language tags` are generated:
-* da
-* da_DK
-* en
-* en_US
-* fi
-* fi_FI
-* fr
-* fr_FR
-* nb
-* nb_NO
-* sv
-* sv_SE
-
-It is an error to repeat the same `locale tag`.
-
 Setting in the default configuration file:
 
 ```
 locale = da_DK en_US fi_FI fr_FR nb_NO sv_SE
 ```
+
+#### Installation considerations
+
+If a new `locale tag` is added to the configuration then the equivalent
+MO file should be added to Zonemaster-Engine at the correct place so
+that gettext can retrieve it, or else the added `locale tag` will not
+add any actual language support. See the
+[Zonemaster-Engine share directory] for the existing PO files that are
+converted to MO files. (Here we should have a link
+to documentation instead.)
 
 Each locale set in the configuration file, including the implied
 ".UTF-8", must also be installed or activate on the system
@@ -347,6 +344,7 @@ Otherwise a new test request is enqueued.
 [DB.database_name]:                   #database_name
 [DB.password]:                        #password
 [DB.user]:                            #user
+[DBD::mysql documentation]:           https://metacpan.org/pod/DBD::mysql#host
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2

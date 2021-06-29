@@ -122,6 +122,8 @@ sub parse {
 
     # Assign default values
     $obj->_set_DB_polling_interval( '0.5' );
+    $obj->_set_MYSQL_port( '3306' );
+    $obj->_set_POSTGRESQL_port( '5432' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
     $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
@@ -134,7 +136,7 @@ sub parse {
         $obj->_set_DB_engine( $value );
     }
 
-    # Check required propertys (part 1/2)
+    # Check required properties (part 1/2)
     if ( !defined $obj->DB_engine ) {
         die "config: missing required property DB.engine\n";
     }
@@ -200,6 +202,12 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
         $obj->_set_MYSQL_host( $value );
     }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'port' ) ) ) {
+        if ( $obj->MYSQL_host eq 'localhost' ) {
+            push @warnings, "MYSQL.port is disregarded if MYSQL.host is set to 'localhost'";
+        }
+        $obj->{_MYSQL_port} = $value;
+    }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {
         $obj->_set_MYSQL_user( $value );
     }
@@ -211,6 +219,9 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'host' ) ) ) {
         $obj->_set_POSTGRESQL_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'port' ) ) ) {
+        $obj->{_POSTGRESQL_port} = $value;
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'user' ) ) ) {
         $obj->_set_POSTGRESQL_user( $value );
@@ -379,11 +390,19 @@ Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backe
 Returns a string.
 
 
-=head2 MySQL_host
+=head2 MYSQL_host
 
 Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
 
 Returns a string.
+
+
+=head2 MYSQL_port
+
+Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port>
+property from the loaded config.
+
+Returns a number.
 
 
 =head2 MYSQL_password
@@ -412,6 +431,14 @@ Returns a string.
 Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>.
 
 Returns a string.
+
+
+=head2 POSTGRESQL_port
+
+Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port-1>
+property from the loaded config.
+
+Returns a number.
 
 
 =head2 POSTGRESQL_password
@@ -486,10 +513,12 @@ Returns a number.
 # Getters for the properties documented above
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
+sub MYSQL_port                                          { return $_[0]->{_MYSQL_port}; }
 sub MYSQL_user                                          { return $_[0]->{_MYSQL_user}; }
 sub MYSQL_password                                      { return $_[0]->{_MYSQL_password}; }
 sub MYSQL_database                                      { return $_[0]->{_MYSQL_database}; }
 sub POSTGRESQL_host                                     { return $_[0]->{_POSTGRESQL_host}; }
+sub POSTGRESQL_port                                     { return $_[0]->{_POSTGRESQL_port}; }
 sub POSTGRESQL_user                                     { return $_[0]->{_POSTGRESQL_user}; }
 sub POSTGRESQL_password                                 { return $_[0]->{_POSTGRESQL_password}; }
 sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
@@ -505,10 +534,12 @@ sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMA
 UNITCHECK {
     _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
     _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_host );
+    _create_setter( '_set_MYSQL_port',                                          '_MYSQL_port',                                          \&untaint_strictly_positive_int );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
     _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
     _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );
     _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_host );
+    _create_setter( '_set_POSTGRESQL_port',                                     '_POSTGRESQL_port',                                     \&untaint_strictly_positive_int );
     _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user',                                     \&untaint_postgresql_ident );
     _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );

@@ -24,12 +24,14 @@ subtest 'Everything but NoWarnings' => sub {
 
             [MYSQL]
             host     = mysql-host
+            port     = 3456
             user     = mysql_user
             password = mysql_password
             database = mysql_database
 
             [POSTGRESQL]
             host     = postgresql-host
+            port     = 6543
             user     = postgresql_user
             password = postgresql_password
             database = postgresql_database
@@ -50,10 +52,12 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->DB_engine,                                           'SQLite',                    'set: DB.engine';
         is $config->DB_polling_interval,                                 1.5,                         'set: DB.polling_interval';
         is $config->MYSQL_host,                                          'mysql-host',                'set: MYSQL.host';
+        is $config->MYSQL_port,                                          3456,                        'set: MYSQL.port';
         is $config->MYSQL_user,                                          'mysql_user',                'set: MYSQL.user';
         is $config->MYSQL_password,                                      'mysql_password',            'set: MYSQL.password';
         is $config->MYSQL_database,                                      'mysql_database',            'set: MYSQL.database';
         is $config->POSTGRESQL_host,                                     'postgresql-host',           'set: POSTGRESQL.host';
+        is $config->POSTGRESQL_port,                                     6543,                        'set: POSTGRESQL.port';
         is $config->POSTGRESQL_user,                                     'postgresql_user',           'set: POSTGRESQL.user';
         is $config->POSTGRESQL_password,                                 'postgresql_password',       'set: POSTGRESQL.password';
         is $config->POSTGRESQL_database,                                 'postgresql_database',       'set: POSTGRESQL.database';
@@ -76,12 +80,14 @@ subtest 'Everything but NoWarnings' => sub {
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
         cmp_ok abs( $config->DB_polling_interval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
-        is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->ZONEMASTER_maximal_number_of_retries,                0,   'default: ZONEMASTER.maximal_number_of_retries';
-        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,  'default: ZONEMASTER.number_of_processes_for_frontend_testing';
-        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
-        is $config->ZONEMASTER_lock_on_queue,                            0,   'default: ZONEMASTER.lock_on_queue';
-        is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
+        is $config->ZONEMASTER_max_zonemaster_execution_time,            600,  'default: ZONEMASTER.max_zonemaster_execution_time';
+        is $config->ZONEMASTER_maximal_number_of_retries,                0,    'default: ZONEMASTER.maximal_number_of_retries';
+        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,   'default: ZONEMASTER.number_of_processes_for_frontend_testing';
+        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,   'default: ZONEMASTER.number_of_processes_for_batch_testing';
+        is $config->ZONEMASTER_lock_on_queue,                            0,    'default: ZONEMASTER.lock_on_queue';
+        is $config->ZONEMASTER_age_reuse_previous_test,                  600,  'default: ZONEMASTER.age_reuse_previous_test';
+        is $config->MYSQL_port,                                          3306, 'default: MYSQL.port';
+        is $config->POSTGRESQL_port,                                     5432, 'default: POSTGRESQL.port';
     };
 
     lives_and {
@@ -156,6 +162,24 @@ subtest 'Everything but NoWarnings' => sub {
         $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_batch_testing/,    'deprecated: ZONEMASTER.number_of_professes_for_batch_testing' );
         is $config->ZONEMASTER_number_of_processes_for_frontend_testing, '21', 'fallback: ZONEMASTER.number_of_processes_for_frontend_testing';
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    '22', 'fallback: ZONEMASTER.number_of_processes_for_batch_testing';
+    };
+
+    lives_and {
+        my $text = q{
+            [DB]
+            engine = MySQL
+
+            [MYSQL]
+            host     = localhost
+            port     = 3333
+            user     = mysql_user
+            password = mysql_password
+            database = mysql_database
+        };
+        my $config = Zonemaster::Backend::Config->parse( $text );
+        $log->contains_ok( qr/MYSQL\.port.*MYSQL\.host/, 'warning: MYSQL.host is "localhost" and MYSQL.port defined' );
+        is $config->MYSQL_host, 'localhost', 'set: MYSQL.host';
+        is $config->MYSQL_port, 3333,        'set: MYSQL.port';
     };
 
     throws_ok {

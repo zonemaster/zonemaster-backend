@@ -162,7 +162,7 @@ Basic data type: string
 
 A string matching one of the following regular expression:
 * `/^[a-z]{2}$/`, preferred format.
-* `/^[a-z]{2}_[A-Z]{2}$/`, *deprecated* format, use the preferred format instead.
+* `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
 
 The set of valid *language tags* is further constrained by the
 [LANGUAGE.locale] property.

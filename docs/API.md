@@ -55,9 +55,10 @@ If the request object is invalid JSON, an error with code `-32700` is reported.
 
 If no method is specified or an invalid method is specified, an error with code `-32601` is reported.
 
-If no `params` object is specified, or the `params` object for the specified
-method is invalid, an error with code `-32602` is reported. For more information
-on the validation error data format see [Validation error data].
+If no `params` object is specified when it is required, or the `params` object
+for the specified method is invalid, an error with code `-32602` is reported.
+For more information on the validation error data format see
+[Validation error data].
 
 All error states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
 

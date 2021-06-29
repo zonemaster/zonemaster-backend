@@ -204,9 +204,10 @@ language from being allowed. If there are more than one `locale tag`
 (with different country codes) for the same language, then
 all those must be removed to block that language.
 
-English is the Zonemaster default language, but it can be blocked
-from being allowed by RPC-API by not including it in the
-configuration.
+The first language in the list will be used as the default for the RPC API.
+If the translation is unavailable it will then default to English.
+Some other part of Zonemaster will default to English directly but it can be
+blocked from being allowed by RPC-API by not including it in the configuration.
 
 #### Out-of-the-box support
 
@@ -370,5 +371,3 @@ Otherwise a new test request is enqueued.
 [US ASCII printable characters]:      https://en.wikipedia.org/wiki/ASCII#Printable_characters
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
-
-

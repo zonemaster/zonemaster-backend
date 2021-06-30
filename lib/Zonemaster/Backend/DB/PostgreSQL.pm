@@ -11,13 +11,24 @@ use Encode;
 use JSON::PP;
 
 use Zonemaster::Backend::DB;
-use Zonemaster::Backend::Config;
 
 with 'Zonemaster::Backend::DB';
 
-has 'config' => (
+has 'data_source_name' => (
     is       => 'ro',
-    isa      => 'Zonemaster::Backend::Config',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'user' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'password' => (
+    is       => 'ro',
+    isa      => 'Str',
     required => 1,
 );
 
@@ -25,6 +36,28 @@ has 'dbhandle' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
+
+around BUILDARGS => sub {
+    my ( $orig, $class, $args ) = @_;
+
+    my $config = $args->{config};
+
+    my $database = $config->POSTGRESQL_database;
+    my $host     = $config->POSTGRESQL_host;
+    my $port     = $config->POSTGRESQL_port;
+    my $user     = $config->POSTGRESQL_user;
+    my $password = $config->POSTGRESQL_password;
+
+    my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
+
+    return $class->$orig(
+        {
+            data_source_name => $data_source_name,
+            user             => $user,
+            password         => $password,
+        }
+    );
+};
 
 sub dbh {
     my ( $self ) = @_;
@@ -34,18 +67,10 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $database = $self->config->POSTGRESQL_database;
-        my $host     = $self->config->POSTGRESQL_host;
-        my $port     = $self->config->POSTGRESQL_port;
-        my $user     = $self->config->POSTGRESQL_user;
-        my $password = $self->config->POSTGRESQL_password;
-
-        my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
-
         $dbh = $self->_new_dbh(
-            $data_source_name,
-            $user,
-            $password,
+            $self->data_source_name,
+            $self->user,
+            $self->password,
         );
 
         $self->dbhandle( $dbh );

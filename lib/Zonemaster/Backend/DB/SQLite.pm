@@ -12,38 +12,30 @@ use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
 
-use Zonemaster::Backend::Config;
-
 with 'Zonemaster::Backend::DB';
-
-has 'config' => (
-    is       => 'ro',
-    isa      => 'Zonemaster::Backend::Config',
-    required => 1,
-);
 
 has 'dbh' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
 
-sub BUILD {
-    my ( $self ) = @_;
+around BUILDARGS => sub {
+    my ( $orig, $class, $args ) = @_;
 
-    if ( !defined $self->dbh ) {
-        my $file = $self->config->SQLITE_database_file;
+    my $config = $args->{config};
 
-        my $dbh = $self->_new_dbh(    #
-            "DBI:SQLite:dbname=$file",
-            '',
-            '',
-        );
+    my $file = $config->SQLITE_database_file;
 
-        $self->dbh( $dbh );
-    }
+    my $data_source_name = "DBI:SQLite:dbname=$file";
 
-    return $self;
-}
+    my $dbh = $args->{dbh} // $class->_new_dbh( $data_source_name, '', '' );
+
+    return $class->$orig(
+        {
+            dbh => $dbh,
+        }
+    );
+};
 
 sub DEMOLISH {
     my ( $self ) = @_;

@@ -11,14 +11,25 @@ use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
 
-use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Validator qw( untaint_ipv6_address );
 
 with 'Zonemaster::Backend::DB';
 
-has 'config' => (
+has 'data_source_name' => (
     is       => 'ro',
-    isa      => 'Zonemaster::Backend::Config',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'user' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'password' => (
+    is       => 'ro',
+    isa      => 'Str',
     required => 1,
 );
 
@@ -26,6 +37,32 @@ has 'dbhandle' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
+
+around BUILDARGS => sub {
+    my ( $orig, $class, $args ) = @_;
+
+    my $config = $args->{config};
+
+    my $database = $config->MYSQL_database;
+    my $host     = $config->MYSQL_host;
+    my $port     = $config->MYSQL_port;
+    my $user     = $config->MYSQL_user;
+    my $password = $config->MYSQL_password;
+
+    if ( untaint_ipv6_address( $host ) ) {
+        $host = "[$host]";
+    }
+
+    my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
+
+    return $class->$orig(
+        {
+            data_source_name => $data_source_name,
+            user             => $user,
+            password         => $password,
+        }
+    );
+};
 
 sub dbh {
     my ( $self ) = @_;
@@ -35,22 +72,10 @@ sub dbh {
         return $dbh;
     }
     else {
-        my $database = $self->config->MYSQL_database;
-        my $host     = $self->config->MYSQL_host;
-        my $port     = $self->config->MYSQL_port;
-        my $user     = $self->config->MYSQL_user;
-        my $password = $self->config->MYSQL_password;
-
-        if ( untaint_ipv6_address( $host ) ) {
-            $host = "[$host]";
-        }
-
-        my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
-
         $dbh = $self->_new_dbh(
-            $data_source_name,
-            $user,
-            $password,
+            $self->data_source_name,
+            $self->user,
+            $self->password,
         );
 
         $self->dbhandle( $dbh );

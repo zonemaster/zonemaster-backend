@@ -57,7 +57,7 @@ sub from_config {
     my $user     = $config->POSTGRESQL_user;
     my $password = $config->POSTGRESQL_password;
 
-    my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
+    my $data_source_name = "DBI:Pg:dbname=$database;host=$host;port=$port";
 
     my $dbh = $class->_new_dbh(
         $data_source_name,

@@ -9,7 +9,6 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
-use Log::Any qw($log);
 
 use Zonemaster::Backend::DB;
 use Zonemaster::Backend::Config;
@@ -43,18 +42,12 @@ sub dbh {
 
         my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
 
-        $log->notice( "Connecting to PostgreSQL: database=$database host=$host user=$user" ) if $log->is_notice;
-        $dbh = DBI->connect(
+        $dbh = $self->_new_dbh(
             $data_source_name,
             $user,
             $password,
-            {
-                RaiseError => 1,
-                AutoCommit => 1
-            }
         );
 
-        $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
         return $dbh;
     }

@@ -33,14 +33,10 @@ sub BUILD {
     if ( !defined $self->dbh ) {
         my $file = $self->config->SQLITE_database_file;
 
-        $log->notice( "Opening SQLite: file=$file" ) if $log->is_notice;
-        my $dbh = DBI->connect(
+        my $dbh = $self->_new_dbh(    #
             "DBI:SQLite:dbname=$file",
-            undef, undef,
-            {
-                AutoCommit => 1,
-                RaiseError => 1,
-            }
+            '',
+            '',
         );
 
         $self->dbh( $dbh );

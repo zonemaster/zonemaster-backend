@@ -7,7 +7,7 @@ use Moose::Role;
 use 5.14.2;
 
 use JSON::PP;
-use Data::Dumper;
+use Log::Any qw( $log );
 
 requires qw(
   add_api_user_to_db
@@ -152,6 +152,32 @@ sub process_unfinished_tests {
     }
 }
 
+# A thin wrapper around DBI->connect to ensure similar behavior across database
+# engines.
+sub _new_dbh {
+    my ( $class, $data_source_name, $user, $password ) = @_;
+
+    if ( $user ) {
+        $log->noticef( "Connecting to database '%s' as user '%s'", $data_source_name, $user );
+    }
+    else {
+        $log->noticef( "Connecting to database '%s'", $data_source_name );
+    }
+
+    my $dbh = DBI->connect(
+        $data_source_name,
+        $user,
+        $password,
+        {
+            RaiseError => 1,
+            AutoCommit => 1,
+        }
+    );
+
+    $dbh->{AutoInactiveDestroy} = 1;
+
+    return $dbh;
+}
 
 no Moose::Role;
 

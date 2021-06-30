@@ -82,21 +82,18 @@ sub from_config {
 
 sub dbh {
     my ( $self ) = @_;
-    my $dbh = $self->dbhandle;
 
-    if ( $dbh and $dbh->ping ) {
-        return $dbh;
-    }
-    else {
-        $dbh = $self->_new_dbh(
+    if ( !$self->dbhandle->ping ) {
+        my $dbh = $self->_new_dbh(    #
             $self->data_source_name,
             $self->user,
             $self->password,
         );
 
         $self->dbhandle( $dbh );
-        return $dbh;
     }
+
+    return $self->dbhandle;
 }
 
 sub user_exists_in_db {

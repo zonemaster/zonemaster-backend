@@ -630,12 +630,10 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
-    my $dbtype = $self->DB_engine;
-
-    # Load and construct DB adapter
-    my $dbclass = Zonemaster::Backend::DB->get_db_class( $self->DB_engine );
+    my $dbtype  = $self->DB_engine;
+    my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
     my $db      = $dbclass->from_config( $self );
 
     return $db;

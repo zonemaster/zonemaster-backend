@@ -308,7 +308,7 @@ sub start_domain_test_validate_syntax {
         }
     };
     if ($@) {
-        handle_exception('validate_syntax', $@, '008');
+        handle_exception('start_domain_test_validate_syntax', $@, '008');
     }
     elsif ($result) {
         return $result;

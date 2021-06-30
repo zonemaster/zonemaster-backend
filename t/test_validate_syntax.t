@@ -47,7 +47,7 @@ subtest 'Everything but NoWarnings' => sub {
     ];
 
     subtest 'domain present' => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => 'afnic.fr'
             }
@@ -57,7 +57,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest encode_utf8( 'idn domain=[é]' ) => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => 'é'
             }
@@ -68,7 +68,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest encode_utf8( 'idn domain=[éé]' ) => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => 'éé'
             }
@@ -79,7 +79,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest '253 characters long domain without dot' => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com'
             }
@@ -91,7 +91,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest '254 characters long domain with trailing dot' => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.'
             }
@@ -103,7 +103,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest '254 characters long domain without trailing dot' => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club'
             }
@@ -115,7 +115,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest '63 characters long domain label' => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789-63.fr'
             }
@@ -126,7 +126,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest '64 characters long domain label' => sub {
-        my $res = $engine->validate_syntax(
+        my $res = $engine->start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789--64.fr'
             }
@@ -142,80 +142,80 @@ subtest 'Everything but NoWarnings' => sub {
 
     # domain present?
     $frontend_params->{nameservers}->[0]->{ns} = 'afnic.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', 'domain present' );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok', 'domain present' );
 
     # idn
     $frontend_params->{nameservers}->[0]->{ns} = 'é';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[é]' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[é]' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # idn
     $frontend_params->{nameservers}->[0]->{ns} = 'éé';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[éé]' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[éé]' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # 253 characters long domain without dot
     $frontend_params->{nameservers}->[0]->{ns} =
     '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com';
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'ok',
+        $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok',
         encode_utf8( '253 characters long domain without dot' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    ) or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # 254 characters long domain with trailing dot
     $frontend_params->{nameservers}->[0]->{ns} =
     '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.';
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'ok',
+        $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok',
         encode_utf8( '254 characters long domain with trailing dot' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    ) or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # 254 characters long domain without trailing
     $frontend_params->{nameservers}->[0]->{ns} =
     '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club';
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'nok',
+        $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'nok',
         encode_utf8( '254 characters long domain without trailing dot' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    ) or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # 63 characters long domain label
     $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-63.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok',
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok',
         encode_utf8( '63 characters long domain label' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # 64 characters long domain label
     $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-64-.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok',
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'nok',
         encode_utf8( '64 characters long domain label' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # DELEGATED TEST
     delete( $frontend_params->{nameservers} );
 
     $frontend_params->{domain} = 'afnic.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'delegated domain exists' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'delegated domain exists' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # IP ADDRESS FORMAT
     $frontend_params->{domain} = 'afnic.fr';
     $frontend_params->{nameservers}->[0]->{ns} = 'ns1.nic.fr';
 
     $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV4' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV4' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4444';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV4' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV4' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     $frontend_params->{nameservers}->[0]->{ip} = 'fe80::6ef0:49ff:fe7b:e4bb';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV6' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV6' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     $frontend_params->{nameservers}->[0]->{ip} = 'fe80::6ef0:49ff:fe7b:e4bbffffff';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV6' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->start_domain_test_validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV6' ) )
+        or diag( $engine->start_domain_test_validate_syntax( $frontend_params )->{message} );
 
     # DS
     $frontend_params->{domain}                 = 'afnic.fr';

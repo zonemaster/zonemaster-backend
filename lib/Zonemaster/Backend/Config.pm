@@ -254,15 +254,20 @@ sub parse {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
 
-    $obj->{_LANGUAGE_locale} = {};
-    for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
-        $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
-          or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
-
-        !exists $obj->{_LANGUAGE_locale}{$locale_tag}
-          or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
-
-        $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+    {
+        $obj->{_LANGUAGE_locale} = {};
+        my $values = $get_and_clear->( 'LANGUAGE', 'locale' );
+        unless ($values) {
+            push @warnings, "Use of empty LANGUAGE.locale propery is deprecated.";
+            $values = 'en_US';
+        }
+        for my $locale_tag ( split /\s+/, $values ) {
+            $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
+                or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+            !exists $obj->{_LANGUAGE_locale}{$locale_tag}
+            or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
+            $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+        }
     }
 
     $obj->{_public_profiles} = {

@@ -17,7 +17,7 @@ subtest 'Everything but NoWarnings' => sub {
 
     use_ok( 'Zonemaster::Backend::Config' );
 
-    lives_and {
+    subtest 'Set values' => sub {
         my $text = q{
             [DB]
             engine           = sqlite
@@ -75,7 +75,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_age_reuse_previous_test,                  800,  'set: ZONEMASTER.age_reuse_previous_test';
     };
 
-    lives_and {
+    subtest 'Default values' => sub {
         my $text = q{
             [DB]
             engine = SQLite
@@ -96,7 +96,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
     };
 
-    lives_and {
+    subtest 'Deprecated values and fallbacks when DB.engine = MySQL' => sub {
         my $text = q{
             [DB]
             engine        = MySQL
@@ -116,7 +116,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->MYSQL_database, 'db_database', 'fallback: MYSQL.database';
     };
 
-    lives_and {
+    subtest 'Deprecated values and fallbacks when DB.engine = PostgreSQL' => sub {
         my $text = q{
             [DB]
             engine        = PostgreSQL
@@ -136,7 +136,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->POSTGRESQL_database, 'db_database', 'fallback: POSTGRESQL.database';
     };
 
-    lives_and {
+    subtest 'Deprecated values and fallbacks when DB.engine = SQLite' => sub {
         my $text = q{
             [DB]
             engine        = SQLite
@@ -153,7 +153,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'fallback: SQLITE.database_file';
     };
 
-    lives_and {
+    subtest 'Deprecated values and fallbacks that are unconditional' => sub {
         my $text = q{
             [DB]
             engine = SQLite
@@ -173,7 +173,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    '22', 'fallback: ZONEMASTER.number_of_processes_for_batch_testing';
     };
 
-    lives_and {
+    subtest 'Warnings' => sub {
         my $text = q{
             [DB]
             engine = MySQL

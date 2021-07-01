@@ -208,12 +208,14 @@ sub _normalize_parameter_hash {
 
     my $array_nameservers = $$params{nameservers} // [];
     for my $nameserver (@$array_nameservers) {
-        $$nameserver{ip} = "" if ( not defined $$nameserver{ip} );
+        if ( defined $$nameserver{ip} and $$nameserver{ip} eq "" ) {
+            delete $$nameserver{ip};
+        }
         $$nameserver{ns} = lc $$nameserver{ns};
     }
     my @array_nameservers_sort = sort {
-        $a->{ip} cmp $b->{ip} or
-        $a->{ns} cmp $b->{ns}
+        $a->{ns} cmp $b->{ns} or
+        ( defined $a->{ip} and defined $b->{ip} and $a->{ip} cmp $b->{ip} )
     } @$array_nameservers;
 
     $normalized{nameservers} = \@array_nameservers_sort;

@@ -64,11 +64,13 @@ subtest 'encoding and fingerprint' => sub {
                 domain => "example.com",
                 nameservers => [
                     { ns => "ns2.nic.fr", ip => "192.134.4.1" },
-                    { ns => "ns1.nic.fr" }
+                    { ns => "ns1.nic.fr" },
+                    { ip => "192.0.2.1", ns => "ns3.nic.fr"}
                 ]
             );
             my %params2 = (
                 nameservers => [
+                    { ns => "ns3.nic.fr", ip => "192.0.2.1" },
                     { ns => "ns1.nic.fr" },
                     { ip => "192.134.4.1", ns => "ns2.nic.fr"}
                 ],
@@ -78,6 +80,7 @@ subtest 'encoding and fingerprint' => sub {
                 domain => "example.com",
                 nameservers => [
                     { ip => "", ns => "ns1.nic.fr" },
+                    { ns => "ns3.nic.FR", ip => "192.0.2.1" },
                     { ns => "ns2.nic.fr", ip => "192.134.4.1" }
                 ]
             );
@@ -85,7 +88,8 @@ subtest 'encoding and fingerprint' => sub {
                 domain => "example.com",
                 nameservers => [
                     { ip => "192.134.4.1", ns => "nS2.Nic.FR"},
-                    { ns => "Ns1.nIC.fR", ip => "" }
+                    { ns => "Ns1.nIC.fR", ip => "" },
+                    { ns => "ns3.nic.fr", ip => "192.0.2.1" }
                 ]
             );
 

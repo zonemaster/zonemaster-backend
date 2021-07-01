@@ -97,6 +97,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'Deprecated values and fallbacks when DB.engine = MySQL' => sub {
+        $log->clear();
         my $text = q{
             [DB]
             engine        = MySQL
@@ -117,6 +118,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'Deprecated values and fallbacks when DB.engine = PostgreSQL' => sub {
+        $log->clear();
         my $text = q{
             [DB]
             engine        = PostgreSQL
@@ -137,6 +139,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'Deprecated values and fallbacks when DB.engine = SQLite' => sub {
+        $log->clear();
         my $text = q{
             [DB]
             engine        = SQLite
@@ -154,6 +157,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'Deprecated values and fallbacks that are unconditional' => sub {
+        $log->clear();
         my $text = q{
             [DB]
             engine = SQLite
@@ -174,6 +178,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'Warnings' => sub {
+        $log->clear();
         my $text = q{
             [DB]
             engine = MySQL

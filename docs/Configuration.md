@@ -181,11 +181,11 @@ The LANGUAGE section has one key, `locale`.
 
 ### locale
 
-Leaving the `locale` key empty or absent is *deprecated*. Always configure it
-with supported `locale tags`.
-
-A space separated list of `locale tags` where each tag matches the regular
-expression `/^[a-z]{2}_[A-Z]{2}$/`.
+A string matching one of the following descriptions:
+* A space separated list of one or more `locale tags` where each tag matches the
+  regular expression `/^[a-z]{2}_[A-Z]{2}$/`.
+* The empty string. **Deprecated**, remove the LANGUAGE.locale entry or specify
+  LANGUAGE.locale = en_US instead.
 
 It is an error to repeat the same `locale tag`.
 

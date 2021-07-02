@@ -187,7 +187,7 @@ sub parse {
     }
     if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
         if ( $value eq "" ) {
-            push @warnings, "Use of empty LANGUAGE.locale propery is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
+            push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
         }
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {

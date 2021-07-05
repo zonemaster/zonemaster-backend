@@ -162,8 +162,9 @@ This parameter is a string that is either
 
 Basic data type: string
 
-A string of A-Z, a-z and underscores matching the regular expression
-`/^[a-z]{2}(_[A-Z]{2})?$/`.
+A string matching one of the following regular expression:
+* `/^[a-z]{2}$/`, preferred format.
+* `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
 
 The set of valid *language tags* is further constrained by the
 [LANGUAGE.locale] property.
@@ -176,6 +177,8 @@ The set of valid *language tags* is further constrained by the
 E.g. if [LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
+The use of `language tags` that include the country code is *deprecated*.
+
 #### Design
 
 The two first characters of the *language tag* are intended to be an
@@ -185,12 +188,15 @@ are intended to be an [ISO 3166-1 alpha-2] two-character country code.
 #### Out-of-the box support
 
 A default installation will accept the following *language tags*:
-* `da` or `da_DK` for Danish language.
-* `en` or `en_US` for English language.
-* `fi` or `fi_FI` for Finnish language.
-* `fr` or `fr_FR` for French language.
-* `nb` or `nb_NO` for Norwegian language.
-* `sv` or `sv_SE` for Swedish language.
+
+Language | Preferred language tag | Deprecated language tag
+---------|------------------------|------------------
+Danish   | da                     | da_DK
+English  | en                     | en_US
+Finnish  | fi                     | fi_FI
+French   | fr                     | fr_FR
+Norwegian| nb                     | nb_NO
+Swedish  | sv                     | sv_SE
 
 
 ### Name server
@@ -388,6 +394,8 @@ Returns the set of valid [*language tags*][Language tag].
 > Note: If there are two [*locale tags*][LANGUAGE.locale] in [LANGUAGE.locale]
 > that would give the same [short language tag][Language tag] then the short tag
 > is excluded from the set of valid [*language tags*][Language tag].
+>
+> Note: Language tags that include country code are *deprecated*.
 
 Example request:
 ```json

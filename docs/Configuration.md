@@ -181,6 +181,9 @@ The LANGUAGE section has one key, `locale`.
 
 ### locale
 
+Leaving the `locale` key empty or absent is *deprecated*. Always configure it
+with supported `locale tags`.
+
 A space separated list of `locale tags` where each tag matches the regular
 expression `/^[a-z]{2}_[A-Z]{2}$/`.
 
@@ -205,8 +208,8 @@ language from being allowed. If there are more than one `locale tag`
 all those must be removed to block that language.
 
 English is the Zonemaster default language, but it can be blocked
-from being allowed by RPC-API by not including it in the
-configuration.
+from being allowed by RPC-API by including some `locale tag` in the
+configuration, but none starting with language code for English ("en").
 
 The first language in the list will be used as the default for the RPC API
 error messages. If translation not available, then the error messages will be
@@ -218,14 +221,14 @@ methods support error message localization.
 The default installation and configuration supports the
 following languages.
 
-Language | Locale tag value   | Locale value used
----------|--------------------|------------------
-Danish   | da_DK              | da_DK.UTF-8
-English  | en_US              | en_US.UTF-8
-Finnish  | fi_FI              | fi_FI.UTF-8
-French   | fr_FR              | fr_FR.UTF-8
-Norwegian| nb_NO              | nb_NO.UTF-8
-Swedish  | sv_SE              | sv_SE.UTF-8
+Language | Locale tag value | Language code | Locale value used
+---------|------------------|---------------|------------------
+Danish   | da_DK            | da            | da_DK.UTF-8
+English  | en_US            | en            | en_US.UTF-8
+Finnish  | fi_FI            | fi            | fi_FI.UTF-8
+French   | fr_FR            | fr            | fr_FR.UTF-8
+Norwegian| nb_NO            | nb            | nb_NO.UTF-8
+Swedish  | sv_SE            | sv            | sv_SE.UTF-8
 
 Setting in the default configuration file:
 
@@ -238,9 +241,15 @@ locale = da_DK en_US fi_FI fr_FR nb_NO sv_SE
 If a new `locale tag` is added to the configuration then the equivalent
 MO file should be added to Zonemaster-Engine at the correct place so
 that gettext can retrieve it, or else the added `locale tag` will not
-add any actual language support. See the
-[Zonemaster-Engine share directory] for the existing PO files that are
-converted to MO files. (Here we should have a link
+add any actual language support. The MO file should be created for the
+`language code` of the `locale tag` (see the table above), not the entire
+`locale tag`. E.g. if the `locale` configuration key includes "sv_SE" then
+a MO file for "sv" should be included in the installation.
+
+Use of MO files based on the entire `locale tag` is *deprecated*.
+
+See the [Zonemaster-Engine share directory] for the existing PO files that are
+converted to MO files during installation. (Here we should have a link
 to documentation instead.)
 
 Each locale set in the configuration file, including the implied

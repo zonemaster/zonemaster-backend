@@ -10,8 +10,8 @@ sub encode_and_fingerprint {
     my $params = shift;
 
     my $self = "Zonemaster::Backend::DB";
-    my $encoded_params = $self->encode_normalized_params( $params );
-    my $fingerprint = $self->generate_fingerprint( $encoded_params );
+    my $encoded_params = $self->encode_params( $params );
+    my $fingerprint = $self->generate_fingerprint( $params );
 
     return ( $encoded_params, $fingerprint );
 }
@@ -120,13 +120,19 @@ subtest 'encoding and fingerprint' => sub {
     };
 
     subtest 'garbage properties set' => sub {
-        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"priority":10,"profile":"default","queue":0}';
-        my %params = (
+        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"priority":10,"profile":"default","queue":0}';
+        my %params1 = (
+            domain => "example.com",
+        );
+        my %params2 = (
             domain => "example.com",
             client => "GUI v3.3.0"
         );
-        my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
-        is $encoded_params, $expected_encoded_params, 'leave out garbage property';
+        my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+        my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+
+        is $fingerprint1, $fingerprint2, 'leave out garbage property in fingerprint computation...';
+        is $encoded_params2, $expected_encoded_params, '...but keep it in the encoded string';
     };
 };
 

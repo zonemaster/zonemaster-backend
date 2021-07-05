@@ -157,8 +157,8 @@ sub create_new_test {
 
     $test_params->{domain} = $domain;
 
-    my $encoded_params = $self->encode_normalized_params( $test_params );
-    my $fingerprint = $self->generate_fingerprint( $encoded_params );
+    my $fingerprint = $self->generate_fingerprint( $test_params );
+    my $encoded_params = $self->encode_params( $test_params );
 
     my $result_id;
 
@@ -352,8 +352,8 @@ sub add_batch_job {
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
-            my $encoded_params = $self->encode_normalized_params( $test_params );
-            my $fingerprint = $self->generate_fingerprint( $encoded_params );
+            my $fingerprint = $self->generate_fingerprint( $test_params );
+            my $encoded_params = $self->encode_params( $test_params );
 
             $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
             $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );

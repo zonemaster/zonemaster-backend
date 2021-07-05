@@ -183,7 +183,7 @@ sub _new_dbh {
     return $dbh;
 }
 
-sub _normalize_parameter_hash {
+sub _normalize_params {
     my ( $self, $params ) = @_;
 
     my $profile = Zonemaster::Engine::Profile->effective;
@@ -223,36 +223,49 @@ sub _normalize_parameter_hash {
     return \%normalized;
 }
 
-=head2 encode_normalized_params
-
-Returns a normalized JSON string based on the provided parameters.
-Each entry is set to a default value, see
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
-
-=cut
-
-sub encode_normalized_params {
+sub _params_to_json_str {
     my ( $self, $params ) = @_;
-
-    my $normalized_params = $self->_normalize_parameter_hash( $params );
 
     my $js = JSON::PP->new;
     $js->canonical( 1 );
 
-    my $encoded_params = $js->encode( $normalized_params );
+    my $encoded_params = $js->encode( $params );
+
+    return $encoded_params;
+}
+
+=head2 encode_params
+
+Encode the params object into a JSON string. The object is first normalized and
+additional properties are kept.  Returns a JSON string of a the using a union
+of the given hash and its normalization using default values, see
+L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
+
+=cut
+
+sub encode_params {
+    my ( $self, $params ) = @_;
+
+    my $normalized_params = $self->_normalize_params( $params );
+    $params = { %$params, %$normalized_params };
+    my $encoded_params = $self->_params_to_json_str( $params );
 
     return $encoded_params;
 }
 
 =head2 generate_fingerprint
 
-Returns a fingerprint of the normalized parameters passed in argument.
+Returns a fingerprint of the hash passed in argument.
+The fingerprint is computed after normalizing the hash.
 Such fingerprint are usefull to find similar tests in the database.
 
 =cut
 
 sub generate_fingerprint {
-    my ( $self, $encoded_params ) = @_;
+    my ( $self, $params ) = @_;
+
+    my $normalized_params = $self->_normalize_params( $params );
+    my $encoded_params = $self->_params_to_json_str( $normalized_params );
     my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
 
     return $fingerprint;

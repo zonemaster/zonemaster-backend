@@ -189,6 +189,9 @@ sub _normalize_params {
     my $profile = Zonemaster::Engine::Profile->effective;
 
     my %normalized = ();
+
+    # some of these values are already set in RPCAPI
+    # however setting them here again is required for testing purpose
     $normalized{domain}   = lc $$params{domain} // "";
     $normalized{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
     $normalized{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );

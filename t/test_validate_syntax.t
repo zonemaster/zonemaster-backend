@@ -8,32 +8,30 @@ use Test::NoWarnings;
 
 use Encode;
 use File::ShareDir qw[dist_file];
+use File::Temp qw[tempdir];
+use Zonemaster::Backend::Config;
+use Zonemaster::Backend::RPCAPI;
+
+my $tempdir = tempdir( CLEANUP => 1 );
+
+my $config = Zonemaster::Backend::Config->parse( <<EOF );
+[DB]
+engine = SQLite
+
+[SQLITE]
+database_file = $tempdir/zonemaster.sqlite
+EOF
+
+my $engine = Zonemaster::Backend::RPCAPI->new(
+    {
+        dbtype => $config->DB_engine,
+        config => $config,
+    }
+);
 
 subtest 'Everything but NoWarnings' => sub {
 
     my $can_use_threads = eval 'use threads; 1';
-
-    # The configuration file should be the default
-    # configuration file, unless the ENV variable below is already
-    # set (e.g. for Travis). Set the ENV variable, and this must
-    # be done before Zonemaster::Backend::Config is loaded.
-    unless ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
-           $ENV{ZONEMASTER_BACKEND_CONFIG_FILE} =
-           dist_file('Zonemaster-Backend', "backend_config.ini");
-    };
-
-    # Require Zonemaster::Backend::RPCAPI.pm test
-    use_ok( 'Zonemaster::Backend::RPCAPI' );
-
-    # Create Zonemaster::Backend::RPCAPI object
-    my $config = Zonemaster::Backend::Config->load_config();
-    my $engine = Zonemaster::Backend::RPCAPI->new(
-        {
-            dbtype => $config->DB_engine,
-            config => $config,
-        }
-    );
-    isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
     my $frontend_params = {
         ipv4 => 1,

@@ -12,41 +12,37 @@ use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
 
-use Zonemaster::Backend::Config;
-
 with 'Zonemaster::Backend::DB';
-
-has 'config' => (
-    is       => 'ro',
-    isa      => 'Zonemaster::Backend::Config',
-    required => 1,
-);
 
 has 'dbh' => (
     is  => 'rw',
     isa => 'DBI::db',
 );
 
-sub BUILD {
-    my ( $self ) = @_;
+=head1 CLASS METHODS
 
-    if ( !defined $self->dbh ) {
-        my $file = $self->config->SQLITE_database_file;
+=head2 from_config
 
-        $log->notice( "Opening SQLite: file=$file" ) if $log->is_notice;
-        my $dbh = DBI->connect(
-            "DBI:SQLite:dbname=$file",
-            undef, undef,
-            {
-                AutoCommit => 1,
-                RaiseError => 1,
-            }
-        );
+Construct a new instance from a Zonemaster::Backend::Config.
 
-        $self->dbh( $dbh );
-    }
+    my $db = Zonemaster::Backend::DB::SQLite->from_config( $config );
 
-    return $self;
+=cut
+
+sub from_config {
+    my ( $class, $config ) = @_;
+
+    my $file = $config->SQLITE_database_file;
+
+    my $data_source_name = "DBI:SQLite:dbname=$file";
+
+    my $dbh = $class->_new_dbh( $data_source_name, '', '' );
+
+    return $class->new(
+        {
+            dbh => $dbh,
+        }
+    );
 }
 
 sub DEMOLISH {
@@ -182,8 +178,8 @@ sub create_new_test {
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
     my $result_id;
 
-    my $priority = $test_params->{priority};
-    my $queue = $test_params->{queue};
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
 
     # Search for recent test result with the test same parameters, where "$seconds"
     # gives the time limit for how old test result that is accepted.
@@ -212,7 +208,7 @@ sub create_new_test {
             $hash_id,
             $batch_id,
             $priority,
-            $queue,
+            $queue_label,
             $test_params_deterministic_hash,
             $encoded_params,
             $test_params->{domain},
@@ -338,8 +334,8 @@ sub add_batch_job {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
-        my $priority = $test_params->{priority};
-        my $queue = $test_params->{queue};
+        my $priority    = $test_params->{priority};
+        my $queue_label = $test_params->{queue};
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
@@ -354,7 +350,7 @@ sub add_batch_job {
             my $encoded_params                 = $js->encode( $test_params );
             my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue, $test_params_deterministic_hash, $encoded_params );
+            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $test_params_deterministic_hash, $encoded_params );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
@@ -373,9 +369,9 @@ sub add_batch_job {
 }
 
 sub select_unfinished_tests {
-    my ( $self ) = @_;
+    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
 
-    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+    if ( $queue_label ) {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
@@ -385,9 +381,9 @@ sub select_unfinished_tests {
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
-            sprintf( "-%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
-            $self->config->ZONEMASTER_maximal_number_of_retries,
-            $self->config->ZONEMASTER_lock_on_queue,
+            sprintf( "-%d seconds", $test_run_timeout ),
+            $test_run_max_retries,
+            $queue_label,
         );
         return $sth;
     }
@@ -400,8 +396,8 @@ sub select_unfinished_tests {
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
-            sprintf( "-%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
-            $self->config->ZONEMASTER_maximal_number_of_retries,
+            sprintf( "-%d seconds", $test_run_timeout ),
+            $test_run_max_retries,
         );
         return $sth;
     }

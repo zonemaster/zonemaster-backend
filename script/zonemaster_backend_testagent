@@ -131,9 +131,12 @@ sub main {
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
 
-        my $id = $self->db->get_test_request();
-        $self->db->process_unfinished_tests();
-
+        my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
+        $self->db->process_unfinished_tests(
+            $self->config->ZONEMASTER_lock_on_queue,
+            $self->config->ZONEMASTER_max_zonemaster_execution_time,
+            $self->config->ZONEMASTER_maximal_number_of_retries,
+        );
         if ( $id ) {
             $log->info( "Test found: $id" );
             if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process

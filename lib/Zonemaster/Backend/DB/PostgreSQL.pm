@@ -9,55 +9,86 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
-use Log::Any qw($log);
 
 use Zonemaster::Backend::DB;
-use Zonemaster::Backend::Config;
 
 with 'Zonemaster::Backend::DB';
 
-has 'config' => (
+has 'data_source_name' => (
     is       => 'ro',
-    isa      => 'Zonemaster::Backend::Config',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'user' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'password' => (
+    is       => 'ro',
+    isa      => 'Str',
     required => 1,
 );
 
 has 'dbhandle' => (
-    is  => 'rw',
-    isa => 'DBI::db',
+    is       => 'rw',
+    isa      => 'DBI::db',
+    required => 1,
 );
+
+=head1 CLASS METHODS
+
+=head2 from_config
+
+Construct a new instance from a Zonemaster::Backend::Config.
+
+    my $db = Zonemaster::Backend::DB::PostgreSQL->from_config( $config );
+
+=cut
+
+sub from_config {
+    my ( $class, $config ) = @_;
+
+    my $database = $config->POSTGRESQL_database;
+    my $host     = $config->POSTGRESQL_host;
+    my $port     = $config->POSTGRESQL_port;
+    my $user     = $config->POSTGRESQL_user;
+    my $password = $config->POSTGRESQL_password;
+
+    my $data_source_name = "DBI:Pg:dbname=$database;host=$host;port=$port";
+
+    my $dbh = $class->_new_dbh(
+        $data_source_name,
+        $user,
+        $password,
+    );
+
+    return $class->new(
+        {
+            data_source_name => $data_source_name,
+            user             => $user,
+            password         => $password,
+            dbhandle         => $dbh,
+        }
+    );
+}
 
 sub dbh {
     my ( $self ) = @_;
-    my $dbh = $self->dbhandle;
 
-    if ( $dbh and $dbh->ping ) {
-        return $dbh;
-    }
-    else {
-        my $database = $self->config->POSTGRESQL_database;
-        my $host     = $self->config->POSTGRESQL_host;
-        my $port     = $self->config->POSTGRESQL_port;
-        my $user     = $self->config->POSTGRESQL_user;
-        my $password = $self->config->POSTGRESQL_password;
-
-        my $data_source_name = "DBI:Pg:database=$database;host=$host;port=$port";
-
-        $log->notice( "Connecting to PostgreSQL: database=$database host=$host user=$user" ) if $log->is_notice;
-        $dbh = DBI->connect(
-            $data_source_name,
-            $user,
-            $password,
-            {
-                RaiseError => 1,
-                AutoCommit => 1
-            }
+    if ( !$self->dbhandle->ping ) {
+        my $dbh = $self->_new_dbh(    #
+            $self->data_source_name,
+            $self->user,
+            $self->password,
         );
 
-        $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
-        return $dbh;
     }
+
+    return $self->dbhandle;
 }
 
 sub user_exists_in_db {
@@ -142,8 +173,8 @@ sub create_new_test {
     my $encoded_params                 = $js->encode( $test_params );
     my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-    my $priority = $test_params->{priority};
-    my $queue = $test_params->{queue};
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
 
     my $sth = $dbh->prepare( "
         INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params)
@@ -156,7 +187,7 @@ sub create_new_test {
     my $nb_inserted = $sth->execute(    #
         $batch_id,
         $priority,
-        $queue,
+        $queue_label,
         $test_params_deterministic_hash,
         $encoded_params,
         $test_params_deterministic_hash,
@@ -281,8 +312,8 @@ sub add_batch_job {
 
         my $test_params = $params->{test_params};
 
-        my $priority = $test_params->{priority};
-        my $queue = $test_params->{queue};
+        my $priority    = $test_params->{priority};
+        my $queue_label = $test_params->{queue};
 
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
@@ -298,7 +329,7 @@ sub add_batch_job {
             my $encoded_params                 = $js->encode( $test_params );
             my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue\t$test_params_deterministic_hash\t$encoded_params\n");
+            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$test_params_deterministic_hash\t$encoded_params\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
@@ -318,9 +349,9 @@ sub add_batch_job {
 }
 
 sub select_unfinished_tests {
-    my ( $self ) = @_;
+    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
 
-    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+    if ( $queue_label ) {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
@@ -330,9 +361,9 @@ sub select_unfinished_tests {
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
-            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
-            $self->config->ZONEMASTER_maximal_number_of_retries,
-            $self->config->ZONEMASTER_lock_on_queue,
+            sprintf( "%d seconds", $test_run_timeout ),
+            $test_run_max_retries,
+            $queue_label,
         );
         return $sth;
     }
@@ -345,8 +376,8 @@ sub select_unfinished_tests {
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
-            sprintf( "%d seconds", $self->config->ZONEMASTER_max_zonemaster_execution_time ),
-            $self->config->ZONEMASTER_maximal_number_of_retries,
+            sprintf( "%d seconds", $test_run_timeout ),
+            $test_run_max_retries,
         );
         return $sth;
     }

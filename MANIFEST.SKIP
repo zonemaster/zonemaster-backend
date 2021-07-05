@@ -11,7 +11,6 @@
 \.po$
 ^share/[^/]*\.mo$
 ^share/Zonemaster-Backend.pot$
-^share/GNUmakefile$
 
 #!start included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.

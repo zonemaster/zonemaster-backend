@@ -20,6 +20,7 @@ our @EXPORT_OK = qw(
   untaint_ipv6_address
   untaint_host
   untaint_ldh_domain
+  untaint_locale_tag
   untaint_mariadb_database
   untaint_mariadb_user
   untaint_non_negative_int
@@ -39,6 +40,7 @@ our %EXPORT_TAGS = (
           untaint_ipv6_address
           untaint_host
           untaint_ldh_domain
+          untaint_locale_tag
           untaint_mariadb_database
           untaint_mariadb_user
           untaint_non_negative_int
@@ -66,6 +68,7 @@ Readonly my $JSONRPC_METHOD_RE          => qr/^[a-z0-9_-]*$/i;
 Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}(_[A-Z]{2})?$/;
 Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9-.]{1,253}[.]?$}i;
 Readonly my $LDH_DOMAIN_RE2             => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
+Readonly my $LOCALE_TAG_RE              => qr/^[a-z]{2}_[A-Z]{2}$/;
 Readonly my $MARIADB_DATABASE_LENGTH_RE => qr/^.{1,64}$/;
 
 # See: https://mariadb.com/kb/en/identifier-names/#unquoted
@@ -259,6 +262,17 @@ Accepts an LDH domain name.
 sub untaint_ldh_domain {
     my ( $value ) = @_;
     return _untaint_pat( $value, $LDH_DOMAIN_RE1, $LDH_DOMAIN_RE2 );
+}
+
+=head2 untaint_locale_tag
+
+Accepts a locale tag.
+
+=cut
+
+sub untaint_locale_tag {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $LOCALE_TAG_RE );
 }
 
 sub untaint_mariadb_database {

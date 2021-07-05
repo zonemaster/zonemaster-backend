@@ -130,6 +130,7 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
+    $obj->_add_LANGUAGE_locale( 'en_US' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -183,6 +184,11 @@ sub parse {
 
         $obj->_set_SQLITE_database_file( $value )
           if $obj->DB_engine eq 'SQLite';
+    }
+    if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
+        if ( $value eq "" ) {
+            push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
+        }
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
         push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
@@ -253,20 +259,12 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
-
-    {
-        $obj->{_LANGUAGE_locale} = {};
-        my $values = $get_and_clear->( 'LANGUAGE', 'locale' );
-        unless ($values) {
-            push @warnings, "Use of empty LANGUAGE.locale propery is deprecated.";
-            $values = 'en_US';
-        }
-        for my $locale_tag ( split /\s+/, $values ) {
-            $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
-                or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
-            !exists $obj->{_LANGUAGE_locale}{$locale_tag}
-            or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
-            $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+    if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
+        if ( $value ne "" ) {
+            $obj->_reset_LANGUAGE_locale();
+            for my $locale_tag ( split / +/, $value ) {
+                $obj->_add_LANGUAGE_locale( $locale_tag );
+            }
         }
     }
 
@@ -465,6 +463,28 @@ Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster
 Returns a string.
 
 
+=head2 LANGUAGE_locale
+
+Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale>.
+
+Returns a mapping from two-letter locale tag prefixes to sets of full locale
+tags.
+This is represented by a hash of hashrefs where all second level values are
+C<1>.
+
+E.g.:
+
+    (
+        en => {
+            en_GB => 1,
+            en_US => 1,
+        },
+        sv => {
+            sv_SE => 1,
+        },
+    )
+
+
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
@@ -526,6 +546,7 @@ sub POSTGRESQL_user                                     { return $_[0]->{_POSTGR
 sub POSTGRESQL_password                                 { return $_[0]->{_POSTGRESQL_password}; }
 sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
 sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
+sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
 sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
@@ -553,72 +574,6 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
-}
-
-=head2 Language_Locale_hash
-
-Read LANGUAGE.locale from the configuration (.ini) file and returns
-the valid language tags for RPCAPI. The incoming language tag
-from RPCAPI is compared to those. The language tags are mapped to
-locale setting value.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-A hash of valid language tags as keys with set locale value as value.
-The hash is never empty.
-
-=cut
-
-sub Language_Locale_hash {
-    # There is one special value to capture ambiguous (and therefore
-    # not permitted) translation language tags.
-    my ($self) = @_;
-    my @localetags = keys %{ $self->{_LANGUAGE_locale} };
-    my %locale;
-    foreach my $la (@localetags) {
-        (my $a) = split (/_/,$la); # $a is the language code only
-        my $lo = "$la.UTF-8";
-        # Set special value if the same language code is used more than once
-        # with different country codes.
-        if ( $locale{$a} and $locale{$a} ne $lo ) {
-            $locale{$a} = 'NOT-UNIQUE';
-        }
-        else {
-            $locale{$a} = $lo;
-        }
-        $locale{$la} = $lo;
-    }
-    return %locale;
-}
-
-=head2 ListLanguageTags
-
-Read indirectly LANGUAGE.locale from the configuration (.ini) file
-and returns a list of valid language tags for RPCAPI. The list can
-be retrieved via an RPCAPI method.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-An array of valid language tags. The array is never empty.
-
-=cut
-
-sub ListLanguageTags {
-    my ($self) = @_;
-    my %locale = &Language_Locale_hash($self);
-    my @langtags;
-    foreach my $key (keys %locale) {
-        push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
-    }
-    return @langtags;
 }
 
 sub ReadProfilesInfo {
@@ -772,6 +727,31 @@ sub new_PM {
     );
 
     return $pm;
+}
+
+sub _add_LANGUAGE_locale {
+    my ( $self, $locale_tag ) = @_;
+
+    $locale_tag = untaint_locale_tag( $locale_tag )    #
+      // die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+
+    my $lang_code = $locale_tag =~ s/_..$//r;
+
+    if ( exists $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} ) {
+        die "Repeated locale tags in LANGUAGE.locale: $locale_tag\n";
+    }
+
+    $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} = 1;
+
+    return;
+}
+
+sub _reset_LANGUAGE_locale {
+    my ( $self ) = @_;
+
+    delete $self->{_LANGUAGE_locale};
+
+    return;
 }
 
 # Create a setter method with a given name using the given field and validator

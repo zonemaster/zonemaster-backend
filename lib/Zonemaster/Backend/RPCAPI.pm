@@ -120,9 +120,18 @@ $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
-    my @lang = $self->{config}->ListLanguageTags();
+    my %locales = $self->{config}->LANGUAGE_locale;
 
-    return \@lang;
+    my @lang_tags;
+    for my $lang ( sort keys %locales ) {
+        my @locale_tags = sort keys %{ $locales{$lang} };
+        if ( scalar @locale_tags == 1 ) {
+            push @lang_tags, $lang;
+        }
+        push @lang_tags, @locale_tags;
+    }
+
+    return \@lang_tags;
 }
 
 $json_schemas{get_host_by_name} = joi->object->strict->props(
@@ -440,22 +449,33 @@ $json_schemas{get_test_results} = joi->object->strict->props(
 sub get_test_results {
     my ( $self, $params ) = @_;
 
+    my $language = $params->{language};
+
+    my %locales = $self->{config}->LANGUAGE_locale;
+
+    my $locale_tag;
+    if ( length $language == 2 ) {
+        if ( !exists $locales{$language} ) {
+            die "Undefined language string: '$language'\n";
+        }
+        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
+            die "Language string not unique: '$language'\n";
+        }
+        ( $locale_tag ) = keys %{ $locales{$language} };
+    }
+    else {
+        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
+            die "Undefined language string: '$language'\n";
+        }
+        $locale_tag = $language;
+    }
+
     my $result;
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
-    my %locale = $self->{config}->Language_Locale_hash();
-    if ( $locale{$params->{language}} ) {
-        if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
-            die "Language string not unique: '$params->{language}'\n";
-        }
-    }
-    else {
-        die "Undefined language string: '$params->{language}'\n";
-    }
-
     my $previous_locale = $translator->locale;
-    $translator->locale( $locale{$params->{language}} );
+    $translator->locale( $locale_tag );
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
@@ -476,7 +496,7 @@ sub get_test_results {
             }
 
             $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
+            $res->{message} = $translator->translate_tag( $test_res, $locale_tag ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};

@@ -81,6 +81,13 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_ldh_domain( taint( 'localhost' ) ) ), 'launder taint';
     };
 
+    subtest 'untaint_locale_tag' => sub {
+        is scalar untaint_locale_tag( 'en_US' ),   'en_US', 'accept: en_US';
+        is scalar untaint_locale_tag( 'en' ),      undef,   'reject: en';
+        is scalar untaint_locale_tag( 'English' ), undef,   'reject: English';
+        ok !tainted( untaint_locale_tag( taint( 'en_US' ) ) ), 'launder taint';
+    };
+
     subtest 'untaint_mariadb_database' => sub {
         is scalar untaint_mariadb_database( 'zonemaster' ),    'zonemaster',  'accept: zonemaster';
         is scalar untaint_mariadb_database( 'ZONEMASTER' ),    'ZONEMASTER',  'accept: ZONEMASTER';

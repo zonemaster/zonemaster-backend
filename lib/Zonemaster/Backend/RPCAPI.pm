@@ -127,9 +127,18 @@ $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
-    my @lang = $self->{config}->ListLanguageTags();
+    my %locales = $self->{config}->LANGUAGE_locale;
 
-    return \@lang;
+    my @lang_tags;
+    for my $lang ( sort keys %locales ) {
+        my @locale_tags = sort keys %{ $locales{$lang} };
+        if ( scalar @locale_tags == 1 ) {
+            push @lang_tags, $lang;
+        }
+        push @lang_tags, @locale_tags;
+    }
+
+    return \@lang_tags;
 }
 
 $json_schemas{get_host_by_name} = joi->object->strict->props(
@@ -409,15 +418,19 @@ $json_schemas{get_test_results} = joi->object->strict->props(
 sub get_test_results {
     my ( $self, $params ) = @_;
 
+    my $language = $params->{language};
+
+    my %locales = $self->{config}->LANGUAGE_locale;
+
+    # Already validated by json_validate
+    my $locale_tag = $self->_get_locale($params);
+
     my $result;
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
-    # Already validated by json_validate
-    my $locale = $self->_get_locale($params);
-
     my $previous_locale = $translator->locale;
-    $translator->locale( $locale );
+    $translator->locale( $locale_tag );
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
@@ -438,7 +451,7 @@ sub get_test_results {
             }
 
             $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
+            $res->{message} = $translator->translate_tag( $test_res, $locale_tag ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};
@@ -606,29 +619,39 @@ sub _get_locale {
     my ( $self, $params ) = @_;
     my @error;
 
-    my %locale = $self->{config}->Language_Locale_hash();
     my $language = $params->{language};
-    my $ret;
+    my %locales = $self->{config}->LANGUAGE_locale;
+    my $locale_tag;
 
-    if ( defined $language ) {
-        if ( $locale{$language} ) {
-            if ( $locale{$language} eq 'NOT-UNIQUE') {
-                push @error, {
-                    path => "/language",
-                    message => N__ "Language string not unique"
-                };
-            } else {
-                $ret = $locale{$language};
-            }
-        } else {
+    if ( !defined $language ) {
+        return $locale_tag, \@error;
+    }
+
+    if ( length $language == 2 ) {
+        if ( !exists $locales{$language} ) {
             push @error, {
                 path => "/language",
                 message => N__ "Unkown language string"
             };
         }
+        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
+            push @error, {
+                path => "/language",
+                message => N__ "Language string not unique"
+            };
+        }
+        ( $locale_tag ) = keys %{ $locales{$language} };
     }
-
-    return $ret, \@error,
+    else {
+        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
+            push @error, {
+                path => "/language",
+                message => N__ "Unkown language string"
+            };
+        }
+        $locale_tag = $language;
+    }
+    return $locale_tag, \@error,
 }
 
 my $rpc_request = joi->object->props(
@@ -734,7 +757,7 @@ sub _set_error_message_locale {
     my ($locale, $locale_error) = $self->_get_locale( $params );
     push @error_response, @{$locale_error};
 
-    $locale //= $self->{config}->GetDefaultLanguageTag;
+    $locale //= $self->{config}->LANGUAGE_default_locale;
 
     $ENV{LANGUAGE} = $locale;
     setlocale( LC_MESSAGES, $locale );

@@ -1,4 +1,5 @@
 use inc::Module::Install;
+use Module::Install::Share;
 
 name 'Zonemaster-Backend';
 all_from 'lib/Zonemaster/Backend.pm';
@@ -72,5 +73,7 @@ sub MY::postamble {
     return $text;
 };
 
+
+install_share;
 
 WriteAll;

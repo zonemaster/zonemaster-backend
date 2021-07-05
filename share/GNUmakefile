@@ -2,9 +2,9 @@
 .SUFFIXES: .po .mo
 .PHONY: all check-msg-args dist extract-pot tidy-po show-fuzzy touch-po update-po
 
-POFILES := $(shell find ./po -type f -name '*.po')
+POFILES := $(shell find .  -maxdepth 1 -type f -name '*.po')
 MOFILES := $(POFILES:%.po=%.mo)
-POTFILE = po/Zonemaster-Backend.pot
+POTFILE = Zonemaster-Backend.pot
 PMFILES := $(shell find ../lib -type f -name '*.pm' | sort)
 
 all: $(MOFILES)

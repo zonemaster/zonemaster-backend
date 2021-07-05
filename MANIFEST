@@ -21,6 +21,7 @@ inc/Module/Install/Scripts.pm
 inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+inc/Module/Install/External.pm
 lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
 lib/Zonemaster/Backend/Config/DCPlugin.pm

@@ -178,8 +178,8 @@ sub create_new_test {
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
     my $result_id;
 
-    my $priority = $test_params->{priority};
-    my $queue = $test_params->{queue};
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
 
     # Search for recent test result with the test same parameters, where "$seconds"
     # gives the time limit for how old test result that is accepted.
@@ -208,7 +208,7 @@ sub create_new_test {
             $hash_id,
             $batch_id,
             $priority,
-            $queue,
+            $queue_label,
             $test_params_deterministic_hash,
             $encoded_params,
             $test_params->{domain},
@@ -334,8 +334,8 @@ sub add_batch_job {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
-        my $priority = $test_params->{priority};
-        my $queue = $test_params->{queue};
+        my $priority    = $test_params->{priority};
+        my $queue_label = $test_params->{queue};
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
@@ -350,7 +350,7 @@ sub add_batch_job {
             my $encoded_params                 = $js->encode( $test_params );
             my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue, $test_params_deterministic_hash, $encoded_params );
+            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $test_params_deterministic_hash, $encoded_params );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );

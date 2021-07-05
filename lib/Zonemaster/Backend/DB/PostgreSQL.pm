@@ -173,8 +173,8 @@ sub create_new_test {
     my $encoded_params                 = $js->encode( $test_params );
     my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-    my $priority = $test_params->{priority};
-    my $queue = $test_params->{queue};
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
 
     my $sth = $dbh->prepare( "
         INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params)
@@ -187,7 +187,7 @@ sub create_new_test {
     my $nb_inserted = $sth->execute(    #
         $batch_id,
         $priority,
-        $queue,
+        $queue_label,
         $test_params_deterministic_hash,
         $encoded_params,
         $test_params_deterministic_hash,
@@ -312,8 +312,8 @@ sub add_batch_job {
 
         my $test_params = $params->{test_params};
 
-        my $priority = $test_params->{priority};
-        my $queue = $test_params->{queue};
+        my $priority    = $test_params->{priority};
+        my $queue_label = $test_params->{queue};
 
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
@@ -329,7 +329,7 @@ sub add_batch_job {
             my $encoded_params                 = $js->encode( $test_params );
             my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue\t$test_params_deterministic_hash\t$encoded_params\n");
+            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$test_params_deterministic_hash\t$encoded_params\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );

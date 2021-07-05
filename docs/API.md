@@ -158,10 +158,6 @@ This parameter is a string that is either
  - a valid IPv4 in [dot-decimal notation] ;
  - a valid IPv6 in [recommend text format for IPv6 addresses].
 
-In addition a preliminary check is performed with the following regexes:
- - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
- - IPv6 : `/^[0-9a-f:]+(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$/i`
-
 ### Language tag
 
 Basic data type: string
@@ -495,10 +491,26 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error, see [Validation error data].
 
+  Example of error response:
+
+```json
+{
+  "error": {
+    "message": "Invalid method parameter(s).",
+    "code": "-32602",
+    "data": [
+      {
+        "path": "/hostname",
+        "message": "Missing property"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 1624630143271
+}
+```
 
 ## API method: `get_data_from_parent_zone`
 
@@ -576,9 +588,26 @@ An object with the following properties:
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error, see [Validation error data].
+
+  Example of error response:
+
+```json
+{
+  "error": {
+    "data": [
+      {
+        "message": "The domain name character(s) are not supported",
+        "path": "/domain"
+      }
+    ],
+    "code": "-32602",
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1624630143271,
+  "jsonrpc": "2.0"
+}
+```
 
 
 ## API method: `start_domain_test`
@@ -660,7 +689,7 @@ then the new request does not trigger a new test, but returns with the results o
 
 #### `"error"`
 
-* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error.
+* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error, see [Validation error data].
 
   Example of error response:
 

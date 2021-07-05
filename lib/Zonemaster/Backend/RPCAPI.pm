@@ -654,6 +654,7 @@ sub jsonrpc_validate {
     # the JSON schema for the method has a 'required' key
     if ( exists $method_schema->{required} ) {
         if ( not exists $jsonrpc_request->{params} ) {
+            $self->_set_error_message_locale;
             return {
                 jsonrpc => '2.0',
                 id => $jsonrpc_request->{id},
@@ -683,18 +684,11 @@ sub jsonrpc_validate {
 }
 
 sub validate_params {
-    my ( $self, $method, $params) = @_;
+    my ( $self, $method, $params ) = @_;
     my $method_schema = $json_schemas{$method};
 
     my @error_response = ();
-
-    my ($locale, $locale_error) = $self->_get_locale( $params );
-    push @error_response, @{$locale_error};
-
-    $locale //= $self->{config}->GetDefaultLanguageTag;
-
-    $ENV{LANGUAGE} = $locale;
-    setlocale( LC_MESSAGES, $locale );
+    push @error_response, $self->_set_error_message_locale( $params );
 
     my @json_validation_error = $method_schema->validate( $params );
 
@@ -731,6 +725,20 @@ sub validate_params {
     # Translate messages
     @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
     return \@error_response;
+}
+
+sub _set_error_message_locale {
+    my ( $self, $params ) = @_;
+
+    my @error_response = ();
+    my ($locale, $locale_error) = $self->_get_locale( $params );
+    push @error_response, @{$locale_error};
+
+    $locale //= $self->{config}->GetDefaultLanguageTag;
+
+    $ENV{LANGUAGE} = $locale;
+    setlocale( LC_MESSAGES, $locale );
+    return @error_response;
 }
 
 1;

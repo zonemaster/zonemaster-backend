@@ -644,7 +644,6 @@ An object with the following properties:
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"profile"`: A *profile name*, optional. (default: `"default"`). Run the tests using the given profile.
-* `"config"`: **No longer supported**. Use `"profile"` instead.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
@@ -754,7 +753,6 @@ Example response:
       "domain": "zonemaster.net",
       "profile": "default",
       "ipv6": true,
-      "advanced": true,
       "nameservers": [
         {
           "ns": "ns3.nic.se",
@@ -865,13 +863,11 @@ Example response:
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
       "overall_result": "error",
-      "advanced_options": null
     },
     {
       "id": "32dd4bc0582b6bf9",
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
-      "advanced_options": null
     },
     ...
   ]
@@ -1046,7 +1042,6 @@ The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
 * `"profile"`: A *profile name*, optional (default: `"default"`). Run the tests using the given profile.
-* `"config"`: **No longer supported**. Use `"profile"` instead.
 * `"client_version"`: A *client version*, optional. (default: unset)
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`)
@@ -1157,7 +1152,6 @@ Example response:
          "domain": "zonemaster.net",
          "profile": "default",
          "client_id": "Zonemaster Dancer Frontend",
-         "advanced": true,
          "nameservers": [
             {
                 "ns": "ns3.nic.se",

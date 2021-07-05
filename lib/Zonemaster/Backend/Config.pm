@@ -269,7 +269,7 @@ sub parse {
     }
 
     $obj->{_public_profiles} = {
-        default => '',
+        default => undef,
     };
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
         $obj->{_public_profiles}{lc $name} = $get_and_clear->( 'PUBLIC PROFILES', $name );
@@ -582,7 +582,7 @@ sub ReadProfilesInfo {
     my $profiles;
     foreach my $public_profile ( keys %{ $self->{_public_profiles} } ) {
         $profiles->{$public_profile}->{type} = 'public';
-        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile};
+        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile} // "";
     }
 
     foreach my $private_profile ( keys %{ $self->{_private_profiles} } ) {

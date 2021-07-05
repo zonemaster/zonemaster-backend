@@ -21,34 +21,38 @@ sub new {
     my ( $class, $params ) = @_;
     my $self = {};
 
-    if ( ! $params || ! $params->{config} ) {
+    if ( !$params || !$params->{config} ) {
         die "missing 'config' parameter";
     }
 
-    $self->{config} = $params->{config};
+    my $config = $params->{config};
 
     my $dbtype;
     if ( $params->{dbtype} ) {
-        $dbtype = $self->{config}->check_db($params->{dbtype});
+        $dbtype = $config->check_db( $params->{dbtype} );
     }
     else {
-        $dbtype = $self->{config}->DB_engine;
+        $dbtype = $config->DB_engine;
     }
 
-    my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
-    eval "require $backend_module";
-    $self->{db} = $backend_module->new( { config => $self->{config} } );
+    my $db_module = "Zonemaster::Backend::DB::" . $dbtype;
+    eval "require $db_module";
+    $self->{_db} = $db_module->new( { config => $config } );
 
-    $self->{profiles} = $self->{config}->ReadProfilesInfo();
-    foreach my $profile (keys %{$self->{profiles}}) {
-        die "default profile cannot be private" if ($profile eq 'default' && $self->{profiles}->{$profile}->{type} eq 'private');
-        if ( -e $self->{profiles}->{$profile}->{profile_file_name} ) {
-            my $json = read_file( $self->{profiles}->{$profile}->{profile_file_name}, err_mode => 'croak' );
-            $self->{profiles}->{$profile}->{zm_profile} = Zonemaster::Engine::Profile->from_json( $json );
+    my %all_profiles = %{ $config->ReadProfilesInfo() };
+    foreach my $name ( keys %all_profiles ) {
+        my $path = $all_profiles{$name}{profile_file_name};
+
+        die "default profile cannot be private" if ( $name eq 'default' && $all_profiles{$name}{type} eq 'private' );
+        my $profile = Zonemaster::Engine::Profile->default;
+        if ( $path ne "" ) {
+            my $json = eval { read_file( $path, err_mode => 'croak' ) }    #
+              // die "Error loading profile '$name': $@";
+            my $named_profile = eval { Zonemaster::Engine::Profile->from_json( $json ) }    #
+              // die "Error loading profile '$name' at '$path': $@";
+            $profile->merge( $named_profile );
         }
-        elsif ($profile ne 'default') {
-            die "the profile definition json file of the profile [$profile] defined in the backend config file can't be read";
-        }
+        $self->{_profiles}{$name} = $profile;
     }
 
     bless( $self, $class );
@@ -63,9 +67,9 @@ sub run {
 
     my $params;
 
-    my $progress = $self->{db}->test_progress( $test_id, 1 );
+    my $progress = $self->{_db}->test_progress( $test_id, 1 );
 
-    $params = $self->{db}->get_test_params( $test_id );
+    $params = $self->{_db}->get_test_params( $test_id );
 
     my %methods = Zonemaster::Engine->all_methods;
 
@@ -114,7 +118,7 @@ sub run {
                                       scalar( keys %{ $counter_for_progress_indicator{planned} } )
                                 )
                             );
-                            $self->{db}->test_progress( $test_id, $percent_progress );
+                            $self->{_db}->test_progress( $test_id, $percent_progress );
 
                             $previous_method = $module_method;
                         }
@@ -138,13 +142,11 @@ sub run {
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
         $params->{profile} = lc($params->{profile});
-        if (defined $self->{profiles}->{$params->{profile}} && $self->{profiles}->{$params->{profile}}->{zm_profile}) { 
-            my $profile = Zonemaster::Engine::Profile->default;
-            $profile->merge( $self->{profiles}->{$params->{profile}}->{zm_profile} );
-            Zonemaster::Engine::Profile->effective->merge( $profile );
+        if ( defined $self->{_profiles}{ $params->{profile} } ) {
+            Zonemaster::Engine::Profile->effective->merge( $self->{_profiles}{ $params->{profile} } );
         }
         else {
-            die "The profile [$params->{profile}] is not defined in the backend_config ini file" if ($params->{profile} ne 'default')
+            die "The profile [$params->{profile}] is not defined in the backend_config ini file";
         }
     }
 
@@ -170,9 +172,9 @@ sub run {
         }
     }
 
-    $self->{db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
+    $self->{_db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
 
-    $progress = $self->{db}->test_progress( $test_id );
+    $progress = $self->{_db}->test_progress( $test_id );
 
     return;
 } ## end sub run

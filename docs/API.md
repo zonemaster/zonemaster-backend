@@ -807,8 +807,8 @@ In the case of a test created with `start_domain_test`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question. 
-* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
-  was started.
+* `"params"`: A normalized version `"params"` object sent to
+  `start_domain_test` when the *test* was started.
 * `"results"`: A list of *test result* objects.
 
 
@@ -816,9 +816,10 @@ In the case of a test created with `add_batch_job`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question. 
-* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
-  was started.
-* `"results"`: the result is a list of *test id* corresponding to each tested domain.
+* `"params"`: A normalized version `"params"` object sent to `add_batch_job`
+  when the *test* was started.
+* `"results"`: the result is a list of *test id* corresponding to each tested
+  domain.
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -1129,7 +1130,7 @@ An object with the following properties:
 
 ## API method: `get_test_params`
 
-Return all *params* objects of a *test*.
+Return a normalized *params* objects of a *test*.
 
 Example request:
 

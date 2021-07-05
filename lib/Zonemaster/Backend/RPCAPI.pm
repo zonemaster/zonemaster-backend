@@ -423,7 +423,7 @@ sub get_test_results {
     my %locales = $self->{config}->LANGUAGE_locale;
 
     # Already validated by json_validate
-    my $locale_tag = $self->_get_locale($params);
+    my ($locale_tag, undef) = $self->_get_locale($params);
 
     my $result;
     my $translator;

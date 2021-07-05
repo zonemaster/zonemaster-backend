@@ -264,11 +264,11 @@ sub parse {
             $obj->_reset_LANGUAGE_locale();
             my $default_set = 0;
             for my $locale_tag ( split / +/, $value ) {
+                $obj->_add_LANGUAGE_locale( $locale_tag );
                 if ( not $default_set ) {
                     $obj->_set_LANGUAGE_default_locale( $locale_tag );
                     $default_set = 1;
                 }
-                $obj->_add_LANGUAGE_locale( $locale_tag );
             }
         }
     }

@@ -464,7 +464,7 @@ sub json_tern {
         return undef;
     }
     else {
-        die "unknown ternary value";
+        die 'Illegal value. Expects "true", "false" or "null" ';
     }
 }
 

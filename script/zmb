@@ -368,7 +368,7 @@ sub cmd_get_test_history {
     );
 
     if ( $opt_filter ) {
-        unless ( $opt_filer =~ /^(?:all|delegated|undelegated)$/ ) {
+        unless ( $opt_filter =~ /^(?:all|delegated|undelegated)$/ ) {
             die 'Illegal filter value. Expects "all", "delegated" or "undelegated" ';
         }
         $params{filter} = $opt_filter;

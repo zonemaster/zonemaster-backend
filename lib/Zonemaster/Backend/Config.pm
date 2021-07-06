@@ -13,6 +13,7 @@ use File::Slurp qw( read_file );
 use Log::Any qw( $log );
 use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
+use Zonemaster::Backend::DB;
 
 our $path;
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
@@ -274,7 +275,7 @@ sub parse {
     }
 
     $obj->{_public_profiles} = {
-        default => '',
+        default => undef,
     };
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
         $obj->{_public_profiles}{lc $name} = $get_and_clear->( 'PUBLIC PROFILES', $name );
@@ -595,7 +596,7 @@ sub ReadProfilesInfo {
     my $profiles;
     foreach my $public_profile ( keys %{ $self->{_public_profiles} } ) {
         $profiles->{$public_profile}->{type} = 'public';
-        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile};
+        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile} // "";
     }
 
     foreach my $private_profile ( keys %{ $self->{_private_profiles} } ) {
@@ -633,8 +634,6 @@ A configured L<Zonemaster::Backend::DB> object.
 
 =over 4
 
-=item Dies if no database engine type is defined in the configuration.
-
 =item Dies if no adapter for the configured database engine can be loaded.
 
 =item Dies if the adapter is unable to connect to the database.
@@ -644,23 +643,11 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
-    # Get DB type from config
-    my $dbtype = $self->DB_engine;
-    if (!defined $dbtype) {
-        die "Unrecognized DB.engine in backend config";
-    }
-
-    # Load and construct DB adapter
-    my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
-    require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
-    $dbclass->import();
-
-    my $db = $dbclass->new({ config => $self });
-
-    # Connect or die
-    $db->dbh;
+    my $dbtype  = $self->DB_engine;
+    my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
+    my $db      = $dbclass->from_config( $self );
 
     return $db;
 }

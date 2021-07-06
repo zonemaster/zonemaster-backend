@@ -10,60 +10,90 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
-use Log::Any qw($log);
 
-use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Validator qw( untaint_ipv6_address );
 
 with 'Zonemaster::Backend::DB';
 
-has 'config' => (
+has 'data_source_name' => (
     is       => 'ro',
-    isa      => 'Zonemaster::Backend::Config',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'user' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'password' => (
+    is       => 'ro',
+    isa      => 'Str',
     required => 1,
 );
 
 has 'dbhandle' => (
-    is  => 'rw',
-    isa => 'DBI::db',
+    is       => 'rw',
+    isa      => 'DBI::db',
+    required => 1,
 );
+
+=head1 CLASS METHODS
+
+=head2 from_config
+
+Construct a new instance from a Zonemaster::Backend::Config.
+
+    my $db = Zonemaster::Backend::DB::MySQL->from_config( $config );
+
+=cut
+
+sub from_config {
+    my ( $class, $config ) = @_;
+
+    my $database = $config->MYSQL_database;
+    my $host     = $config->MYSQL_host;
+    my $port     = $config->MYSQL_port;
+    my $user     = $config->MYSQL_user;
+    my $password = $config->MYSQL_password;
+
+    if ( untaint_ipv6_address( $host ) ) {
+        $host = "[$host]";
+    }
+
+    my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
+
+    my $dbh = $class->_new_dbh(
+        $data_source_name,
+        $user,
+        $password,
+    );
+
+    return $class->new(
+        {
+            data_source_name => $data_source_name,
+            user             => $user,
+            password         => $password,
+            dbhandle         => $dbh,
+        }
+    );
+}
 
 sub dbh {
     my ( $self ) = @_;
-    my $dbh = $self->dbhandle;
 
-    if ( $dbh and $dbh->ping ) {
-        return $dbh;
-    }
-    else {
-        my $database = $self->config->MYSQL_database;
-        my $host     = $self->config->MYSQL_host;
-        my $port     = $self->config->MYSQL_port;
-        my $user     = $self->config->MYSQL_user;
-        my $password = $self->config->MYSQL_password;
-
-        my $data_source_name = "DBI:mysql:database=$database;host=$host;port=$port";
-
-        $log->notice( "Connecting to MySQL: database=$database host=$host user=$user" ) if $log->is_notice;
-
-        if ( untaint_ipv6_address( $host ) ) {
-            $host = "[$host]";
-        }
-
-        $dbh = DBI->connect(
-            $data_source_name,
-            $user,
-            $password,
-            {
-                RaiseError => 1,
-                AutoCommit => 1
-            }
+    if ( !$self->dbhandle->ping ) {
+        my $dbh = $self->_new_dbh(    #
+            $self->data_source_name,
+            $self->user,
+            $self->password,
         );
 
-        $dbh->{AutoInactiveDestroy} = 1;
         $self->dbhandle( $dbh );
-        return $dbh;
     }
+
+    return $self->dbhandle;
 }
 
 sub user_exists_in_db {
@@ -133,8 +163,8 @@ sub create_new_test {
     my $test_params_deterministic_hash = md5_hex( $encoded_params );
     my $result_id;
 
-    my $priority = $test_params->{priority};
-    my $queue = $test_params->{queue};
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
 
     eval {
         $dbh->do( q[LOCK TABLES test_results WRITE] );
@@ -157,7 +187,7 @@ sub create_new_test {
                 undef,
                 $batch_id,
                 $priority,
-                $queue,
+                $queue_label,
                 $test_params_deterministic_hash,
                 $encoded_params,
                 $test_params->{domain},
@@ -311,8 +341,8 @@ sub add_batch_job {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
-        my $priority = $test_params->{priority};
-        my $queue = $test_params->{queue};
+        my $priority    = $test_params->{priority};
+        my $queue_label = $test_params->{queue};
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
@@ -327,7 +357,7 @@ sub add_batch_job {
             my $encoded_params                 = $js->encode( $test_params );
             my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue, $test_params_deterministic_hash, $encoded_params );
+            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $test_params_deterministic_hash, $encoded_params );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
@@ -346,9 +376,9 @@ sub add_batch_job {
 }
 
 sub select_unfinished_tests {
-    my ( $self ) = @_;
+    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
 
-    if ( $self->config->ZONEMASTER_lock_on_queue ) {
+    if ( $queue_label ) {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results, nb_retries
             FROM test_results
@@ -358,9 +388,9 @@ sub select_unfinished_tests {
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
-            $self->config->ZONEMASTER_max_zonemaster_execution_time,
-            $self->config->ZONEMASTER_maximal_number_of_retries,
-            $self->config->ZONEMASTER_lock_on_queue,
+            $test_run_timeout,
+            $test_run_max_retries,
+            $queue_label,
         );
         return $sth;
     }
@@ -373,8 +403,8 @@ sub select_unfinished_tests {
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
-            $self->config->ZONEMASTER_max_zonemaster_execution_time,
-            $self->config->ZONEMASTER_maximal_number_of_retries,
+            $test_run_timeout,
+            $test_run_max_retries,
         );
         return $sth;
     }

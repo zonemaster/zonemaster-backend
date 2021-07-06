@@ -575,8 +575,8 @@ An object with the property:
 
 An object with the following properties:
 
-* `"ns_list"`: A list of *name server* objects representing the nameservers of the given *domain name*.
-* `"ds_list"`: A list of *DS info* objects representing delegated signer of the given *domain name*.
+* `"ns_list"`: A list of [*name server*][Name server] objects representing the nameservers of the given *domain name*.
+* `"ds_list"`: A list of [*DS info*][DS info] objects representing delegation signer (DS record data) of the given *domain name*.
 
 
 #### `"error"`
@@ -639,12 +639,11 @@ Example response:
 An object with the following properties:
 
 * `"domain"`: A *domain name*, required. The zone to test.
-* `"ipv6"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv4 tests.
-* `"ipv4"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv6 tests.
-* `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify `"profile"` instead.
+* `"ipv6"`: A boolean, optional. (default: [`net.ipv4`][net.ipv4] profile value). Used to enable or disable testing over IPv4 transport protocol.
+* `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value). Used to enable or disable testing over IPv6 transport protocol.
+* `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`). Used to perform un-delegated test.
+* `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`). Used to perform un-delegated test.
+* `"profile"`: A *profile name*, optional. (default: `"default"`). Run the tests using the given profile.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
@@ -754,7 +753,6 @@ Example response:
       "domain": "zonemaster.net",
       "profile": "default",
       "ipv6": true,
-      "advanced": true,
       "nameservers": [
         {
           "ns": "ns3.nic.se",
@@ -809,8 +807,8 @@ In the case of a test created with `start_domain_test`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question. 
-* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
-  was started.
+* `"params"`: A normalized version `"params"` object sent to
+  `start_domain_test` when the *test* was started.
 * `"results"`: A list of *test result* objects.
 
 
@@ -818,9 +816,10 @@ In the case of a test created with `add_batch_job`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question. 
-* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
-  was started.
-* `"results"`: the result is a list of *test id* corresponding to each tested domain.
+* `"params"`: A normalized version `"params"` object sent to `add_batch_job`
+  when the *test* was started.
+* `"results"`: the result is a list of *test id* corresponding to each tested
+  domain.
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -865,13 +864,11 @@ Example response:
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
       "overall_result": "error",
-      "advanced_options": null
     },
     {
       "id": "32dd4bc0582b6bf9",
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
-      "advanced_options": null
     },
     ...
   ]
@@ -1045,13 +1042,12 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
-* `"profile"`: A *profile name*, optional (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
+* `"profile"`: A *profile name*, optional (default: `"default"`). Run the tests using the given profile.
 * `"client_version"`: A *client version*, optional. (default: unset)
-* `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
-* `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
-* `"ipv4"`: A boolean, optional. (default: `true`)
-* `"ipv6"`: A boolean, optional. (default: `true`)
+* `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)
+* `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`)
+* `"ipv6"`: A boolean, optional. (default: [`net.ipv4`][net.ipv4] profile value).
+* `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value).
 * `"priority"`: A *priority*, optional. (default: `5`)
 * `"queue"`: A *queue*, optional. (default: `0`)
 
@@ -1134,7 +1130,7 @@ An object with the following properties:
 
 ## API method: `get_test_params`
 
-Return all *params* objects of a *test*.
+Return a normalized *params* objects of a *test*.
 
 Example request:
 
@@ -1157,7 +1153,6 @@ Example response:
          "domain": "zonemaster.net",
          "profile": "default",
          "client_id": "Zonemaster Dancer Frontend",
-         "advanced": true,
          "nameservers": [
             {
                 "ns": "ns3.nic.se",
@@ -1196,8 +1191,12 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 >
 
 [Available profiles]:           Configuration.md#profiles-section
+[DS info]:                      #ds-info
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
+[Name server]:                  #name-server
+[net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
+[net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
 [Privilege levels]:             #privilege-levels

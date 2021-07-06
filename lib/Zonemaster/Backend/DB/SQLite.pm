@@ -8,7 +8,6 @@ use 5.14.2;
 use Data::Dumper;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
-use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
 
@@ -139,7 +138,7 @@ sub user_authorized {
 
     my ( $id ) =
       $self->dbh->selectrow_array( q[SELECT id FROM users WHERE username = ? AND api_key = ?], undef, $user, $api_key );
-      
+
     return $id;
 }
 
@@ -147,14 +146,14 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
-               SELECT 
-                    batch_id, 
-                    batch_jobs.creation_time AS batch_creation_time 
-               FROM 
-                    test_results 
-               JOIN batch_jobs 
-                    ON batch_id=batch_jobs.id 
-                    AND username=" . $self->dbh->quote( $username ) . " WHERE 
+               SELECT
+                    batch_id,
+                    batch_jobs.creation_time AS batch_creation_time
+               FROM
+                    test_results
+               JOIN batch_jobs
+                    ON batch_id=batch_jobs.id
+                    AND username=" . $self->dbh->quote( $username ) . " WHERE
                     test_results.progress<>100
                LIMIT 1
                " );
@@ -173,9 +172,10 @@ sub create_new_test {
     my $dbh = $self->dbh;
 
     $test_params->{domain} = $domain;
-    my $js                             = JSON::PP->new->canonical;
-    my $encoded_params                 = $js->encode( $test_params );
-    my $test_params_deterministic_hash = md5_hex( $encoded_params );
+
+    my $fingerprint = $self->generate_fingerprint( $test_params );
+    my $encoded_params = $self->encode_params( $test_params );
+
     my $result_id;
 
     my $priority    = $test_params->{priority};
@@ -186,7 +186,7 @@ sub create_new_test {
     my ( $recent_hash_id ) = $dbh->selectrow_array(
         "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', ?)",
         undef,
-        $test_params_deterministic_hash,
+        $fingerprint,
         "-$seconds seconds"
     );
 
@@ -209,7 +209,7 @@ sub create_new_test {
             $batch_id,
             $priority,
             $queue_label,
-            $test_params_deterministic_hash,
+            $fingerprint,
             $encoded_params,
             $test_params->{domain},
             ($test_params->{nameservers})?(1):(0),
@@ -247,7 +247,7 @@ sub get_test_params {
     eval {
         $result = decode_json( $params_json );
     };
-    
+
     $log->warn( "decoding of params_json failed (test_id: [$test_id]):".Dumper($params_json) ) if $@;
 
     return $result;
@@ -289,7 +289,7 @@ sub get_test_history {
                     hash_id,
                     creation_time,
                     params,
-                    results   
+                    results
                  FROM
                     test_results
                  WHERE
@@ -327,8 +327,6 @@ sub add_batch_job {
     my $batch_id;
 
     my $dbh = $self->dbh;
-    my $js = JSON::PP->new;
-    $js->canonical( 1 );
 
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
@@ -343,21 +341,22 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
-        
+
         my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
-            my $encoded_params                 = $js->encode( $test_params );
-            my $test_params_deterministic_hash = md5_hex( encode_utf8( $encoded_params ) );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $test_params_deterministic_hash, $encoded_params );
+            my $fingerprint = $self->generate_fingerprint( $test_params );
+            my $encoded_params = $self->encode_params( $test_params );
+
+            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
-       
+
         $dbh->commit();
         $dbh->{AutoCommit} = 1;
     }

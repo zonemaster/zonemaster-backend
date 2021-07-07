@@ -5,13 +5,14 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use JSON::PP;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
-use String::ShellQuote;
 use File::Slurp qw(append_file);
 use HTML::Entities;
+use JSON::PP;
 use JSON::Validator::Joi;
+use Log::Any qw($log);
+use String::ShellQuote;
 
 # Zonemaster Modules
 use Zonemaster::LDNS;
@@ -443,7 +444,7 @@ sub get_test_results {
 
     my %locales = $self->{config}->LANGUAGE_locale;
 
-    my $locale_tag;
+    my $locale;
     if ( length $language == 2 ) {
         if ( !exists $locales{$language} ) {
             die "Undefined language string: '$language'\n";
@@ -451,21 +452,24 @@ sub get_test_results {
         elsif ( scalar keys %{ $locales{$language} } > 1 ) {
             die "Language string not unique: '$language'\n";
         }
-        ( $locale_tag ) = keys %{ $locales{$language} };
+        ( $locale ) = keys %{ $locales{$language} };
     }
     else {
         if ( !exists $locales{substr $language, 0, 2}{$language} ) {
             die "Undefined language string: '$language'\n";
         }
-        $locale_tag = $language;
+        $locale = $language;
     }
+    $locale .= '.UTF-8';
 
     my $result;
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
     my $previous_locale = $translator->locale;
-    $translator->locale( $locale_tag );
+    if ( !$translator->locale( $locale ) ) {
+        handle_exception( 'get_test_results', "Failed to set locale: $locale", '017' );
+    }
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
@@ -486,7 +490,7 @@ sub get_test_results {
             }
 
             $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res, $locale_tag ) . "\n";
+            $res->{message} = $translator->translate_tag( $test_res ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};

@@ -340,7 +340,7 @@ sub cmd_get_test_results {
 
  Options:
    --domain DOMAIN_NAME
-   --nameserver true|false|null
+   --filter all|delegated|undelegated
    --offset COUNT
    --limit COUNT
 
@@ -348,7 +348,7 @@ sub cmd_get_test_results {
 
 sub cmd_get_test_history {
     my @opts = @_;
-    my $opt_nameserver;
+    my $opt_filter;
     my $opt_domain;
     my $opt_offset;
     my $opt_limit;
@@ -356,7 +356,7 @@ sub cmd_get_test_history {
     GetOptionsFromArray(
         \@opts,
         'domain|d=s'     => \$opt_domain,
-        'nameserver|n=s' => \$opt_nameserver,
+        'filter|n=s'     => \$opt_filter,
         'offset|o=i'     => \$opt_offset,
         'limit|l=i'      => \$opt_limit,
     ) or pod2usage( 2 );
@@ -367,8 +367,11 @@ sub cmd_get_test_history {
         },
     );
 
-    if ( $opt_nameserver ) {
-        $params{frontend_params}{nameservers} = json_tern( $opt_nameserver );
+    if ( $opt_filter ) {
+        unless ( $opt_filter =~ /^(?:all|delegated|undelegated)$/ ) {
+            die 'Illegal filter value. Expects "all", "delegated" or "undelegated" ';
+        }
+        $params{filter} = $opt_filter;
     }
 
     if ( defined $opt_offset ) {
@@ -461,7 +464,7 @@ sub json_tern {
         return undef;
     }
     else {
-        die "unknown ternary value";
+        die 'Illegal value. Expects "true", "false" or "null" ';
     }
 }
 

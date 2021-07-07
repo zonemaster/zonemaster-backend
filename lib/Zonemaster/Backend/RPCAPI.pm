@@ -5,13 +5,14 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use JSON::PP;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
-use String::ShellQuote;
 use File::Slurp qw(append_file);
 use HTML::Entities;
+use JSON::PP;
 use JSON::Validator::Joi;
+use Log::Any qw($log);
+use String::ShellQuote;
 
 # Zonemaster Modules
 use Zonemaster::LDNS;
@@ -351,11 +352,6 @@ sub start_domain_test {
 
         die "No domain in parameters\n" unless ( $params->{domain} );
 
-        if ($params->{config}) {
-            $params->{config} =~ s/[^\w_]//isg;
-            die "Unknown test configuration: [$params->{config}]\n" unless ( $self->{config}->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
-        }
-
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
 
@@ -418,14 +414,16 @@ sub get_test_results {
     my %locales = $self->{config}->LANGUAGE_locale;
 
     # Already validated by json_validate
-    my ($locale_tag, undef) = $self->_get_locale($params);
+    my ($locale, undef) = $self->_get_locale($params);
 
     my $result;
     my $translator;
     $translator = Zonemaster::Backend::Translator->new;
 
     my $previous_locale = $translator->locale;
-    $translator->locale( $locale_tag );
+    if ( !$translator->locale( $locale ) ) {
+        handle_exception( 'get_test_results', "Failed to set locale: $locale", '017' );
+    }
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
@@ -446,7 +444,7 @@ sub get_test_results {
             }
 
             $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res, $locale_tag ) . "\n";
+            $res->{message} = $translator->translate_tag( $test_res ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};
@@ -616,10 +614,10 @@ sub _get_locale {
 
     my $language = $params->{language};
     my %locales = $self->{config}->LANGUAGE_locale;
-    my $locale_tag;
+    my $locale;
 
     if ( !defined $language ) {
-        return $locale_tag, \@error;
+        return $locale, \@error;
     }
 
     if ( length $language == 2 ) {
@@ -635,7 +633,7 @@ sub _get_locale {
                 message => N__ "Language string not unique"
             };
         }
-        ( $locale_tag ) = keys %{ $locales{$language} };
+        ( $locale ) = keys %{ $locales{$language} };
     }
     else {
         if ( !exists $locales{substr $language, 0, 2}{$language} ) {
@@ -644,9 +642,12 @@ sub _get_locale {
                 message => N__ "Unkown language string"
             };
         }
-        $locale_tag = $language;
+        $locale = $language;
     }
-    return $locale_tag, \@error,
+
+    $locale .= '.UTF-8';
+
+    return $locale, \@error,
 }
 
 my $rpc_request = joi->object->props(

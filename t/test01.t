@@ -151,6 +151,40 @@ is( scalar( @$test_history ), 2, 'Two tests created' );
 is( length($test_history->[0]->{id}), 16, 'Test 0 has 16 characters length hash ID' );
 is( length($test_history->[1]->{id}), 16, 'Test 1 has 16 characters length hash ID' );
 
+subtest 'mock another client' => sub {
+    $frontend_params_1->{client_id} = 'Another Client';
+    $frontend_params_1->{client_version} = '0.1';
+
+    my $hash_id = $engine->start_domain_test( $frontend_params_1 );
+    ok( $hash_id, "API start_domain_test OK" );
+    is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
+
+    # check that we reuse one of the previous test
+    subtest 'check that previous test was reused' => sub {
+        my %ids = map { $_->{id} => 1 } @$test_history;
+        ok ( exists( $ids{$hash_id} ), "Has the same hash than previous test" );
+    };
+
+    subtest 'check test_params values' => sub {
+        my $res = $engine->get_test_params( { test_id => "$hash_id" } );
+        my @keys_res = sort( keys %$res );
+        my @keys_params = sort( keys %$frontend_params_1 );
+
+        is_deeply( \@keys_res, \@keys_params, "All keys are in database" );
+
+        foreach my $key (@keys_res) {
+            if ( $key eq "client_id" or $key eq "client_version" ) {
+                isnt( $frontend_params_1->{$key}, $res->{$key}, "but value for key '$key' is different (which is fine)" );
+            }
+            else {
+                is_deeply( $frontend_params_1->{$key}, $res->{$key}, "same value for key '$key'" );
+            }
+        }
+    };
+    #diag "...but values for client_id and client_version are different (which is fine)";
+
+};
+
 if ( $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster::Engine->save_cache( $datafile );
 }

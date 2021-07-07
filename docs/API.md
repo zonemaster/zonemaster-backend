@@ -310,7 +310,7 @@ Basic data type: array
 
 The items of the array are objects with two keys, `"path"` and `"message"`:
 * `"path"`: a string. A [JSON Pointer] to an element in the request's param
-  object. Ex.: `"/nameservers/0/ip"`.
+  object. E.g.: `"/nameservers/0/ip"`.
 * `"message"`: a string. The error message associated with the element
   referenced by `"path"`.
 
@@ -482,7 +482,9 @@ Example response:
 An object with the properties:
 
 * `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
-* `"language"`: A [Language Tag], optional, used for validation error messages translation.
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, the default value is defined in the [language section]
+  of the configuration.
 
 
 #### `"result"`
@@ -583,8 +585,9 @@ Example response:
 An object with the properties:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
-* `"language"`: A [Language Tag], optional, used for validation error messages translation.
-
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, the default value is defined in the [language section]
+  of the configuration.
 
 #### `"result"`
 
@@ -680,9 +683,10 @@ An object with the following properties:
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
-* `"language"`: A [Language Tag], optional, used for validation error message translation.
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, the default value is defined in the [language section]
+  of the configuration.
 
->
 > TODO: Clarify the purpose of each `"params"` property.
 >
 
@@ -691,13 +695,13 @@ An object with the following properties:
 
 A *test id*.
 
-If the test has been run with the same domain name within an interval of 10 mins (hard coded),
+If the test has been run with the same domain name within an interval of 10 minutes (hard coded),
 then the new request does not trigger a new test, but returns with the results of the last test
 
 
 #### `"error"`
 
-* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error, see [Validation error data].
+* If any parameter is invalid an error code of -32602 is returned. The `data` propertiy contains an array of all errors, see [Validation error data].
 
   Example of error response:
 
@@ -1271,3 +1275,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
 [Privilege levels]:             #privilege-levels
+[language section]:             Configuration.md#usage

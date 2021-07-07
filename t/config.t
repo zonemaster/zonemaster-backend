@@ -818,6 +818,38 @@ subtest 'Everything but NoWarnings' => sub {
             database_file = /var/db/zonemaster.sqlite
 
             [PUBLIC PROFILES]
+            valid-name = /path/to/my.profile
+            valid-name = /path/to/my.profile
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/unique.*valid-name/, 'die: Repeated profile name in PUBLIC PROFILES section';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [PRIVATE PROFILES]
+            valid-name = /path/to/my.profile
+            valid-name = /path/to/my.profile
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/unique.*valid-name/, 'die: Repeated profile name in PRIVATE PROFILES section';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [PUBLIC PROFILES]
             pub-and-priv = /path/to/my.profile
 
             [PRIVATE PROFILES]

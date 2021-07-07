@@ -108,7 +108,10 @@ sub parse {
 
     my $get_and_clear = sub {    # Read and clear a property from a Config::IniFiles object.
         my ( $section, $param ) = @_;
-        my $value = $ini->val( $section, $param );
+        my ( $value, @extra ) = $ini->val( $section, $param );
+        if ( @extra ) {
+            die "Property not unique: $section.$param\n";
+        }
         $ini->delval( $section, $param );
         return $value;
     };

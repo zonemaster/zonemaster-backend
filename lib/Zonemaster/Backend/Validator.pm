@@ -26,6 +26,7 @@ our @EXPORT_OK = qw(
   untaint_non_negative_int
   untaint_password
   untaint_postgresql_ident
+  untaint_profile_name
   untaint_strictly_positive_int
   untaint_strictly_positive_millis
 );
@@ -46,6 +47,7 @@ our %EXPORT_TAGS = (
           untaint_non_negative_int
           untaint_password
           untaint_postgresql_ident
+          untaint_profile_name
           untaint_strictly_positive_int
           untaint_strictly_positive_millis
           )
@@ -308,6 +310,11 @@ sub untaint_postgresql_ident {
 sub untaint_non_negative_int {
     my ( $value ) = @_;
     return _untaint_pat( $value, $NON_NEGATIVE_INT_RE );
+}
+
+sub untaint_profile_name {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $PROFILE_NAME_RE );
 }
 
 sub _untaint_pat {

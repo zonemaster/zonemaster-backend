@@ -101,13 +101,13 @@ $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
     my ( $self ) = @_;
 
-    my @profiles;
-    eval { @profiles = $self->{config}->ListPublicProfiles() };
+    my %profiles;
+    eval { %profiles = $self->{config}->PUBLIC_PROFILES };
     if ( $@ ) {
         handle_exception( 'profile_names', $@, '004' );
     }
 
-    return \@profiles;
+    return [ keys %profiles ];
 }
 
 # Return the list of language tags supported by get_test_results(). The tags are
@@ -296,9 +296,11 @@ sub validate_syntax {
         }
 
         if ( defined $syntax_input->{profile} ) {
-            my @profiles = map lc, $self->{config}->ListPublicProfiles();
-            return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
-            unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
+            $syntax_input->{profile} = lc $syntax_input->{profile};
+            my %profiles = ( $self->{config}->PUBLIC_PROFILES, $self->{config}->PRIVATE_PROFILES );
+            if ( !exists $profiles{ $syntax_input->{profile} } ) {
+                return { status => 'nok', message => encode_entities( "Unrecognized profile name" ) };
+            }
         }
 
         my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );

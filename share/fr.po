@@ -60,7 +60,7 @@ msgid "The domain name or label is too long"
 msgstr "Le nom de domaine ou les labels sont trop longs"
 
 msgid "Unknown profile"
-msgstr "Profile inconnu"
+msgstr "Profil inconnu"
 
 msgid "Language string not unique"
 msgstr "Étiquette d'indentification de langue non unique"

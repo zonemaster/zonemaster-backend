@@ -31,8 +31,6 @@ use Locale::TextDomain qw[Zonemaster-Backend];
 use Locale::Messages qw[setlocale LC_MESSAGES];
 use Encode;
 
-#use Locale::Messages::Debug qw[debug_gettext];
-
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
 my %extra_validators;

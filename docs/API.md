@@ -701,7 +701,7 @@ then the new request does not trigger a new test, but returns with the results o
 
 #### `"error"`
 
-* If any parameter is invalid an error code of -32602 is returned. The `data` propertiy contains an array of all errors, see [Validation error data].
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
   Example of error response:
 

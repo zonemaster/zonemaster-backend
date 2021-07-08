@@ -295,6 +295,7 @@ sub validate_syntax {
         }
 
         if ( defined $syntax_input->{profile} ) {
+            $syntax_input->{profile} = lc $syntax_input->{profile};
             my %profiles = ( $self->{config}->PUBLIC_PROFILES, $self->{config}->PRIVATE_PROFILES );
             if ( !exists $profiles{ $syntax_input->{profile} } ) {
                 return { status => 'nok', message => encode_entities( "Unrecognized profile name" ) };

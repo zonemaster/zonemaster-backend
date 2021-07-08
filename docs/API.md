@@ -658,8 +658,15 @@ An object with the following properties:
 
 A *test id*. 
 
-If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
-then the new request does not trigger a new test, but returns with the results of the last test
+If a test has been run with the same parameters (as listed below) not more than
+"reuse time" ago, then a new request will not trigger a new test. Instead the
+`test id` of the previous test will be returned. The default value of
+"reuse time" is 600 seconds, and can be set by the [`age_reuse_previous_test`]
+key in the configuration file.
+
+The parameters that are compared when to determine if two requests are to be
+considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`,
+`profile`, `priority` and `queue`.
 
 
 #### `"error"`
@@ -1197,6 +1204,7 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
 [Name server]:                  #name-server
+[Privilege levels]:             #privilege-levels
+[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
-[Privilege levels]:             #privilege-levels

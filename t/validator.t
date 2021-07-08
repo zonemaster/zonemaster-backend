@@ -153,6 +153,23 @@ subtest 'Everything but NoWarnings' => sub {
         ok !tainted( untaint_postgresql_ident( taint( 'zonemaster' ) ) ), 'launder taint';
     };
 
+    subtest 'untaint_profile_name' => sub {
+        is scalar untaint_profile_name( 'default' ),              'default',           'accept: default';
+        is scalar untaint_profile_name( '-leading-dash' ),        undef,               'reject: -leading-dash';
+        is scalar untaint_profile_name( 'trailing-dash-' ),       undef,               'reject: trailing-dash-';
+        is scalar untaint_profile_name( 'middle-dash' ),          'middle-dash',       'accept: middle-dash';
+        is scalar untaint_profile_name( '_leading_underscore' ),  undef,               'reject: _leading_underscore';
+        is scalar untaint_profile_name( 'trailing_underscore_' ), undef,               'reject: trailing_underscore_';
+        is scalar untaint_profile_name( 'middle_underscore' ),    'middle_underscore', 'accept: middle_underscore';
+        is scalar untaint_profile_name( '0-leading-digit' ),      '0-leading-digit',   'accept: 0-leading-digit';
+        is scalar untaint_profile_name( 'a' ),                    'a',                 'accept: a';
+        is scalar untaint_profile_name( '-' ),                    undef,               'reject dash';
+        is scalar untaint_profile_name( '_' ),                    undef,               'reject underscore';
+        is scalar untaint_profile_name( 'a' x 32 ), 'a' x 32, 'accept 32 characters';
+        is scalar untaint_profile_name( 'a' x 33 ), undef, 'reject 33 characters';
+        ok !tainted( untaint_profile_name( taint( 'default' ) ) ), 'launder taint';
+    };
+
     subtest 'untaint_non_negative_int' => sub {
         is scalar untaint_non_negative_int( '1' ),      '1',     'accept: 1';
         is scalar untaint_non_negative_int( '0' ),      '0',     'accept: 0';

@@ -10,6 +10,7 @@ made to the `backend_config.ini` file.
 
 The `backend_config.ini` file uses a file format in the INI family that is
 described in detail [here][File format].
+Repeating a key name in one section is forbidden.
 
 Each section in `backend_config.ini` is documented below.
 

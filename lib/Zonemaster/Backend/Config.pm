@@ -100,13 +100,18 @@ sub parse {
     my ( $class, $text ) = @_;
 
     my $obj = bless( {}, $class );
+    $obj->{_public_profiles}  = {};
+    $obj->{_private_profiles} = {};
 
     my $ini = Config::IniFiles->new( -file => \$text )
       or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
 
     my $get_and_clear = sub {    # Read and clear a property from a Config::IniFiles object.
         my ( $section, $param ) = @_;
-        my $value = $ini->val( $section, $param );
+        my ( $value, @extra ) = $ini->val( $section, $param );
+        if ( @extra ) {
+            die "Property not unique: $section.$param\n";
+        }
         $ini->delval( $section, $param );
         return $value;
     };
@@ -132,6 +137,7 @@ sub parse {
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
+    $obj->_add_public_profile( 'default', undef );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -274,15 +280,14 @@ sub parse {
         }
     }
 
-    $obj->{_public_profiles} = {
-        default => undef,
-    };
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
-        $obj->{_public_profiles}{lc $name} = $get_and_clear->( 'PUBLIC PROFILES', $name );
+        my $path = $get_and_clear->( 'PUBLIC PROFILES', $name );
+        $obj->_add_public_profile( $name, $path );
     }
-    $obj->{_private_profiles} = {};
+
     for my $name ( $ini->Parameters( 'PRIVATE PROFILES' ) ) {
-        $obj->{_private_profiles}{lc $name} = $get_and_clear->( 'PRIVATE PROFILES', $name );
+        my $path = $get_and_clear->( 'PRIVATE PROFILES', $name );
+        $obj->_add_private_profile( $name, $path );
     }
 
     # Check required propertys (part 2/2)
@@ -497,6 +502,25 @@ Get the first locale passed to the L<locale list|https://github.com/zonemaster/z
 Returns a string.
 
 
+=head2 PUBLIC_PROFILES
+
+Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+
+Returns a hash mapping profile names to profile paths.
+The profile names are normalized to lowercase.
+Profile paths are either strings or C<undef>.
+C<undef> means that the Zonemaster Engine default profile should be used.
+
+
+=head2 PRIVATE_PROFILES
+
+Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+
+Returns a hash mapping profile names to profile paths.
+The profile names are normalized to lowercase.
+Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
+
+
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
@@ -560,6 +584,8 @@ sub POSTGRESQL_database                                 { return $_[0]->{_POSTGR
 sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
 sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
 sub LANGUAGE_default_locale                             { return $_[0]->{_LANGUAGE_default_locale}; }
+sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
+sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
 sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
@@ -588,29 +614,6 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
     _create_setter( '_set_LANGUAGE_default_locale',                             '_LANGUAGE_default_locale',                             \&untaint_locale_tag );
-}
-
-sub ReadProfilesInfo {
-    my ($self) = @_;
-
-    my $profiles;
-    foreach my $public_profile ( keys %{ $self->{_public_profiles} } ) {
-        $profiles->{$public_profile}->{type} = 'public';
-        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile} // "";
-    }
-
-    foreach my $private_profile ( keys %{ $self->{_private_profiles} } ) {
-        $profiles->{$private_profile}->{type} = 'private';
-        $profiles->{$private_profile}->{profile_file_name} = $self->{_private_profiles}{$private_profile};
-    }
-
-    return $profiles;
-}
-
-sub ListPublicProfiles {
-    my ($self) = @_;
-
-    return keys %{ $self->{_public_profiles} };
 }
 
 =head2 new_DB
@@ -752,6 +755,50 @@ sub _reset_LANGUAGE_locale {
     delete $self->{_LANGUAGE_locale};
     delete $self->{_LANGUAGE_default_locale};
 
+    return;
+}
+
+sub _add_public_profile {
+    my ( $self, $name, $path ) = @_;
+
+    $name = untaint_profile_name( $name )    #
+      // die "Invalid profile name in PUBLIC PROFILES section: $name\n";
+
+    $name = lc $name;
+
+    if ( defined $self->{_public_profiles}{$name} || exists $self->{_private_profiles}{$name} ) {
+        die "Profile name not unique: $name\n";
+    }
+
+    if ( defined $path ) {
+        $path = untaint_abs_path( $path )    #
+          // die "Path must be absolute for profile: $name\n";
+    }
+
+    $self->{_public_profiles}{$name} = $path;
+    return;
+}
+
+sub _add_private_profile {
+    my ( $self, $name, $path ) = @_;
+
+    $name = untaint_profile_name( $name )    #
+      // die "Invalid profile name in PRIVATE PROFILES section: $name\n";
+
+    $name = lc $name;
+
+    if ( $name eq 'default' ) {
+        die "Profile name must not be present in PRIVATE PROFILES section: $name\n";
+    }
+
+    if ( exists $self->{_public_profiles}{$name} || exists $self->{_private_profiles}{$name} ) {
+        die "Profile name not unique: $name\n";
+    }
+
+    $path = untaint_abs_path( $path )    #
+      // die "Path must be absolute for profile: $name\n";
+
+    $self->{_private_profiles}{$name} = $path;
     return;
 }
 

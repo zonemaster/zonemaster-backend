@@ -658,9 +658,9 @@ An object with the following properties:
 
 A *test id*. 
 
-If a test has been run with the same parameters (as listed below) not more than
-"reuse time" ago, then a new request will not trigger a new test. Instead the
-`test id` of the previous test will be returned. The default value of
+If a test has been requested with the same parameters (as listed below) not more
+than "reuse time" ago, then a new request will not trigger a new test. Instead
+the `test id` of the previous test will be returned. The default value of
 "reuse time" is 600 seconds, and can be set by the [`age_reuse_previous_test`]
 key in the configuration file.
 

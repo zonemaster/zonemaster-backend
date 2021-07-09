@@ -233,6 +233,10 @@ in the configuration file as specified in the Configuration document
 
 The name of a [*profile*](Architecture.md#profile).
 
+Below are the current error messages for an incorrect *profile name*. The
+messages should, however, considered to be unstable and are planned to be updated
+to gain consistent error messages from the RPCAPI.
+
 When a method receives an illegal *profile name* value for a parameter with this
 type, it returns the following error message:
 
@@ -261,6 +265,8 @@ with this type, it returns the following error message:
     }
 }
 ```
+The error code is "009" (as above) if method [start_domain_test] was requested.
+Instead it will be "015" if method [add_batch_job] is requested.
 
 
 ### Progress percentage
@@ -1202,14 +1208,16 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
+[Add_batch_job]:                #api-method-add_batch_job
 [DS info]:                      #ds-info
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
 [Name server]:                  #name-server
-[net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
-[net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
 [Privilege levels]:             #privilege-levels
 [Profile name]:                 #profile-name
 [Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
+[Start_domain_test]:            #api-method-start_domain_test
+[net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
+[net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6

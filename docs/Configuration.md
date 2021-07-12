@@ -380,5 +380,3 @@ Otherwise a new test request is enqueued.
 [US ASCII printable characters]:      https://en.wikipedia.org/wiki/ASCII#Printable_characters
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
-
-

@@ -28,7 +28,7 @@ For details on these, refer to the JSON-RPC 2.0 specification.
 ### Notes on the JSON-RPC 2.0 implementation
 
 * Extra top-level properties in request objects are allowed but ignored.
-* Extra properties in the `"params"` object are allowed for some methods but ignored for others.
+* No extra properties are allowed in the `"params"` object.
 * Error messages from the API should be considered sensitive as they sometimes leak details about the internals of the application and the system.
 * The error code -32601 is used when the `"method"` property is missing, rather than the perhaps expected error code -32600.
 
@@ -54,6 +54,11 @@ see the [architecture documentation](Architecture.md).
 If the request object is invalid JSON, an error with code `-32700` is reported.
 
 If no method is specified or an invalid method is specified, an error with code `-32601` is reported.
+
+If no `params` object is specified when it is required, or the `params` object
+for the specified method is invalid, an error with code `-32602` is reported.
+For more information on the validation error data format see
+[Validation error data].
 
 All error states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
 
@@ -139,22 +144,19 @@ Basic data type: object
 DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
 
 Properties:
-* `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
+* `"digest"`: A string, required. Either 40, 64 or 96 hexadecimal characters (case insensitive).
 * `"algorithm"`: An non negative integer, required.
 * `"digtype"`: An non negative integer, required.
 * `"keytag"`: An non negative integer, required.
-
-Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
 
 ### IP address
 
 Basic data type: string
 
-This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
- - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
- - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
-
+This parameter is a string that is either
+ - a valid IPv4 in [dot-decimal notation] ;
+ - a valid IPv6 in [recommend text format for IPv6 addresses].
 
 ### Language tag
 
@@ -210,7 +212,7 @@ Properties:
 ### Non-negative integer
 
 Basic data type: number (integer)
- 
+
 A non-negative integer is either zero or strictly positive.
 
 
@@ -230,20 +232,6 @@ This parameter is a case-insensitive string validated with the case-insensitive
 regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i`.
 
 The name of a [*profile*](Architecture.md#profile).
-
-When a method received an unknown *profile name* value for in parameter with this type, it returns the following error message:
-
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "message": "Invalid profile option format",
-        "status": "nok"
-    }
-}
-```
-
 
 ### Progress percentage
 
@@ -295,7 +283,7 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*. 
+* `"ns"`: a *domain name*. The name server used by the *test module*.
 This key is added when the module name is `"NAMESERVER"`.
 
 
@@ -306,7 +294,6 @@ Basic data type: string
 Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 
-
 ### Username
 
 Basic data type: string
@@ -316,6 +303,16 @@ most 50 characters.
 I.e. a string matching `/^[a-zA-Z0-9-.@]{1,50}$/`.
 
 Represents the name of an authenticated account (see *[Privilege levels]*)
+
+### Validation error data
+
+Basic data type: array
+
+The items of the array are objects with two keys, `"path"` and `"message"`:
+* `"path"`: a string. A [JSON Pointer] to an element in the request's param
+  object. E.g.: `"/nameservers/0/ip"`.
+* `"message"`: a string. The error message associated with the element
+  referenced by `"path"`.
 
 
 ## API method: `version_info`
@@ -482,9 +479,9 @@ Example response:
 
 #### `"params"`
 
-An object with the property:
+An object with the properties:
 
-`"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
+* `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -501,10 +498,26 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
+  Example of error response:
+
+```json
+{
+  "error": {
+    "message": "Invalid method parameter(s).",
+    "code": "-32602",
+    "data": [
+      {
+        "path": "/hostname",
+        "message": "Missing property"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 1624630143271
+}
+```
 
 ## API method: `get_data_from_parent_zone`
 
@@ -566,10 +579,9 @@ Example response:
 
 #### `"params"`
 
-An object with the property:
+An object with the properties:
 
-`"domain"`: A *domain name*, required. The domain whose DNS records are requested.
-
+* `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 
 #### `"result"`
 
@@ -581,9 +593,26 @@ An object with the following properties:
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
+
+  Example of error response:
+
+```json
+{
+  "error": {
+    "data": [
+      {
+        "message": "The domain name character(s) are not supported",
+        "path": "/domain"
+      }
+    ],
+    "code": "-32602",
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1624630143271,
+  "jsonrpc": "2.0"
+}
+```
 
 
 ## API method: `start_domain_test`
@@ -649,23 +678,56 @@ An object with the following properties:
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
 
->
 > TODO: Clarify the purpose of each `"params"` property.
 >
 
 
 #### `"result"`
 
-A *test id*. 
+A *test id*.
 
-If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
+If the test has been run with the same domain name within an interval of 10 minutes (hard coded),
 then the new request does not trigger a new test, but returns with the results of the last test
 
 
 #### `"error"`
 
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
+
+  Example of error response:
+
+```json
+{
+  "error": {
+    "code": "-32602",
+    "data": [
+      {
+        "message": "Expected integer - got string.",
+        "path": "/ds_info/0/algorithm"
+      },
+      {
+        "message": "Missing property.",
+        "path": "/ds_info/0/digest"
+      },
+      {
+        "path": "/profile",
+        "message": "Unknown profile"
+      },
+      {
+        "path": "/domain",
+        "message": "The domain name character(s) are not supported"
+      },
+      {
+        "path": "/nameservers/0/ip",
+        "message": "Invalid IP address"
+      }
+    ],
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
+}
+```
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -806,7 +868,7 @@ In the case of a test created with `start_domain_test`:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
+* `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: A normalized version `"params"` object sent to
   `start_domain_test` when the *test* was started.
 * `"results"`: A list of *test result* objects.
@@ -815,7 +877,7 @@ In the case of a test created with `start_domain_test`:
 In the case of a test created with `add_batch_job`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
+* `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: A normalized version `"params"` object sent to `add_batch_job`
   when the *test* was started.
 * `"results"`: the result is a list of *test id* corresponding to each tested
@@ -926,7 +988,7 @@ In order to use advanced api features such as the *batch test*, it's necessaire 
 This key can be obtained with the creation of a user in the system.
 This function allow the creation of a new user and so, the creation of a new api key.
 
-Add a new *user* 
+Add a new *user*
 
 This method requires the *administrative* *privilege level*.
 
@@ -980,7 +1042,7 @@ Trying to add a already existing user:
 ```
 
 Ommitting params:
-```json 
+```json
 {
   "message": "username or api_key not provided to the method add_api_user\n",
   "code": -32603
@@ -1196,6 +1258,10 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
+[Validation error data]:        #validation-error-data
+[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
+[Recommend text format for IPv6 addresses]: https://datatracker.ietf.org/doc/html/rfc5952
+[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
 [Name server]:                  #name-server
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6

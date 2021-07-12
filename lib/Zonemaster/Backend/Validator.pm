@@ -58,7 +58,7 @@ our %EXPORT_TAGS = (
 Readonly my $IPV4_RE => qr/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/;
 
 # Does not check the length and number of the hex groups, nor the value ranges in the IPv4 groups
-Readonly my $IPV6_RE => qr/^[0-9a-f:]+(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$/i;
+Readonly my $IPV6_RE => qr/^[0-9a-f:]*:[0-9a-f:]+(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$/i;
 
 Readonly my $API_KEY_RE                 => qr/^[a-z0-9-_]{1,512}$/i;
 Readonly my $CLIENT_ID_RE               => qr/^[a-z0-9-+~_.: ]{1,50}$/i;

@@ -28,6 +28,7 @@ lib/Zonemaster/Backend/DB.pm
 lib/Zonemaster/Backend/DB/MySQL.pm
 lib/Zonemaster/Backend/DB/PostgreSQL.pm
 lib/Zonemaster/Backend/DB/SQLite.pm
+lib/Zonemaster/Backend/ErrorMessages.pm
 lib/Zonemaster/Backend/RPCAPI.pm
 lib/Zonemaster/Backend/TestAgent.pm
 lib/Zonemaster/Backend/Translator.pm

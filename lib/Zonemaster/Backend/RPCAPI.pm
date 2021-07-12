@@ -24,12 +24,13 @@ use Zonemaster::Engine::Net::IP;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::ErrorMessages;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
-our %extra_validators;
+my %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -654,7 +655,28 @@ sub validate_params {
 
     my @json_validation_error = $method_schema->validate( $params );
 
-    push @error_response, map { { message => $_->message, path => $_->path } } @json_validation_error;
+    my $error_config = Zonemaster::Backend::ErrorMessages::custom_messages_config;
+
+    # Customize error message from json validation
+    foreach my $err ( @json_validation_error ) {
+        my $message = $err->message;
+        foreach my $entry (@{$error_config}) {
+            my $pattern = $entry->{pattern};
+            my $config = $entry->{config};
+
+            if ($err->{path} =~ /^$pattern$/) {
+                my @details = @{$err->details};
+                # detail[0] => property type
+                # detail[1] => error name
+                my $custom_message = $config->{$details[0]}->{$details[1]} if defined $config->{$details[0]};
+                if (defined $custom_message) {
+                    $message = $custom_message;
+                    last;
+                }
+            }
+        }
+        push @error_response, { path => $err->path, message => $message };
+    }
 
     # Add messages from extra validation function
     if ( $extra_validators{$method} ) {

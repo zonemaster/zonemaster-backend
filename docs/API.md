@@ -227,22 +227,46 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 Basic data type: string
 
 This parameter is a case-insensitive string validated with the case-insensitive
-regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i`.
+regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i` which must be predefined
+in the configuration file as specified in the Configuration document
+[profile sections].
 
 The name of a [*profile*](Architecture.md#profile).
 
-When a method received an unknown *profile name* value for in parameter with this type, it returns the following error message:
+Below are the current error messages for an incorrect *profile name*. The
+messages should, however, considered to be unstable and are planned to be updated
+to gain consistent error messages from the RPCAPI.
+
+When a method receives an illegal *profile name* value for a parameter with this
+type, it returns the following error message:
 
 ```json
 {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "message": "Invalid profile option format",
-        "status": "nok"
+    "jsonrpc":"2.0",
+    "id":1,
+    "error":{
+        "message":"Invalid method parameter(s).",
+        "data":"/profile: String does not match (?^ui:^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$).",
+        "code":"-32602"
     }
 }
 ```
+
+When a method receives a legal but undefined *profile name* value for a parameter
+with this type, it returns the following error message:
+
+```json
+{
+    "jsonrpc":"2.0",
+    "id":1,
+    "error":{
+        "message":"Internal error 009 \n",
+        "code":-32603
+    }
+}
+```
+The error code is "009" (as above) if method [start_domain_test] was requested.
+Instead it will be "015" if method [add_batch_job] is requested.
 
 
 ### Progress percentage
@@ -361,7 +385,8 @@ An object with the following properties:
 
 ## API method: `profile_names`
 
-Returns the names of the public subset of the [available profiles].
+Returns the names of the public subset of the
+[available profiles][Profile sections].
 
 Example request:
 ```json
@@ -643,7 +668,8 @@ An object with the following properties:
 * `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value). Used to enable or disable testing over IPv6 transport protocol.
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"profile"`: A *profile name*, optional. (default: `"default"`). Run the tests using the given profile.
+* `"profile"`: A [*profile name*][profile name], optional. (default:
+  `"default"`). Run the tests using the given profile.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
@@ -671,12 +697,8 @@ considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
 
 #### `"error"`
 
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
-
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If the given `profile` is not among the [available profiles][Profile sections],
+  a user error is returned, see [profile name section][profile name].
 
 
 ## API method: `test_progress`
@@ -1049,7 +1071,8 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
-* `"profile"`: A *profile name*, optional (default: `"default"`). Run the tests using the given profile.
+* `"profile"`: A [*profile name*][profile name], optional (default: 
+  `"default"`). Run the tests using the given profile.
 * `"client_version"`: A *client version*, optional. (default: unset)
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`)
@@ -1068,13 +1091,8 @@ A *batch id*.
 
 * You can't create a new batch job.
   A *batch* with unfinished *tests* already exists for this *api user*.
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
-
-
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If the given `profile` is not among the [available profiles][Profile sections],
+  a user error is returned, see the [profile name section][profile name].
 
 
 ## API method: `get_batch_job_result`
@@ -1197,7 +1215,7 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Available profiles]:           Configuration.md#profiles-section
+[Add_batch_job]:                #api-method-add_batch_job
 [DS info]:                      #ds-info
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
@@ -1206,5 +1224,8 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [Name server]:                  #name-server
 [Privilege levels]:             #privilege-levels
 [`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
+[Profile name]:                 #profile-name
+[Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
+[Start_domain_test]:            #api-method-start_domain_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6

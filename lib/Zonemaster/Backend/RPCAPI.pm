@@ -29,7 +29,7 @@ use Zonemaster::Backend::Validator;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
-my %extra_validators;
+our %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -152,7 +152,7 @@ sub get_host_by_name {
     return \@adresses;
 }
 
-sub get_data_from_parent_zone_validate_syntax {
+$extra_validators{get_data_from_parent_zone} = sub {
     my ( $self, $syntax_input ) = @_;
     my @errors;
 
@@ -161,11 +161,10 @@ sub get_data_from_parent_zone_validate_syntax {
         push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
     }
     return @errors;
-}
+};
 $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
     domain   => $zm_validator->domain_name->required
 );
-$extra_validators{get_data_from_parent_zone} = \&get_data_from_parent_zone_validate_syntax;
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
@@ -257,7 +256,7 @@ sub _check_domain {
     return ( $domain, { status => 'ok', message => 'Syntax ok' } );
 }
 
-sub start_domain_test_validate_syntax {
+$extra_validators{start_domain_test} = sub {
     my ( $self, $syntax_input ) = @_;
 
     my @errors = eval {
@@ -296,7 +295,7 @@ sub start_domain_test_validate_syntax {
     else {
         return @errors;
     }
-}
+};
 
 $json_schemas{start_domain_test} = joi->object->strict->props(
     domain => $zm_validator->domain_name->required,
@@ -316,7 +315,6 @@ $json_schemas{start_domain_test} = joi->object->strict->props(
     priority => $zm_validator->priority,
     queue => $zm_validator->queue,
 );
-$extra_validators{start_domain_test} = \&start_domain_test_validate_syntax;
 sub start_domain_test {
     my ( $self, $params ) = @_;
 

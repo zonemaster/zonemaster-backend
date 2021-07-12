@@ -257,9 +257,12 @@ running the RPCAPI daemon for the translation to work correctly.
 
 The PUBLIC PROFILES and PRIVATE PROFILES sections together define the available [profiles].
 
-Keys in both sections are [profile names], and values are absolute file system paths to
-[profile JSON files]. Keys must not be duplicated between the sections, and the
-key `default` must not be present in the PRIVATE PROFILES sections.
+Keys in both sections are `profile names`, and values are absolute file system
+paths to [profile JSON files]. The key must conform to the character limitation
+specified for `profile name` as specified in the API document
+[Profile name section]. Keys that only differ in case are considered to be equal.
+Keys must not be duplicated between or within the sections, and the key
+`default` must not be present in the PRIVATE PROFILES section.
 
 There is a `default` profile that is special. It is always available even
 if not specified. If it is not explicitly mapped to a profile JSON file, it is implicitly
@@ -374,7 +377,7 @@ Otherwise a new test request is enqueued.
 [POSTGRESQL.password]:                #password-2
 [POSTGRESQL.user]:                    #user-2
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
-[Profile names]:                      API.md#profile-name
+[Profile name section]:               API.md#profile-name
 [Profiles]:                           Architecture.md#profile
 [SQLITE.database_file]:               #database_file
 [US ASCII printable characters]:      https://en.wikipedia.org/wiki/ASCII#Printable_characters

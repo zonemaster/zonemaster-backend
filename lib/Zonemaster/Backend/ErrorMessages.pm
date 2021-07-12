@@ -5,6 +5,15 @@ package Zonemaster::Backend::ErrorMessages;
 use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
 
+# This structure is used to replace messages coming from JSON::Validator
+# The items are evaluated in order and the first item that have its `pattern`
+#  key matching the current path will be used.
+# The `config` key holds the custom messages, the keys of the first level hash
+#  represent the types of the JSON element and the ones of the second level
+#  hash are the types of error.
+# This structure is similar to the one used internally in JSON::Validator,
+#  see https://github.com/jhthorsen/json-validator/blob/master/lib/JSON/Validator/Error.pm
+
 Readonly my @CUSTOM_MESSAGES_CONFIG => (
     {
         pattern => "/(domain|hostname)",
@@ -74,6 +83,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         }
     },
     {
+        # This item will catch all paths, used for common errors
         pattern => ".*",
         config => {
             object => {

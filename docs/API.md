@@ -60,7 +60,7 @@ for the specified method is invalid, an error with code `-32602` is reported.
 For more information on the validation error data format see
 [Validation error data].
 
-All error states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
+All errors states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
 
 
 ## Privilege levels
@@ -501,7 +501,7 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 #### `"error"`
 
-* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error, see [Validation error data].
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
   Example of error response:
 
@@ -599,7 +599,7 @@ An object with the following properties:
 
 #### `"error"`
 
-* If any parameter fails to be validated an error code of -32602 is returned. The `data` properties contains an array of all error, see [Validation error data].
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
   Example of error response:
 

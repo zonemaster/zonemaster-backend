@@ -1,0 +1,83 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-06-29 10:27+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "The domain name character(s) are not supported"
+msgstr "Les caractères du nom de domaine ne sont pas supportés"
+
+msgid "Invalid IP address"
+msgstr "Adresse IP invalide"
+
+msgid "Keytag should be a positive integer"
+msgstr "L'indentifiant doit être un entier positif"
+
+msgid "Algorithm should be a positive integer"
+msgstr "L'algorithme doit être un entier positif"
+
+msgid "Digest type should be a positive integer"
+msgstr "Le type d'empreinte doit être un entier positif"
+
+msgid "Invalid digest format"
+msgstr "Format de l'empreinte invalide"
+
+msgid "Invalid language tag format"
+msgstr "Format de l'étiquette d'indentification de langue incorrect"
+
+msgid "Missing property"
+msgstr "Champ manquant"
+
+msgid "Domain name required"
+msgstr "Nom de domaine requis"
+
+msgid ""
+"The domain name is not a valid IDNA string and cannot be converted to an A-"
+"label"
+msgstr ""
+"Le nom de domaine n'est pas une chaine IDNA valide et ne peut pas être "
+"convertie en A-label"
+
+msgid "The domain name contains non-ascii characters and IDNA is not installed"
+msgstr ""
+"Le nom de domaine contient des caractères non ascii et IDNA n'est pas "
+"installé"
+
+msgid "The domain name or label is too long"
+msgstr "Le nom de domaine ou les labels sont trop longs"
+
+msgid "Unknown profile"
+msgstr "Profil inconnu"
+
+msgid "Language string not unique"
+msgstr "Étiquette d'indentification de langue non unique"
+
+msgid "Unkown language string"
+msgstr "Étiquette d'indentification de langue inconnue"
+
+msgid "The JSON sent is not a valid request object."
+msgstr "L'object JSON envoyé n'est pas un object de requête valide."
+
+msgid "Missing 'params' object"
+msgstr "Objet 'params' manquant"
+
+msgid "Invalid method parameter(s)."
+msgstr "Paramètres incorrects"
+
+msgid ""
+"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
+"names correctly."
+msgstr ""

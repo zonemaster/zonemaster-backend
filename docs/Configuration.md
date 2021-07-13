@@ -1,5 +1,42 @@
 # Configuration
 
+## Table of contents
+
+* [Introduction](#Introduction)
+* [DB section](#DB-section)
+  * [engine](#engine)
+  * [user](#user)
+  * [password](#password)
+  * [database_host](#database_host)
+  * [database_name](#database_name)
+  * [polling_interval](#polling_interval)
+* [MYSQL section](#MYSQL-section)
+  * [host](#host)
+  * [port](#port)
+  * [user](#user)
+  * [password](#password)
+  * [database](#database)
+* [POSTGRESQL section](#POSTGRESQL-section)
+  * [host](#host)
+  * [port](#port)
+  * [user](#user)
+  * [password](#password)
+  * [database](#database)
+* [SQLITE section](#SQLITE-section)
+  * [database_file](#database_file)
+* [LANGUAGE section](#LANGUAGE-section)
+  * [locale](#locale)
+* [PUBLIC PROFILES and PRIVATE PROFILES sections](#PUBLIC-PROFILES-and-PRIVATE-PROFILES-sections)
+* [ZONEMASTER section](#ZONEMASTER-section)
+  * [max_zonemaster_execution_time](#max_zonemaster_execution_time)
+  * [maximal_number_of_retries](#maximal_number_of_retries)
+  * [number_of_processes_for_frontend_testing](#number_of_processes_for_frontend_testing)
+  * [number_of_processes_for_batch_testing](#number_of_processes_for_batch_testing)
+  * [lock_on_queue](#lock_on_queue)
+  * [age_reuse_previous_test](#age_reuse_previous_test)
+
+## Introduction
+
 Zonemaster *Backend* is configured in
 `/etc/zonemaster/backend_config.ini` (CentOS, Debian and Ubuntu) or
 `/usr/local/etc/zonemaster/backend_config.ini` (FreeBSD). Following

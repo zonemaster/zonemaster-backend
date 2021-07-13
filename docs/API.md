@@ -155,8 +155,8 @@ Properties:
 Basic data type: string
 
 This parameter is a string that is either
- - a valid IPv4 in [dot-decimal notation] ;
- - a valid IPv6 in [recommend text format for IPv6 addresses].
+ - a valid IPv4 address in [dot-decimal notation] ;
+ - a valid IPv6 address in [recommend text format for IPv6 addresses].
 
 ### Language tag
 
@@ -248,7 +248,12 @@ type, it returns the following error message:
     "id":1,
     "error":{
         "message":"Invalid method parameter(s).",
-        "data":"/profile: String does not match (?^ui:^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$).",
+        "data": [
+            {
+              "path": "/profile",
+              "message": "String does not match (?^ui:^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$)."
+            },
+        ],
         "code":"-32602"
     }
 }
@@ -262,8 +267,14 @@ with this type, it returns the following error message:
     "jsonrpc":"2.0",
     "id":1,
     "error":{
-        "message":"Internal error 009 \n",
-        "code":-32603
+        "message":"Invalid method parameter(s).",
+        "data": [
+            {
+              "path": "/profile",
+              "message": "Unknown profile"
+            },
+        ],
+        "code":"-32602"
     }
 }
 ```

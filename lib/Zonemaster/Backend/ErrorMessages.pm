@@ -2,6 +2,7 @@ package Zonemaster::Backend::ErrorMessages;
 
 
 use Readonly;
+use Locale::TextDomain qw[Zonemaster-Backend];
 
 # This structure is used to replace messages coming from JSON::Validator
 # The items are evaluated in order and the first item that have its `pattern`
@@ -17,7 +18,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/(domain|hostname)",
         config => {
             string => {
-                pattern => 'The domain name character(s) are not supported'
+                pattern => N__ 'The domain name character(s) are not supported'
             }
         }
     },
@@ -25,7 +26,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/nameservers/\\d+/ip",
         config => {
             string => {
-                pattern => 'Invalid IP address'
+                pattern => N__ 'Invalid IP address'
             }
         }
     },
@@ -33,7 +34,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/nameservers/\\d+/ns",
         config => {
             string => {
-                pattern => 'The domain name character(s) are not supported'
+                pattern => N__ 'The domain name character(s) are not supported'
             }
         }
     },
@@ -41,8 +42,8 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/keytag",
         config => {
             integer => {
-                type => 'Keytag should be a positive integer',
-                minimum => 'Keytag should be a positive integer'
+                type => N__ 'Keytag should be a positive integer',
+                minimum => N__ 'Keytag should be a positive integer'
             }
         }
     },
@@ -50,8 +51,8 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/algorithm",
         config => {
             integer => {
-                type => 'Algorithm should be a positive integer',
-                minimum => 'Algorithm should be a positive integer'
+                type => N__ 'Algorithm should be a positive integer',
+                minimum => N__ 'Algorithm should be a positive integer'
             }
         }
     },
@@ -59,8 +60,8 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/digtype",
         config => {
             integer => {
-                type => 'Digest type should be a positive integer',
-                minimum => 'Digest type should be a positive integer'
+                type => N__ 'Digest type should be a positive integer',
+                minimum => N__ 'Digest type should be a positive integer'
             }
         }
     },
@@ -68,7 +69,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/digest",
         config => {
             string => {
-                pattern => 'Invalid digest format'
+                pattern => N__ 'Invalid digest format'
             }
         }
     },
@@ -76,7 +77,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/language",
         config => {
             string => {
-                pattern => 'Invalid language tag format'
+                pattern => N__ 'Invalid language tag format'
             }
         }
     },
@@ -85,7 +86,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => ".*",
         config => {
             object => {
-                required => 'Missing property'
+                required => N__ 'Missing property'
             }
         }
     }

@@ -21,6 +21,7 @@ inc/Module/Install/Scripts.pm
 inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+inc/Module/Install/External.pm
 lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
 lib/Zonemaster/Backend/Config/DCPlugin.pm
@@ -52,6 +53,9 @@ share/create_db_sqlite.pl
 share/freebsd-pwd.conf
 share/initial-mysql.sql
 share/initial-postgres.sql
+share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
+share/Makefile
+share/GNUmakefile
 share/patch_db_README.txt
 share/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl

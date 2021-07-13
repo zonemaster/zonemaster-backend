@@ -521,6 +521,9 @@ Example response:
 An object with the properties:
 
 * `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, the default value is defined in the [language section]
+  of the configuration.
 
 
 #### `"result"`
@@ -621,6 +624,9 @@ Example response:
 An object with the properties:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, the default value is defined in the [language section]
+  of the configuration.
 
 #### `"result"`
 
@@ -717,6 +723,9 @@ An object with the following properties:
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, the default value is defined in the [language section]
+  of the configuration.
 
 > TODO: Clarify the purpose of each `"params"` property.
 >
@@ -1313,3 +1322,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [Start_domain_test]:            #api-method-start_domain_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+[language section]:             Configuration.md#usage

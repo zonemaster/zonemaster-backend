@@ -212,6 +212,11 @@ English is the Zonemaster default language, but it can be blocked
 from being allowed by RPC-API by including some `locale tag` in the
 configuration, but none starting with language code for English ("en").
 
+The first language in the list will be used as the default for the RPC API
+error messages. If translation not available, then the error messages will be
+send untranslated, i.e. in English. See the [API documentation] to know which
+methods support error message localization.
+
 #### Out-of-the-box support
 
 The default installation and configuration supports the
@@ -383,3 +388,4 @@ Otherwise a new test request is enqueued.
 [US ASCII printable characters]:      https://en.wikipedia.org/wiki/ASCII#Printable_characters
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
+[API documentation]:                  API.md

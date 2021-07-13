@@ -21,6 +21,9 @@ engine = SQLite
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
+
+[LANGUAGE]
+locale = en_US fr_FR da_DK fi_FI nb_NO sv_SE
 EOF
 
 my $engine = Zonemaster::Backend::RPCAPI->new(
@@ -241,5 +244,18 @@ subtest 'Everything but NoWarnings' => sub {
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
     is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest format' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
+    $frontend_params->{language} = "zz";
+    cmp_ok( scalar $engine->validate_params( "start_domain_test", $frontend_params ), '>', 0, encode_utf8( 'Invalid language, "zz" unknown' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{language} = "fr-FR";
+    cmp_ok( scalar $engine->validate_params( "start_domain_test", $frontend_params ), '>', 0, encode_utf8( 'Invalid language, should be underscore not hyphen' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{language} = "nb_NO";
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 0, encode_utf8( 'Valid language' ) )
         or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 };

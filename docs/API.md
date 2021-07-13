@@ -1,5 +1,49 @@
 # API
 
+## Table of contents
+
+* [Purpose](#purpose)
+* [Protocol](#protocol)
+  * [Deviations from JSON-RPC 2.0](#deviations-from-json-rpc-20)
+  * [Notes on the JSON-RPC 2.0 implementation](#notes-on-the-json-rpc-20-implementation)
+* [Request handling](#Request-handling)
+* [Error reporting](#Error-reporting)
+* [Privilege levels](#Privilege-levels)
+* [Data types](#Data-types)
+  * [API key](#API-key)
+  * [Batch id](#Batch-id)
+  * [Client id](#Client-id)
+  * [Client version](#Client-version)
+  * [Domain name](#Domain-name)
+  * [DS info](#DS-info)
+  * [IP address](#IP-address)
+  * [Language tag](#Language-tag)
+  * [Name server](#Name-server)
+  * [Non-negative integer](#Non-negative-integer)
+  * [Priority](#Priority)
+  * [Profile name](#Profile-name)
+  * [Progress percentage](#Progress-percentage)
+  * [Queue](#Queue)
+  * [Severity level](#Severity-level)
+  * [Test id](#Test-id)
+  * [Test result](#Test-result)
+  * [Timestamp](#Timestamp)
+  * [Username](#Username)
+* [API method: version_info](#API-method-version_info)
+* [API method: profile_names](#API-method-profile_names)
+* [API method: get_language_tags](#API-method-get_language_tags)
+* [API method: get_host_by_name](#API-method-get_host_by_name)
+* [API method: get_data_from_parent_zone](#API-method-get_data_from_parent_zone)
+* [API method: start_domain_test](#API-method-start_domain_test)
+* [API method: test_progress](#API-method-test_progress)
+* [API method: get_test_results](#API-method-get_test_results)
+* [API method: get_test_history](#API-method-get_test_history)
+* [API method: add_api_user](#API-method-add_api_user)
+* [API method: add_batch_job](#API-method-add_batch_job)
+* [API method: get_batch_job_result](#API-method-get_batch_job_result)
+* [API method: get_test_params](#API-method-get_test_params)
+
+
 ## Purpose
 
 This document describes the JSON-RPC API provided by the Zonemaster *RPC API daemon*.

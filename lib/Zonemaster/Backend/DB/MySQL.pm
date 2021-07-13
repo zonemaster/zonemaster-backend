@@ -310,7 +310,7 @@ sub get_test_history {
         my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
 
         # More important overwrites
-        my $overall = 'INFO';
+        my $overall = 'ok';
         $overall = 'warning'  if $warning;
         $overall = 'error'    if $error;
         $overall = 'critical' if $critical;

@@ -16,6 +16,7 @@ CREATE TABLE test_results (
     progress integer DEFAULT 0,
     params_deterministic_hash varchar(32),
     params json NOT NULL,
+    undelegated boolean NOT NULL DEFAULT false,
     results json,
     nb_retries integer NOT NULL DEFAULT 0
 );

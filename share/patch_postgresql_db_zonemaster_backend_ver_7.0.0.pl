@@ -20,7 +20,7 @@ sub patch_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated boolean NOT NULL DEFAULT false' );
+    $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated integer NOT NULL DEFAULT 0' );
 }
 
 patch_db();

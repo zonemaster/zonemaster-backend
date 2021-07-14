@@ -175,6 +175,7 @@ sub create_new_test {
 
     my $fingerprint = $self->generate_fingerprint( $test_params );
     my $encoded_params = $self->encode_params( $test_params );
+    my $undelegated = $self->undelegated ( $test_params );
 
     my $result_id;
 
@@ -212,7 +213,7 @@ sub create_new_test {
             $fingerprint,
             $encoded_params,
             $test_params->{domain},
-            ($test_params->{nameservers})?(1):(0),
+            $undelegated,
         );
         $result_id = $hash_id;
     }
@@ -277,9 +278,9 @@ sub get_test_history {
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
-        $undelegated = "AND (params->'nameservers') IS NOT NULL";
+        $undelegated = "AND undelegated = 1";
     } elsif ($p->{filter} eq "delegated") {
-        $undelegated = "AND (params->'nameservers') IS NULL";
+        $undelegated = "AND undelegated = 0";
     }
 
     my $quoted_domain = $self->dbh->quote( $p->{frontend_params}->{domain} );
@@ -342,14 +343,15 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
             my $fingerprint = $self->generate_fingerprint( $test_params );
             my $encoded_params = $self->encode_params( $test_params );
+            my $undelegated = $self->undelegated ( $test_params );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
+            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );

@@ -28,21 +28,22 @@ instructions](https://github.com/zonemaster/zonemaster-engine/blob/master/docs/I
 ### Upgrade 
 
 If you upgrade Zonemaster-Backend and want to keep the content of the database
-(MySQL/MariaDB or PostgrSQL) then you should not reset the database when you
-follow the [installation instructions]. In some cases you need to patch the
+(SQLite, MySQL/MariaDB or PostgreSQL) then you should not reset the database when
+you follow the [installation instructions]. In some cases you need to patch the
 database when you update Zonemaster-Backend.
 
 Always take a backup first if the database is valuable.
 
-Current version                     | Link to instructions  | Comments
-------------------------------------|-----------------------|-----------------------
-Older than 1.0.3                    | [Upgrade to 1.0.3]    |
-At least 1.0.3 but older than 1.1.0 | [Upgrade to 1.1.0]    |
-At least 1.1.0 but older than 5.0.0 | [Upgrade to 5.0.0]    |
-At least 5.0.0 but older than 5.0.2 | [Upgrade to 5.0.2]    | For MySQL/MariaDB only
+Created by Zonemaster-Backend version | Link to instructions  | Comments
+--------------------------------------|-----------------------|-----------------------
+Older than 1.0.3                      | [Upgrade to 1.0.3]    |
+At least 1.0.3 but older than 1.1.0   | [Upgrade to 1.1.0]    |
+At least 1.1.0 but older than 5.0.0   | [Upgrade to 5.0.0]    |
+At least 5.0.0 but older than 5.0.2   | [Upgrade to 5.0.2]    | For MySQL/MariaDB only
+At least 5.0.2 but older than 7.0.0   | [Upgrade to 7.0.0]    | For PostgreSQL only
 
-If the database was created before Zonemaster-Backend version 5.0.0, then you
-have to upgrade in several steps.
+If the database was created before Zonemaster-Backend version 5.0.2, then you
+have to upgrade it in several steps.
 
 To complete the upgrade follow the [installation instructions], except for creating
 the database. If you instead want to start from an empty database, then you remove the database
@@ -87,3 +88,4 @@ The software is released under the 2-clause BSD license. See separate
 [Upgrade to 1.1.0]:            docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
 [Upgrade to 5.0.0]:            docs/upgrade_db_zonemaster_backend_ver_5.0.0.md
 [Upgrade to 5.0.2]:            docs/upgrade_db_zonemaster_backend_ver_5.0.2.md
+[Upgrade to 7.0.0]:            docs/upgrade_db_zonemaster_backend_ver_7.0.0.md

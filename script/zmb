@@ -245,6 +245,8 @@ sub cmd_start_domain_test {
 }
 
 
+
+
 =head2 test_progress
 
  zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
@@ -417,6 +419,155 @@ sub cmd_add_api_user {
         params => {
             username => $opt_username,
             api_key  => $opt_api_key,
+        },
+    );
+}
+
+
+=head2 add_batch_job
+
+ zmb [GLOBAL OPTIONS] add_api_job [OPTIONS]
+
+ Options:
+    --username USERNAME
+    --api-key API_KEY
+    --domain DOMAIN_NAME
+    --ipv4 true|false|null
+    --ipv6 true|false|null
+    --nameserver DOMAIN_NAME:IP_ADDRESS
+    --nameserver DOMAIN_NAME  # Trailing colon is optional when not specifing IP_ADDRESS
+    --ds-info DS_INFO
+    --client-id CLIENT_ID
+    --client-version CLIENT_VERSION
+    --profile PROFILE_NAME
+
+ "--domain" is repeated for each domain to be tested.
+ "--nameserver" can be repeated for each name server.
+ "--ds-info" can be repeated for each DS record.
+
+ DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
+
+    keytag=NON_NEGATIVE_INTEGER
+    algorithm=NON_NEGATIVE_INTEGER
+    digtype=NON_NEGATIVE_INTEGER
+    digest=HEX_STRING
+
+=cut
+
+sub cmd_add_batch_job {
+    my @opts = @_;
+
+    my $opt_username;
+    my $opt_api_key;
+    my @opt_nameserver;
+    my @opt_domains;
+    my $opt_client_id;
+    my $opt_client_version;
+    my @opt_ds_info;
+    my $opt_ipv4;
+    my $opt_ipv6;
+    my $opt_profile;
+    GetOptionsFromArray(
+        \@opts,
+        'username|u=s'     => \$opt_username,
+        'api-key|a=s'      => \$opt_api_key,
+        'domain|d=s'       => \@opt_domains,
+        'nameserver|n=s'   => \@opt_nameserver,
+        'client-id=s'      => \$opt_client_id,
+        'client-version=s' => \$opt_client_version,
+        'ds-info=s'        => \@opt_ds_info,
+        'ipv4=s'           => \$opt_ipv4,
+        'ipv6=s'           => \$opt_ipv6,
+        'profile=s'        => \$opt_profile,
+    ) or pod2usage( 2 );
+
+
+    my %params = ( domains => \@opt_domains );
+
+    $params{username} = $opt_username;
+    $params{api_key} = $opt_api_key;
+
+    if ( $opt_client_id ) {
+        $params{test_params}{client_id} = $opt_client_id;
+    }
+
+    if ( $opt_client_version ) {
+        $params{test_params}{client_version} = $opt_client_version;
+    }
+
+    if ( @opt_ds_info ) {
+        my @info_objects;
+        for my $property_value_pairs ( @opt_ds_info ) {
+            my %info_object;
+            for my $pair ( split /,/, $property_value_pairs ) {
+                my ( $property, $value ) = split /=/, $pair;
+                if ( $property =~ /^(?:keytag|algorithm|digtype)$/ ) {
+                    $value = 0 + $value;
+                }
+                $info_object{$property} = $value;
+            }
+            push @info_objects, \%info_object;
+        }
+        $params{test_params}{ds_info} = \@info_objects;
+    }
+
+    if ( @opt_nameserver ) {
+        my @nameserver_objects;
+        for my $domain_ip_pair ( @opt_nameserver ) {
+            my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
+            $ip //= "";
+            push @nameserver_objects,
+              {
+                ns => $domain,
+                ip => $ip,
+              };
+        }
+        $params{test_params}{nameservers} = \@nameserver_objects;
+    }
+
+    if ( $opt_ipv4 ) {
+        $params{test_params}{ipv4} = json_tern( $opt_ipv4 );
+    }
+
+    if ( $opt_ipv6 ) {
+        $params{test_params}{ipv6} = json_tern( $opt_ipv6 );
+    }
+
+    if ( $opt_profile ) {
+        $params{test_params}{profile} = $opt_profile;
+    }
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'add_batch_job',
+        params => \%params,
+    );
+}
+
+
+=head2 get_batch_job_result
+
+ zmb [GLOBAL OPTIONS] add_api_user [OPTIONS]
+
+ Options:
+   --batch-id BATCH-ID
+
+=cut
+
+sub cmd_get_batch_job_result {
+    my @opts = @_;
+
+    my $opt_batch_id;
+    GetOptionsFromArray(
+        \@opts,
+        'batch-id|i=s' => \$opt_batch_id,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_batch_job_result',
+        params => {
+            batch_id => $opt_batch_id,
         },
     );
 }

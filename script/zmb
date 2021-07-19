@@ -426,7 +426,7 @@ sub cmd_add_api_user {
 
 =head2 add_batch_job
 
- zmb [GLOBAL OPTIONS] add_api_job [OPTIONS]
+ zmb [GLOBAL OPTIONS] add_batch_job [OPTIONS]
 
  Options:
     --username USERNAME
@@ -547,7 +547,7 @@ sub cmd_add_batch_job {
 
 =head2 get_batch_job_result
 
- zmb [GLOBAL OPTIONS] add_api_user [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
 
  Options:
    --batch-id BATCH-ID

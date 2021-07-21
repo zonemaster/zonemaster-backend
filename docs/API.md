@@ -136,7 +136,7 @@ Basic data type: string
 
 Basic data type: object
 
-DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
+DS for [Delegation Signer] references a DNSKEY record in the delegated zone.
 
 Properties:
 * `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
@@ -910,6 +910,11 @@ Example response:
 > symbol.
 >
 
+## Undelegated and delegated
+
+A test is considered to be `"delegated"` below if the test was started, by
+`start_domain_test` or `add_batch_job` without specifying neither `"nameserver"`
+nor `"ds_info"`. Else it is considered to be `"undelegated"`.
 
 #### `"params"`
 
@@ -1217,15 +1222,16 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 
 [Add_batch_job]:                #api-method-add_batch_job
 [DS info]:                      #ds-info
+[Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
 [Name server]:                  #name-server
 [Privilege levels]:             #privilege-levels
-[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [Profile name]:                 #profile-name
 [Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
 [Start_domain_test]:            #api-method-start_domain_test
+[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6

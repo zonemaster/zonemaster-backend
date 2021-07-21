@@ -159,6 +159,7 @@ sub create_new_test {
 
     my $fingerprint = $self->generate_fingerprint( $test_params );
     my $encoded_params = $self->encode_params( $test_params );
+    my $undelegated = $self->undelegated ( $test_params );
 
     my $result_id;
 
@@ -190,7 +191,7 @@ sub create_new_test {
                 $fingerprint,
                 $encoded_params,
                 $test_params->{domain},
-                ($test_params->{nameservers})?(1):(0),
+                $undelegated,
             );
 
             my ( undef, $hash_id ) = $dbh->selectrow_array(
@@ -348,15 +349,16 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__domain_undelegated ON test_results" );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params) VALUES (?, ?, ?, ?, ?, ?) ' );
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
             my $fingerprint = $self->generate_fingerprint( $test_params );
             my $encoded_params = $self->encode_params( $test_params );
+            my $undelegated = $self->undelegated ( $test_params );
 
-            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
-            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params );
+            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
+            # $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );

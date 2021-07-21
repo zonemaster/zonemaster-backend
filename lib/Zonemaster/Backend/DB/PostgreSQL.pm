@@ -170,13 +170,14 @@ sub create_new_test {
 
     my $fingerprint = $self->generate_fingerprint( $test_params );
     my $encoded_params = $self->encode_params( $test_params );
+    my $undelegated = $self->undelegated ( $test_params );
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
 
     my $sth = $dbh->prepare( "
-        INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params)
-        SELECT ?, ?, ?, ?, ?
+        INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, undelegated)
+        SELECT ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT * FROM test_results
             WHERE params_deterministic_hash = ?
@@ -188,6 +189,7 @@ sub create_new_test {
         $queue_label,
         $fingerprint,
         $encoded_params,
+        $undelegated,
         $fingerprint,
         sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
     );
@@ -252,9 +254,9 @@ sub get_test_history {
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
-        $undelegated = "AND (params->'nameservers') IS NOT NULL";
+        $undelegated = "AND undelegated = 1";
     } elsif ($p->{filter} eq "delegated") {
-        $undelegated = "AND (params->'nameservers') IS NULL";
+        $undelegated = "AND undelegated = 0";
     }
 
     my @results;
@@ -319,14 +321,15 @@ sub add_batch_job {
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params) FROM STDIN" );
+        $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params, undelegated) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
             my $fingerprint = $self->generate_fingerprint( $test_params );
             my $encoded_params = $self->encode_params( $test_params );
+            my $undelegated = $self->undelegated ( $test_params );
 
-            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\n");
+            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );

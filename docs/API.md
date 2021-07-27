@@ -38,6 +38,7 @@
 * [API method: test_progress](#API-method-test_progress)
 * [API method: get_test_results](#API-method-get_test_results)
 * [API method: get_test_history](#API-method-get_test_history)
+  * [Undelegated and delegated](#undelegated-and-delegated)
 * [API method: add_api_user](#API-method-add_api_user)
 * [API method: add_batch_job](#API-method-add_batch_job)
 * [API method: get_batch_job_result](#API-method-get_batch_job_result)
@@ -961,7 +962,7 @@ Example response:
 > symbol.
 >
 
-## Undelegated and delegated
+### Undelegated and delegated
 
 A test is considered to be `"delegated"` below if the test was started, by
 `start_domain_test` or `add_batch_job` without specifying neither `"nameserver"`

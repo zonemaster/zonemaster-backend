@@ -290,12 +290,19 @@ Basic data type: string
 
 One of the strings (in order from least to most severe):
 
-* `"DEBUG"`
 * `"INFO"`
 * `"NOTICE"`
 * `"WARNING"`
 * `"ERROR"`
 * `"CRITICAL"`
+
+Severity levels in Zonemaster are defined in the [Severity Level Definitions]
+document. The following severity levels are not available through the RPCAPI
+(in order from least to most severe):
+
+* DEBUG3
+* DEBUG2
+* DEBUG
 
 
 ### Test id
@@ -936,15 +943,16 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
-* `"overall_result"`: A string. The most severe problem level logged in the test results.
-It could be:
-    * `"ok"`, all is normal
-    * `"warning"`, equivalent to the `"WARNING"` *severity level*.
-    * `"error"`, equivalent to the `"ERROR"` *severity level*.
-    * `"critical"`, equivalent to the `"CRITICAL"` *severity level*.
-
-
-> TODO: What about if the *test* was created with `add_batch_job` or something else?
+* `"overall_result"`: A string. It reflects the most severe problem level among
+  the test results for the test. It has one of the following values:
+  * `"ok"`, if there are only messages with *severity level* `"INFO"` or
+    `"NOTICE"`.
+  * `"warning"`, if there is at least one message with *severity level*
+    `"WARNING"`, but none with `"ERROR"` or `"CRITICAL"`.
+  * `"error"`, if there is at least one message with *severity level*
+    `"ERROR"`, but none with `"CRITICAL"`.
+  * `"critical"`, if there is at least one message with *severity level*
+    `"CRITICAL"`.
 
 
 #### `"error"`
@@ -1235,3 +1243,4 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md

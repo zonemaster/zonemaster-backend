@@ -38,13 +38,15 @@ CREATE TRIGGER before_insert_test_results
             SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
         END IF;
     END//
-DELIMITER //
+
+DELIMITER ;
 
 CREATE TABLE batch_jobs (
     id integer AUTO_INCREMENT PRIMARY KEY,
     username character varying(50) NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 ) Engine=InnoDB;
+
 CREATE TABLE users (
     id integer AUTO_INCREMENT primary key,
     username varchar(128),

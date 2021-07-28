@@ -39,7 +39,7 @@ CREATE TRIGGER before_insert_test_results
         END IF;
     END//
 DELIMITER //
-            
+
 CREATE TABLE batch_jobs (
     id integer AUTO_INCREMENT PRIMARY KEY,
     username character varying(50) NOT NULL,

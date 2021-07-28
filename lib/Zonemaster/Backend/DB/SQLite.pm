@@ -63,23 +63,23 @@ sub create_db {
 
     $self->dbh->do(
         'CREATE TABLE test_results (
-                         id integer PRIMARY KEY AUTOINCREMENT,
-                         hash_id VARCHAR(16) DEFAULT NULL,
-                         domain VARCHAR(255) NOT NULL,
-                         batch_id integer NULL,
-                         creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                         test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                         test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                         priority integer DEFAULT 10,
-                         queue integer DEFAULT 0,
-                         progress integer DEFAULT 0,
-                         params_deterministic_hash character varying(32),
-                         params text NOT NULL,
-                         results text DEFAULT NULL,
-                         undelegated boolean NOT NULL DEFAULT false,
-                         nb_retries integer NOT NULL DEFAULT 0
-               )
-     '
+                 id integer PRIMARY KEY AUTOINCREMENT,
+                 hash_id VARCHAR(16) DEFAULT NULL,
+                 domain VARCHAR(255) NOT NULL,
+                 batch_id integer NULL,
+                 creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                 test_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                 test_end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                 priority integer DEFAULT 10,
+                 queue integer DEFAULT 0,
+                 progress integer DEFAULT 0,
+                 params_deterministic_hash character varying(32),
+                 params text NOT NULL,
+                 results text DEFAULT NULL,
+                 undelegated boolean NOT NULL DEFAULT false,
+                 nb_retries integer NOT NULL DEFAULT 0
+           )
+        '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
@@ -89,11 +89,11 @@ sub create_db {
 
     $self->dbh->do(
         'CREATE TABLE batch_jobs (
-                         id integer PRIMARY KEY,
-                         username character varying(50) NOT NULL,
-                         creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-               )
-     '
+                 id integer PRIMARY KEY,
+                 username character varying(50) NOT NULL,
+                 creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+           )
+        '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     ####################################################################
@@ -102,12 +102,12 @@ sub create_db {
     $self->dbh->do( 'DROP TABLE IF EXISTS users' );
     $self->dbh->do(
         'CREATE TABLE users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username varchar(128),
-                    api_key varchar(512),
-                    user_info json DEFAULT NULL
-               )
-     '
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username varchar(128),
+                api_key varchar(512),
+                user_info json DEFAULT NULL
+           )
+        '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
     return 1;

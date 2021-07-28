@@ -20,7 +20,11 @@ sub patch_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $dbh->do( 'ALTER TABLE test_results ADD COLUMN IF NOT EXISTS undelegated integer NOT NULL DEFAULT 0' );
+    eval {
+        $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated integer NOT NULL DEFAULT 0' );
+    };
+    print "Error while changing DB schema:  " . $@;
+
     $dbh->do( qq[
 update test_results set undelegated = test_results_undelegated.undelegated_bool::int
 from (

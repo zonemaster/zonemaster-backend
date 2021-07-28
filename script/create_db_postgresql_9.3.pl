@@ -21,9 +21,6 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS test_specs CASCADE' );
-    $dbh->do( 'DROP SEQUENCE IF EXISTS test_specs_id_seq' );
-
     $dbh->do( 'DROP TABLE IF EXISTS test_results CASCADE' );
     $dbh->do( 'DROP SEQUENCE IF EXISTS test_results_id_seq' );
 

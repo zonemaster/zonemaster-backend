@@ -56,9 +56,11 @@ share/patch_db_README.txt
 share/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
+share/patch_mysql_db_zonemaster_backend_ver_7.0.0.pl
 share/patch_postgresql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch_postgresql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch_postgresql_db_zonemaster_backend_ver_7.0.0.pl
+share/patch_sqlite_db_zonemaster_backend_ver_7.0.0.pl
 share/tmpfiles.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini

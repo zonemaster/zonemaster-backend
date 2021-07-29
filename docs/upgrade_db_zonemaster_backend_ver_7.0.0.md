@@ -12,14 +12,20 @@ export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.
 
 ### SQLite
 
-No patching (upgrading) is needed on zonemaster database on SQLite for this
-version of Zonemaster-Backend.
+Run
+```sh
+cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
+perl patch_sqlite_db_zonemaster_backend_ver_7.0.0.pl
+```
 
 
 ### MySQL (or MariaDB)
 
-No patching (upgrading) is needed on zonemaster database on MySQL (or MariaDB)
-for this version of Zonemaster-Backend.
+Run
+```sh
+cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
+perl patch_mysql_db_zonemaster_backend_ver_7.0.0.pl
+```
 
 
 ### PostgreSQL
@@ -29,4 +35,3 @@ Run
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
 perl patch_postgresql_db_zonemaster_backend_ver_7.0.0.pl
 ```
-

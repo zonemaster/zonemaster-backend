@@ -38,13 +38,13 @@ sub create_db {
             progress integer DEFAULT 0,
             params_deterministic_hash character varying(32),
             params blob NOT NULL,
-            results blob DEFAULT NULL,
-            undelegated boolean NOT NULL DEFAULT false,
+            results mediumblob DEFAULT NULL,
+            undelegated integer NOT NULL DEFAULT 0,
             nb_retries integer NOT NULL DEFAULT 0
         ) ENGINE=InnoDB
         '
     );
-    
+
     $dbh->do(
         'CREATE TRIGGER before_insert_test_results
             BEFORE INSERT ON test_results
@@ -61,17 +61,20 @@ sub create_db {
     $dbh->do(
         'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
     );
-    
     $dbh->do(
         'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
     );
-
     $dbh->do(
         'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
     );
-    
-    $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
-    
+    $dbh->do(
+        'CREATE INDEX test_results__progress ON test_results (progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
+    );
+
+
     ####################################################################
     # BATCH JOBS
     ####################################################################
@@ -85,6 +88,7 @@ sub create_db {
         ) ENGINE=InnoDB;
         '
     );
+
 
     ####################################################################
     # USERS

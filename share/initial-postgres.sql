@@ -41,4 +41,3 @@ CREATE TABLE users (
 ALTER TABLE test_results OWNER TO zonemaster;
 ALTER TABLE batch_jobs OWNER TO zonemaster;
 ALTER TABLE users OWNER TO zonemaster;
-GRANT USAGE ON test_results_id_seq, batch_jobs_id_seq, users_id_seq TO zonemaster;

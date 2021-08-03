@@ -238,8 +238,17 @@ subtest 'Everything but NoWarnings' => sub {
     is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest length' ) )
         or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
-    $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
     is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest format' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
+    $frontend_params->{ds_info}->[0]->{digtype} = -1;
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest type' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{digtype} = 1;
+    $frontend_params->{ds_info}->[0]->{keytag} = 'not a int';
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid keytag' ) )
         or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 };

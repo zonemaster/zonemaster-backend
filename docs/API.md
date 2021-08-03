@@ -529,7 +529,7 @@ Example response:
 
 #### `"params"`
 
-An object with the properties:
+An object with the property:
 
 * `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
 
@@ -629,7 +629,7 @@ Example response:
 
 #### `"params"`
 
-An object with the properties:
+An object with the property:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 

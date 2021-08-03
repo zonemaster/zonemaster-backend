@@ -40,7 +40,7 @@ Older than 1.0.3                      | [Upgrade to 1.0.3]    |
 At least 1.0.3 but older than 1.1.0   | [Upgrade to 1.1.0]    |
 At least 1.1.0 but older than 5.0.0   | [Upgrade to 5.0.0]    |
 At least 5.0.0 but older than 5.0.2   | [Upgrade to 5.0.2]    | For MySQL/MariaDB only
-At least 5.0.2 but older than 7.0.0   | [Upgrade to 7.0.0]    | For all database types
+At least 5.0.2 but older than 7.0.0   | [Upgrade to 7.0.0]    |
 
 If the database was created before Zonemaster-Backend version 5.0.2, then you
 have to upgrade it in several steps.

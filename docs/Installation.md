@@ -6,19 +6,22 @@
 * [2. Prerequisites](#2-prerequisites)
 * [3. Installation on CentOS](#3-installation-on-centos)
   * [3.1 Install Zonemaster::Backend and related dependencies (CentOS)](#31-install-zonemasterbackend-and-related-dependencies-centos)
-  * [3.2 Database engine installation and configuration (CentOS)](#32-database-engine-installation-and-configuration-centos)
-  * [3.3 Service configuration and startup (CentOS)](#33-service-configuration-and-startup-centos)
-  * [3.4 Post-installation (CentOS)](#34-post-installation-centos)
+  * [3.2 Database engine installation (CentOS)](#32-database-engine-installation-centos)
+  * [3.3 Database configuration (CentOS)](#33-database-configuration-centos)
+  * [3.4 Service configuration and startup (CentOS)](#34-service-configuration-and-startup-centos)
+  * [3.5 Post-installation (CentOS)](#35-post-installation-centos)
 * [4. Installation on Debian and Ubuntu](#4-installation-on-debian-and-ubuntu)
   * [4.1 Install Zonemaster::Backend and related dependencies (Debian/Ubuntu)](#41-install-zonemasterbackend-and-related-dependencies-debianubuntu)
-  * [4.2 Database engine installation and configuration (Debian/Ubuntu)](#42-database-engine-installation-and-configuration-debianubuntu)
-  * [4.3 Service configuration and startup (Debian/Ubuntu)](#43-service-configuration-and-startup-debianubuntu)
-  * [4.4 Post-installation (Debian/Ubuntu)](#44-post-installation-debianubuntu)
+  * [4.2 Database engine installation (Debian/Ubuntu)](#42-database-engine-installation-debianubuntu)
+  * [4.3 Database configuration (Debian/Ubuntu)](#43-database-configuration-debianubuntu)
+  * [4.4 Service configuration and startup (Debian/Ubuntu)](#44-service-configuration-and-startup-debianubuntu)
+  * [4.5 Post-installation (Debian/Ubuntu)](#45-post-installation-debianubuntu)
 * [5. Installation on FreeBSD](#5-installation-on-freebsd)
   * [5.1 Install Zonemaster::Backend and related dependencies (FreeBSD)](#51-install-zonemasterbackend-and-related-dependencies-freebsd)
-  * [5.2 Database engine installation and configuration (FreeBSD)](#52-database-engine-installation-and-configuration-freebsd)
-  * [5.3 Service startup (FreeBSD)](#53-service-startup-freebsd)
-  * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
+  * [5.2 Database engine installation (FreeBSD)](#52-database-engine-installation-freebsd)
+  * [5.3 Database configuration (FreeBSD)](#53-database-configuration-freebsd)
+  * [5.4 Service startup (FreeBSD)](#54-service-startup-freebsd)
+  * [5.5 Post-installation (FreeBSD)](#55-post-installation-freebsd)
 * [6. Post-installation](#6-post-installation)
   * [6.1 Smoke test](#61-smoke-test)
   * [6.2 What to do next?](#62-what-to-do-next)
@@ -107,7 +110,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > previous version of Zonemaster-Backend).
 
 
-### 3.2 Database engine installation and configuration (CentOS)
+### 3.2 Database engine installation (CentOS)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -126,12 +129,10 @@ but if you have removed the old Zonemaster database, then do the initialization.
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
 
-Create database directory, database and set correct ownership:
+Create database directory:
 
 ```sh
 sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
-cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
 ```
 
 > Some parameters can be changed, see the [backend configuration] documentation
@@ -144,7 +145,17 @@ See appendices for [MariaDB][MariaDB instructions for CentOS] and
 [PostgreSQL][PostgreSQL instructions for CentOS].
 
 
-### 3.3 Service configuration and startup (CentOS)
+### 3.3 Database configuration (CentOS)
+
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
+```
+
+
+### 3.4 Service configuration and startup (CentOS)
 
 Make sure our tmpfiles configuration takes effect:
 
@@ -162,7 +173,7 @@ sudo systemctl start zm-testagent
 ```
 
 
-### 3.4 Post-installation (CentOS)
+### 3.5 Post-installation (CentOS)
 
 See the [post-installation] section for post-installation matters.
 
@@ -237,7 +248,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
 
 
-### 4.2 Database engine installation and configuration (Debian/Ubuntu)
+### 4.2 Database engine installation (Debian/Ubuntu)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -256,12 +267,10 @@ but if you have removed the old Zonemaster database, then do the initialization.
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
 
-Create database directory, database and set correct ownership:
+Create database directory:
 
 ```sh
 sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
-cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
 ```
 
 > Some parameters can be changed, see the [backend configuration] documentation
@@ -274,7 +283,17 @@ See appendices for [MariaDB][MariaDB instructions for Debian] and
 [PostgreSQL][PostgreSQL instructions for Debian].
 
 
-### 4.3 Service configuration and startup (Debian/Ubuntu)
+### 4.3 Database configuration (Debian/Ubuntu)
+
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
+```
+
+
+### 4.4 Service configuration and startup (Debian/Ubuntu)
 
 Make sure our tmpfiles configuration takes effect:
 
@@ -292,7 +311,7 @@ sudo systemctl start zm-testagent
 ```
 
 
-### 4.4 Post-installation (Debian/Ubuntu)
+### 4.5 Post-installation (Debian/Ubuntu)
 
 See the [post-installation] section for post-installation matters.
 
@@ -347,7 +366,7 @@ install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 ```
 
-### 5.2 Database engine installation and configuration (FreeBSD)
+### 5.2 Database engine installation (FreeBSD)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -371,12 +390,10 @@ Configure Zonemaster::Backend to use the correct database path:
 sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
-Create database directory and database with correct ownership:
+Create database directory:
 
 ```sh
 install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-su -m zonemaster -c "perl create_db.pl"
 ```
 
 > Some parameters can be changed, see the [backend configuration] documentation
@@ -388,7 +405,17 @@ See appendices for [MariaDB][MariaDB instructions for FreeBSD] and
 [PostgreSQL][PostgreSQL instructions for FreeBSD].
 
 
-### 5.3 Service startup (FreeBSD)
+### 5.3 Database configuration (FreeBSD)
+
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+su -m zonemaster -c "perl create_db.pl"
+```
+
+
+### 5.4 Service startup (FreeBSD)
 
 Enable services at startup:
 
@@ -404,7 +431,7 @@ service zm_rpcapi start
 service zm_testagent start
 ```
 
-### 5.4 Post-installation (FreeBSD)
+### 5.5 Post-installation (FreeBSD)
 
 To check the running daemons run:
 
@@ -495,13 +522,6 @@ GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
-Finally initialize the database:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
-```
-
 
 #### A.2. MariaDB installation on Debian and Ubuntu
 
@@ -538,13 +558,6 @@ GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
 ```
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
-
-Finally initialize the database:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
-```
 
 
 #### A.3. MySQL installation on FreeBSD
@@ -605,13 +618,6 @@ exit;
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
-Finally initialize the database:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-su -m zonemaster -c "perl create_db.pl"
-```
-
 
 ### B. Installation with PostgreSQL
 
@@ -665,13 +671,6 @@ This will ask for a password that should be copied in `backend_config.ini`.
 sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
 ```
 
-Finally initialize the database:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
-```
-
 
 #### B.2. PostgreSQL installation on Debian and Ubuntu
 
@@ -699,13 +698,6 @@ This will ask for a password that should be copied in `backend_config.ini`.
 
 ```sh
 sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
-```
-
-Finally initialize the database:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
 ```
 
 
@@ -737,13 +729,6 @@ This will ask for a password that should be copied in `backend_config.ini`.
 
 ```sh
 sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
-```
-
-Finally initialize the database:
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-su -m zonemaster -c "perl create_db.pl"
 ```
 
 

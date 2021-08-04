@@ -23,6 +23,7 @@ BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
 use Zonemaster::Backend::RPCAPI;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Metrics;
 
 local $| = 1;
 
@@ -148,6 +149,8 @@ my $dispatch = JSON::RPC::Dispatch->new(
     router => $router,
 );
 
+use Data::Dumper;
+
 sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
@@ -169,7 +172,10 @@ sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
-            $dispatch->handle_psgi($env, $env->{REMOTE_HOST});
+            $res = $dispatch->handle_psgi($env, $env->{REMOTE_HOST});
+            my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
+            Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");
+            $res;
         }
     } else {
         $res = Plack::Response->new(200);

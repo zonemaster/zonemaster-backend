@@ -275,6 +275,7 @@ sub get_test_history {
                 hash_id,
                 CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
                 params,
+                undelegated,
                 results
             FROM
                 test_results
@@ -291,6 +292,7 @@ sub get_test_history {
                 hash_id,
                 CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
                 params,
+                undelegated,
                 results
             FROM
                 test_results
@@ -321,6 +323,7 @@ sub get_test_history {
             {
                 id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
+                undelegated      => $h->{undelegated},
                 overall_result   => $overall,
             }
         );

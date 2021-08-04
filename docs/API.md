@@ -255,7 +255,7 @@ Properties:
 ### Non-negative integer
 
 Basic data type: number (integer)
- 
+
 A non-negative integer is either zero or strictly positive.
 
 
@@ -371,7 +371,7 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*. 
+* `"ns"`: a *domain name*. The name server used by the *test module*.
 This key is added when the module name is `"NAMESERVER"`.
 
 
@@ -734,7 +734,7 @@ An object with the following properties:
 
 #### `"result"`
 
-A *test id*. 
+A *test id*.
 
 If a test has been requested with the same parameters (as listed below) not more
 than "reuse time" ago, then a new request will not trigger a new test. Instead
@@ -887,7 +887,7 @@ In the case of a test created with `start_domain_test`:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
+* `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: A normalized version `"params"` object sent to
   `start_domain_test` when the *test* was started.
 * `"results"`: A list of *test result* objects.
@@ -896,7 +896,7 @@ In the case of a test created with `start_domain_test`:
 In the case of a test created with `add_batch_job`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
+* `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: A normalized version `"params"` object sent to `add_batch_job`
   when the *test* was started.
 * `"results"`: the result is a list of *test id* corresponding to each tested
@@ -944,10 +944,12 @@ Example response:
     {
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
+      "undelegated": 1,
       "overall_result": "error",
     },
     {
       "id": "32dd4bc0582b6bf9",
+      "undelegated": 0,
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
     },
@@ -1013,7 +1015,7 @@ In order to use advanced api features such as the *batch test*, it's necessaire 
 This key can be obtained with the creation of a user in the system.
 This function allow the creation of a new user and so, the creation of a new api key.
 
-Add a new *user* 
+Add a new *user*
 
 This method requires the *administrative* *privilege level*.
 
@@ -1067,7 +1069,7 @@ Trying to add a already existing user:
 ```
 
 Ommitting params:
-```json 
+```json
 {
   "message": "username or api_key not provided to the method add_api_user\n",
   "code": -32603
@@ -1129,7 +1131,7 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
-* `"profile"`: A [*profile name*][profile name], optional (default: 
+* `"profile"`: A [*profile name*][profile name], optional (default:
   `"default"`). Run the tests using the given profile.
 * `"client_version"`: A *client version*, optional. (default: unset)
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)

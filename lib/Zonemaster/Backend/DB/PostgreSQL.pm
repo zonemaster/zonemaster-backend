@@ -267,6 +267,7 @@ sub get_test_history {
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
             id,
             hash_id,
+            undelegated,
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
         FROM test_results
         WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
@@ -291,6 +292,7 @@ sub get_test_history {
             {
                 id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
+                undelegated      => $h->{undelegated},
                 overall_result   => $overall_result,
             }
         );

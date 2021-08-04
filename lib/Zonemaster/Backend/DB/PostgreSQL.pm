@@ -91,6 +91,77 @@ sub dbh {
     return $self->dbhandle;
 }
 
+sub create_db {
+    my ( $self ) = @_;
+
+    my $dbh = $self->dbh;
+
+    ####################################################################
+    # TEST RESULTS
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE test_results (
+                id serial PRIMARY KEY,
+                hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
+                batch_id integer,
+                creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
+                test_start_time timestamp without time zone,
+                test_end_time timestamp without time zone,
+                priority integer DEFAULT 10,
+                queue integer DEFAULT 0,
+                progress integer DEFAULT 0,
+                params_deterministic_hash varchar(32),
+                params json NOT NULL,
+                undelegated integer NOT NULL DEFAULT 0,
+                results json,
+                nb_retries integer NOT NULL DEFAULT 0
+            )
+        '
+    );
+
+    $dbh->do(
+        'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+    );
+    $dbh->do(
+        'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+    );
+    $dbh->do(
+        'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX test_results__progress ON test_results (progress)'
+    );
+    $dbh->do(
+        "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
+    );
+
+
+    ####################################################################
+    # BATCH JOBS
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE batch_jobs (
+                id serial PRIMARY KEY,
+                username varchar(50) NOT NULL,
+                creation_time timestamp without time zone DEFAULT NOW() NOT NULL
+            )
+        '
+    );
+
+
+    ####################################################################
+    # USERS
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE users (
+                id serial PRIMARY KEY,
+                user_info json
+            )
+        '
+    );
+
+}
+
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
 

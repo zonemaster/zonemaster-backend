@@ -129,10 +129,9 @@ but if you have removed the old Zonemaster database, then do the initialization.
 Create database directory, database and set correct ownership:
 
 ```sh
-cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
-sudo perl create_db_sqlite.pl
-sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
 ```
 
 > Some parameters can be changed, see the [backend configuration] documentation
@@ -260,10 +259,9 @@ but if you have removed the old Zonemaster database, then do the initialization.
 Create database directory, database and set correct ownership:
 
 ```sh
-cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
-sudo perl create_db_sqlite.pl
-sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
 ```
 
 > Some parameters can be changed, see the [backend configuration] documentation
@@ -376,9 +374,9 @@ sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' 
 Create database directory and database with correct ownership:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
-env ZONEMASTER_BACKEND_CONFIG_FILE=/usr/local/etc/zonemaster/backend_config.ini su -m zonemaster -c "perl create_db_sqlite.pl"
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+su -m zonemaster -c "perl create_db.pl"
 ```
 
 > Some parameters can be changed, see the [backend configuration] documentation
@@ -497,6 +495,13 @@ GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
+```
+
 
 #### A.2. MariaDB installation on Debian and Ubuntu
 
@@ -533,6 +538,13 @@ GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
 ```
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
+
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
+```
 
 
 #### A.3. MySQL installation on FreeBSD
@@ -593,6 +605,13 @@ exit;
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+su -m zonemaster -c "perl create_db.pl"
+```
+
 
 ### B. Installation with PostgreSQL
 
@@ -646,6 +665,13 @@ This will ask for a password that should be copied in `backend_config.ini`.
 sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
 ```
 
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
+```
+
 
 #### B.2. PostgreSQL installation on Debian and Ubuntu
 
@@ -673,6 +699,13 @@ This will ask for a password that should be copied in `backend_config.ini`.
 
 ```sh
 sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
+```
+
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+sudo -u zonemaster perl create_db.pl
 ```
 
 
@@ -704,6 +737,13 @@ This will ask for a password that should be copied in `backend_config.ini`.
 
 ```sh
 sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
+```
+
+Finally initialize the database:
+
+```sh
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+su -m zonemaster -c "perl create_db.pl"
 ```
 
 

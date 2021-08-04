@@ -477,15 +477,25 @@ sudo systemctl enable mariadb
 sudo systemctl start mariadb
 ```
 
-Initialize the database (unless you keep an old database):
+To initialize the database (unless you keep an old database) connect to the
+MariaDB server:
 
 ```sh
-sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-mysql.sql
+sudo mysql
 ```
 
-> **Note:** This creates a database called `zonemaster`, as well as a user
-> called "zonemaster" with the password "zonemaster" (as stated in the config
-> file). This user has just enough permissions to run the backend software.
+Create the database:
+```sql
+CREATE DATABASE zonemaster;
+```
+
+Create a new user and give it all permissions on the newly created database:
+```sql
+CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';
+GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
+```
+
+Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
 
 #### A.2. MariaDB installation on Debian and Ubuntu
@@ -504,15 +514,25 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Initialize Zonemaster database (unless you keep an old database):
+To initialize the database (unless you keep an old database) connect to the
+MariaDB server:
 
 ```sh
-sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-mysql.sql
+sudo mysql
 ```
 
-> **Note:** This creates a database called `zonemaster`, as well as a user
-> called "zonemaster" with the password "zonemaster" (as stated in the config
-> file). This user has just enough permissions to run the backend software.
+Create the database:
+```sql
+CREATE DATABASE zonemaster;
+```
+
+Create a new user and give it all permissions on the newly created database:
+```sql
+CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';
+GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
+```
+
+Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
 
 #### A.3. MySQL installation on FreeBSD
@@ -554,23 +574,24 @@ Reset root password in MySQL (required by MySQL). Replace
 ALTER USER 'root'@'localhost' IDENTIFIED BY '<selected root password>';
 ```
 
+Unless you keep an old database, initialize the database:
+```sql
+CREATE DATABASE zonemaster;
+```
+
+Create a new user and give it all permissions on the newly created database:
+```sql
+CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';
+GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
+```
+
 Logout from database:
 
 ```sql
 exit;
 ```
 
-Unless you keep an old database, initialize the database (and give the
-root password when prompted):
-
-```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-mysql -u root -p < ./initial-mysql.sql
-```
-
-> **Note:** This creates a database called `zonemaster`, as well as a user
-> called "zonemaster" with the password "zonemaster" (as stated in the config
-> file). This user has just enough permissions to run the backend software.
+Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
 
 ### B. Installation with PostgreSQL

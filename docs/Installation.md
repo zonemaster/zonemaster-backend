@@ -634,15 +634,17 @@ Install, configure and start database engine:
   sudo systemctl start postgresql
   ```
 
-Initialize Zonemaster database (unless you keep an old database):
+Initialize Zonemaster database and user (unless you keep an old database):
 
 ```sh
-sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-postgres.sql
+sudo -u postgres createuser -P zonemaster
 ```
 
-> **Note:** This creates a database called `zonemaster`, as well as a user called
-> "zonemaster" with the password "zonemaster" (as stated in the config file).
-> This user has just enough permissions to run the backend software.
+This will ask for a password that should be copied in `backend_config.ini`.
+
+```sh
+sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
+```
 
 
 #### B.2. PostgreSQL installation on Debian and Ubuntu
@@ -661,15 +663,17 @@ sudo apt install postgresql libdbd-pg-perl
 
 > **Note:** See the [backend configuration] documentation for details.
 
-Initialize Zonemaster database (unless you keep an old database):
+Initialize Zonemaster database and user (unless you keep an old database):
 
 ```sh
-sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/initial-postgres.sql
+sudo -u postgres createuser -P zonemaster
 ```
 
-> **Note:** This creates a database called `zonemaster`, as well as a user called
-> "zonemaster" with the password "zonemaster" (as stated in the config file).
-> This user has just enough permissions to run the backend software.
+This will ask for a password that should be copied in `backend_config.ini`.
+
+```sh
+sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
+```
 
 
 #### B.3. PostgreSQL installation on FreeBSD
@@ -690,11 +694,16 @@ service postgresql initdb
 service postgresql start
 ```
 
-Initialize Zonemaster database (unless you keep an old database):
+Initialize Zonemaster database and user (unless you keep an old database):
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-psql -U postgres -f ./initial-postgres.sql
+sudo -u postgres createuser -P zonemaster
+```
+
+This will ask for a password that should be copied in `backend_config.ini`.
+
+```sh
+sudo -u postgres createdb -O zonemaster -E UTF8 zonemaster
 ```
 
 

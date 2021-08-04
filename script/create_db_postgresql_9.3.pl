@@ -21,8 +21,6 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS test_results CASCADE' );
-
     $dbh->do(
         'CREATE TABLE test_results (
                 id serial PRIMARY KEY,
@@ -66,8 +64,6 @@ sub create_db {
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS batch_jobs CASCADE' );
-
     $dbh->do(
         'CREATE TABLE batch_jobs (
                 id serial PRIMARY KEY,
@@ -83,8 +79,6 @@ sub create_db {
     ####################################################################
     # USERS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS users CASCADE' );
-
     $dbh->do(
         'CREATE TABLE users (
                 id serial PRIMARY KEY,

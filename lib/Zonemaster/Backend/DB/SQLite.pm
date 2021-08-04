@@ -57,10 +57,6 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_specs' ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
-
-    $self->dbh->do( 'DROP TABLE IF EXISTS test_results' ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
-
     $self->dbh->do(
         'CREATE TABLE test_results (
                  id integer PRIMARY KEY AUTOINCREMENT,
@@ -85,8 +81,6 @@ sub create_db {
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS batch_jobs' ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
-
     $self->dbh->do(
         'CREATE TABLE batch_jobs (
                  id integer PRIMARY KEY,
@@ -99,7 +93,6 @@ sub create_db {
     ####################################################################
     # USERS
     ####################################################################
-    $self->dbh->do( 'DROP TABLE IF EXISTS users' );
     $self->dbh->do(
         'CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

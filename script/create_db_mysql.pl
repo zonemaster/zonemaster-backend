@@ -20,10 +20,6 @@ sub create_db {
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS test_specs CASCADE' );
-
-    $dbh->do( 'DROP TABLE IF EXISTS test_results CASCADE' );
-
     $dbh->do(
         'CREATE TABLE test_results (
             id integer AUTO_INCREMENT PRIMARY KEY,
@@ -78,8 +74,6 @@ sub create_db {
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS batch_jobs CASCADE' );
-
     $dbh->do(
         'CREATE TABLE batch_jobs (
             id integer AUTO_INCREMENT PRIMARY KEY,
@@ -93,8 +87,6 @@ sub create_db {
     ####################################################################
     # USERS
     ####################################################################
-    $dbh->do( 'DROP TABLE IF EXISTS users CASCADE' );
-
     $dbh->do(
         'CREATE TABLE users (
             id integer AUTO_INCREMENT primary key,

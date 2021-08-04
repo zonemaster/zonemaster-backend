@@ -1,10 +1,5 @@
 use strict;
 use warnings;
-use utf8;
-use Data::Dumper;
-use Encode;
-
-use DBI qw(:utils);
 
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::DB::PostgreSQL;

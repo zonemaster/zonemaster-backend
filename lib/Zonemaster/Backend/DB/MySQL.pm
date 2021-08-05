@@ -76,7 +76,7 @@ sub create_db {
             priority integer DEFAULT 10,
             queue integer DEFAULT 0,
             progress integer DEFAULT 0,
-            params_deterministic_hash character varying(32),
+            fingerprint character varying(32),
             params blob NOT NULL,
             results mediumblob DEFAULT NULL,
             undelegated integer NOT NULL DEFAULT 0,
@@ -117,9 +117,9 @@ sub create_db {
             'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
         );
     }
-    if ( not exists($indexes->{test_results__params_deterministic_hash}) ) {
+    if ( not exists($indexes->{test_results__fingerprint}) ) {
         $dbh->do(
-            'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+            'CREATE INDEX test_results__fingerprint ON test_results (fingerprint)'
         );
     }
     if ( not exists($indexes->{test_results__batch_id_progress}) ) {
@@ -243,7 +243,7 @@ sub create_new_test {
         $dbh->do( q[LOCK TABLES test_results WRITE] );
         my ( $recent_hash_id ) = $dbh->selectrow_array(
             q[
-            SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
+            SELECT hash_id FROM test_results WHERE fingerprint = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
             ],
             undef, $fingerprint, $seconds_between_tests_with_same_params,
         );
@@ -255,7 +255,7 @@ sub create_new_test {
         else {
             $dbh->do(
                 q[
-                INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated) VALUES (?, ?,?,?,?,?, NOW(),?)
+                INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, test_start_time, undelegated) VALUES (?, ?,?,?,?,?, NOW(),?)
                 ],
                 undef,
                 $batch_id,
@@ -268,7 +268,7 @@ sub create_new_test {
             );
 
             my ( undef, $hash_id ) = $dbh->selectrow_array(
-                "SELECT id, hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $fingerprint);
+                "SELECT id, hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint);
 
             $result_id = $hash_id;
         }
@@ -438,12 +438,12 @@ sub add_batch_job {
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
-        eval {$dbh->do( "DROP INDEX test_results__params_deterministic_hash ON test_results" );};
+        eval {$dbh->do( "DROP INDEX test_results__fingerprint ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__batch_id_progress ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__domain_undelegated ON test_results" );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, params_deterministic_hash, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, fingerprint, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -454,7 +454,7 @@ sub add_batch_job {
             $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
-        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );

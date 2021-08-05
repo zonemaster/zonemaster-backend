@@ -70,7 +70,7 @@ sub create_db {
                 priority integer DEFAULT 10,
                 queue integer DEFAULT 0,
                 progress integer DEFAULT 0,
-                params_deterministic_hash varchar(32),
+                fingerprint varchar(32),
                 params json NOT NULL,
                 undelegated integer NOT NULL DEFAULT 0,
                 results json,
@@ -89,9 +89,9 @@ sub create_db {
             'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
         );
     }
-    if ( not exists($indexes->{test_results__params_deterministic_hash}) ) {
+    if ( not exists($indexes->{test_results__fingerprint}) ) {
         $dbh->do(
-            'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+            'CREATE INDEX test_results__fingerprint ON test_results (fingerprint)'
         );
     }
     if ( not exists($indexes->{test_results__batch_id_progress}) ) {
@@ -223,11 +223,11 @@ sub create_new_test {
     my $queue_label = $test_params->{queue};
 
     my $sth = $dbh->prepare( "
-        INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, undelegated)
+        INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, undelegated)
         SELECT ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT * FROM test_results
-            WHERE params_deterministic_hash = ?
+            WHERE fingerprint = ?
               AND creation_time > NOW() - ?::interval
         )" );
     my $nb_inserted = $sth->execute(    #
@@ -242,7 +242,7 @@ sub create_new_test {
     );
 
     my ( undef, $hash_id ) = $dbh->selectrow_array(
-        "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
+        "SELECT id,hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
 
     return $hash_id;
 }
@@ -380,12 +380,12 @@ sub add_batch_job {
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
-        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params, undelegated) FROM STDIN" );
+        $dbh->do( "COPY test_results(batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -398,7 +398,7 @@ sub add_batch_job {
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
-        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))" );

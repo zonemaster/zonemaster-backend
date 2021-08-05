@@ -69,7 +69,7 @@ sub create_db {
                  priority integer DEFAULT 10,
                  queue integer DEFAULT 0,
                  progress integer DEFAULT 0,
-                 params_deterministic_hash character varying(32),
+                 fingerprint character varying(32),
                  params text NOT NULL,
                  results text DEFAULT NULL,
                  undelegated boolean NOT NULL DEFAULT false,
@@ -81,8 +81,8 @@ sub create_db {
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
     );
-    $dbh->do(
-        'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (params_deterministic_hash)'
+    $self->dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (fingerprint)'
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__batch_id_progress ON test_results (batch_id, progress)'
@@ -199,7 +199,7 @@ sub create_new_test {
     # Search for recent test result with the test same parameters, where "$seconds"
     # gives the time limit for how old test result that is accepted.
     my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE params_deterministic_hash = ? AND test_start_time > DATETIME('now', ?)",
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND test_start_time > DATETIME('now', ?)",
         undef,
         $fingerprint,
         "-$seconds seconds"
@@ -216,7 +216,7 @@ sub create_new_test {
         # cannot, however, be guaranteed. Same as with the other database engines.
         my $hash_id = substr(md5_hex(time().rand()), 0, 16);
 
-        my $fields = 'hash_id, batch_id, priority, queue, params_deterministic_hash, params, domain, test_start_time, undelegated';
+        my $fields = 'hash_id, batch_id, priority, queue, fingerprint, params, domain, test_start_time, undelegated';
         $dbh->do(
             "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?, datetime('now'),?)",
             undef,
@@ -372,12 +372,12 @@ sub add_batch_job {
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
-        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, params_deterministic_hash, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' );
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, fingerprint, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -388,7 +388,7 @@ sub add_batch_job {
             $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
-        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );

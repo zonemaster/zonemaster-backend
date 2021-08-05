@@ -199,7 +199,7 @@ sub create_new_test {
     # Search for recent test result with the test same parameters, where "$seconds"
     # gives the time limit for how old test result that is accepted.
     my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND test_start_time > DATETIME('now', ?)",
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > DATETIME('now', ?)",
         undef,
         $fingerprint,
         "-$seconds seconds"

@@ -24,6 +24,14 @@ sub patch_db {
     };
     print( "Error while changing DB schema:  " . $@ ) if ($@);
 
+    # Update index
+    eval {
+        # clause IF EXISTS available since PostgreSQL >= 9.2
+        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
+    };
+    print( "Error while updating the index:  " . $@ ) if ($@);
+
     # Add missing "undelegated" column
     eval {
         $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated integer NOT NULL DEFAULT 0' );

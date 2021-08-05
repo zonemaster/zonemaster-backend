@@ -24,6 +24,13 @@ sub patch_db {
     };
     print( "Error while changing DB schema:  " . $@ ) if ($@);
 
+    # Update index
+    eval {
+        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash ON test_results" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
+    };
+    print( "Error while updating the index:  " . $@ ) if ($@);
+
     # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);
     $sth1->execute;

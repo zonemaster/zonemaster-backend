@@ -78,6 +78,23 @@ sub create_db {
         '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
 
+    $self->dbh->do(
+        'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+    );
+    $self->dbh->do(
+        'CREATE INDEX test_results__fingerprint ON test_results (params_deterministic_hash)'
+    );
+    $self->dbh->do(
+        'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+    );
+    $self->dbh->do(
+        'CREATE INDEX test_results__progress ON test_results (progress)'
+    );
+    $self->dbh->do(
+        'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
+    );
+
+
     ####################################################################
     # BATCH JOBS
     ####################################################################
@@ -89,6 +106,7 @@ sub create_db {
            )
         '
     ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+
 
     ####################################################################
     # USERS

@@ -148,7 +148,7 @@ my $dispatch = JSON::RPC::Dispatch->new(
     router => $router,
 );
 
-sub {
+my $rpcapi_app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
     my $res = {};
@@ -169,7 +169,7 @@ sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
-            $dispatch->handle_psgi($env, $env->{REMOTE_HOST});
+            $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
         }
     } else {
         $res = Plack::Response->new(200);
@@ -185,4 +185,9 @@ sub {
         $res->finalize;
 
     }
+};
+
+builder {
+    enable "Plack::Middleware::ReverseProxy";
+    mount "/" => $rpcapi_app;
 };

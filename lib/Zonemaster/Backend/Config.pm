@@ -17,16 +17,16 @@ use Zonemaster::Backend::DB;
 
 our $path;
 
-my @search_paths = (
-    '/etc/zonemaster/backend_config.ini',
-    '/usr/local/etc/zonemaster/backend_config.ini',
-    dist_file('Zonemaster-Backend', "backend_config.ini")
-);
-
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
     $path = $ENV{ZONEMASTER_BACKEND_CONFIG_FILE};
 }
 else {
+    my @search_paths = (
+        '/etc/zonemaster/backend_config.ini',
+        '/usr/local/etc/zonemaster/backend_config.ini',
+        dist_file('Zonemaster-Backend', "backend_config.ini")
+    );
+
     for my $default_path (@search_paths) {
         if ( -e $default_path ) {
             $path = $default_path;

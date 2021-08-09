@@ -1,5 +1,50 @@
 # API
 
+## Table of contents
+
+* [Purpose](#purpose)
+* [Protocol](#protocol)
+  * [Deviations from JSON-RPC 2.0](#deviations-from-json-rpc-20)
+  * [Notes on the JSON-RPC 2.0 implementation](#notes-on-the-json-rpc-20-implementation)
+* [Request handling](#Request-handling)
+* [Error reporting](#Error-reporting)
+* [Privilege levels](#Privilege-levels)
+* [Data types](#Data-types)
+  * [API key](#API-key)
+  * [Batch id](#Batch-id)
+  * [Client id](#Client-id)
+  * [Client version](#Client-version)
+  * [Domain name](#Domain-name)
+  * [DS info](#DS-info)
+  * [IP address](#IP-address)
+  * [Language tag](#Language-tag)
+  * [Name server](#Name-server)
+  * [Non-negative integer](#Non-negative-integer)
+  * [Priority](#Priority)
+  * [Profile name](#Profile-name)
+  * [Progress percentage](#Progress-percentage)
+  * [Queue](#Queue)
+  * [Severity level](#Severity-level)
+  * [Test id](#Test-id)
+  * [Test result](#Test-result)
+  * [Timestamp](#Timestamp)
+  * [Username](#Username)
+* [API method: version_info](#API-method-version_info)
+* [API method: profile_names](#API-method-profile_names)
+* [API method: get_language_tags](#API-method-get_language_tags)
+* [API method: get_host_by_name](#API-method-get_host_by_name)
+* [API method: get_data_from_parent_zone](#API-method-get_data_from_parent_zone)
+* [API method: start_domain_test](#API-method-start_domain_test)
+* [API method: test_progress](#API-method-test_progress)
+* [API method: get_test_results](#API-method-get_test_results)
+* [API method: get_test_history](#API-method-get_test_history)
+  * [Undelegated and delegated](#undelegated-and-delegated)
+* [API method: add_api_user](#API-method-add_api_user)
+* [API method: add_batch_job](#API-method-add_batch_job)
+* [API method: get_batch_job_result](#API-method-get_batch_job_result)
+* [API method: get_test_params](#API-method-get_test_params)
+
+
 ## Purpose
 
 This document describes the JSON-RPC API provided by the Zonemaster *RPC API daemon*.
@@ -141,7 +186,7 @@ Basic data type: string
 
 Basic data type: object
 
-DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
+DS for [Delegation Signer] references a DNSKEY record in the delegated zone.
 
 Properties:
 * `"digest"`: A string, required. Either 40, 64 or 96 hexadecimal characters (case insensitive).
@@ -155,8 +200,8 @@ Properties:
 Basic data type: string
 
 This parameter is a string that is either
- - a valid IPv4 in [dot-decimal notation] ;
- - a valid IPv6 in [recommend text format for IPv6 addresses].
+ - a valid IPv4 address in [dot-decimal notation] ;
+ - a valid IPv6 address in [recommend text format for IPv6 addresses].
 
 ### Language tag
 
@@ -248,7 +293,12 @@ type, it returns the following error message:
     "id":1,
     "error":{
         "message":"Invalid method parameter(s).",
-        "data":"/profile: String does not match (?^ui:^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$).",
+        "data": [
+            {
+              "path": "/profile",
+              "message": "String does not match (?^ui:^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$)."
+            },
+        ],
         "code":"-32602"
     }
 }
@@ -262,8 +312,14 @@ with this type, it returns the following error message:
     "jsonrpc":"2.0",
     "id":1,
     "error":{
-        "message":"Internal error 009 \n",
-        "code":-32603
+        "message":"Invalid method parameter(s).",
+        "data": [
+            {
+              "path": "/profile",
+              "message": "Unknown profile"
+            },
+        ],
+        "code":"-32602"
     }
 }
 ```
@@ -292,12 +348,19 @@ Basic data type: string
 
 One of the strings (in order from least to most severe):
 
-* `"DEBUG"`
 * `"INFO"`
 * `"NOTICE"`
 * `"WARNING"`
 * `"ERROR"`
 * `"CRITICAL"`
+
+Severity levels in Zonemaster are defined in the [Severity Level Definitions]
+document. The following severity levels are not available through the RPCAPI
+(in order from least to most severe):
+
+* DEBUG3
+* DEBUG2
+* DEBUG
 
 
 ### Test id
@@ -518,7 +581,7 @@ Example response:
 
 #### `"params"`
 
-An object with the properties:
+An object with the property:
 
 * `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
 
@@ -618,7 +681,7 @@ Example response:
 
 #### `"params"`
 
-An object with the properties:
+An object with the property:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 
@@ -990,6 +1053,11 @@ Example response:
 > symbol.
 >
 
+### Undelegated and delegated
+
+A test is considered to be `"delegated"` below if the test was started, by
+`start_domain_test` or `add_batch_job` without specifying neither `"nameserver"`
+nor `"ds_info"`. Else it is considered to be `"undelegated"`.
 
 #### `"params"`
 
@@ -1011,15 +1079,16 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
-* `"overall_result"`: A string. The most severe problem level logged in the test results.
-It could be:
-    * `"ok"`, all is normal
-    * `"warning"`, equivalent to the `"WARNING"` *severity level*.
-    * `"error"`, equivalent to the `"ERROR"` *severity level*.
-    * `"critical"`, equivalent to the `"CRITICAL"` *severity level*.
-
-
-> TODO: What about if the *test* was created with `add_batch_job` or something else?
+* `"overall_result"`: A string. It reflects the most severe problem level among
+  the test results for the test. It has one of the following values:
+  * `"ok"`, if there are only messages with *severity level* `"INFO"` or
+    `"NOTICE"`.
+  * `"warning"`, if there is at least one message with *severity level*
+    `"WARNING"`, but none with `"ERROR"` or `"CRITICAL"`.
+  * `"error"`, if there is at least one message with *severity level*
+    `"ERROR"`, but none with `"CRITICAL"`.
+  * `"critical"`, if there is at least one message with *severity level*
+    `"CRITICAL"`.
 
 
 #### `"error"`
@@ -1297,6 +1366,7 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 
 [Add_batch_job]:                #api-method-add_batch_job
 [DS info]:                      #ds-info
+[Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [LANGUAGE.locale]:              Configuration.md#locale
@@ -1307,9 +1377,10 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
 [Name server]:                  #name-server
 [Privilege levels]:             #privilege-levels
-[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [Profile name]:                 #profile-name
 [Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
 [Start_domain_test]:            #api-method-start_domain_test
+[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md

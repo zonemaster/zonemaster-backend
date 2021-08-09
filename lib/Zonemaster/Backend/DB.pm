@@ -274,6 +274,27 @@ sub generate_fingerprint {
     return $fingerprint;
 }
 
+
+=head2 undelegated
+
+Returns the value 1 if the test to be created is if type undelegated,
+else value 0. The test is considered to be undelegated if the "ds_info" or
+"nameservers" parameters is are defined with data after normalization.
+
+=cut
+
+sub undelegated {
+    my ( $self, $params ) = @_;
+
+    my $normalized_params = $self->_normalize_params( $params );
+
+    return 1 if defined( $$normalized_params{ds_info}[0] );
+    return 1 if defined( $$normalized_params{nameservers}[0] );
+    return 0;
+}
+
+
+
 no Moose::Role;
 
 1;

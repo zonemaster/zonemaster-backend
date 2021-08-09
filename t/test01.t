@@ -135,6 +135,12 @@ sub run_zonemaster_test_with_backend_API {
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
     ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
     cmp_ok( scalar( @{ $test_results->{results} } ), '>', 1, 'TEST1 got some results' );
+
+    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
+    'API get_test_results -> [results] parameter not present (wrong language tag: underscore not hyphen)'; # Should be underscore, not hyphen.
+
+    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'zz' } ); }
+    'API get_test_results -> [results] parameter not present (wrong language tag: "zz" unknown)'; # "zz" is not our configuration file.
 }
 
 run_zonemaster_test_with_backend_API(1);
@@ -183,6 +189,90 @@ subtest 'mock another client' => sub {
     };
     #diag "...but values for client_id and client_version are different (which is fine)";
 
+};
+
+subtest 'check historic tests' => sub {
+    # Verifies that delegated and undelegated tests are coded correctly when started
+    # and that the filter option in "get_test_history" works correctly
+    use_ok( 'Zonemaster::Backend::TestAgent' );
+    my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
+    isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
+
+    my $domain          = 'xa';
+    # Non-batch for "start_domain_test":
+    my $params_un1      = { # undelegated, non-batch
+        domain          => $domain,
+        nameservers     => [
+            { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+            ],
+    };
+    my $params_un2      = { # undelegated, non-batch
+        domain          => $domain,
+        ds_info         => [
+            { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+            ],
+    };
+    my $params_dn1 = { # delegated, non-batch
+        domain          => $domain,
+    };
+    # Batch for "add_batch_job"
+    my $domain2         = 'xb';
+    my $params_ub1      = { # undelegated, batch
+        domains         => [ $domain, $domain2 ],
+        test_params     => {
+            nameservers => [
+                { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+                ],
+        },
+    };
+    my $params_ub2      = { # undelegated, batch
+        domains         => [ $domain, $domain2 ],
+        test_params     => {
+            ds_info     => [
+                { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+                ],
+        },
+    };
+    my $params_db1      = { # delegated, batch
+        domains         => [ $domain, $domain2 ],
+    };
+    # The batch jobs, $params_ub1, $params_ub2 and $params_db1, cannot be run from here due to limitation in the API. See issue #827.
+
+    foreach my $param ($params_un1, $params_un2, $params_dn1) {
+        my $testid = $engine->start_domain_test( $param );
+        ok( $testid, "API start_domain_test ID OK" );
+        diag "running the agent on test $testid";
+        $agent->run( $testid );
+        my $cnt = 0;
+        while ($cnt < 10 ) {
+            my $progress = $engine->test_progress( { test_id => $testid } );
+            last if $progress == 100;
+            $cnt++;
+            diag "Sleep 10 s";
+            sleep 10;
+        };
+        is( $engine->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
+    };
+
+    my $test_history_delegated = $engine->get_test_history(
+        {
+            filter => 'delegated',
+            frontend_params => {
+                domain => $domain,
+            }
+        } );
+    my $test_history_undelegated = $engine->get_test_history(
+        {
+            filter => 'undelegated',
+            frontend_params => {
+                domain => $domain,
+            }
+        } );
+
+    # diag explain( $test_history_delegated );
+    is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
+    # diag explain( $test_history_undelegated );
+    is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
 };
 
 if ( $ENV{ZONEMASTER_RECORD} ) {

@@ -18,7 +18,7 @@ CREATE TABLE test_results (
     params_deterministic_hash character varying(32),
     params blob NOT NULL,
     results mediumblob DEFAULT NULL,
-    undelegated boolean NOT NULL DEFAULT false,
+    undelegated integer NOT NULL DEFAULT 0,
     nb_retries integer NOT NULL DEFAULT 0
 ) Engine=InnoDB;
 

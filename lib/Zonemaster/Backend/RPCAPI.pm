@@ -30,7 +30,7 @@ use Zonemaster::Backend::Validator;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
-my %extra_validators;
+our %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {

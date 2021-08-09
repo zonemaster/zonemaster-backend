@@ -216,9 +216,9 @@ sub create_new_test {
         # cannot, however, be guaranteed. Same as with the other database engines.
         my $hash_id = substr(md5_hex(time().rand()), 0, 16);
 
-        my $fields = 'hash_id, batch_id, priority, queue, fingerprint, params, domain, test_start_time, undelegated';
+        my $fields = 'hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated';
         $dbh->do(
-            "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?, datetime('now'),?)",
+            "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?,?)",
             undef,
             $hash_id,
             $batch_id,
@@ -447,7 +447,7 @@ sub process_unfinished_tests_give_up {
 sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = DATETIME('now') WHERE hash_id=?", undef, $hash_id);
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
 }
 
 sub get_relative_start_time {

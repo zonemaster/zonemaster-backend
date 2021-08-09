@@ -456,7 +456,7 @@ sub process_unfinished_tests_give_up {
 sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
 }
 
 sub get_relative_start_time {

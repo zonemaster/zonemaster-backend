@@ -58,6 +58,7 @@ subtest 'Everything but NoWarnings' => sub {
     subtest 'untaint_ip_address' => sub {
         is scalar untaint_ip_address( '192.0.2.1' ),                              '192.0.2.1',                              'accept: 192.0.2.1';
         is scalar untaint_ip_address( '192.0.2' ),                                undef,                                    'reject: 192.0.2';
+        is scalar untaint_ip_address( '192' ),                                    undef,                                    'reject: 192';
         is scalar untaint_ip_address( '192.0.2.1:3306' ),                         undef,                                    'reject: 192.0.2.1:3306';
         is scalar untaint_ip_address( '2001:db8::' ),                             '2001:db8::',                             'accept: 2001:db8::';
         is scalar untaint_ip_address( '2001:db8::/32' ),                          undef,                                    'reject: 2001:db8::/32';

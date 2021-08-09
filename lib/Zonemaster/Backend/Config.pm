@@ -740,7 +740,6 @@ sub _reset_LANGUAGE_locale {
     my ( $self ) = @_;
 
     delete $self->{_LANGUAGE_locale};
-
     return;
 }
 

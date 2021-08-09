@@ -8,6 +8,7 @@ use Test::NoWarnings;
 
 use Encode;
 use File::ShareDir qw[dist_file];
+use JSON::PP;
 use File::Temp qw[tempdir];
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::RPCAPI;
@@ -29,6 +30,8 @@ my $engine = Zonemaster::Backend::RPCAPI->new(
     }
 );
 
+my $start_domain_test_validate_syntax = $Zonemaster::Backend::RPCAPI::extra_validators{start_domain_test};
+
 subtest 'Everything but NoWarnings' => sub {
 
     my $can_use_threads = eval 'use threads; 1';
@@ -44,93 +47,90 @@ subtest 'Everything but NoWarnings' => sub {
     ];
 
     subtest 'domain present' => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => 'afnic.fr'
             }
         );
 
-        is( $res->{status}, 'ok' );
+        is( scalar @res, 0 );
     };
 
     subtest encode_utf8( 'idn domain=[é]' ) => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => 'é'
             }
         );
 
-        is( $res->{status}, 'ok' )
-            or diag( $res->{message} );
+        is( scalar @res, 0 )
+            or diag( encode_json @res );
     };
 
     subtest encode_utf8( 'idn domain=[éé]' ) => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => 'éé'
             }
         );
 
-        is( $res->{status}, 'ok' )
-            or diag( $res->{message} );
+        is( scalar @res, 0 )
+            or diag( encode_json @res );
     };
 
     subtest '253 characters long domain without dot' => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com'
             }
         );
 
-        is(
-            $res->{status}, 'ok'
-        ) or diag( $res->{message} );
+        is( scalar @res, 0 )
+            or diag( encode_json @res );
     };
 
     subtest '254 characters long domain with trailing dot' => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.'
             }
         );
 
-        is(
-            $res->{status}, 'ok'
-        ) or diag( $res->{message} );
+        is( scalar @res, 0 )
+            or diag( encode_json @res );
     };
 
     subtest '254 characters long domain without trailing dot' => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club'
             }
         );
 
-        is(
-            $res->{status}, 'nok'
-        ) or diag( $res->{message} );
+        cmp_ok( scalar @res, '>', 0 )
+            or diag( encode_json @res );
     };
 
     subtest '63 characters long domain label' => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789-63.fr'
             }
         );
 
-        is( $res->{status}, 'ok' )
-            or diag( $res->{message} );
+        is( scalar @res, 0 )
+            or diag( encode_json @res );
     };
 
     subtest '64 characters long domain label' => sub {
-        my $res = $engine->validate_syntax(
+        my @res = $engine->$start_domain_test_validate_syntax(
             {
                 %$frontend_params, domain => '012345678901234567890123456789012345678901234567890123456789--64.fr'
             }
         );
 
-        is( $res->{status}, 'nok')
-            or diag( $res->{message} );
+        cmp_ok( scalar @res, '>', 0 )
+            or diag( encode_json @res );
     };
 
     #TEST NS
@@ -139,80 +139,81 @@ subtest 'Everything but NoWarnings' => sub {
 
     # domain present?
     $frontend_params->{nameservers}->[0]->{ns} = 'afnic.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', 'domain present' );
+    is( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0, 'domain present' );
 
     # idn
     $frontend_params->{nameservers}->[0]->{ns} = 'é';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[é]' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0, encode_utf8( 'idn domain=[é]' ) )
+        or diag( encode_json $engine->start_domain_test_validate_syntax( $frontend_params ) );
 
     # idn
     $frontend_params->{nameservers}->[0]->{ns} = 'éé';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'idn domain=[éé]' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0, encode_utf8( 'idn domain=[éé]' ) )
+        or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # 253 characters long domain without dot
     $frontend_params->{nameservers}->[0]->{ns} =
     '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com';
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'ok',
+        scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0,
         encode_utf8( '253 characters long domain without dot' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    ) or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # 254 characters long domain with trailing dot
     $frontend_params->{nameservers}->[0]->{ns} =
     '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.com.';
     is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'ok',
+        $engine->$start_domain_test_validate_syntax( $frontend_params ), 0,
         encode_utf8( '254 characters long domain with trailing dot' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    ) or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # 254 characters long domain without trailing
     $frontend_params->{nameservers}->[0]->{ns} =
     '123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.club';
-    is(
-        $engine->validate_syntax( $frontend_params )->{status}, 'nok',
+    cmp_ok(
+        $engine->$start_domain_test_validate_syntax( $frontend_params ), '>', 0,
         encode_utf8( '254 characters long domain without trailing dot' )
-    ) or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    ) or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # 63 characters long domain label
     $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-63.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok',
-        encode_utf8( '63 characters long domain label' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is(
+        scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0,
+        encode_utf8( '63 characters long domain label' )
+    ) or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # 64 characters long domain label
     $frontend_params->{nameservers}->[0]->{ns} = '012345678901234567890123456789012345678901234567890123456789-64-.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok',
+    cmp_ok( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), '>', 0,
         encode_utf8( '64 characters long domain label' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+        or diag(encode_json  $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # DELEGATED TEST
     delete( $frontend_params->{nameservers} );
 
     $frontend_params->{domain} = 'afnic.fr';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'delegated domain exists' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0, encode_utf8( 'delegated domain exists' ) )
+        or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # IP ADDRESS FORMAT
     $frontend_params->{domain} = 'afnic.fr';
     $frontend_params->{nameservers}->[0]->{ns} = 'ns1.nic.fr';
 
     $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV4' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), 0, encode_utf8( 'Valid IPV4' ) )
+        or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     $frontend_params->{nameservers}->[0]->{ip} = '1.2.3.4444';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV4' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    cmp_ok( scalar $engine->$start_domain_test_validate_syntax( $frontend_params ), '>', 0, encode_utf8( 'Invalid IPV4' ) )
+        or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     $frontend_params->{nameservers}->[0]->{ip} = 'fe80::6ef0:49ff:fe7b:e4bb';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid IPV6' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( $engine->$start_domain_test_validate_syntax( $frontend_params ), 0, encode_utf8( 'Valid IPV6' ) )
+        or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     $frontend_params->{nameservers}->[0]->{ip} = 'fe80::6ef0:49ff:fe7b:e4bbffffff';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid IPV6' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    cmp_ok( $engine->$start_domain_test_validate_syntax( $frontend_params ), '>', 0, encode_utf8( 'Invalid IPV6' ) )
+        or diag( encode_json $engine->$start_domain_test_validate_syntax( $frontend_params ) );
 
     # DS
     $frontend_params->{domain}                 = 'afnic.fr';
@@ -221,21 +222,33 @@ subtest 'Everything but NoWarnings' => sub {
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'ok', encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    $frontend_params->{ds_info}->[0]->{digtype}   = 1;
+    $frontend_params->{ds_info}->[0]->{keytag}   = 5000;
+
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 0, encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
+        or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 'a';
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid Algorithm Type' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid Algorithm Type' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = '01234567890123456789012345678901234567890';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid digest length' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest length' ) )
+        or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
-    $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
-    is( $engine->validate_syntax( $frontend_params )->{status}, 'nok', encode_utf8( 'Invalid digest format' ) )
-        or diag( $engine->validate_syntax( $frontend_params )->{message} );
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest format' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
+    $frontend_params->{ds_info}->[0]->{digtype} = -1;
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest type' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{digtype} = 1;
+    $frontend_params->{ds_info}->[0]->{keytag} = 'not a int';
+    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid keytag' ) )
+        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 };

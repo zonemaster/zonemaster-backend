@@ -32,6 +32,14 @@ sub patch_db {
     };
     print( "Error while updating the index:  " . $@ ) if ($@);
 
+    # test_start_time and test_end_time default to NULL
+    eval {
+        $dbh->do('ALTER TABLE test_results ALTER COLUMN test_start_time SET DEFAULT NULL');
+        $dbh->do('ALTER TABLE test_results ALTER COLUMN test_end_time SET DEFAULT NULL');
+    };
+    print( "Error while changing DB schema:  " . $@ ) if ($@);
+
+
     # Add missing "undelegated" column
     eval {
         $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated integer NOT NULL DEFAULT 0' );

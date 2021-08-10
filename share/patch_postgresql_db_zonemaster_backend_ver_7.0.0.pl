@@ -17,6 +17,28 @@ my $dbh = $db->dbh;
 
 
 sub patch_db {
+
+    # Rename column "params_deterministic_hash" into "fingerprint"
+    eval {
+        $dbh->do( 'ALTER TABLE test_results RENAME COLUMN params_deterministic_hash TO fingerprint' );
+    };
+    print( "Error while changing DB schema:  " . $@ ) if ($@);
+
+    # Update index
+    eval {
+        # clause IF EXISTS available since PostgreSQL >= 9.2
+        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
+    };
+    print( "Error while updating the index:  " . $@ ) if ($@);
+
+    # Add missing "undelegated" column
+    eval {
+        $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated integer NOT NULL DEFAULT 0' );
+    };
+    print( "Error while changing DB schema:  " . $@ ) if ($@);
+
+    # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);
     $sth1->execute;
     while ( my $row = $sth1->fetchrow_hashref ) {

@@ -16,6 +16,22 @@ my $dbh = $db->dbh;
 
 
 sub patch_db {
+
+    # Rename column "params_deterministic_hash" into "fingerprint"
+    # Since SQLite 3.25 (2018-09-15) <https://sqlite.org/changes.html>
+    eval {
+        $dbh->do('ALTER TABLE test_results RENAME COLUMN params_deterministic_hash TO fingerprint');
+    };
+    print( "Error while changing DB schema:  " . $@ ) if ($@);
+
+    # Update index
+    eval {
+        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash ON test_results" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
+    };
+    print( "Error while updating the index:  " . $@ ) if ($@);
+
+    # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);
     $sth1->execute;
     while ( my $row = $sth1->fetchrow_hashref ) {

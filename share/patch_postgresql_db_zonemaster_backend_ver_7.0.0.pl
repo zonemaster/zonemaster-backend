@@ -46,6 +46,14 @@ sub patch_db {
     };
     print( "Error while changing DB schema:  " . $@ ) if ($@);
 
+    # Update index
+    eval {
+        # clause IF EXISTS available since PostgreSQL >= 9.2
+        $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), undelegated)" );
+    };
+    print( "Error while updating the index:  " . $@ ) if ($@);
+
     # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);
     $sth1->execute;

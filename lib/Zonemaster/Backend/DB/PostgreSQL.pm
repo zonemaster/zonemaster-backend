@@ -106,7 +106,7 @@ sub create_db {
     }
     if ( not exists($indexes->{test_results__domain_undelegated}) ) {
         $dbh->do(
-            "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
+            "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), undelegated)"
         );
     }
 
@@ -401,7 +401,7 @@ sub add_batch_job {
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
-        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), undelegated)" );
 
         $dbh->commit();
     }

@@ -124,18 +124,26 @@ sub create_db {
         '
     );
 
-    $dbh->do(
-        'CREATE TRIGGER before_insert_test_results
-            BEFORE INSERT ON test_results
-            FOR EACH ROW
-            BEGIN
-                IF new.hash_id IS NULL OR new.hash_id=\'\'
-                THEN
-                    SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
-                END IF;
-            END;
-        '
-    );
+
+    # Manually create the trigger if it does not exist
+    # the clause IF NOT EXISTS is not available for MariaDB < 10.1.4 and MySQL
+
+    # retrieve all triggers by name
+    my $triggers = $dbh->selectall_hashref( 'SHOW TRIGGERS', 'Trigger' );
+    if ( not exists($triggers->{before_insert_test_results}) ) {
+        $dbh->do(
+            'CREATE TRIGGER before_insert_test_results
+                BEFORE INSERT ON test_results
+                FOR EACH ROW
+                BEGIN
+                    IF new.hash_id IS NULL OR new.hash_id=\'\'
+                    THEN
+                        SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
+                    END IF;
+                END;
+            '
+        );
+    }
 
     # Manually create the index if it does not exist
     # the clause IF NOT EXISTS is not available for MySQL (used with FreeBSD)

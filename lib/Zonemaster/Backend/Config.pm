@@ -112,7 +112,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER' );
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'API');
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -128,6 +128,13 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
+<<<<<<< HEAD
+=======
+    $obj->_set_API_enable_add_api_user( '0' );
+    $obj->_set_API_enable_batch_jobs( '0' );
+    $obj->_add_LANGUAGE_locale( 'en_US' );
+    $obj->_add_public_profile( 'default', undef );
+>>>>>>> 594f020 (add config key to disable batch / user api)
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -241,6 +248,12 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'API', 'enable_add_api_user' ) ) ) {
+        $obj->_set_API_enable_add_api_user( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'API', 'enable_batch_jobs' ) ) ) {
+        $obj->_set_API_enable_batch_jobs( $value );
     }
 
     $obj->{_LANGUAGE_locale} = {};
@@ -461,6 +474,24 @@ Returns an integer.
 
 =cut
 
+=head2 API_enable_add_api_user
+
+Get the value of
+L<API.enable_add_api_user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_api_user>.
+
+Return 0 or 1
+
+=cut
+
+=head2 API_enable_batch_jobs
+
+Get the value of
+L<API.enable_batch_jobs|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_batch_jobs>.
+
+Return 0 or 1
+
+=cut
+
 # Getters for the properties documented above
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
@@ -478,6 +509,8 @@ sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMA
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
+sub API_enable_add_api_user                             { return $_[0]->{_API_enable_add_api_user}; }
+sub API_enable_batch_jobs                               { return $_[0]->{_API_enable_batch_jobs}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
@@ -497,6 +530,8 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing' );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing' );
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test' );
+    _create_setter( '_set_API_enable_add_api_user',                             '_API_enable_add_api_user' );
+    _create_setter( '_set_API_enable_batch_jobs',                               '_API_enable_batch_jobs' );
 }
 
 =head2 Language_Locale_hash

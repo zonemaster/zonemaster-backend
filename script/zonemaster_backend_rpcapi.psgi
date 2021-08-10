@@ -120,24 +120,28 @@ my $router = router {
         handler => $handler,
         action => "get_test_history"
     };
+};
 
-############ BATCH MODE ####################
-
-    connect "add_api_user" => {
+if ($config->API_enable_add_api_user) {
+    $log->info('Enabling add_api_user method');
+    $router->connect("add_api_user", {
         handler => $handler,
         action => "add_api_user"
-    };
+    });
+}
 
-    connect "add_batch_job" => {
+if ($config->API_enable_batch_jobs) {
+    $log->info('Enabling add_batch_job and get_batch_job_result methods');
+    $router->connect("add_batch_job", {
         handler => $handler,
         action => "add_batch_job"
-    };
+    });
 
-    connect "get_batch_job_result" => {
+    $router->connect("get_batch_job_result", {
         handler => $handler,
         action => "get_batch_job_result"
-    };
-};
+    });
+}
 
 my $dispatch = JSON::RPC::Dispatch->new(
     router => $router,

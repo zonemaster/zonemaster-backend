@@ -10,6 +10,22 @@ Each section in `backend_config.ini` is documented below.
 Restart the `zm-rpcapi` and `zm-testagent` daemons to load the changes
 made to the `backend_config.ini` file.
 
+## API section
+
+Available keys: `enable_batch_jobs`, `enable_add_api_user`.
+
+### enable_batch_jobs
+
+Boolean value to enable the batch jobs methods of the API.
+
+Accpected values: 0 or 1, default to 0 (disabled).
+
+### enable_add_api_user
+
+Boolean value to enable the `add_api_user` method of the API.
+
+Accpected values: 0 or 1, default to 0 (disabled).
+
 ## DB section
 
 Available keys : `engine`, `user`, `password`, `database_name`,
@@ -330,5 +346,3 @@ Otherwise a new test request is enqueued.
 [SQLITE.database_file]:               #database_file
 [Zonemaster-Engine share directory]:  https://github.com/zonemaster/zonemaster-engine/tree/master/share
 [Zonemaster::Engine::Profile]:        https://metacpan.org/pod/Zonemaster::Engine::Profile#PROFILE-PROPERTIES
-
-

@@ -11,12 +11,22 @@ use JSON::Validator::Joi;
 use Readonly;
 
 our @EXPORT_OK = qw(
+<<<<<<< HEAD
+=======
+  untaint_abs_path
+  untaint_bool
+>>>>>>> 594f020 (add config key to disable batch / user api)
   untaint_engine_type
 );
 
 our %EXPORT_TAGS = (
     untaint => [
         qw(
+<<<<<<< HEAD
+=======
+          untaint_abs_path
+          untaint_bool
+>>>>>>> 594f020 (add config key to disable batch / user api)
           untaint_engine_type
           )
     ],
@@ -37,6 +47,9 @@ Readonly my $PROFILE_NAME_RE        => qr/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a
 Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
+
+# Boolean 0 or 1
+Readonly my $BOOL_RE            => qr/^(0|1)$/;
 
 sub joi {
     return JSON::Validator::Joi->new;

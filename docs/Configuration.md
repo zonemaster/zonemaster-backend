@@ -51,6 +51,23 @@ Repeating a key name in one section is forbidden.
 
 Each section in `backend_config.ini` is documented below.
 
+## API section
+
+Available keys: `enable_batch_jobs`, `enable_add_api_user`.
+
+### enable_batch_jobs
+
+Boolean value to enable the batch jobs methods of the API.
+
+Accpected values: 0 or 1, default to 0 (disabled).
+
+### enable_add_api_user
+
+Boolean value to enable the `add_api_user` method of the API.
+
+Accpected values: 0 or 1, default to 0 (disabled).
+
+
 ## DB section
 
 Available keys : `engine`, `user`, `password`, `database_name`,

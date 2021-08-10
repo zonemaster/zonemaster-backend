@@ -11,22 +11,12 @@ use JSON::Validator::Joi;
 use Readonly;
 
 our @EXPORT_OK = qw(
-<<<<<<< HEAD
-=======
-  untaint_abs_path
-  untaint_bool
->>>>>>> 594f020 (add config key to disable batch / user api)
   untaint_engine_type
 );
 
 our %EXPORT_TAGS = (
     untaint => [
         qw(
-<<<<<<< HEAD
-=======
-          untaint_abs_path
-          untaint_bool
->>>>>>> 594f020 (add config key to disable batch / user api)
           untaint_engine_type
           )
     ],

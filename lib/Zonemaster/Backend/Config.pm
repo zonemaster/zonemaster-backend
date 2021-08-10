@@ -128,13 +128,8 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-<<<<<<< HEAD
-=======
     $obj->_set_API_enable_add_api_user( '0' );
     $obj->_set_API_enable_batch_jobs( '0' );
-    $obj->_add_LANGUAGE_locale( 'en_US' );
-    $obj->_add_public_profile( 'default', undef );
->>>>>>> 594f020 (add config key to disable batch / user api)
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {

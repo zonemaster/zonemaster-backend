@@ -65,7 +65,7 @@ sub create_db {
     # TEST RESULTS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE test_results (
+        'CREATE TABLE IF NOT EXISTS test_results (
             id integer AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) DEFAULT NULL,
             domain varchar(255) NOT NULL,
@@ -83,63 +83,87 @@ sub create_db {
             nb_retries integer NOT NULL DEFAULT 0
         ) ENGINE=InnoDB
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'test_results' table", data => $dbh->errstr() );
 
-    $dbh->do(
-        'CREATE TRIGGER before_insert_test_results
-            BEFORE INSERT ON test_results
-            FOR EACH ROW
-            BEGIN
-                IF new.hash_id IS NULL OR new.hash_id=\'\'
-                THEN
-                    SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
-                END IF;
-            END;
-        '
-    );
 
-    $dbh->do(
-        'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__progress ON test_results (progress)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
-    );
+    # Manually create the trigger if it does not exist
+    # the clause IF NOT EXISTS is not available for MariaDB < 10.1.4 and MySQL
+
+    # retrieve all triggers by name
+    my $triggers = $dbh->selectall_hashref( 'SHOW TRIGGERS', 'Trigger' );
+    if ( not exists($triggers->{before_insert_test_results}) ) {
+        $dbh->do(
+            'CREATE TRIGGER before_insert_test_results
+                BEFORE INSERT ON test_results
+                FOR EACH ROW
+                BEGIN
+                    IF new.hash_id IS NULL OR new.hash_id=\'\'
+                    THEN
+                        SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
+                    END IF;
+                END;
+            '
+        );
+    }
+
+    # Manually create the index if it does not exist
+    # the clause IF NOT EXISTS is not available for MySQL (used with FreeBSD)
+
+    # retrieve all indexes by key name
+    my $indexes = $dbh->selectall_hashref( 'SHOW INDEXES FROM test_results', 'Key_name' );
+
+    if ( not exists($indexes->{test_results__hash_id}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+        );
+    }
+    if ( not exists($indexes->{test_results__params_deterministic_hash}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+        );
+    }
+    if ( not exists($indexes->{test_results__batch_id_progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__progress ON test_results (progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__domain_undelegated}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
+        );
+    }
 
 
     ####################################################################
     # BATCH JOBS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE batch_jobs (
+        'CREATE TABLE IF NOT EXISTS batch_jobs (
             id integer AUTO_INCREMENT PRIMARY KEY,
             username character varying(50) NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
         ) ENGINE=InnoDB;
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
 
 
     ####################################################################
     # USERS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE users (
+        'CREATE TABLE IF NOT EXISTS users (
             id integer AUTO_INCREMENT primary key,
             username varchar(128),
             api_key varchar(512),
             user_info blob DEFAULT NULL
         ) ENGINE=InnoDB;
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
 sub user_exists_in_db {

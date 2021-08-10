@@ -52,11 +52,13 @@ sub DEMOLISH {
 sub create_db {
     my ( $self ) = @_;
 
+    my $dbh = $self->dbh;
+
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $self->dbh->do(
-        'CREATE TABLE test_results (
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS test_results (
                  id integer PRIMARY KEY AUTOINCREMENT,
                  hash_id VARCHAR(16) DEFAULT NULL,
                  domain VARCHAR(255) NOT NULL,
@@ -74,50 +76,50 @@ sub create_db {
                  nb_retries integer NOT NULL DEFAULT 0
            )
         '
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );
 
-    $self->dbh->do(
-        'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
     );
-    $self->dbh->do(
-        'CREATE INDEX test_results__fingerprint ON test_results (params_deterministic_hash)'
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (params_deterministic_hash)'
     );
-    $self->dbh->do(
-        'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__batch_id_progress ON test_results (batch_id, progress)'
     );
-    $self->dbh->do(
-        'CREATE INDEX test_results__progress ON test_results (progress)'
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
     );
-    $self->dbh->do(
-        'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'
     );
 
 
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    $self->dbh->do(
-        'CREATE TABLE batch_jobs (
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS batch_jobs (
                  id integer PRIMARY KEY,
                  username character varying(50) NOT NULL,
                  creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
            )
         '
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'batch_jobs' table", data => $dbh->errstr() );
 
 
     ####################################################################
     # USERS
     ####################################################################
-    $self->dbh->do(
-        'CREATE TABLE users (
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username varchar(128),
                 api_key varchar(512),
                 user_info json DEFAULT NULL
            )
         '
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
 
     return 1;
 }

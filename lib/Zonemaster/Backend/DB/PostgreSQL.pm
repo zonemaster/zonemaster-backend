@@ -60,7 +60,7 @@ sub create_db {
     # TEST RESULTS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE test_results (
+        'CREATE TABLE IF NOT EXISTS test_results (
                 id serial PRIMARY KEY,
                 hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
                 batch_id integer,
@@ -77,48 +77,63 @@ sub create_db {
                 nb_retries integer NOT NULL DEFAULT 0
             )
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
 
-    $dbh->do(
-        'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__progress ON test_results (progress)'
-    );
-    $dbh->do(
-        "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
-    );
+    # Manually create the index if it does not exist
+    # the clause IF NOT EXISTS is not available for PostgreSQL < 9.5
+
+    # retrieve all indexes by key name
+    my $indexes = $dbh->selectall_hashref( "SELECT indexname FROM pg_indexes WHERE tablename = 'test_results'", 'indexname' );
+    if ( not exists($indexes->{test_results__hash_id}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+        );
+    }
+    if ( not exists($indexes->{test_results__params_deterministic_hash}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+        );
+    }
+    if ( not exists($indexes->{test_results__batch_id_progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__progress ON test_results (progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__domain_undelegated}) ) {
+        $dbh->do(
+            "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
+        );
+    }
 
 
     ####################################################################
     # BATCH JOBS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE batch_jobs (
+        'CREATE TABLE IF NOT EXISTS batch_jobs (
                 id serial PRIMARY KEY,
                 username varchar(50) NOT NULL,
                 creation_time timestamp without time zone DEFAULT NOW() NOT NULL
             )
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
 
 
     ####################################################################
     # USERS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE users (
+        'CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY,
                 user_info json
             )
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
 
 }
 

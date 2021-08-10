@@ -17,7 +17,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/(domain|hostname)",
         config => {
             string => {
-                pattern => 'The domain name character(s) are not supported'
+                pattern => 'The domain name contains a character or characters not supported'
             }
         }
     },
@@ -33,7 +33,7 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/nameservers/\\d+/ns",
         config => {
             string => {
-                pattern => 'The domain name character(s) are not supported'
+                pattern => 'The name server name contains a character or characters not supported'
             }
         }
     },
@@ -41,8 +41,8 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/keytag",
         config => {
             integer => {
-                type => 'Keytag should be a positive integer',
-                minimum => 'Keytag should be a positive integer'
+                type => 'Keytag must be a positive integer',
+                minimum => 'Keytag must be a positive integer'
             }
         }
     },
@@ -50,8 +50,8 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/algorithm",
         config => {
             integer => {
-                type => 'Algorithm should be a positive integer',
-                minimum => 'Algorithm should be a positive integer'
+                type => 'Algorithm must be a positive integer',
+                minimum => 'Algorithm must be a positive integer'
             }
         }
     },
@@ -59,8 +59,8 @@ Readonly my @CUSTOM_MESSAGES_CONFIG => (
         pattern => "/ds_info/\\d+/digtype",
         config => {
             integer => {
-                type => 'Digest type should be a positive integer',
-                minimum => 'Digest type should be a positive integer'
+                type => 'Digest type must be a positive integer',
+                minimum => 'Digest type must be a positive integer'
             }
         }
     },

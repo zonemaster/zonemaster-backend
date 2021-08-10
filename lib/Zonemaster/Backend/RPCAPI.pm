@@ -241,7 +241,7 @@ sub _check_domain {
             $domain,
             {
                 status  => 'nok',
-                message => 'The domain name character(s) are not supported'
+                message => 'The domain name contains a character or characters not supported'
             }
         );
     }

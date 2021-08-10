@@ -17,19 +17,28 @@ my $dbh = $db->dbh;
 
 sub patch_db {
 
-    # Rename column "params_deterministic_hash" into "fingerprint"
-    # Since SQLite 3.25 (2018-09-15) <https://sqlite.org/changes.html>
+    # since we change the default value for a column, the whole table needs to
+    # be recreated
+    #  1. rename the "test_results" table to "test_results_old"
+    #  2. create the new "test_results" table
+    #  3. populate it with the values from "test_results_old"
+    #  4. remove old table and indexes
+    #  5. recreate the indexes
     eval {
-        $dbh->do('ALTER TABLE test_results RENAME COLUMN params_deterministic_hash TO fingerprint');
-    };
-    print( "Error while changing DB schema:  " . $@ ) if ($@);
+        $dbh->do('ALTER TABLE test_results RENAME TO test_results_old');
 
-    # Update index
-    eval {
-        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash ON test_results" );
-        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
+        # create the table
+        $db->create_db();
+
+        # populate it
+        $dbh->do('INSERT INTO test_results SELECT * FROM test_results_old');
+
+        $dbh->do('DROP TABLE test_results_old');
+
+        # recreate indexes
+        $db->create_db();
     };
-    print( "Error while updating the index:  " . $@ ) if ($@);
+    print( "Error while updating the 'test_results' table schema:  " . $@ ) if ($@);
 
     # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);

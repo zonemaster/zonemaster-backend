@@ -65,8 +65,8 @@ sub create_db {
                 hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
                 batch_id integer,
                 creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
-                test_start_time timestamp without time zone,
-                test_end_time timestamp without time zone,
+                test_start_time timestamp without time zone DEFAULT NULL,
+                test_end_time timestamp without time zone DEFAULT NULL,
                 priority integer DEFAULT 10,
                 queue integer DEFAULT 0,
                 progress integer DEFAULT 0,
@@ -456,7 +456,7 @@ sub process_unfinished_tests_give_up {
 sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
 }
 
 sub get_relative_start_time {

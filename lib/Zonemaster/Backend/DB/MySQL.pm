@@ -255,7 +255,7 @@ sub create_new_test {
         else {
             $dbh->do(
                 q[
-                INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, test_start_time, undelegated) VALUES (?, ?,?,?,?,?, NOW(),?)
+                INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?)
                 ],
                 undef,
                 $batch_id,
@@ -513,7 +513,7 @@ sub process_unfinished_tests_give_up {
 sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
 }
 
 sub get_relative_start_time {

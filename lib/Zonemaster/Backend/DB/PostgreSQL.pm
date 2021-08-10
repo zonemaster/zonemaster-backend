@@ -100,7 +100,7 @@ sub create_db {
     # TEST RESULTS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE test_results (
+        'CREATE TABLE IF NOT EXISTS test_results (
                 id serial PRIMARY KEY,
                 hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
                 batch_id integer,
@@ -140,7 +140,7 @@ sub create_db {
     # BATCH JOBS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE batch_jobs (
+        'CREATE TABLE IF NOT EXISTS batch_jobs (
                 id serial PRIMARY KEY,
                 username varchar(50) NOT NULL,
                 creation_time timestamp without time zone DEFAULT NOW() NOT NULL
@@ -153,7 +153,7 @@ sub create_db {
     # USERS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE users (
+        'CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY,
                 user_info json
             )

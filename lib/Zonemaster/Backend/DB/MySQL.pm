@@ -104,7 +104,7 @@ sub create_db {
     # TEST RESULTS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE test_results (
+        'CREATE TABLE IF NOT EXISTS test_results (
             id integer AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) DEFAULT NULL,
             domain varchar(255) NOT NULL,
@@ -158,7 +158,7 @@ sub create_db {
     # BATCH JOBS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE batch_jobs (
+        'CREATE TABLE IF NOT EXISTS batch_jobs (
             id integer AUTO_INCREMENT PRIMARY KEY,
             username character varying(50) NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -171,7 +171,7 @@ sub create_db {
     # USERS
     ####################################################################
     $dbh->do(
-        'CREATE TABLE users (
+        'CREATE TABLE IF NOT EXISTS users (
             id integer AUTO_INCREMENT primary key,
             username varchar(128),
             api_key varchar(512),

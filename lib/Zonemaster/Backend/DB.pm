@@ -216,6 +216,19 @@ sub process_dead_test {
     }
 }
 
+=head2 schedule_for_retry
+
+For the test with the given "hash_id" increments its number of retries by 1,
+resets its progress to 0 and its start time to NULL.
+
+=cut
+
+sub schedule_for_retry {
+    my ( $self, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
+}
+
 # A thin wrapper around DBI->connect to ensure similar behavior across database
 # engines.
 sub _new_dbh {

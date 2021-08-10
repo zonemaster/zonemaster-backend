@@ -79,21 +79,36 @@ sub create_db {
         '
     );
 
-    $dbh->do(
-        'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
-    );
-    $dbh->do(
-        'CREATE INDEX test_results__progress ON test_results (progress)'
-    );
-    $dbh->do(
-        "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
-    );
+    # Manually create the index if it does not exist
+    # the clause IF NOT EXISTS is not available for PostgreSQL < 9.5
+
+    # retrieve all indexes by key name
+    my $indexes = $dbh->selectall_hashref( "SELECT indexname FROM pg_indexes WHERE tablename = 'test_results'", 'indexname' );
+    if ( not exists($indexes->{test_results__hash_id}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+        );
+    }
+    if ( not exists($indexes->{test_results__params_deterministic_hash}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)'
+        );
+    }
+    if ( not exists($indexes->{test_results__batch_id_progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__progress ON test_results (progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__domain_undelegated}) ) {
+        $dbh->do(
+            "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
+        );
+    }
 
 
     ####################################################################

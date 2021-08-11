@@ -45,14 +45,19 @@ Log::Any::Adapter->set(
                 'Screen',
                 min_level => get_loglevel(),
                 stderr    => 1,
+                newline   => 1,
                 callbacks => sub {
                     my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
+                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
                 },
             ],
         ]
     ),
 );
+
+$SIG{__WARN__} = sub {
+    $log->warning(map { my $m = $_; $m =~ s/\n/ /g; $m =~ s/^\s+|\s+$//g; $m } @_);
+};
 
 my $config = Zonemaster::Backend::Config->load_config();
 

@@ -26,6 +26,7 @@ use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
+use Log::Any qw( $log );
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
@@ -77,7 +78,7 @@ sub handle_exception {
 
     $exception =~ s/\n/ /g;
     $exception =~ s/^\s+|\s+$//g;
-    warn "Internal error $exception_id: Unexpected error in the $method API call: [$exception] \n";
+    $log->error("Internal error $exception_id: Unexpected error in the $method API call: [$exception]");
     die "Internal error $exception_id \n";
 }
 

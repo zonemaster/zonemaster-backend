@@ -145,6 +145,7 @@ sub main {
                 if ( $@ ) {
                     chomp $@;
                     $log->error( "Test died: $id: $@" );
+                    $self->db->process_dead_test( $id, $self->config->ZONEMASTER_maximal_number_of_retries )
                 }
                 else {
                     $log->info( "Test completed: $id" );

@@ -78,9 +78,10 @@ sub log_dispatcher_dup_stdout {
                 'Handle',
                 handle    => $handle,
                 min_level => $min_level,
+                newline   => 1,
                 callbacks => sub {
                     my %args = @_;
-                    $args{message} = sprintf "%s: %s\n", uc $args{level}, $args{message};
+                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
                 },
             ],
         ]
@@ -99,14 +100,19 @@ sub log_dispatcher_file {
                 filename  => $log_file,
                 mode      => '>>',
                 min_level => $min_level,
+                newline   => 1,
                 callbacks => sub {
                     my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
+                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
                 },
             ],
         ]
     );
 }
+
+$SIG{__WARN__} = sub {
+    $log->warning(map { my $m = $_; $m =~ s/\n/ /g; $m =~ s/^\s+|\s+$//g; $m } @_);
+};
 
 ###
 ### Actual functionality

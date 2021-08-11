@@ -5,6 +5,7 @@ use warnings;
 
 use Zonemaster::Backend::TestAgent;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Metrics;
 
 use Parallel::ForkManager;
 use Daemon::Control;
@@ -136,6 +137,7 @@ sub main {
     while ( !$caught_sigterm ) {
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
+        Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.running_process", scalar($self->pm->running_procs));
 
         my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
         $self->db->process_unfinished_tests(
@@ -147,13 +149,16 @@ sub main {
             $log->info( "Test found: $id" );
             if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
                 $log->info( "Test starting: $id" );
+                Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
                 eval { $agent->run( $id ) };
                 if ( $@ ) {
                     chomp $@;
+                    Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");
                     $log->error( "Test died: $id: $@" );
                     $self->db->process_dead_test( $id, $self->config->ZONEMASTER_maximal_number_of_retries )
                 }
                 else {
+                    Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");
                     $log->info( "Test completed: $id" );
                 }
                 $agent->reset();

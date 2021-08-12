@@ -11,6 +11,8 @@ use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 use Log::Any qw( $log );
 
+use Zonemaster::Backend::Errors;
+
 with 'Zonemaster::Backend::DB';
 
 has 'dbh' => (
@@ -244,12 +246,14 @@ sub get_test_params {
 
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
 
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } ) unless defined $params_json;
+
     my $result;
     eval {
         $result = decode_json( $params_json );
     };
 
-    $log->warn( "decoding of params_json failed (test_id: [$test_id]):".Dumper($params_json) ) if $@;
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } ) if $@;
 
     return $result;
 }
@@ -265,8 +269,20 @@ sub test_results {
     my $result;
     my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
     $result            = $hrefs->{$test_id};
-    $result->{params}  = decode_json( $result->{params} );
-    $result->{results} = decode_json( $result->{results} );
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } ) unless defined $result;
+
+    eval {
+        $result->{params}  = decode_json( $result->{params} );
+
+        if (defined $result->{results}) {
+            $result->{results} = decode_json( $result->{results} );
+        } else {
+            $result->{results} = [];
+        }
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } ) if $@;
 
     return $result;
 }

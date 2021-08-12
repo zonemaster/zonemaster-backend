@@ -10,6 +10,7 @@ use DBI qw(:utils);
 use JSON::PP;
 
 use Zonemaster::Backend::Validator qw( untaint_ipv6_address );
+use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
 
@@ -228,12 +229,14 @@ sub get_test_params {
 
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
 
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } ) unless defined $params_json;
+
     my $result;
     eval {
         $result = decode_json( $params_json );
     };
 
-    warn "decoding of params_json failed (testi_id: [$test_id]):".Dumper($params_json) if $@;
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } ) if $@;
 
     return decode_json( $params_json );
 }
@@ -249,8 +252,20 @@ sub test_results {
     my $result;
     my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, CONVERT_TZ(`creation_time`, \@\@session.time_zone, '+00:00') AS creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
     $result            = $hrefs->{$test_id};
-    $result->{params}  = decode_json( $result->{params} );
-    $result->{results} = decode_json( $result->{results} );
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } ) unless defined $result;
+
+    eval {
+        $result->{params}  = decode_json( $result->{params} );
+
+        if (defined $result->{results}) {
+            $result->{results} = decode_json( $result->{results} );
+        } else {
+            $result->{results} = [];
+        }
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } ) if $@;
 
     return $result;
 }

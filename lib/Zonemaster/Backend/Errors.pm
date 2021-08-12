@@ -25,7 +25,8 @@ sub as_hash {
     my $self = shift;
     my $error = {
         code => $self->code,
-        message => $self->message
+        message => $self->message,
+        error => ref($self),
     };
     $error->{data} = $self->data if defined $self->data;
     return $error;
@@ -114,10 +115,23 @@ around 'reason' => sub {
     $self->$orig($value);
 };
 
+around 'as_hash' => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    my $href = $self->$orig;
+
+    $href->{exception_id} = $self->id;
+    $href->{reason} = $self->reason;
+    $href->{method} = $self->method;
+
+    return $href;
+};
+
 
 sub as_string {
     my $self = shift;
-    my $str = sprintf "Internal error %0.3d: Unexpected error in the `%s` method: [%s]", $self->id, $self->method, $self->reason;
+    my $str = sprintf "Internal error %0.3d (%s): Unexpected error in the `%s` method: [%s]", $self->id, ref($self), $self->method, $self->reason;
     if (defined $self->data) {
         $str .= sprintf "; Context: %s", $self->_data_dump;
     }
@@ -137,5 +151,10 @@ has '+message' => (
 has '+code' => (
     default => -32000
 );
+
+package Zonemaster::Backend::Error::JsonError;
+use Moose;
+
+extends 'Zonemaster::Backend::Error::Internal';
 
 1;

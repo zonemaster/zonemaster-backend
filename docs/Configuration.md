@@ -125,7 +125,7 @@ Default value: `3306`.
 
 If [MYSQL.host] is set to `localhost` (but neither `127.0.0.1` nor `::1`),
 then the value of the [MYSQL.port] property is discarded as the driver
-connects using a UNIX socket (see the [DBD::mysql documentation]).
+connects using a UNIX socket (see the [DBD::MariaDB documentation]).
 
 ### user
 
@@ -394,7 +394,7 @@ Otherwise a new test request is enqueued.
 [DB.database_name]:                   #database_name
 [DB.password]:                        #password
 [DB.user]:                            #user
-[DBD::mysql documentation]:           https://metacpan.org/pod/DBD::mysql#host
+[DBD::MariaDB documentation]:         https://metacpan.org/pod/DBD::MariaDB#host
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2

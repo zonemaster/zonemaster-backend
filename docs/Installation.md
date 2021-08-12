@@ -79,7 +79,7 @@ Install Zonemaster::Backend:
 sudo cpanm Zonemaster::Backend
 ```
 
-> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> The command above might try to install "DBD::Pg" and "DBD::MariaDB".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add Zonemaster user (unless it already exists):
@@ -286,7 +286,7 @@ Install Zonemaster::Backend:
 sudo cpanm Zonemaster::Backend
 ```
 
-> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> The command above might try to install "DBD::Pg" and "DBD::MariaDB".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Add Zonemaster user (unless it already exists):
@@ -331,7 +331,7 @@ but if you have removed the old Zonemaster database, then do the initialization.
 Install the database engine and its dependencies:
 
 ```sh
-sudo apt install mariadb-server libdbd-mysql-perl
+sudo apt install mariadb-server libdbd-mariadb-perl
 ```
 
 Configure Zonemaster::Backend to use the correct database engine:
@@ -458,7 +458,7 @@ Install Zonemaster::Backend:
 cpanm Zonemaster::Backend
 ```
 
-> The command above might try to install "DBD::Pg" and "DBD::mysql".
+> The command above might try to install "DBD::Pg" and "DBD::MariaDB".
 > You can ignore if it fails. The relevant libraries are installed further down in these instructions.
 
 Unless they already exist, add `zonemaster` user and `zonemaster` group
@@ -507,7 +507,7 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/back
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install mysql57-server p5-DBD-mysql
+pkg install mariadb105-server p5-DBD-MariaDB
 sysrc mysql_enable="YES"
 service mysql-server start
 ```

@@ -6,22 +6,19 @@
 * [2. Prerequisites](#2-prerequisites)
 * [3. Installation on CentOS](#3-installation-on-centos)
   * [3.1 Install Zonemaster::Backend and related dependencies (CentOS)](#31-install-zonemasterbackend-and-related-dependencies-centos)
-  * [3.2 Database engine installation (CentOS)](#32-database-engine-installation-centos)
-  * [3.3 Database configuration (CentOS)](#33-database-configuration-centos)
-  * [3.4 Service configuration and startup (CentOS)](#34-service-configuration-and-startup-centos)
-  * [3.5 Post-installation (CentOS)](#35-post-installation-centos)
+  * [3.2 Database engine installation and configuration (CentOS)](#32-database-engine-installation-and-configuration-centos)
+  * [3.3 Service configuration and startup (CentOS)](#33-service-configuration-and-startup-centos)
+  * [3.4 Post-installation (CentOS)](#34-post-installation-centos)
 * [4. Installation on Debian and Ubuntu](#4-installation-on-debian-and-ubuntu)
   * [4.1 Install Zonemaster::Backend and related dependencies (Debian/Ubuntu)](#41-install-zonemasterbackend-and-related-dependencies-debianubuntu)
-  * [4.2 Database engine installation (Debian/Ubuntu)](#42-database-engine-installation-debianubuntu)
-  * [4.3 Database configuration (Debian/Ubuntu)](#43-database-configuration-debianubuntu)
-  * [4.4 Service configuration and startup (Debian/Ubuntu)](#44-service-configuration-and-startup-debianubuntu)
-  * [4.5 Post-installation (Debian/Ubuntu)](#45-post-installation-debianubuntu)
+  * [4.2 Database engine installation and configuration (Debian/Ubuntu)](#42-database-engine-installation-and-configuration-debianubuntu)
+  * [4.3 Service configuration and startup (Debian/Ubuntu)](#43-service-configuration-and-startup-debianubuntu)
+  * [4.4 Post-installation (Debian/Ubuntu)](#44-post-installation-debianubuntu)
 * [5. Installation on FreeBSD](#5-installation-on-freebsd)
   * [5.1 Install Zonemaster::Backend and related dependencies (FreeBSD)](#51-install-zonemasterbackend-and-related-dependencies-freebsd)
-  * [5.2 Database engine installation (FreeBSD)](#52-database-engine-installation-freebsd)
-  * [5.3 Database configuration (FreeBSD)](#53-database-configuration-freebsd)
-  * [5.4 Service startup (FreeBSD)](#54-service-startup-freebsd)
-  * [5.5 Post-installation (FreeBSD)](#55-post-installation-freebsd)
+  * [5.2 Database engine installation and configuration (FreeBSD)](#52-database-engine-installation-and-configuration-freebsd)
+  * [5.3 Service startup (FreeBSD)](#53-service-startup-freebsd)
+  * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
 * [6. Post-installation](#6-post-installation)
   * [6.1 Smoke test](#61-smoke-test)
   * [6.2 What to do next?](#62-what-to-do-next)
@@ -110,7 +107,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > previous version of Zonemaster-Backend).
 
 
-### 3.2 Database engine installation (CentOS)
+### 3.2 Database engine installation and configuration (CentOS)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -145,16 +142,7 @@ See appendices for [MariaDB][MariaDB instructions on CentOS] and
 [PostgreSQL][PostgreSQL instructions on CentOS].
 
 
-### 3.3 Database configuration (CentOS)
-
-Finally initialize the database:
-
-```sh
-sudo -u zonemaster $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
-```
-
-
-### 3.4 Service configuration and startup (CentOS)
+### 3.3 Service configuration and startup (CentOS)
 
 Make sure our tmpfiles configuration takes effect:
 
@@ -172,7 +160,7 @@ sudo systemctl start zm-testagent
 ```
 
 
-### 3.5 Post-installation (CentOS)
+### 3.4 Post-installation (CentOS)
 
 See the [post-installation] section for post-installation matters.
 
@@ -247,7 +235,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
 
 
-### 4.2 Database engine installation (Debian/Ubuntu)
+### 4.2 Database engine installation and configuration (Debian/Ubuntu)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -282,16 +270,7 @@ See appendices for [MariaDB][MariaDB instructions on Debian] and
 [PostgreSQL][PostgreSQL instructions on Debian].
 
 
-### 4.3 Database configuration (Debian/Ubuntu)
-
-Finally initialize the database:
-
-```sh
-sudo -u zonemaster $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
-```
-
-
-### 4.4 Service configuration and startup (Debian/Ubuntu)
+### 4.3 Service configuration and startup (Debian/Ubuntu)
 
 Make sure our tmpfiles configuration takes effect:
 
@@ -309,7 +288,7 @@ sudo systemctl start zm-testagent
 ```
 
 
-### 4.5 Post-installation (Debian/Ubuntu)
+### 4.4 Post-installation (Debian/Ubuntu)
 
 See the [post-installation] section for post-installation matters.
 
@@ -364,7 +343,7 @@ install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
 ```
 
-### 5.2 Database engine installation (FreeBSD)
+### 5.2 Database engine installation and configuration (FreeBSD)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -403,16 +382,7 @@ See appendices for [MariaDB][MariaDB instructions on FreeBSD] and
 [PostgreSQL][PostgreSQL instructions on FreeBSD].
 
 
-### 5.3 Database configuration (FreeBSD)
-
-Finally initialize the database:
-
-```sh
-su -m zonemaster -c "`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir(qw(Zonemaster-Backend))'`/create_db.pl"
-```
-
-
-### 5.4 Service startup (FreeBSD)
+### 5.3 Service startup (FreeBSD)
 
 Enable services at startup:
 
@@ -428,7 +398,7 @@ service zm_rpcapi start
 service zm_testagent start
 ```
 
-### 5.5 Post-installation (FreeBSD)
+### 5.4 Post-installation (FreeBSD)
 
 To check the running daemons run:
 

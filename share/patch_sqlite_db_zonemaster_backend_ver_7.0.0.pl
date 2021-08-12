@@ -16,10 +16,11 @@ my $dbh = $db->dbh;
 
 
 sub patch_db {
-    my @arefs = $dbh->selectall_array('SELECT id, params from test_results', undef);
-    foreach my $row (@arefs) {
-        my $id = @$row[0];
-        my $raw_params = decode_json(@$row[1]);
+    my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);
+    $sth1->execute;
+    while ( my $row = $sth1->fetchrow_hashref ) {
+        my $id = $row->{id};
+        my $raw_params = decode_json($row->{params});
         my $ds_info_values = scalar( map { grep (!/^$/, values( %$_ ) ) } @{$raw_params->{ds_info}});
         my $nameservers_values = scalar( map { grep (!/^$/, values( %$_ ) ) } @{$raw_params->{nameservers}});
         my $undelegated = $ds_info_values > 0 || $nameservers_values > 0 || 0;

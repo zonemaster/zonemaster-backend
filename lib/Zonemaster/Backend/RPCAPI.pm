@@ -61,47 +61,7 @@ sub new {
     return ( $self );
 }
 
-sub _init_db {
-    my ( $self, $dbtype ) = @_;
-
-    eval {
-        my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
-        $self->{db} = $dbclass->from_config( $self->{config} );
-    };
-
-    if ($@) {
-        handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');
-    }
-}
-
-sub handle_exception {
-    my ( $method, $exception, $exception_id ) = @_;
-
-    if ( !$exception->isa('Zonemaster::Backend::Error') ) {
-        my $reason = $exception;
-        $exception = Zonemaster::Backend::Error::Internal->new(reason => $reason, id => $exception_id, method => $method);
-    }
-
-    if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
-        $log->error($exception->as_string);
-    } else {
-        $log->info($exception->as_string);
-    }
-
-    die $exception->as_hash;
-}
-
-$json_schemas{version_info} = joi->object->strict;
-sub version_info {
-    my ( $self ) = @_;
-
-    my %ver;
-    $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
-    $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
-    return \%ver;
-}
-
-sub decorate {
+sub __decorate {
     my $subname = shift;
     my @decorators = reverse @_;
     $subname = __PACKAGE__ . "::$subname";
@@ -110,10 +70,11 @@ sub decorate {
         $sub = $d->($sub, $subname);
     }
     no strict;
+    no warnings 'redefine';
     * { $subname } = $sub;
 }
 
-sub handler_exception_decorator {
+sub __handler_exception_decorator {
     my $id = shift;
     return sub {
         my $sub = shift;
@@ -128,26 +89,85 @@ sub handler_exception_decorator {
     }
 }
 
-sub validate_decorator {
-    my $sub = shift;
-    my $subname = shift;
-    return sub {
-        print "validating...\n";
-        return $sub->(@_);
+__decorate('_init_db',                              __handler_exception_decorator(  2));
+# Example of chained decorators, exception handler first then validation so that error are catched.
+# __decorate('version_info',                          __handler_exception_decorator(  3), \&validate_decorator);
+__decorate('version_info',                          __handler_exception_decorator(  3));
+__decorate('profile_names',                         __handler_exception_decorator(  4));
+__decorate('get_language_tags',                     __handler_exception_decorator(  0));
+__decorate('get_host_by_name',                      __handler_exception_decorator(  5));
+__decorate('get_data_from_parent_zone',             __handler_exception_decorator(  6));
+__decorate('start_domain_test_validate_syntax',     __handler_exception_decorator(  8));
+__decorate('start_domain_test',                     __handler_exception_decorator(  9));
+__decorate('test_progress',                         __handler_exception_decorator( 10));
+__decorate('get_test_params',                       __handler_exception_decorator( 11));
+__decorate('get_test_results',                      __handler_exception_decorator( 12));
+__decorate('get_test_history',                      __handler_exception_decorator( 13));
+__decorate('add_api_user',                          __handler_exception_decorator( 14));
+__decorate('add_batch_job',                         __handler_exception_decorator( 15));
+__decorate('get_batch_job_result',                  __handler_exception_decorator( 16));
+
+
+# sub validate_decorator {
+#    my $sub = shift;
+#    my $subname = shift;
+#    $subname =~ /.*::(\w+)/;
+#    print $1 . "\n";
+#    return sub {
+#        my $self = shift;
+#        my $params = shift;
+#        # Add validation here...
+#        # $self->validate_params($subname, $params);
+#        return $sub->($self, $params, @_);
+#    };
+# }
+
+sub _init_db {
+    my ( $self, $dbtype ) = @_;
+
+    eval {
+        my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
+        $self->{db} = $dbclass->from_config( $self->{config} );
     };
+    die Zonemaster::Backend::Error::Internal->new( message => "Failed to initialize the [$dbtype] database backend module: [$@]") if ($@);
 }
 
-decorate('version_info', \&validate_decorator, handler_exception_decorator(003));
+sub handle_exception {
+    my ( $method, $exception, $exception_id ) = @_;
+
+    if ( !$exception->isa('Zonemaster::Backend::Error') ) {
+        my $reason = $exception;
+        $exception = Zonemaster::Backend::Error::Internal->new(reason => $reason, id => $exception_id, method => $method);
+    }
+
+    if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
+        $exception->id($exception_id);
+        $log->error($exception->as_string);
+    } else {
+        $log->info($exception->as_string);
+    }
+
+    die $exception->as_hash;
+}
+
+
+$json_schemas{version_info} = joi->object->strict;
+sub version_info {
+    my ( $self ) = @_;
+
+    my %ver;
+    $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
+    $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
+    return \%ver;
+}
+
 
 $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
     my ( $self ) = @_;
 
     my %profiles;
-    eval { %profiles = $self->{config}->PUBLIC_PROFILES };
-    if ( $@ ) {
-        handle_exception( 'profile_names', $@, '004' );
-    }
+    %profiles = $self->{config}->PUBLIC_PROFILES;
 
     return [ keys %profiles ];
 }
@@ -179,16 +199,10 @@ sub get_host_by_name {
     my ( $self, $params ) = @_;
     my @adresses;
 
-    eval {
-        my $ns_name  = $params->{hostname};
+    my $ns_name  = $params->{hostname};
 
-        @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
-        @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
-
-    };
-    if ($@) {
-        handle_exception('get_host_by_name', $@, '005');
-    }
+    @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+    @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     return \@adresses;
 }
@@ -209,39 +223,31 @@ $json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
-    my $result = eval {
-        my %result;
-        my $domain = $params->{domain};
+    my %result;
+    my $domain = $params->{domain};
 
-        my @ns_list;
-        my @ns_names;
+    my @ns_list;
+    my @ns_names;
 
-        my $zone = Zonemaster::Engine->zone( $domain );
-        push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
+    my $zone = Zonemaster::Engine->zone( $domain );
+    push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
-        my @ds_list;
+    my @ds_list;
 
-        $zone = Zonemaster::Engine->zone($domain);
-        my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
-        if ($ds_p) {
-            my @ds = $ds_p->get_records( 'DS', 'answer' );
+    $zone = Zonemaster::Engine->zone($domain);
+    my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
+    if ($ds_p) {
+        my @ds = $ds_p->get_records( 'DS', 'answer' );
 
-            foreach my $ds ( @ds ) {
-                next unless $ds->type eq 'DS';
-                push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-            }
+        foreach my $ds ( @ds ) {
+            next unless $ds->type eq 'DS';
+            push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
         }
+    }
 
-        $result{ns_list} = \@ns_list;
-        $result{ds_list} = \@ds_list;
-        return \%result;
-    };
-    if ($@) {
-        handle_exception('get_data_from_parent_zone', $@, '006');
-    }
-    elsif ($result) {
-        return $result;
-    }
+    $result{ns_list} = \@ns_list;
+    $result{ds_list} = \@ds_list;
+    return \%result;
 }
 
 
@@ -297,46 +303,39 @@ sub _check_domain {
     return ( $domain, { status => 'ok', message => 'Syntax ok' } );
 }
 
-$extra_validators{start_domain_test} = sub {
+$extra_validators{start_domain_test} = \&start_domain_test_validate_syntax;
+sub start_domain_test_validate_syntax {
     my ( $self, $syntax_input ) = @_;
 
-    my @errors = eval {
-        my @errors;
+    my @errors;
 
-        if ( defined $syntax_input->{profile} ) {
-            $syntax_input->{profile} = lc $syntax_input->{profile};
-            my %profiles = ( $self->{config}->PUBLIC_PROFILES, $self->{config}->PRIVATE_PROFILES );
-            if ( !exists $profiles{ $syntax_input->{profile} } ) {
-                push @errors, { path => '/profile', message => 'Unknown profile' };
-            }
+    if ( defined $syntax_input->{profile} ) {
+        $syntax_input->{profile} = lc $syntax_input->{profile};
+        my %profiles = ( $self->{config}->PUBLIC_PROFILES, $self->{config}->PRIVATE_PROFILES );
+        if ( !exists $profiles{ $syntax_input->{profile} } ) {
+            push @errors, { path => '/profile', message => 'Unknown profile' };
         }
-
-        if ( defined $syntax_input->{domain} ) {
-            my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
-            push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
-        }
-
-        if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
-            while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
-                my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns} );
-                push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
-
-                push @errors, { path => "/nameservers/$index/ip", message => 'Invalid IP address' }
-                unless ( !$ns_ip->{ip}
-                    || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
-                    || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
-            }
-        }
-
-        return @errors;
-    };
-    if ($@) {
-        handle_exception('start_domain_test_validate_syntax', $@, '008');
     }
-    else {
-        return @errors;
+
+    if ( defined $syntax_input->{domain} ) {
+        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
+        push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
     }
-};
+
+    if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
+        while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
+            my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns} );
+            push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
+
+            push @errors, { path => "/nameservers/$index/ip", message => 'Invalid IP address' }
+            unless ( !$ns_ip->{ip}
+                || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
+                || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
+        }
+    }
+
+    return @errors;
+}
 
 $json_schemas{start_domain_test} = joi->object->strict->props(
     domain => $zm_validator->domain_name->required,
@@ -360,19 +359,15 @@ sub start_domain_test {
     my ( $self, $params ) = @_;
 
     my $result = 0;
-    eval {
-        $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
 
-        die "No domain in parameters\n" unless ( $params->{domain} );
+    $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
 
-        $params->{priority}  //= 10;
-        $params->{queue}     //= 0;
+    die "No domain in parameters\n" unless ( $params->{domain} );
 
-        $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
-    };
-    if ($@) {
-        handle_exception('start_domain_test', $@, '009');
-    }
+    $params->{priority}  //= 10;
+    $params->{queue}     //= 0;
+
+    $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
 
     return $result;
 }
@@ -383,16 +378,9 @@ $json_schemas{test_progress} = joi->object->strict->props(
 sub test_progress {
     my ( $self, $params ) = @_;
 
-    my $result = 0;
-    eval {
-        my $test_id = $params->{test_id};
-        $result = $self->{db}->test_progress( $test_id );
-    };
-    if ($@) {
-        handle_exception('test_progress', $@, '010');
-    }
+    my $test_id = $params->{test_id};
 
-    return $result;
+    return $self->{db}->test_progress( $test_id );
 }
 
 $json_schemas{get_test_params} = joi->object->strict->props(
@@ -403,16 +391,7 @@ sub get_test_params {
 
     my $test_id = $params->{test_id};
 
-    my $result = 0;
-
-    eval {
-        $result = $self->{db}->get_test_params( $test_id );
-    };
-    if ($@) {
-        handle_exception('get_test_params', $@, '011');
-    }
-
-    return $result;
+    return $self->{db}->get_test_params( $test_id );
 }
 
 $json_schemas{get_test_results} = joi->object->strict->props(
@@ -457,60 +436,56 @@ sub get_test_results {
 
     my $test_info;
     my @zm_results;
-    eval{
-        $test_info = $self->{db}->test_results( $params->{id} );
-        foreach my $test_res ( @{ $test_info->{results} } ) {
-            my $res;
-            if ( $test_res->{module} eq 'NAMESERVER' ) {
-                $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
-            }
-            elsif ($test_res->{module} eq 'SYSTEM'
-                && $test_res->{tag} eq 'POLICY_DISABLED'
-                && $test_res->{args}->{name} eq 'Example' )
-            {
-                next;
-            }
 
-            $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res ) . "\n";
-            $res->{message} =~ s/,/, /isg;
-            $res->{message} =~ s/;/; /isg;
-            $res->{level} = $test_res->{level};
-
-            if ( $test_res->{module} eq 'SYSTEM' ) {
-                if ( $res->{message} =~ /policy\.json/ ) {
-                    my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                    if ( $policy ) {
-                        my $policy_description = 'DEFAULT POLICY';
-                        $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
-                        $res->{message} =~ s/$policy/$policy_description/;
-                    }
-                    else {
-                        $res->{message} = 'UNKNOWN POLICY FORMAT';
-                    }
-                }
-                elsif ( $res->{message} =~ /config\.json/ ) {
-                    my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                    if ( $config ) {
-                        my $config_description = 'DEFAULT CONFIGURATION';
-                        $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
-                        $res->{message} =~ s/$config/$config_description/;
-                    }
-                    else {
-                        $res->{message} = 'UNKNOWN CONFIG FORMAT';
-                    }
-                }
-            }
-
-            push( @zm_results, $res );
+    $test_info = $self->{db}->test_results( $params->{id} );
+    foreach my $test_res ( @{ $test_info->{results} } ) {
+        my $res;
+        if ( $test_res->{module} eq 'NAMESERVER' ) {
+            $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
+        }
+        elsif ($test_res->{module} eq 'SYSTEM'
+            && $test_res->{tag} eq 'POLICY_DISABLED'
+            && $test_res->{args}->{name} eq 'Example' )
+        {
+            next;
         }
 
-        $result = $test_info;
-        $result->{results} = \@zm_results;
-    };
-    if ($@) {
-        handle_exception('get_test_results', $@, '012');
+        $res->{module} = $test_res->{module};
+        $res->{message} = $translator->translate_tag( $test_res ) . "\n";
+        $res->{message} =~ s/,/, /isg;
+        $res->{message} =~ s/;/; /isg;
+        $res->{level} = $test_res->{level};
+
+        if ( $test_res->{module} eq 'SYSTEM' ) {
+            if ( $res->{message} =~ /policy\.json/ ) {
+                my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
+                if ( $policy ) {
+                    my $policy_description = 'DEFAULT POLICY';
+                    $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
+                    $res->{message} =~ s/$policy/$policy_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN POLICY FORMAT';
+                }
+            }
+            elsif ( $res->{message} =~ /config\.json/ ) {
+                my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
+                if ( $config ) {
+                    my $config_description = 'DEFAULT CONFIGURATION';
+                    $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
+                    $res->{message} =~ s/$config/$config_description/;
+                }
+                else {
+                    $res->{message} = 'UNKNOWN CONFIG FORMAT';
+                }
+            }
+        }
+
+        push( @zm_results, $res );
     }
+
+    $result = $test_info;
+    $result->{results} = \@zm_results;
 
     $translator->locale( $previous_locale );
 
@@ -531,20 +506,11 @@ $json_schemas{get_test_history} = joi->object->strict->props(
 sub get_test_history {
     my ( $self, $params ) = @_;
 
-    my $results;
+    $params->{offset} //= 0;
+    $params->{limit} //= 200;
+    $params->{filter} //= "all";
 
-    eval {
-        $params->{offset} //= 0;
-        $params->{limit} //= 200;
-        $params->{filter} //= "all";
-
-        $results = $self->{db}->get_test_history( $params );
-    };
-    if ($@) {
-        handle_exception('get_test_history', $@, '013');
-    }
-
-    return $results;
+    return $self->{db}->get_test_history( $params );
 }
 
 $json_schemas{add_api_user} = joi->object->strict->props(
@@ -555,22 +521,17 @@ sub add_api_user {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
     my $result = 0;
+    my $allow = 0;
 
-    eval {
-        my $allow = 0;
-        if ( defined $remote_ip ) {
-            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' );
-        }
-        else {
-            $allow = 1;
-        }
+    if ( defined $remote_ip ) {
+        $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' );
+    }
+    else {
+        $allow = 1;
+    }
 
-        if ( $allow ) {
-            $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
-        }
-    };
-    if ($@) {
-        handle_exception('add_api_user', $@, '014');
+    if ( $allow ) {
+        $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
     }
 
     return $result;
@@ -605,15 +566,7 @@ sub add_batch_job {
     $params->{test_params}->{priority}  //= 5;
     $params->{test_params}->{queue}     //= 0;
 
-    my $results;
-    eval {
-        $results = $self->{db}->add_batch_job( $params );
-    };
-    if ($@) {
-        handle_exception('add_batch_job', $@, '015');
-    }
-
-    return $results;
+    return $self->{db}->add_batch_job( $params );
 }
 
 $json_schemas{get_batch_job_result} = joi->object->strict->props(
@@ -622,18 +575,9 @@ $json_schemas{get_batch_job_result} = joi->object->strict->props(
 sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
-    my $result;
+    my $batch_id = $params->{batch_id};
 
-    eval {
-        my $batch_id = $params->{batch_id};
-
-        $result = $self->{db}->get_batch_job_result($batch_id);
-    };
-    if ($@) {
-        handle_exception('get_batch_job_result', $@, '016');
-    }
-
-    return $result;
+    return $self->{db}->get_batch_job_result($batch_id);
 }
 
 my $rpc_request = joi->object->props(

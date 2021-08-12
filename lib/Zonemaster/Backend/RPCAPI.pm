@@ -26,7 +26,7 @@ use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
-use Log::Any qw( $log );
+use Zonemaster::Backend::Errors;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;
@@ -68,18 +68,26 @@ sub _init_db {
         my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
         $self->{db} = $dbclass->from_config( $self->{config} );
     };
-    if ($@) {
         handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');
+    if ($@) {
     }
 }
 
 sub handle_exception {
-    my ( $method, $exception, $exception_id ) = @_;
+    my ( $_method, $exception, $exception_id ) = @_;
 
-    $exception =~ s/\n/ /g;
-    $exception =~ s/^\s+|\s+$//g;
-    $log->error("Internal error $exception_id: Unexpected error in the $method API call: [$exception]");
-    die "Internal error $exception_id \n";
+    if ( !$exception->isa('Zonemaster::Backend::Error') ) {
+        my $reason = $exception;
+        $exception = Zonemaster::Backend::Error::Internal->new(reason => $reason, id => $exception_id);
+    }
+
+    if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
+        $log->error($exception->as_string);
+    } else {
+        $log->notice($exception->as_string);
+    }
+
+    die $exception->as_hash;
 }
 
 $json_schemas{version_info} = joi->object->strict;

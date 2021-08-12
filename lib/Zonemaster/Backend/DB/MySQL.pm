@@ -60,7 +60,11 @@ sub from_config {
         $host = "[$host]";
     }
 
-    my $data_source_name = "DBI:MariaDB:database=$database;host=$host;port=$port";
+    my $data_source_name = "DBI:MariaDB:database=$database;host=$host";
+
+    if ( $host ne 'localhost' ) {
+        $data_source_name .= ";port=$port";
+    }
 
     my $dbh = $class->_new_dbh(
         $data_source_name,

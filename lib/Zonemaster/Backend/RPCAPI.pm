@@ -75,11 +75,11 @@ sub _init_db {
 }
 
 sub handle_exception {
-    my ( $_method, $exception, $exception_id ) = @_;
+    my ( $method, $exception, $exception_id ) = @_;
 
     if ( !$exception->isa('Zonemaster::Backend::Error') ) {
         my $reason = $exception;
-        $exception = Zonemaster::Backend::Error::Internal->new(reason => $reason, id => $exception_id);
+        $exception = Zonemaster::Backend::Error::Internal->new(reason => $reason, id => $exception_id, method => $method);
     }
 
     if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
@@ -96,17 +96,48 @@ sub version_info {
     my ( $self ) = @_;
 
     my %ver;
-    eval {
-        $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
-        $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
-
-    };
-    if ($@) {
-        handle_exception('version_info', $@, '003');
-    }
-
+    $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
+    $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
     return \%ver;
 }
+
+sub decorate {
+    my $subname = shift;
+    my @decorators = reverse @_;
+    $subname = __PACKAGE__ . "::$subname";
+    my $sub = \&$subname;
+    for my $d (@decorators) {
+        $sub = $d->($sub, $subname);
+    }
+    no strict;
+    * { $subname } = $sub;
+}
+
+sub handler_exception_decorator {
+    my $id = shift;
+    return sub {
+        my $sub = shift;
+        my $subname = shift;
+        return sub {
+            my $ret = eval {
+                return $sub->(@_);
+            };
+            handle_exception($subname, $@, $id) if ($@);
+            return $ret;
+        }
+    }
+}
+
+sub validate_decorator {
+    my $sub = shift;
+    my $subname = shift;
+    return sub {
+        print "validating...\n";
+        return $sub->(@_);
+    };
+}
+
+decorate('version_info', \&validate_decorator, handler_exception_decorator(003));
 
 $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {

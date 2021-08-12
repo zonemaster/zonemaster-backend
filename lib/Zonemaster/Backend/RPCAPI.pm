@@ -85,7 +85,7 @@ sub handle_exception {
     if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
         $log->error($exception->as_string);
     } else {
-        $log->notice($exception->as_string);
+        $log->info($exception->as_string);
     }
 
     die $exception->as_hash;

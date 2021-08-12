@@ -66,7 +66,10 @@ builder {
         my $app = shift;
 
         # Make sure we can connect to the database
-        $config->new_DB();
+        my $db = $config->new_DB();
+
+        $log->notice( "Initializing the database" );
+        $db->create_db();
 
         return $app;
     };

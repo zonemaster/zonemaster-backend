@@ -197,7 +197,11 @@ eval {
     Zonemaster::Backend::TestAgent->new( { config => $initial_config } );
 
     # Connect to the database
-    $initial_config->new_DB();
+    my $db = $initial_config->new_DB();
+
+    $log->notice( "Initializing the database" );
+    $db->create_db();
+
     $log->debug("Completed pre-flight check");
 };
 if ( $@ ) {

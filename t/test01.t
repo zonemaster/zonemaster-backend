@@ -67,10 +67,8 @@ my $engine = Zonemaster::Backend::RPCAPI->new(
 );
 isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
 
-if ( $db_backend eq 'SQLite' ) {
-    # create a new memory SQLite database
-    ok( $engine->{db}->create_db(), "$db_backend database created");
-}
+# create the database tables
+ok( $engine->{db}->create_db(), "$db_backend database created");
 
 # add test user
 is( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');

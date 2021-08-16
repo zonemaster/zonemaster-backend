@@ -518,7 +518,7 @@ sub add_api_user {
     eval {
         my $allow = 0;
         if ( defined $remote_ip ) {
-            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' );
+            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' || $remote_ip eq '::ffff:127.0.0.1' );
         }
         else {
             $allow = 1;

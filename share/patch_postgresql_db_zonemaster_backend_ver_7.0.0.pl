@@ -40,8 +40,9 @@ sub patch_db {
     print( "Error while changing DB schema:  " . $@ ) if ($@);
 
 
-    # Add missing "undelegated" column
+    # Add missing "domain" and "undelegated" columns
     eval {
+        $dbh->do( "ALTER TABLE test_results ADD COLUMN domain VARCHAR(255) NOT NULL DEFAULT ''" );
         $dbh->do( 'ALTER TABLE test_results ADD COLUMN undelegated integer NOT NULL DEFAULT 0' );
     };
     print( "Error while changing DB schema:  " . $@ ) if ($@);
@@ -50,9 +51,14 @@ sub patch_db {
     eval {
         # clause IF EXISTS available since PostgreSQL >= 9.2
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
-        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), undelegated)" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
     };
     print( "Error while updating the index:  " . $@ ) if ($@);
+
+    # Update the "domain" column
+    $dbh->do( "UPDATE test_results SET domain = (params->>'domain')" );
+    # remove default value to "domain" column
+    $dbh->do( "ALTER TABLE test_results ALTER COLUMN domain DROP DEFAULT" );
 
     # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);

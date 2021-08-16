@@ -38,9 +38,6 @@ Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
 
-# Boolean 0 or 1
-Readonly my $BOOL_RE            => qr/^(0|1)$/;
-
 sub joi {
     return JSON::Validator::Joi->new;
 }

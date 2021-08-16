@@ -129,7 +129,7 @@ sub parse {
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_set_API_enable_add_api_user( '0' );
-    $obj->_set_API_enable_batch_jobs( '0' );
+    $obj->_set_API_enable_batch_jobs( '1' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {

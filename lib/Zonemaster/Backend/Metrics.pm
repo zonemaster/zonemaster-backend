@@ -38,3 +38,9 @@ sub gauge {
         Net::Statsd::gauge(@_)
     }
 }
+
+sub timing {
+    if ( $enable_metrics ) {
+        Net::Statsd::timing(@_)
+    }
+}

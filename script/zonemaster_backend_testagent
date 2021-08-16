@@ -17,7 +17,7 @@ use English;
 use Pod::Usage;
 use Getopt::Long;
 use POSIX;
-use Time::HiRes qw[time sleep];
+use Time::HiRes qw[time sleep gettimeofday tv_interval];
 use sigtrap qw(die normal-signals);
 
 ###
@@ -151,6 +151,7 @@ sub main {
             if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
                 $log->info( "Test starting: $id" );
                 Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
+                my $start_time = [ gettimeofday ];
                 eval { $agent->run( $id ) };
                 if ( $@ ) {
                     chomp $@;
@@ -162,6 +163,7 @@ sub main {
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");
                     $log->info( "Test completed: $id" );
                 }
+                Zonemaster::Backend::Metrics::timing("zonemaster.testagent.tests_duration_seconds", tv_interval($start_time) * 1000);
                 $agent->reset();
                 $self->pm->finish;                   # Terminates child process
             }

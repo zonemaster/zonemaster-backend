@@ -26,7 +26,6 @@ use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
-use Log::Any qw( $log );
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 my %json_schemas;

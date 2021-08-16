@@ -111,7 +111,7 @@ sub log_dispatcher_file {
 }
 
 $SIG{__WARN__} = sub {
-    $log->warning(map { my $m = $_; $m =~ s/\n/ /g; $m =~ s/^\s+|\s+$//g; $m } @_);
+    $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
 };
 
 ###

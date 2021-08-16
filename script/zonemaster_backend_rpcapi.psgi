@@ -56,7 +56,7 @@ Log::Any::Adapter->set(
 );
 
 $SIG{__WARN__} = sub {
-    $log->warning(map { my $m = $_; $m =~ s/\n/ /g; $m =~ s/^\s+|\s+$//g; $m } @_);
+    $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
 };
 
 my $config = Zonemaster::Backend::Config->load_config();

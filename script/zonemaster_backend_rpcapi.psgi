@@ -157,7 +157,7 @@ sub {
     };
 
     if ($json_error eq '') {
-        my $errors = Zonemaster::Backend::RPCAPI->jsonrpc_validate($content);
+        my $errors = $handler->jsonrpc_validate($content);
         if ($errors ne '') {
           $res = Plack::Response->new(200);
           $res->content_type('application/json');

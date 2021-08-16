@@ -16,14 +16,23 @@ use Zonemaster::Backend::Validator qw( :untaint );
 use Zonemaster::Backend::DB;
 
 our $path;
+
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
     $path = $ENV{ZONEMASTER_BACKEND_CONFIG_FILE};
 }
-elsif ( -e '/etc/zonemaster/backend_config.ini' ) {
-    $path = '/etc/zonemaster/backend_config.ini';
-}
 else {
-    $path = dist_file('Zonemaster-Backend', "backend_config.ini");
+    my @search_paths = (
+        '/etc/zonemaster/backend_config.ini',
+        '/usr/local/etc/zonemaster/backend_config.ini',
+        dist_file('Zonemaster-Backend', "backend_config.ini")
+    );
+
+    for my $default_path (@search_paths) {
+        if ( -e $default_path ) {
+            $path = $default_path;
+            last;
+        }
+    }
 }
 
 Readonly my @SIG_NAME => split ' ', $Config{sig_name};
@@ -740,7 +749,6 @@ sub _reset_LANGUAGE_locale {
     my ( $self ) = @_;
 
     delete $self->{_LANGUAGE_locale};
-
     return;
 }
 

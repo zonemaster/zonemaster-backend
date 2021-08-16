@@ -4,19 +4,19 @@ use Data::Dumper;
 
 
 has 'message' => (
-    is => 'rw',
+    is => 'ro',
     isa => 'Str',
     required => 1,
 );
 
 has 'code' => (
-    is => 'rw',
+    is => 'ro',
     isa => 'Int',
     required => 1,
 );
 
 has 'data' => (
-    is => 'rw',
+    is => 'ro',
     isa => 'Any',
     default => undef,
 );
@@ -70,7 +70,7 @@ has 'reason' => (
 );
 
 has 'method' => (
-    is => 'rw',
+    is => 'ro',
     isa => 'Str',
     builder => '_build_method'
 );

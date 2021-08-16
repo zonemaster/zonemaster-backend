@@ -75,6 +75,13 @@ Install dependencies not available from binary packages:
 sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman
 ```
 
+Install optional dependencies:
+
+```sh
+# For metrics feature
+sudo cpanm Net::Statsd
+```
+
 Install Zonemaster::Backend:
 
 ```sh
@@ -207,6 +214,13 @@ Install dependencies not available from binary packages:
 sudo cpanm Daemon::Control JSON::Validator
 ```
 
+Install optional dependencies:
+
+```sh
+# For metrics feature
+sudo cpanm Net::Statsd
+```
+
 Install Zonemaster::Backend:
 
 ```sh
@@ -319,6 +333,12 @@ pkg install jq p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5
 ```
 <!-- JSON::Validator requires YAML::PP, but p5-JSON-Validator currently lacks a dependency on p5-YAML-LibYAML -->
 
+Install optional dependencies:
+
+```sh
+# For metrics feature
+sudo cpanm Net::Statsd
+```
 
 Install Zonemaster::Backend:
 

@@ -63,6 +63,7 @@ sub create_db {
         'CREATE TABLE IF NOT EXISTS test_results (
                 id serial PRIMARY KEY,
                 hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
+                domain VARCHAR(255) NOT NULL,
                 batch_id integer,
                 creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
                 test_start_time timestamp without time zone DEFAULT NULL,
@@ -106,7 +107,7 @@ sub create_db {
     }
     if ( not exists($indexes->{test_results__domain_undelegated}) ) {
         $dbh->do(
-            "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), undelegated)"
+            "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)"
         );
     }
 
@@ -223,8 +224,8 @@ sub create_new_test {
     my $queue_label = $test_params->{queue};
 
     my $sth = $dbh->prepare( "
-        INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, undelegated)
-        SELECT ?, ?, ?, ?, ?, ?
+        INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated)
+        SELECT ?, ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT * FROM test_results
             WHERE fingerprint = ?
@@ -236,6 +237,7 @@ sub create_new_test {
         $queue_label,
         $fingerprint,
         $encoded_params,
+        $domain,
         $undelegated,
         $fingerprint,
         sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
@@ -332,7 +334,7 @@ sub get_test_history {
             undelegated,
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
         FROM test_results
-        WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
+        WHERE domain=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
         ORDER BY id DESC
         OFFSET $p->{offset} LIMIT $p->{limit}";
     my $sth1 = $dbh->prepare( $query );
@@ -385,7 +387,7 @@ sub add_batch_job {
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
+        $dbh->do( "COPY test_results(domain ,batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -393,7 +395,7 @@ sub add_batch_job {
             my $encoded_params = $self->encode_params( $test_params );
             my $undelegated = $self->undelegated ( $test_params );
 
-            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
+            $dbh->pg_putcopydata("$test_params->{domain}\t$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
@@ -401,7 +403,7 @@ sub add_batch_job {
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
-        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), undelegated)" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
 
         $dbh->commit();
     }

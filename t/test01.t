@@ -75,13 +75,7 @@ if ( $db_backend eq 'SQLite' ) {
 # add test user
 is( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
-my $user_check_query;
-if ( $db_backend eq 'PostgreSQL' ) {
-    $user_check_query = q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/;
-}
-elsif ( $db_backend eq 'MySQL' || $db_backend eq 'SQLite' ) {
-    $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-}
+my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
 is( scalar( $engine->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
 
 # add a new test to the db

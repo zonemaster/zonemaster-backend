@@ -115,44 +115,12 @@ sub create_db {
         'CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username varchar(128),
-                api_key varchar(512),
-                user_info json DEFAULT NULL
+                api_key varchar(512)
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
 
     return 1;
-}
-
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my ( $id ) = $self->dbh->selectrow_array( "SELECT id FROM users WHERE username = ?", undef, $user );
-
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key  ) = @_;
-
-    my $nb_inserted = $self->dbh->do(
-        "INSERT INTO users (user_info, username, api_key) VALUES (?,?,?)",
-        undef,
-        'NULL',
-        $user_name,
-        $api_key,
-    );
-
-    return $nb_inserted;
-}
-
-sub user_authorized {
-    my ( $self, $user, $api_key ) = @_;
-
-    my ( $id ) =
-      $self->dbh->selectrow_array( q[SELECT id FROM users WHERE username = ? AND api_key = ?], undef, $user, $api_key );
-
-    return $id;
 }
 
 sub create_new_batch_job {

@@ -131,40 +131,12 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY,
-                user_info json
+                username VARCHAR(128),
+                api_key VARCHAR(512)
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
 
-}
-
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=?", undef, $user );
-
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key ) = @_;
-
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( { username => $user_name, api_key => $api_key } ) );
-
-    return $nb_inserted;
-}
-
-sub user_authorized {
-    my ( $self, $user, $api_key ) = @_;
-
-    my $dbh = $self->dbh;
-    my $id =
-      $dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=? AND user_info->>'api_key'=?",
-        undef, $user, $api_key );
-
-    return $id;
 }
 
 sub test_progress {

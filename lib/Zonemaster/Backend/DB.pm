@@ -14,7 +14,6 @@ use Log::Any qw( $log );
 use Zonemaster::Engine::Profile;
 
 requires qw(
-  add_api_user_to_db
   add_batch_job
   create_db
   create_new_batch_job
@@ -26,8 +25,6 @@ requires qw(
   select_unfinished_tests
   test_progress
   test_results
-  user_authorized
-  user_exists_in_db
   get_relative_start_time
 );
 
@@ -114,6 +111,50 @@ sub add_api_user {
         unless ( $result );
 
     return $result;
+}
+
+# Standard SQL, can be here
+sub user_exists_in_db {
+    my ( $self, $user ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        "SELECT id FROM users WHERE username = ?",
+        undef,
+        $user
+    );
+
+    return $id;
+}
+
+# Standard SQL, can be here
+sub add_api_user_to_db {
+    my ( $self, $user_name, $api_key  ) = @_;
+
+    my $dbh = $self->dbh;
+    my $nb_inserted = $dbh->do(
+        "INSERT INTO users (username, api_key) VALUES (?,?)",
+        undef,
+        $user_name,
+        $api_key,
+    );
+
+    return $nb_inserted;
+}
+
+# Standard SQL, can be here
+sub user_authorized {
+    my ( $self, $user, $api_key ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        "SELECT id FROM users WHERE username = ? AND api_key = ?",
+        undef,
+        $user,
+        $api_key
+    );
+
+    return $id;
 }
 
 # Standard SQL, can be here

@@ -147,7 +147,7 @@ sub user_authorized {
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
-    my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
+    my ( $batch_id, $creation_time ) = $self->dbh->selectrow_array( "
                SELECT
                     batch_id,
                     batch_jobs.creation_time AS batch_creation_time
@@ -160,7 +160,8 @@ sub create_new_batch_job {
                LIMIT 1
                " );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+    if ( $batch_id );
 
     $self->dbh->do("INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ")" );
     my ( $new_batch_id ) = $self->dbh->sqlite_last_insert_rowid;
@@ -383,7 +384,7 @@ sub add_batch_job {
         $dbh->{AutoCommit} = 1;
     }
     else {
-        die "User $params->{username} not authorized to use batch mode\n";
+        die Zonemaster::Backend::Error::PermissionDenied->new( message => 'User not authorized to use batch mode', data => { username => $params->{username}} );
     }
 
     return $batch_id;

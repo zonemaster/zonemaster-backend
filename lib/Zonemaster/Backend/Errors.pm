@@ -152,6 +152,32 @@ has '+code' => (
     default => -32000
 );
 
+package Zonemaster::Backend::Error::PermissionDenied;
+use Moose;
+
+extends 'Zonemaster::Backend::Error';
+
+has '+message' => (
+    default => 'Permission denied'
+);
+
+has '+code' => (
+    default => -32001
+);
+
+package Zonemaster::Backend::Error::Conflict;
+use Moose;
+
+extends 'Zonemaster::Backend::Error';
+
+has '+message' => (
+    default => 'Conflicting resource'
+);
+
+has '+code' => (
+    default => -32002
+);
+
 package Zonemaster::Backend::Error::JsonError;
 use Moose;
 

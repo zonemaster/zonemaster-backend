@@ -62,7 +62,8 @@ sub add_api_user {
     die "username or api_key not provided to the method add_api_user\n"
       unless ( $username && $api_key );
 
-    die "User already exists\n" if ( $self->user_exists( $username ) );
+    die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
+    if ( $self->user_exists( $username ) );
 
     my $result = $self->add_api_user_to_db( $username, $api_key );
 

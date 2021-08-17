@@ -154,8 +154,8 @@ sub create_new_batch_job {
                 test_results.progress<>100
             LIMIT 1
             ", undef, $username );
-
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running \n" if ( $batch_id );
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+    if ( $batch_id );
 
     my ( $new_batch_id ) =
       $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
@@ -358,7 +358,7 @@ sub add_batch_job {
         $dbh->commit();
     }
     else {
-        die "User $params->{username} not authorized to use batch mode\n";
+        die Zonemaster::Backend::Error::PermissionDenied->new( message => 'User not authorized to use batch mode', data => { username => $params->{username}} );
     }
 
     return $batch_id;

@@ -131,6 +131,8 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY,
+                username VARCHAR(128),
+                api_key VARCHAR(512),
                 user_info json
             )
         '
@@ -151,7 +153,12 @@ sub add_api_user_to_db {
     my ( $self, $user_name, $api_key ) = @_;
 
     my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( { username => $user_name, api_key => $api_key } ) );
+    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info, username, api_key) VALUES (?,?,?)",
+        undef,
+        encode_json( { username => $user_name, api_key => $api_key } ),
+        $user_name,
+        $api_key
+    );
 
     return $nb_inserted;
 }

@@ -79,6 +79,16 @@ sub patch_db {
 
         $dbh->do('UPDATE test_results SET undelegated = ? where id = ?', undef, $undelegated, $id);
     }
+
+    # add "username" and "api_key" columns to the "users" table
+    eval {
+        $dbh->do( 'ALTER TABLE users ADD COLUMN username VARCHAR(128)' );
+        $dbh->do( 'ALTER TABLE users ADD COLUMN api_key VARCHAR(512)' );
+    };
+    print( "Error while changing DB schema:  " . $@ ) if ($@);
+
+    # update the columns
+    $dbh->do( "UPDATE users SET username = (user_info->>'username'), api_key = (user_info->>'api_key')" );
 }
 
 patch_db();

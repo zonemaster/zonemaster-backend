@@ -44,7 +44,7 @@ sub new {
     bless( $self, $type );
 
     if ( ! $params || ! $params->{config} ) {
-        handle_exception('new', "Missing 'config' parameter", '001');
+        handle_exception('new', "Missing 'config' parameter");
     }
 
     $self->{config} = $params->{config};
@@ -70,16 +70,16 @@ sub _init_db {
     };
 
     if ($@) {
-        handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');
+        handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]");
     }
 }
 
 sub handle_exception {
-    my ( $_method, $exception, $exception_id ) = @_;
+    my ( $_method, $exception ) = @_;
 
     if ( !$exception->isa('Zonemaster::Backend::Error') ) {
         my $reason = $exception;
-        $exception = Zonemaster::Backend::Error::Internal->new(reason => $reason, id => $exception_id);
+        $exception = Zonemaster::Backend::Error::Internal->new( reason => $reason );
     }
 
     if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
@@ -102,7 +102,7 @@ sub version_info {
 
     };
     if ($@) {
-        handle_exception('version_info', $@, '003');
+        handle_exception( 'version_info', $@ );
     }
 
     return \%ver;
@@ -115,7 +115,7 @@ sub profile_names {
     my %profiles;
     eval { %profiles = $self->{config}->PUBLIC_PROFILES };
     if ( $@ ) {
-        handle_exception( 'profile_names', $@, '004' );
+        handle_exception( 'profile_names', $@ );
     }
 
     return [ keys %profiles ];
@@ -156,7 +156,7 @@ sub get_host_by_name {
 
     };
     if ($@) {
-        handle_exception('get_host_by_name', $@, '005');
+        handle_exception( 'get_host_by_name', $@ );
     }
 
     return \@adresses;
@@ -206,7 +206,7 @@ sub get_data_from_parent_zone {
         return \%result;
     };
     if ($@) {
-        handle_exception('get_data_from_parent_zone', $@, '006');
+        handle_exception( 'get_data_from_parent_zone', $@ );
     }
     elsif ($result) {
         return $result;
@@ -300,7 +300,7 @@ $extra_validators{start_domain_test} = sub {
         return @errors;
     };
     if ($@) {
-        handle_exception('start_domain_test_validate_syntax', $@, '008');
+        handle_exception( 'start_domain_test_validate_syntax', $@ );
     }
     else {
         return @errors;
@@ -340,7 +340,7 @@ sub start_domain_test {
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
     if ($@) {
-        handle_exception('start_domain_test', $@, '009');
+        handle_exception( 'start_domain_test', $@ );
     }
 
     return $result;
@@ -358,7 +358,7 @@ sub test_progress {
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
-        handle_exception('test_progress', $@, '010');
+        handle_exception( 'test_progress', $@ );
     }
 
     return $result;
@@ -378,7 +378,7 @@ sub get_test_params {
         $result = $self->{db}->get_test_params( $test_id );
     };
     if ($@) {
-        handle_exception('get_test_params', $@, '011');
+        handle_exception( 'get_test_params', $@ );
     }
 
     return $result;
@@ -419,7 +419,7 @@ sub get_test_results {
 
     my $previous_locale = $translator->locale;
     if ( !$translator->locale( $locale ) ) {
-        handle_exception( 'get_test_results', "Failed to set locale: $locale", '017' );
+        handle_exception( 'get_test_results', "Failed to set locale: $locale" );
     }
 
     eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
@@ -478,7 +478,7 @@ sub get_test_results {
         $result->{results} = \@zm_results;
     };
     if ($@) {
-        handle_exception('get_test_results', $@, '012');
+        handle_exception( 'get_test_results', $@ );
     }
 
     $translator->locale( $previous_locale );
@@ -510,7 +510,7 @@ sub get_test_history {
         $results = $self->{db}->get_test_history( $params );
     };
     if ($@) {
-        handle_exception('get_test_history', $@, '013');
+        handle_exception( 'get_test_history', $@ );
     }
 
     return $results;
@@ -539,7 +539,7 @@ sub add_api_user {
         }
     };
     if ($@) {
-        handle_exception('add_api_user', $@, '014');
+        handle_exception( 'add_api_user', $@ );
     }
 
     return $result;
@@ -579,7 +579,7 @@ sub add_batch_job {
         $results = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
-        handle_exception('add_batch_job', $@, '015');
+        handle_exception( 'add_batch_job', $@ );
     }
 
     return $results;
@@ -599,7 +599,7 @@ sub get_batch_job_result {
         $result = $self->{db}->get_batch_job_result($batch_id);
     };
     if ($@) {
-        handle_exception('get_batch_job_result', $@, '016');
+        handle_exception( 'get_batch_job_result', $@ );
     }
 
     return $result;

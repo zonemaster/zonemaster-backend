@@ -34,9 +34,9 @@ sub as_hash {
 
 sub as_string {
     my $self = shift;
-    my $str = sprintf "%s (code %d)", $self->message, $self->code;
+    my $str = sprintf "%s (code %d).", $self->message, $self->code;
     if (defined $self->data) {
-        $str .= sprintf "; Context: %s", $self->_data_dump;
+        $str .= sprintf " Context: %s", $self->_data_dump;
     }
     return $str;
 }
@@ -73,12 +73,6 @@ has 'method' => (
     is => 'ro',
     isa => 'Str',
     builder => '_build_method'
-);
-
-has 'id' => (
-    is => 'rw',
-    isa => 'Int',
-    default => 0,
 );
 
 sub _build_method {
@@ -121,7 +115,6 @@ around 'as_hash' => sub {
 
     my $href = $self->$orig;
 
-    $href->{exception_id} = $self->id;
     $href->{reason} = $self->reason;
     $href->{method} = $self->method;
 
@@ -131,9 +124,9 @@ around 'as_hash' => sub {
 
 sub as_string {
     my $self = shift;
-    my $str = sprintf "Internal error %0.3d (%s): Unexpected error in the `%s` method: [%s]", $self->id, ref($self), $self->method, $self->reason;
+    my $str = sprintf "Caught %s in the `%s` method: %s", ref($self), $self->method, $self->reason;
     if (defined $self->data) {
-        $str .= sprintf "; Context: %s", $self->_data_dump;
+        $str .= sprintf " Context: %s", $self->_data_dump;
     }
     return $str;
 }

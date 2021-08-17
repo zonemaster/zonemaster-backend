@@ -49,6 +49,14 @@ sub patch_db {
 
         $dbh->do('UPDATE test_results SET undelegated = ? where id = ?', undef, $undelegated, $id);
     }
+
+
+    # remove the "user_info" column from the "users" table
+    # the IF EXISTS clause is available with MariaDB but not MySQL
+    eval {
+        $dbh->do( "ALTER TABLE users DROP COLUMN user_info" );
+    };
+    print( "Error while dropping the column:  " . $@ ) if ($@);
 }
 
 patch_db();

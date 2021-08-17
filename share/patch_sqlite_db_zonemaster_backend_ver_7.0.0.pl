@@ -52,6 +52,25 @@ sub patch_db {
 
         $dbh->do('UPDATE test_results SET undelegated = ? where id = ?', undef, $undelegated, $id);
     }
+
+
+    # in order to properly drop a column, the whole table needs to be recreated
+    #  1. rename the "users" table to "users_old"
+    #  2. create the new "users" table
+    #  3. populate it with the values from "users_old"
+    #  4. remove old table
+    eval {
+        $dbh->do('ALTER TABLE users RENAME TO users_old');
+
+        # create the table
+        $db->create_db();
+
+        # populate it
+        $dbh->do('INSERT INTO users SELECT id, username, api_key FROM users_old');
+
+        $dbh->do('DROP TABLE users_old');
+    };
+    print( "Error while updating the 'users' table schema:  " . $@ ) if ($@);
 }
 
 patch_db();

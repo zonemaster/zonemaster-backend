@@ -89,6 +89,9 @@ sub patch_db {
 
     # update the columns
     $dbh->do( "UPDATE users SET username = (user_info->>'username'), api_key = (user_info->>'api_key')" );
+
+    # remove the "user_info" column from the "users" table
+    $dbh->do( "ALTER TABLE users DROP COLUMN IF EXISTS user_info" );
 }
 
 patch_db();

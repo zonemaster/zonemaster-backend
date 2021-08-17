@@ -139,39 +139,6 @@ sub create_db {
 
 }
 
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array( "SELECT id FROM users WHERE username=?", undef, $user );
-
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key ) = @_;
-
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do( "INSERT INTO users (username, api_key) VALUES (?,?)",
-        undef,
-        $user_name,
-        $api_key
-    );
-
-    return $nb_inserted;
-}
-
-sub user_authorized {
-    my ( $self, $user, $api_key ) = @_;
-
-    my $dbh = $self->dbh;
-    my $id =
-      $dbh->selectrow_array( "SELECT id FROM users WHERE username=? AND api_key=?",
-        undef, $user, $api_key );
-
-    return $id;
-}
-
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 

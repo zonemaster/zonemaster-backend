@@ -165,36 +165,6 @@ sub create_db {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my ( $id ) = $self->dbh->selectrow_array( "SELECT id FROM users WHERE username = ?", undef, $user );
-
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key  ) = @_;
-
-    my $nb_inserted = $self->dbh->do(
-        "INSERT INTO users (username, api_key) VALUES (?,?)",
-        undef,
-        $user_name,
-        $api_key,
-    );
-
-    return $nb_inserted;
-}
-
-sub user_authorized {
-    my ( $self, $user, $api_key ) = @_;
-
-    my ( $id ) =
-      $self->dbh->selectrow_array( q[SELECT id FROM users WHERE username = ? AND api_key = ?], undef, $user, $api_key );
-
-    return $id;
-}
-
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 

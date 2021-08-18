@@ -136,7 +136,7 @@ sub ds_info {
         properties => {
             digest => {
                 type => 'string',
-                regex => $DIGEST_RE,
+                pattern => $DIGEST_RE,
                 'x-error-message' => 'Invalid digest format'
             },
             algorithm => {
@@ -192,7 +192,7 @@ sub test_id {
 sub language_tag {
     return {
         type => 'string',
-        regex => $LANGUAGE_RE,
+        pattern => $LANGUAGE_RE,
         'x-error-message' => 'Invalid language tag format'
     };
 }

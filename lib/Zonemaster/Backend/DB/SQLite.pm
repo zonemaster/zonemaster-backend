@@ -5,7 +5,6 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use Data::Dumper;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
@@ -224,25 +223,6 @@ sub test_progress {
     }
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    return $result;
-}
-
-sub get_test_params {
-    my ( $self, $test_id ) = @_;
-
-    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $params_json;
-
-    my $result;
-    eval {
-        $result = decode_json( $params_json );
-    };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-        if $@;
 
     return $result;
 }

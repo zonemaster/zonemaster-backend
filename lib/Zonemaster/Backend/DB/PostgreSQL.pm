@@ -235,25 +235,6 @@ sub create_new_test {
     return $hash_id;
 }
 
-sub get_test_params {
-    my ( $self, $test_id ) = @_;
-
-    my $result;
-
-    my $dbh = $self->dbh;
-    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $params_json;
-
-    eval { $result = decode_json( encode_utf8( $params_json ) ); };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-        if $@;
-
-    return $result;
-}
-
 sub test_results {
     my ( $self, $test_id, $results ) = @_;
 

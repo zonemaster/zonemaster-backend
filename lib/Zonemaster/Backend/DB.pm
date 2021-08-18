@@ -10,7 +10,6 @@ use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use Log::Any qw( $log );
-use Time::HiRes qw[time];
 
 use Zonemaster::Engine::Profile
 

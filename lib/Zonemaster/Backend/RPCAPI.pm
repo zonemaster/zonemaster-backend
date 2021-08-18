@@ -13,6 +13,9 @@ use JSON::PP;
 use JSON::Validator::Joi;
 use Log::Any qw($log);
 use String::ShellQuote;
+use Mojo::JSON::Pointer;
+use Scalar::Util qw(blessed);
+use JSON::Validator::Schema::Draft7;
 
 # Zonemaster Modules
 use Zonemaster::LDNS;
@@ -131,9 +134,14 @@ sub get_language_tags {
     return \@lang_tags;
 }
 
-$json_schemas{get_host_by_name} = joi->object->strict->props(
-    hostname   => $zm_validator->domain_name->required
-);
+$json_schemas{get_host_by_name} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'hostname' ],
+    properties => {
+        hostname => $zm_validator->domain_name
+    }
+};
 sub get_host_by_name {
     my ( $self, $params ) = @_;
     my @adresses;
@@ -162,9 +170,14 @@ $extra_validators{get_data_from_parent_zone} = sub {
     }
     return @errors;
 };
-$json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
-    domain   => $zm_validator->domain_name->required
-);
+$json_schemas{get_data_from_parent_zone} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'domain' ],
+    properties => {
+        domain => $zm_validator->domain_name
+    }
+};
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
@@ -297,24 +310,31 @@ $extra_validators{start_domain_test} = sub {
     }
 };
 
-$json_schemas{start_domain_test} = joi->object->strict->props(
-    domain => $zm_validator->domain_name->required,
-    ipv4 => joi->boolean,
-    ipv6 => joi->boolean,
-    nameservers => joi->array->items(
-        # NOTE: Array items are not compiled automatically, so to enforce all properties we need to do it by hand
-        $zm_validator->nameserver->compile
-    ),
-    ds_info => joi->array->items(
-        $zm_validator->ds_info->compile
-    ),
-    profile => $zm_validator->profile_name,
-    client_id => $zm_validator->client_id,
-    client_version => $zm_validator->client_version,
-    config => joi->string,
-    priority => $zm_validator->priority,
-    queue => $zm_validator->queue,
-);
+$json_schemas{start_domain_test} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'domain' ],
+    properties => {
+        domain => $zm_validator->domain_name,
+        ipv4 => joi->boolean->compile,
+        ipv6 => joi->boolean->compile,
+        nameservers => {
+            type => 'array',
+            items => $zm_validator->nameserver
+        },
+        ds_info => {
+            type => 'array',
+            items => $zm_validator->ds_info
+        },
+        profile => $zm_validator->profile_name->compile,
+        client_id => $zm_validator->client_id->compile,
+        client_version => $zm_validator->client_version->compile,
+        config => joi->string->compile,
+        priority => $zm_validator->priority->compile,
+        queue => $zm_validator->queue->compile,
+
+    }
+};
 sub start_domain_test {
     my ( $self, $params ) = @_;
 
@@ -374,10 +394,15 @@ sub get_test_params {
     return $result;
 }
 
-$json_schemas{get_test_results} = joi->object->strict->props(
-    id => $zm_validator->test_id->required,
-    language => $zm_validator->language_tag->required
-);
+$json_schemas{get_test_results} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'id', 'language' ],
+    properties => {
+        id => $zm_validator->test_id->required->compile,
+        language => $zm_validator->language_tag,
+    }
+};
 sub get_test_results {
     my ( $self, $params ) = @_;
 
@@ -479,14 +504,23 @@ sub get_test_results {
     return $result;
 }
 
-$json_schemas{get_test_history} = joi->object->strict->props(
-    offset => joi->integer->min(0),
-    limit => joi->integer->min(0),
-    filter => joi->string->regex('^(?:all|delegated|undelegated)$'),
-    frontend_params => joi->object->strict->props(
-        domain => $zm_validator->domain_name->required
-    )->required
-);
+$json_schemas{get_test_history} = {
+    type => 'object',
+    additionalProperties => 0,
+    properties => {
+        offset => joi->integer->min(0)->compile,
+        limit => joi->integer->min(0)->compile,
+        filter => joi->string->regex('^(?:all|delegated|undelegated)$')->compile,
+        frontend_params => {
+            type => 'object',
+            additionalProperties => 0,
+            required => [ 'domain' ],
+            properties => {
+                domain => $zm_validator->domain_name
+            }
+        }
+    }
+};
 sub get_test_history {
     my ( $self, $params ) = @_;
 
@@ -535,29 +569,36 @@ sub add_api_user {
     return $result;
 }
 
-$json_schemas{add_batch_job} = joi->object->strict->props(
-    username => $zm_validator->username->required,
-    api_key => $zm_validator->api_key->required,
-    domains => joi->array->strict->items(
-        $zm_validator->domain_name->required
-    )->required,
-    test_params => joi->object->strict->props(
-        ipv4 => joi->boolean,
-        ipv6 => joi->boolean,
-        nameservers => joi->array->strict->items(
-            $zm_validator->nameserver
-        ),
-        ds_info => joi->array->strict->items(
-            $zm_validator->ds_info
-        ),
-        profile => $zm_validator->profile_name,
-        client_id => $zm_validator->client_id,
-        client_version => $zm_validator->client_version,
-        config => joi->string,
-        priority => $zm_validator->priority,
-        queue => $zm_validator->queue
-    )
-);
+$json_schemas{add_batch_job} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'username', 'api_key', 'domains' ],
+    properties => {
+        username => $zm_validator->username->required->compile,
+        api_key => $zm_validator->api_key->required->compile,
+        domains => {
+            type => "array",
+            additionalItems => 0,
+            items => $zm_validator->domain_name
+        },
+        test_params => joi->object->strict->props(
+            ipv4 => joi->boolean,
+            ipv6 => joi->boolean,
+            nameservers => joi->array->strict->items(
+                $zm_validator->nameserver
+            ),
+            ds_info => joi->array->strict->items(
+                $zm_validator->ds_info
+            ),
+            profile => $zm_validator->profile_name,
+            client_id => $zm_validator->client_id,
+            client_version => $zm_validator->client_version,
+            config => joi->string,
+            priority => $zm_validator->priority,
+            queue => $zm_validator->queue
+        )->compile
+    }
+};
 sub add_batch_job {
     my ( $self, $params ) = @_;
 
@@ -652,9 +693,46 @@ sub validate_params {
 
     my @error_response = ();
 
-    my @json_validation_error = $method_schema->validate( $params );
+    if (blessed $method_schema) {
+        $method_schema = $method_schema->compile;
+    }
+    my @json_validation_error = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data($method_schema)->validate( $params );
 
-    push @error_response, map { { message => $_->message, path => $_->path } } @json_validation_error;
+    # Customize error message from json validation
+    foreach my $err ( @json_validation_error ) {
+        print Data::Dumper::Dumper($err);
+
+        my $message = $err->message;
+        my @details = @{$err->details};
+
+        # Handle 'required' errors globally so it does not get overwritten
+        if (@details[1] eq 'required') {
+            $message = 'Missing property';
+        } else {
+            my @path = split '/', $err->path, -1;
+            shift @path; # first item is an empty string
+            my $found = 1;
+            my $data = Mojo::JSON::Pointer->new($method_schema);
+
+            foreach my $p (@path) {
+                if ( $data->contains("/properties/$p") ) {
+                    $data = $data->get("/properties/$p")
+                } elsif ( $p =~ /^\d+$/ and $data->contains("/items") ) {
+                    $data = $data->get("/items")
+                } else {
+                    $found = 0;
+                    last;
+                }
+                $data = Mojo::JSON::Pointer->new($data);
+            }
+
+            if ($found and exists $data->data->{'x-error-message'}) {
+                $message = $data->data->{'x-error-message'};
+            }
+        }
+
+        push @error_response, { path => $err->path, message => $message };
+    }
 
     # Add messages from extra validation function
     if ( $extra_validators{$method} ) {

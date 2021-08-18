@@ -512,6 +512,8 @@ sysrc mysql_enable="YES"
 service mysql-server start
 ```
 
+> The service is called `mysql-server`.
+
 Read the current root password for MySQL:
 
 ```sh

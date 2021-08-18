@@ -9,6 +9,7 @@ use DBI qw(:utils);
 use JSON::PP;
 use Scalar::Util qw( blessed );
 use File::Slurp;
+use Log::Any qw( $log );
 
 use Zonemaster::LDNS;
 
@@ -16,6 +17,7 @@ use Zonemaster::Engine;
 use Zonemaster::Engine::Translator;
 use Zonemaster::Backend::Config;
 use Zonemaster::Engine::Profile;
+use Zonemaster::Engine::Logger::Entry;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -82,6 +84,7 @@ sub run {
         die "Must give the name of a domain to test.\n";
     }
     $domain = $self->to_idn( $domain );
+    my %numeric = Zonemaster::Engine::Logger::Entry->levels();
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
@@ -90,6 +93,23 @@ sub run {
     Zonemaster::Engine->logger->callback(
         sub {
             my ( $entry ) = @_;
+
+            if ( $entry->numeric_level >= $numeric{INFO} ) {
+                $log->info($entry->string);
+                eval {
+                    $self->{_db}->add_result_entry( $test_id, {
+                        timestamp => $entry->timestamp,
+                        module    => $entry->module,
+                        testcase  => $entry->testcase,
+                        tag       => $entry->tag,
+                        level     => $entry->numeric_level,
+                        args      => $entry->args // {},
+                    });
+                };
+                if ($@) {
+                    $log->error($@);
+                }
+            }
 
             foreach my $trace ( reverse @{ $entry->trace } ) {
                 foreach my $module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {

@@ -98,8 +98,10 @@ Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
 
-# Boolean 0 or 1
-Readonly my $BOOL_RE            => qr/^(0|1)$/;
+# Boolean
+Readonly my $BOOL_TRUE_RE           => qr/^(true|yes|1)$/i;
+Readonly my $BOOL_FALSE_RE          => qr/^(false|no|0)$/i;
+Readonly my $BOOL_RE                => qr/^$BOOL_TRUE_RE|$BOOL_FALSE_RE$/i;
 
 sub joi {
     return JSON::Validator::Joi->new;
@@ -324,7 +326,11 @@ sub untaint_profile_name {
 
 sub untaint_bool {
     my ( $value ) = @_;
-    return _untaint_pat( $value, $BOOL_RE );
+
+    my $ret;
+    $ret = 1 if defined _untaint_pat( $value, $BOOL_TRUE_RE );
+    $ret = 0 if defined _untaint_pat( $value, $BOOL_FALSE_RE );
+    return $ret;
 }
 
 sub _untaint_pat {

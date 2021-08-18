@@ -77,7 +77,7 @@ sub handle_exception {
 
     $exception =~ s/\n/ /g;
     $exception =~ s/^\s+|\s+$//g;
-    warn "Internal error $exception_id: Unexpected error in the $method API call: [$exception] \n";
+    $log->error("Internal error $exception_id: Unexpected error in the $method API call: [$exception]");
     die "Internal error $exception_id \n";
 }
 

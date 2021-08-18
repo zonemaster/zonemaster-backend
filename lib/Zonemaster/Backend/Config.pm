@@ -371,6 +371,24 @@ sub _set_DB_engine {
     return;
 }
 
+sub _set_API_enable_add_api_user {
+    my ( $self, $value ) = @_;
+
+    $value = untaint_bool( $value ) // die "Invalid value for API.enable_add_api_user: $value\n";
+    $self->{_API_enable_add_api_user} = $value;
+    return;
+}
+
+sub _set_API_enable_batch_jobs {
+    my ( $self, $value ) = @_;
+
+    $value = untaint_bool( $value ) // die "Invalid value for API.enable_batch_jobs: $value\n";
+    $self->{_API_enable_batch_jobs} = $value;
+    return;
+}
+
+
+
 =head2 DB_polling_interval
 
 Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
@@ -525,8 +543,6 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing' );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing' );
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test' );
-    _create_setter( '_set_API_enable_add_api_user',                             '_API_enable_add_api_user' );
-    _create_setter( '_set_API_enable_batch_jobs',                               '_API_enable_batch_jobs' );
 }
 
 =head2 Language_Locale_hash

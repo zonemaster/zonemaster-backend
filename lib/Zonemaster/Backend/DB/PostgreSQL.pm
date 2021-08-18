@@ -139,11 +139,6 @@ sub create_db {
 
 }
 
-sub last_insert_id {
-    my ( $self, $dbh, $table ) = @_;
-    return $dbh->last_insert_id( undef, undef, $table, undef);
-}
-
 sub recent_test_hash_id {
     my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
 

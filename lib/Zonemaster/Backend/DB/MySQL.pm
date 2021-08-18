@@ -164,11 +164,6 @@ sub create_db {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
-sub last_insert_id {
-    my ( $self, $dbh ) = @_;
-    return $dbh->{mysql_insertid};
-}
-
 sub recent_test_hash_id {
     my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
 

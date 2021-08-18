@@ -122,11 +122,6 @@ sub create_db {
     return 1;
 }
 
-sub last_insert_id {
-    my ( $self, $dbh, $table ) = @_;
-    return $dbh->sqlite_last_insert_rowid;
-}
-
 # Search for recent test result with the test same parameters, where
 # "age_reuse_previous_test" gives the time limit for how old test result that
 # is accepted.

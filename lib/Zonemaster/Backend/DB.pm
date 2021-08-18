@@ -20,7 +20,6 @@ requires qw(
   create_new_test
   from_config
   get_test_history
-  last_insert_id
   process_unfinished_tests_give_up
   recent_test_hash_id
   select_unfinished_tests
@@ -137,7 +136,7 @@ sub create_new_batch_job {
         if ( $batch_id );
 
     $dbh->do( "INSERT INTO batch_jobs (username) VALUES (?)", undef, $username );
-    my ( $new_batch_id ) = $self->last_insert_id( $dbh, "batch_jobs" );
+    my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
 
     return $new_batch_id;
 }

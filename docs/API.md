@@ -944,12 +944,12 @@ Example response:
     {
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
-      "undelegated": 1,
+      "undelegated": true,
       "overall_result": "error",
     },
     {
       "id": "32dd4bc0582b6bf9",
-      "undelegated": 0,
+      "undelegated": false,
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
     },

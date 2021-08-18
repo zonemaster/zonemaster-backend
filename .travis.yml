@@ -107,6 +107,10 @@ before_install:
   - git clone --depth=1 --branch=$TRAVIS_BRANCH https://github.com/zonemaster/zonemaster-engine.git
   - ( cd zonemaster-engine && cpanm --verbose --notest . ) && rm -rf zonemaster-engine
 
+    # Install share files
+  - mkdir -p ./lib/auto/share/dist/
+  - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
+
 before_script:
     - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -c "create user travis_zonemaster WITH PASSWORD 'travis_zonemaster';" -U postgres; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -c 'create database travis_zonemaster OWNER travis_zonemaster;' -U postgres; fi
@@ -122,4 +126,3 @@ before_script:
 
 script:
     - perl Makefile.PL && make test
-

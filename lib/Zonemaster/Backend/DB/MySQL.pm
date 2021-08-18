@@ -165,6 +165,18 @@ sub create_db {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
+sub recent_test_hash_id {
+    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?",
+        undef, $fingerprint, $age_reuse_previous_test
+    );
+
+    return $recent_hash_id;
+}
+
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
@@ -202,29 +214,23 @@ sub create_new_test {
     my $encoded_params = $self->encode_params( $test_params );
     my $undelegated = $self->undelegated ( $test_params );
 
-    my $result_id;
+    my $hash_id;
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
 
     eval {
         $dbh->do( q[LOCK TABLES test_results WRITE] );
-        my ( $recent_hash_id ) = $dbh->selectrow_array(
-            q[
-            SELECT hash_id FROM test_results WHERE fingerprint = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
-            ],
-            undef, $fingerprint, $seconds_between_tests_with_same_params,
-        );
+
+        my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
 
         if ( $recent_hash_id ) {
             # A recent entry exists, so return its id
-            $result_id = $recent_hash_id;
+            $hash_id = $recent_hash_id;
         }
         else {
             $dbh->do(
-                q[
-                INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?)
-                ],
+                "INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?)",
                 undef,
                 $batch_id,
                 $priority,
@@ -235,15 +241,13 @@ sub create_new_test {
                 $undelegated,
             );
 
-            my ( undef, $hash_id ) = $dbh->selectrow_array(
+            ( undef, $hash_id ) = $dbh->selectrow_array(
                 "SELECT id, hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint);
-
-            $result_id = $hash_id;
         }
     };
     $dbh->do( q[UNLOCK TABLES] );
 
-    return $result_id;
+    return $hash_id;
 }
 
 sub test_progress {

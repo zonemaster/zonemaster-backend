@@ -22,6 +22,7 @@ requires qw(
   get_test_history
   get_test_params
   process_unfinished_tests_give_up
+  recent_test_hash_id
   select_unfinished_tests
   test_progress
   test_results

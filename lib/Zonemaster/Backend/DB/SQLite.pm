@@ -123,6 +123,21 @@ sub create_db {
     return 1;
 }
 
+# Search for recent test result with the test same parameters, where
+# "age_reuse_previous_test" gives the time limit for how old test result that
+# is accepted.
+sub recent_test_hash_id {
+    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND test_start_time > DATETIME('now', ?)",
+        undef, $fingerprint, "-$age_reuse_previous_test seconds"
+    );
+
+    return $recent_hash_id;
+}
+
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
@@ -159,30 +174,23 @@ sub create_new_test {
     my $encoded_params = $self->encode_params( $test_params );
     my $undelegated = $self->undelegated ( $test_params );
 
-    my $result_id;
+    my $hash_id;
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
 
-    # Search for recent test result with the test same parameters, where "$seconds"
-    # gives the time limit for how old test result that is accepted.
-    my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > DATETIME('now', ?)",
-        undef,
-        $fingerprint,
-        "-$seconds seconds"
-    );
+    my $recent_hash_id = $self->recent_test_hash_id( $seconds, $fingerprint );
 
     if ( $recent_hash_id ) {
         # A recent entry exists, so return its id
-        $result_id = $recent_hash_id;
+        $hash_id = $recent_hash_id;
     }
     else {
 
         # The SQLite database engine does not have support to create the "hash_id" by a
         # database engine trigger. "hash_id" is assumed to hold a unique hash. Uniqueness
         # cannot, however, be guaranteed. Same as with the other database engines.
-        my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+        $hash_id = substr(md5_hex(time().rand()), 0, 16);
 
         my $fields = 'hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated';
         $dbh->do(
@@ -197,10 +205,9 @@ sub create_new_test {
             $test_params->{domain},
             $undelegated,
         );
-        $result_id = $hash_id;
     }
 
-    return $result_id; # Return test ID, either test previously run or just created.
+    return $hash_id; # Return test ID, either test previously run or just created.
 }
 
 sub test_progress {

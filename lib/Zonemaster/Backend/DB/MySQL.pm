@@ -5,7 +5,6 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use Data::Dumper;
 use DBI qw(:utils);
 use JSON::PP;
 
@@ -165,30 +164,16 @@ sub create_db {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
-sub create_new_batch_job {
-    my ( $self, $username ) = @_;
+sub recent_test_hash_id {
+    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
 
-    my ( $batch_id, $creation_time ) = $self->dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.creation_time AS batch_creation_time
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id=batch_jobs.id
-                AND username=?
-            WHERE
-                test_results.progress<>100
-            LIMIT 1
-            ", undef, $username );
+    my $dbh = $self->dbh;
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?",
+        undef, $fingerprint, $age_reuse_previous_test
+    );
 
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-        if ( $batch_id );
-
-    $self->dbh->do( "INSERT INTO batch_jobs (username) VALUES(?)", undef, $username );
-    my ( $new_batch_id ) = $self->dbh->{mysql_insertid};
-
-    return $new_batch_id;
+    return $recent_hash_id;
 }
 
 sub create_new_test {
@@ -202,29 +187,23 @@ sub create_new_test {
     my $encoded_params = $self->encode_params( $test_params );
     my $undelegated = $self->undelegated ( $test_params );
 
-    my $result_id;
+    my $hash_id;
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
 
     eval {
         $dbh->do( q[LOCK TABLES test_results WRITE] );
-        my ( $recent_hash_id ) = $dbh->selectrow_array(
-            q[
-            SELECT hash_id FROM test_results WHERE fingerprint = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
-            ],
-            undef, $fingerprint, $seconds_between_tests_with_same_params,
-        );
+
+        my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
 
         if ( $recent_hash_id ) {
             # A recent entry exists, so return its id
-            $result_id = $recent_hash_id;
+            $hash_id = $recent_hash_id;
         }
         else {
             $dbh->do(
-                q[
-                INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?)
-                ],
+                "INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?)",
                 undef,
                 $batch_id,
                 $priority,
@@ -235,15 +214,13 @@ sub create_new_test {
                 $undelegated,
             );
 
-            my ( undef, $hash_id ) = $dbh->selectrow_array(
+            ( undef, $hash_id ) = $dbh->selectrow_array(
                 "SELECT id, hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint);
-
-            $result_id = $hash_id;
         }
     };
     $dbh->do( q[UNLOCK TABLES] );
 
-    return $result_id;
+    return $hash_id;
 }
 
 sub test_progress {
@@ -262,25 +239,6 @@ sub test_progress {
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
-}
-
-sub get_test_params {
-    my ( $self, $test_id ) = @_;
-
-    my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $params_json;
-
-    my $result;
-    eval {
-        $result = decode_json( $params_json );
-    };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-        if $@;
-
-    return decode_json( $params_json );
 }
 
 sub test_results {

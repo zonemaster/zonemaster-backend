@@ -139,6 +139,18 @@ sub create_db {
 
 }
 
+sub recent_test_hash_id {
+    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > NOW() - ?::interval",
+        undef, $fingerprint, $age_reuse_previous_test
+    );
+
+    return $recent_hash_id;
+}
+
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
@@ -157,31 +169,6 @@ sub test_progress {
     return $result;
 }
 
-sub create_new_batch_job {
-    my ( $self, $username ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.creation_time AS batch_creation_time
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id=batch_jobs.id
-                AND username=? WHERE
-                test_results.progress<>100
-            LIMIT 1
-            ", undef, $username );
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-        if ( $batch_id );
-
-    my ( $new_batch_id ) =
-      $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
-
-    return $new_batch_id;
-}
-
 sub create_new_test {
     my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
     my $dbh = $self->dbh;
@@ -192,52 +179,35 @@ sub create_new_test {
     my $encoded_params = $self->encode_params( $test_params );
     my $undelegated = $self->undelegated ( $test_params );
 
+    my $hash_id;
+
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
 
-    my $sth = $dbh->prepare( "
-        INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated)
-        SELECT ?, ?, ?, ?, ?, ?, ?
-        WHERE NOT EXISTS (
-            SELECT * FROM test_results
-            WHERE fingerprint = ?
-              AND creation_time > NOW() - ?::interval
-        )" );
-    my $nb_inserted = $sth->execute(    #
-        $batch_id,
-        $priority,
-        $queue_label,
-        $fingerprint,
-        $encoded_params,
-        $domain,
-        $undelegated,
-        $fingerprint,
-        sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
-    );
+    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
 
-    my ( undef, $hash_id ) = $dbh->selectrow_array(
-        "SELECT id,hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
+    if ( $recent_hash_id ) {
+        # A recent entry exists, so return its id
+        $hash_id = $recent_hash_id;
+    }
+    else {
+        $dbh->do(
+            "INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            undef,
+            $batch_id,
+            $priority,
+            $queue_label,
+            $fingerprint,
+            $encoded_params,
+            $domain,
+            $undelegated,
+        );
+
+        ( undef, $hash_id ) = $dbh->selectrow_array(
+            "SELECT id,hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
+    }
 
     return $hash_id;
-}
-
-sub get_test_params {
-    my ( $self, $test_id ) = @_;
-
-    my $result;
-
-    my $dbh = $self->dbh;
-    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $params_json;
-
-    eval { $result = decode_json( encode_utf8( $params_json ) ); };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-        if $@;
-
-    return $result;
 }
 
 sub test_results {

@@ -6,22 +6,22 @@ use Moose::Role;
 
 use 5.14.2;
 
-use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use JSON::PP;
 use Log::Any qw( $log );
 
 use Zonemaster::Engine::Profile;
+use Zonemaster::Backend::Errors;
 
 requires qw(
   add_batch_job
   create_db
-  create_new_batch_job
   create_new_test
   from_config
   get_test_history
-  get_test_params
   process_unfinished_tests_give_up
+  recent_test_hash_id
   select_unfinished_tests
   test_progress
   test_results
@@ -114,6 +114,34 @@ sub add_api_user {
 }
 
 # Standard SQL, can be here
+sub create_new_batch_job {
+    my ( $self, $username ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
+            SELECT
+                batch_id,
+                batch_jobs.creation_time AS batch_creation_time
+            FROM
+                test_results
+            JOIN batch_jobs
+                ON batch_id = batch_jobs.id
+                AND username = ?
+            WHERE
+                test_results.progress <> 100
+            LIMIT 1
+            ", undef, $username );
+
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+        if ( $batch_id );
+
+    $dbh->do( "INSERT INTO batch_jobs (username) VALUES (?)", undef, $username );
+    my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
+
+    return $new_batch_id;
+}
+
+# Standard SQL, can be here
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
 
@@ -177,6 +205,29 @@ sub get_test_request {
         $result_id = $hash_id;
     }
     return $result_id;
+}
+
+# Standard SQL, can be here
+sub get_test_params {
+    my ( $self, $test_id ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id = ?", undef, $test_id );
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $params_json;
+
+    my $result;
+    eval {
+        # TODO: do we use "encode_utf8" as this was the case in PostgreSQL
+        #       (see commit diff)
+        $result = decode_json( $params_json );
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
+
+    return $result;
 }
 
 # Standatd SQL, can be here

@@ -164,6 +164,11 @@ sub create_db {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
+sub last_insert_id {
+    my ( $self, $dbh ) = @_;
+    return $dbh->{mysql_insertid};
+}
+
 sub recent_test_hash_id {
     my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
 
@@ -174,32 +179,6 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
-}
-
-sub create_new_batch_job {
-    my ( $self, $username ) = @_;
-
-    my ( $batch_id, $creation_time ) = $self->dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.creation_time AS batch_creation_time
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id=batch_jobs.id
-                AND username=?
-            WHERE
-                test_results.progress<>100
-            LIMIT 1
-            ", undef, $username );
-
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-        if ( $batch_id );
-
-    $self->dbh->do( "INSERT INTO batch_jobs (username) VALUES(?)", undef, $username );
-    my ( $new_batch_id ) = $self->dbh->{mysql_insertid};
-
-    return $new_batch_id;
 }
 
 sub create_new_test {

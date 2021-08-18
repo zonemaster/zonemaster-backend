@@ -122,6 +122,11 @@ sub create_db {
     return 1;
 }
 
+sub last_insert_id {
+    my ( $self, $dbh, $table ) = @_;
+    return $dbh->sqlite_last_insert_rowid;
+}
+
 # Search for recent test result with the test same parameters, where
 # "age_reuse_previous_test" gives the time limit for how old test result that
 # is accepted.
@@ -135,31 +140,6 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
-}
-
-sub create_new_batch_job {
-    my ( $self, $username ) = @_;
-
-    my ( $batch_id, $creation_time ) = $self->dbh->selectrow_array( "
-               SELECT
-                    batch_id,
-                    batch_jobs.creation_time AS batch_creation_time
-               FROM
-                    test_results
-               JOIN batch_jobs
-                    ON batch_id=batch_jobs.id
-                    AND username=" . $self->dbh->quote( $username ) . " WHERE
-                    test_results.progress<>100
-               LIMIT 1
-               " );
-
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-        if ( $batch_id );
-
-    $self->dbh->do("INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ")" );
-    my ( $new_batch_id ) = $self->dbh->sqlite_last_insert_rowid;
-
-    return $new_batch_id;
 }
 
 sub create_new_test {

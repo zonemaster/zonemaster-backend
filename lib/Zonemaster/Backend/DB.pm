@@ -17,10 +17,10 @@ use Zonemaster::Backend::Errors;
 requires qw(
   add_batch_job
   create_db
-  create_new_batch_job
   create_new_test
   from_config
   get_test_history
+  last_insert_id
   process_unfinished_tests_give_up
   recent_test_hash_id
   select_unfinished_tests
@@ -112,6 +112,34 @@ sub add_api_user {
         unless ( $result );
 
     return $result;
+}
+
+# Standard SQL, can be here
+sub create_new_batch_job {
+    my ( $self, $username ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
+            SELECT
+                batch_id,
+                batch_jobs.creation_time AS batch_creation_time
+            FROM
+                test_results
+            JOIN batch_jobs
+                ON batch_id = batch_jobs.id
+                AND username = ?
+            WHERE
+                test_results.progress <> 100
+            LIMIT 1
+            ", undef, $username );
+
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+        if ( $batch_id );
+
+    $dbh->do( "INSERT INTO batch_jobs (username) VALUES (?)", undef, $username );
+    my ( $new_batch_id ) = $self->last_insert_id( $dbh, "batch_jobs" );
+
+    return $new_batch_id;
 }
 
 # Standard SQL, can be here

@@ -139,6 +139,11 @@ sub create_db {
 
 }
 
+sub last_insert_id {
+    my ( $self, $dbh, $table ) = @_;
+    return $dbh->last_insert_id( undef, undef, $table, undef);
+}
+
 sub recent_test_hash_id {
     my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
 
@@ -167,31 +172,6 @@ sub test_progress {
     my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
-}
-
-sub create_new_batch_job {
-    my ( $self, $username ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.creation_time AS batch_creation_time
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id=batch_jobs.id
-                AND username=? WHERE
-                test_results.progress<>100
-            LIMIT 1
-            ", undef, $username );
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-        if ( $batch_id );
-
-    my ( $new_batch_id ) =
-      $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
-
-    return $new_batch_id;
 }
 
 sub create_new_test {

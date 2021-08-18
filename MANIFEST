@@ -7,11 +7,11 @@ docs/files-description.md
 docs/GettingStarted.md
 docs/Installation.md
 docs/TypographicConventions.md
-docs/upgrade_db_zonemaster_backend_ver_1.0.3.md
-docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
-docs/upgrade_db_zonemaster_backend_ver_5.0.0.md
-docs/upgrade_db_zonemaster_backend_ver_5.0.2.md
-docs/upgrade_db_zonemaster_backend_ver_7.0.0.md
+docs/upgrade_zonemaster_backend_ver_1.0.3.md
+docs/upgrade_zonemaster_backend_ver_1.1.0.md
+docs/upgrade_zonemaster_backend_ver_5.0.0.md
+docs/upgrade_zonemaster_backend_ver_5.0.2.md
+docs/upgrade_zonemaster_backend_ver_7.0.0.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm

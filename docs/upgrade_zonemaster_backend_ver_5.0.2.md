@@ -1,6 +1,8 @@
 If your zonemaster database was created by a Zonemaster-Backend version smaller than
 v5.0.2, and not upgraded, use the instructions in this file.
 
+## Database upgrade
+
 ### FreeBSD
 
 If the installation is on FreeBSD, then set the environment before running any

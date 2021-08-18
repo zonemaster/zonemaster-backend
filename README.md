@@ -84,8 +84,8 @@ The software is released under the 2-clause BSD license. See separate
 
 [Configuration documentation]: docs/Configuration.md
 [Installation instructions]:   docs/Installation.md
-[Upgrade to 1.0.3]:            docs/upgrade_db_zonemaster_backend_ver_1.0.3.md
-[Upgrade to 1.1.0]:            docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
-[Upgrade to 5.0.0]:            docs/upgrade_db_zonemaster_backend_ver_5.0.0.md
-[Upgrade to 5.0.2]:            docs/upgrade_db_zonemaster_backend_ver_5.0.2.md
-[Upgrade to 7.0.0]:            docs/upgrade_db_zonemaster_backend_ver_7.0.0.md
+[Upgrade to 1.0.3]:            docs/upgrade_zonemaster_backend_ver_1.0.3.md
+[Upgrade to 1.1.0]:            docs/upgrade_zonemaster_backend_ver_1.1.0.md
+[Upgrade to 5.0.0]:            docs/upgrade_zonemaster_backend_ver_5.0.0.md
+[Upgrade to 5.0.2]:            docs/upgrade_zonemaster_backend_ver_5.0.2.md
+[Upgrade to 7.0.0]:            docs/upgrade_zonemaster_backend_ver_7.0.0.md

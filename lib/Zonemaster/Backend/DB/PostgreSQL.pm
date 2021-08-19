@@ -170,46 +170,6 @@ sub test_progress {
     return $result;
 }
 
-sub create_new_test {
-    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
-    my $dbh = $self->dbh;
-
-    $test_params->{domain} = $domain;
-
-    my $fingerprint = $self->generate_fingerprint( $test_params );
-    my $encoded_params = $self->encode_params( $test_params );
-    my $undelegated = $self->undelegated ( $test_params );
-
-    my $hash_id;
-
-    my $priority    = $test_params->{priority};
-    my $queue_label = $test_params->{queue};
-
-    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
-
-    if ( $recent_hash_id ) {
-        # A recent entry exists, so return its id
-        $hash_id = $recent_hash_id;
-    }
-    else {
-        $hash_id = substr(md5_hex(time().rand()), 0, 16);
-        $dbh->do(
-            "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
-            undef,
-            $hash_id,
-            $batch_id,
-            $priority,
-            $queue_label,
-            $fingerprint,
-            $encoded_params,
-            $domain,
-            $undelegated,
-        );
-    }
-
-    return $hash_id;
-}
-
 sub test_results {
     my ( $self, $test_id, $results ) = @_;
 

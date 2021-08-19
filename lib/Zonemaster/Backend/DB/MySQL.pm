@@ -172,32 +172,27 @@ sub create_new_test {
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
 
-    eval {
-        $dbh->do( q[LOCK TABLES test_results WRITE] );
+    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
 
-        my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
-
-        if ( $recent_hash_id ) {
-            # A recent entry exists, so return its id
-            $hash_id = $recent_hash_id;
-        }
-        else {
-            $hash_id = substr(md5_hex(time().rand()), 0, 16);
-            $dbh->do(
-                "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
-                undef,
-                $hash_id,
-                $batch_id,
-                $priority,
-                $queue_label,
-                $fingerprint,
-                $encoded_params,
-                $test_params->{domain},
-                $undelegated,
-            );
-        }
-    };
-    $dbh->do( q[UNLOCK TABLES] );
+    if ( $recent_hash_id ) {
+        # A recent entry exists, so return its id
+        $hash_id = $recent_hash_id;
+    }
+    else {
+        $hash_id = substr(md5_hex(time().rand()), 0, 16);
+        $dbh->do(
+            "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
+            undef,
+            $hash_id,
+            $batch_id,
+            $priority,
+            $queue_label,
+            $fingerprint,
+            $encoded_params,
+            $test_params->{domain},
+            $undelegated,
+        );
+    }
 
     return $hash_id;
 }

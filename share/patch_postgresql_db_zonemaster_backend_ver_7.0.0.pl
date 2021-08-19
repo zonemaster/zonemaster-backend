@@ -17,6 +17,8 @@ my $dbh = $db->dbh;
 
 
 sub patch_db {
+    # Drop default value for the "hash_id" field
+    $dbh->do( 'ALTER TABLE test_results ALTER COLUMN hash_id DROP DEFAULT' );
 
     # Rename column "params_deterministic_hash" into "fingerprint"
     eval {

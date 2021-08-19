@@ -8,7 +8,6 @@ use 5.14.2;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
-use Log::Any qw( $log );
 
 use Zonemaster::Backend::Errors;
 

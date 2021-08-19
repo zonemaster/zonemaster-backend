@@ -59,7 +59,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
                  id integer PRIMARY KEY AUTOINCREMENT,
-                 hash_id VARCHAR(16) DEFAULT NULL,
+                 hash_id VARCHAR(16) NOT NULL,
                  domain VARCHAR(255) NOT NULL,
                  batch_id integer NULL,
                  creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -315,7 +315,8 @@ sub add_batch_job {
             my $encoded_params = $self->encode_params( $test_params );
             my $undelegated = $self->undelegated ( $test_params );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
+            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+            $sth->execute( $hash_id, $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );

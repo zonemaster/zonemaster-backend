@@ -8,7 +8,6 @@ use 5.14.2;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
-use Log::Any qw( $log );
 
 use Zonemaster::Backend::Errors;
 
@@ -59,7 +58,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
                  id integer PRIMARY KEY AUTOINCREMENT,
-                 hash_id VARCHAR(16) DEFAULT NULL,
+                 hash_id VARCHAR(16) NOT NULL,
                  domain VARCHAR(255) NOT NULL,
                  batch_id integer NULL,
                  creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -135,53 +134,6 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
-}
-
-sub create_new_test {
-    my ( $self, $domain, $test_params, $seconds, $batch_id ) = @_;
-
-    my $dbh = $self->dbh;
-
-    $test_params->{domain} = $domain;
-
-    my $fingerprint = $self->generate_fingerprint( $test_params );
-    my $encoded_params = $self->encode_params( $test_params );
-    my $undelegated = $self->undelegated ( $test_params );
-
-    my $hash_id;
-
-    my $priority    = $test_params->{priority};
-    my $queue_label = $test_params->{queue};
-
-    my $recent_hash_id = $self->recent_test_hash_id( $seconds, $fingerprint );
-
-    if ( $recent_hash_id ) {
-        # A recent entry exists, so return its id
-        $hash_id = $recent_hash_id;
-    }
-    else {
-
-        # The SQLite database engine does not have support to create the "hash_id" by a
-        # database engine trigger. "hash_id" is assumed to hold a unique hash. Uniqueness
-        # cannot, however, be guaranteed. Same as with the other database engines.
-        $hash_id = substr(md5_hex(time().rand()), 0, 16);
-
-        my $fields = 'hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated';
-        $dbh->do(
-            "INSERT INTO test_results ($fields) VALUES (?,?,?,?,?,?,?,?)",
-            undef,
-            $hash_id,
-            $batch_id,
-            $priority,
-            $queue_label,
-            $fingerprint,
-            $encoded_params,
-            $test_params->{domain},
-            $undelegated,
-        );
-    }
-
-    return $hash_id; # Return test ID, either test previously run or just created.
 }
 
 sub test_progress {
@@ -315,7 +267,8 @@ sub add_batch_job {
             my $encoded_params = $self->encode_params( $test_params );
             my $undelegated = $self->undelegated ( $test_params );
 
-            $sth->execute( substr(md5_hex(time().rand()), 0, 16), $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
+            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+            $sth->execute( $hash_id, $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );

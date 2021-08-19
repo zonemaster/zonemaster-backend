@@ -16,6 +16,14 @@ my $dbh = $db->dbh;
 
 
 sub patch_db {
+    # Remove the trigger
+    $dbh->do( 'DROP TRIGGER IF EXISTS before_insert_test_results' );
+
+    # Set the "hash_id" field to NOT NULL
+    eval {
+        $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN hash_id VARCHAR(16) NOT NULL' );
+    };
+    print( "Error while changing DB schema:  " . $@ ) if ($@);
 
     # Rename column "params_deterministic_hash" into "fingerprint"
     # Since MariaDB 10.5.2 (2020-03-26) <https://mariadb.com/kb/en/mariadb-1052-release-notes/>

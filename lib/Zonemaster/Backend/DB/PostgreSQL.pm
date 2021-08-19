@@ -6,6 +6,7 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
+use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
 
@@ -62,7 +63,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
                 id serial PRIMARY KEY,
-                hash_id VARCHAR(16) DEFAULT substring(md5(random()::text || clock_timestamp()::text) from 1 for 16) NOT NULL,
+                hash_id VARCHAR(16) NOT NULL,
                 domain VARCHAR(255) NOT NULL,
                 batch_id integer,
                 creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
@@ -167,47 +168,6 @@ sub test_progress {
     my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
-}
-
-sub create_new_test {
-    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
-    my $dbh = $self->dbh;
-
-    $test_params->{domain} = $domain;
-
-    my $fingerprint = $self->generate_fingerprint( $test_params );
-    my $encoded_params = $self->encode_params( $test_params );
-    my $undelegated = $self->undelegated ( $test_params );
-
-    my $hash_id;
-
-    my $priority    = $test_params->{priority};
-    my $queue_label = $test_params->{queue};
-
-    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
-
-    if ( $recent_hash_id ) {
-        # A recent entry exists, so return its id
-        $hash_id = $recent_hash_id;
-    }
-    else {
-        $dbh->do(
-            "INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            undef,
-            $batch_id,
-            $priority,
-            $queue_label,
-            $fingerprint,
-            $encoded_params,
-            $domain,
-            $undelegated,
-        );
-
-        ( undef, $hash_id ) = $dbh->selectrow_array(
-            "SELECT id,hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
-    }
-
-    return $hash_id;
 }
 
 sub test_results {
@@ -329,7 +289,7 @@ sub add_batch_job {
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(domain ,batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
+        $dbh->do( "COPY test_results(hash_id,domain ,batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -337,7 +297,8 @@ sub add_batch_job {
             my $encoded_params = $self->encode_params( $test_params );
             my $undelegated = $self->undelegated ( $test_params );
 
-            $dbh->pg_putcopydata("$test_params->{domain}\t$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
+            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+            $dbh->pg_putcopydata("$hash_id\t$test_params->{domain}\t$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );

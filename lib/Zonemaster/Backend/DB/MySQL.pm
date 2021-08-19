@@ -6,6 +6,7 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
+use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
 use Zonemaster::Backend::Validator qw( untaint_ipv6_address );
@@ -66,7 +67,7 @@ sub create_db {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
             id integer AUTO_INCREMENT PRIMARY KEY,
-            hash_id VARCHAR(16) DEFAULT NULL,
+            hash_id VARCHAR(16) NOT NULL,
             domain varchar(255) NOT NULL,
             batch_id integer NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -83,27 +84,6 @@ sub create_db {
         ) ENGINE=InnoDB
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'test_results' table", data => $dbh->errstr() );
-
-
-    # Manually create the trigger if it does not exist
-    # the clause IF NOT EXISTS is not available for MariaDB < 10.1.4 and MySQL
-
-    # retrieve all triggers by name
-    my $triggers = $dbh->selectall_hashref( 'SHOW TRIGGERS', 'Trigger' );
-    if ( not exists($triggers->{before_insert_test_results}) ) {
-        $dbh->do(
-            'CREATE TRIGGER before_insert_test_results
-                BEFORE INSERT ON test_results
-                FOR EACH ROW
-                BEGIN
-                    IF new.hash_id IS NULL OR new.hash_id=\'\'
-                    THEN
-                        SET new.hash_id = SUBSTRING(MD5(CONCAT(RAND(), UUID())) from 1 for 16);
-                    END IF;
-                END;
-            '
-        );
-    }
 
     # Manually create the index if it does not exist
     # the clause IF NOT EXISTS is not available for MySQL (used with FreeBSD)
@@ -174,53 +154,6 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
-}
-
-sub create_new_test {
-    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
-
-    my $dbh = $self->dbh;
-
-    $test_params->{domain} = $domain;
-
-    my $fingerprint = $self->generate_fingerprint( $test_params );
-    my $encoded_params = $self->encode_params( $test_params );
-    my $undelegated = $self->undelegated ( $test_params );
-
-    my $hash_id;
-
-    my $priority    = $test_params->{priority};
-    my $queue_label = $test_params->{queue};
-
-    eval {
-        $dbh->do( q[LOCK TABLES test_results WRITE] );
-
-        my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
-
-        if ( $recent_hash_id ) {
-            # A recent entry exists, so return its id
-            $hash_id = $recent_hash_id;
-        }
-        else {
-            $dbh->do(
-                "INSERT INTO test_results (batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?)",
-                undef,
-                $batch_id,
-                $priority,
-                $queue_label,
-                $fingerprint,
-                $encoded_params,
-                $test_params->{domain},
-                $undelegated,
-            );
-
-            ( undef, $hash_id ) = $dbh->selectrow_array(
-                "SELECT id, hash_id FROM test_results WHERE fingerprint=? ORDER BY id DESC LIMIT 1", undef, $fingerprint);
-        }
-    };
-    $dbh->do( q[UNLOCK TABLES] );
-
-    return $hash_id;
 }
 
 sub test_progress {
@@ -369,7 +302,7 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__domain_undelegated ON test_results" );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (domain, batch_id, priority, queue, fingerprint, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?) ' );
+        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, fingerprint, params, undelegated) VALUES (?,?,?,?,?,?,?,?)' );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -377,7 +310,8 @@ sub add_batch_job {
             my $encoded_params = $self->encode_params( $test_params );
             my $undelegated = $self->undelegated ( $test_params );
 
-            $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
+            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+            $sth->execute( $hash_id, $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );

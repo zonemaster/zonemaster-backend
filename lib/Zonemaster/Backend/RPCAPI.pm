@@ -75,7 +75,7 @@ sub _init_db {
 }
 
 sub handle_exception {
-    my ( $_method, $exception ) = @_;
+    my ( undef, $exception ) = @_;
 
     if ( !$exception->isa('Zonemaster::Backend::Error') ) {
         my $reason = $exception;

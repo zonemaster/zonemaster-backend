@@ -416,7 +416,7 @@ sub schedule_for_retry {
     $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = DATETIME('now') WHERE hash_id=?", undef, $hash_id);
 }
 
-sub get_timestamp {
+sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
 
     return $self->dbh->selectrow_array("SELECT (julianday('now') - julianday(test_start_time)) * 3600 * 24 FROM test_results WHERE hash_id=?", undef, $hash_id);

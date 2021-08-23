@@ -27,6 +27,7 @@ requires qw(
   test_results
   user_authorized
   user_exists_in_db
+  get_relative_start_time
 );
 
 =head2 get_db_class
@@ -167,7 +168,7 @@ sub process_dead_test {
     if ( $nb_retries < $test_run_max_retries) {
         $self->schedule_for_retry($hash_id);
     } else {
-        $self->force_end_test($hash_id, $results, $self->get_timestamp($hash_id));
+        $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
     }
 }
 

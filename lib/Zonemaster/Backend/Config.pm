@@ -128,8 +128,8 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_API_enable_add_api_user( '0' );
-    $obj->_set_API_enable_batch_jobs( '1' );
+    $obj->_set_API_enable_add_api_user( 'no' );
+    $obj->_set_API_enable_batch_jobs( 'yes' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {

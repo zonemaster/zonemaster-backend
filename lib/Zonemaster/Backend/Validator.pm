@@ -41,8 +41,8 @@ Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
 
 # Boolean
-Readonly my $BOOL_TRUE_RE           => qr/^(true|yes|1)$/i;
-Readonly my $BOOL_FALSE_RE          => qr/^(false|no|0)$/i;
+Readonly my $BOOL_TRUE_RE           => qr/^(true|yes)$/i;
+Readonly my $BOOL_FALSE_RE          => qr/^(false|no)$/i;
 Readonly my $BOOL_RE                => qr/^$BOOL_TRUE_RE|$BOOL_FALSE_RE$/i;
 
 sub joi {

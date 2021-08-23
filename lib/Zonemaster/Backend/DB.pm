@@ -52,7 +52,7 @@ sub user_exists {
     my ( $self, $user ) = @_;
 
     die Zonemaster::Backend::Error::Internal->new( reason => "username not provided to the method user_exists")
-    unless ( $user );
+        unless ( $user );
 
     return $self->user_exists_in_db( $user );
 }
@@ -61,15 +61,15 @@ sub add_api_user {
     my ( $self, $username, $api_key ) = @_;
 
     die Zonemaster::Backend::Error::Internal->new( reason => "username or api_key not provided to the method add_api_user")
-    unless ( $username && $api_key );
+        unless ( $username && $api_key );
 
     die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
-    if ( $self->user_exists( $username ) );
+        if ( $self->user_exists( $username ) );
 
     my $result = $self->add_api_user_to_db( $username, $api_key );
 
     die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user_to_db not successful")
-    unless ( $result );
+        unless ( $result );
 
     return $result;
 }

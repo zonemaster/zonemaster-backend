@@ -210,12 +210,12 @@ sub get_test_params {
     my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-    unless defined $params_json;
+        unless defined $params_json;
 
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-    if $@;
+        if $@;
 
     return $result;
 }
@@ -233,7 +233,7 @@ sub test_results {
     $result = $hrefs->{$test_id};
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-    unless defined $result;
+        unless defined $result;
 
     eval {
         # This workaround is needed to properly handle all versions of perl and the DBD::Pg module
@@ -258,7 +258,7 @@ sub test_results {
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id })
-    if $@;
+        if $@;
 
     return $result;
 }

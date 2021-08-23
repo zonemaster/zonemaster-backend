@@ -231,7 +231,7 @@ sub get_test_params {
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-    unless defined $params_json;
+        unless defined $params_json;
 
     my $result;
     eval {
@@ -239,7 +239,7 @@ sub get_test_params {
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-    if $@;
+        if $@;
 
     return decode_json( $params_json );
 }
@@ -257,7 +257,7 @@ sub test_results {
     $result            = $hrefs->{$test_id};
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-    unless defined $result;
+        unless defined $result;
 
     eval {
         $result->{params}  = decode_json( $result->{params} );
@@ -270,7 +270,7 @@ sub test_results {
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-    if $@;
+        if $@;
 
     return $result;
 }

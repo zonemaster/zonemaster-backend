@@ -109,19 +109,6 @@ around 'reason' => sub {
     $self->$orig($value);
 };
 
-around 'as_hash' => sub {
-    my $orig = shift;
-    my $self = shift;
-
-    my $href = $self->$orig;
-
-    $href->{reason} = $self->reason;
-    $href->{method} = $self->method;
-
-    return $href;
-};
-
-
 sub as_string {
     my $self = shift;
     my $str = sprintf "Caught %s in the `%s` method: %s", ref($self), $self->method, $self->reason;

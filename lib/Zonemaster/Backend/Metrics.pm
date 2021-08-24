@@ -1,13 +1,13 @@
 package Zonemaster::Backend::Metrics;
 
+use Log::Any qw($log);
+
 eval("use Net::Statsd");
 
 my $enable_metrics = 0;
 
-if (!$@ && defined $ENV{ZM_STATS_HOST}) {
+if (!$@) {
     $enable_metrics = 1;
-    $Net::Statsd::HOST = $ENV{ZM_STATS_HOST};
-    $Net::Statsd::PORT = $ENV{ZM_STATS_PORT} // 8125;
 }
 
 my %CODE_STATUS_HASH = (
@@ -17,6 +17,17 @@ my %CODE_STATUS_HASH = (
     -32602 => 'RPC_INVALID_PARAMS',
     -32603 => 'RPC_INTERNAL_ERROR'
 );
+
+sub setup {
+    my ( $cls, $host, $port ) = @_;
+    if (!defined $host) {
+        $enable_metrics = 0;
+    } else {
+        $log->info('Enabling metrics module', { host => $host, port => $port });
+        $Net::Statsd::HOST = $host;
+        $Net::Statsd::PORT = $port;
+    }
+}
 
 sub code_to_status {
     my ($cls, $code) = @_;

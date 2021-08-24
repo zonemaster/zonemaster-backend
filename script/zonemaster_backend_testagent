@@ -133,11 +133,12 @@ sub main {
     local $SIG{TERM} = $catch_sigterm;
 
     my $agent = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
-    Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.maximum_processes", $self->pm->max_procs);
 
     while ( !$caught_sigterm ) {
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
+
+        Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.maximum_processes", $self->pm->max_procs);
         Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.running_processes", scalar($self->pm->running_procs));
 
         my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
@@ -198,6 +199,8 @@ eval {
     # Make sure we can load the configuration file
     $log->debug("Starting pre-flight check");
     $initial_config = Zonemaster::Backend::Config->load_config();
+
+    Zonemaster::Backend::Metrics->setup($initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port);
 
     # Validate the Zonemaster-Engine profile
     Zonemaster::Backend::TestAgent->new( { config => $initial_config } );

@@ -51,7 +51,7 @@ Repeating a key name in one section is forbidden.
 
 Each section in `backend_config.ini` is documented below.
 
-## API section
+## RPCAPI section
 
 Available keys: `enable_batch_jobs`, `enable_add_api_user`.
 

@@ -65,8 +65,7 @@ has '+code' => (
 
 has 'reason' => (
     isa => 'Str',
-    is => 'rw',
-    initializer => 'reason',
+    is => 'ro'
 );
 
 has 'method' => (
@@ -89,24 +88,16 @@ sub _build_method {
     return $c[3];
 }
 
-around 'reason' => sub {
-    my $orig = shift;
-    my $self = shift;
+around 'BUILDARGS', sub {
+    my ($orig, $class, %args) = @_;
 
-    my ( $value, $setter, $attr ) = @_;
+    if(exists $args{reason}) {
+        # trim new lines
+        $args{reason} =~ s/\n/ /g;
+        $args{reason} =~ s/^\s+|\s+$//g;
+    }
 
-    # reader
-    return $self->$orig if not $value;
-
-    # trim new lines
-    $value =~ s/\n/ /g;
-    $value =~ s/^\s+|\s+$//g;
-
-    # initializer
-    return $setter->($value) if $setter;
-
-    # writer
-    $self->$orig($value);
+    $class->$orig(%args);
 };
 
 sub as_string {

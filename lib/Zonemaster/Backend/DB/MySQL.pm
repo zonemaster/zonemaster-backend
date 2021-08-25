@@ -144,7 +144,7 @@ sub create_new_batch_job {
             ", undef, $username );
 
     die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-    if ( $batch_id );
+        if ( $batch_id );
 
     $self->dbh->do( "INSERT INTO batch_jobs (username) VALUES(?)", undef, $username );
     my ( $new_batch_id ) = $self->dbh->{mysql_insertid};

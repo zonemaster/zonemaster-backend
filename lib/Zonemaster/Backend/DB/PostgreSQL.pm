@@ -155,7 +155,7 @@ sub create_new_batch_job {
             LIMIT 1
             ", undef, $username );
     die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-    if ( $batch_id );
+        if ( $batch_id );
 
     my ( $new_batch_id ) =
       $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );

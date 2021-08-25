@@ -161,7 +161,7 @@ sub create_new_batch_job {
                " );
 
     die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-    if ( $batch_id );
+        if ( $batch_id );
 
     $self->dbh->do("INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ")" );
     my ( $new_batch_id ) = $self->dbh->sqlite_last_insert_rowid;

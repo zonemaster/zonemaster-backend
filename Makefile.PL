@@ -41,6 +41,7 @@ test_requires 'Test::NoWarnings';
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';
 recommends 'DBD::SQLite';
+recommends 'Net::Statsd';
 
 install_share;
 

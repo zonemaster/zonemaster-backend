@@ -151,8 +151,6 @@ my $dispatch = JSON::RPC::Dispatch->new(
     router => $router,
 );
 
-use Data::Dumper;
-
 sub {
     my $env = shift;
     my $req = Plack::Request->new($env);

@@ -311,15 +311,15 @@ Default value: `8125`.
 
 ### Available metrics
 
-| Name | Type |
-| ---  | ---  |
+| Name                                           | Type    |
+| ---------------------------------------------- | ------- |
 | zonemaster.rpcapi.requests.\<METHOD>.\<STATUS> | Counter |
-| zonemaster.testagent.tests_started | Counter |
-| zonemaster.testagent.tests_completed | Counter |
-| zonemaster.testagent.tests_died | Counter |
-| zonemaster.testagent.tests_duration_seconds | Timing |
-| zonemaster.testagent.running_processes | Gauge |
-| zonemaster.testagent.maximum_processes | Gauge |
+| zonemaster.testagent.tests_started             | Counter |
+| zonemaster.testagent.tests_completed           | Counter |
+| zonemaster.testagent.tests_died                | Counter |
+| zonemaster.testagent.tests_duration_seconds    | Timing  |
+| zonemaster.testagent.running_processes         | Gauge   |
+| zonemaster.testagent.maximum_processes         | Gauge   |
 
 ## PUBLIC PROFILES and PRIVATE PROFILES sections
 

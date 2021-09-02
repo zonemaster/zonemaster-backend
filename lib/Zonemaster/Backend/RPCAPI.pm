@@ -706,7 +706,7 @@ sub validate_params {
         my @details = @{$err->details};
 
         # Handle 'required' errors globally so it does not get overwritten
-        if (@details[1] eq 'required') {
+        if ($details[1] eq 'required') {
             $message = 'Missing property';
         } else {
             my @path = split '/', $err->path, -1;

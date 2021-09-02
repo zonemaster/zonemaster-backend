@@ -196,6 +196,7 @@ sub _normalize_params {
     $normalized{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
     $normalized{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
     $normalized{profile}  = $$params{profile}   // "default";
+    $normalized{queue}    = $$params{queue}     // 0;
 
     my $array_ds_info = $$params{ds_info} // [];
     my @array_ds_info_sort = sort {

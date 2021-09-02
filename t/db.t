@@ -19,7 +19,7 @@ sub encode_and_fingerprint {
 subtest 'encoding and fingerprint' => sub {
 
     subtest 'missing properties' => sub {
-        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
+        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default","queue":0}';
 
         my %params = ( domain => "example.com" );
 
@@ -120,7 +120,7 @@ subtest 'encoding and fingerprint' => sub {
     };
 
     subtest 'garbage properties set' => sub {
-        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
+        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default","queue":0}';
         my %params1 = (
             domain => "example.com",
         );

@@ -9,22 +9,21 @@
   * [3.2 Database engine installation and configuration (CentOS)](#32-database-engine-installation-and-configuration-centos)
   * [3.3 Service configuration and startup (CentOS)](#33-service-configuration-and-startup-centos)
   * [3.4 Post-installation (CentOS)](#34-post-installation-centos)
-* [4. Installation on Debian](#4-installation-on-debian)
-  * [4.1 Install Zonemaster::Backend and related dependencies (Debian)](#41-install-zonemasterbackend-and-related-dependencies-debian)
-  * [4.2 Database engine installation and configuration (Debian)](#42-database-engine-installation-and-configuration-debian)
-  * [4.3 Service configuration and startup (Debian)](#43-service-configuration-and-startup-debian)
-  * [4.4 Post-installation (Debian)](#44-post-installation-debian)
+* [4. Installation on Debian (and Ubuntu)](#4-installation-on-debian-and-ubuntu)
+  * [4.1 Install Zonemaster::Backend and related dependencies (Debian/Ubuntu)](#41-install-zonemasterbackend-and-related-dependencies-debian-and-ubuntu)
+  * [4.2 Database engine installation and configuration (Debian/Ubuntu)](#42-database-engine-installation-and-configuration-debian-and-ubuntu)
+  * [4.3 Service configuration and startup (Debian/Ubuntu)](#43-service-configuration-and-startup-debian-and-ubuntu)
+  * [4.4 Post-installation (Debian/Ubuntu)](#44-post-installation-debian-and-ubuntu)
 * [5. Installation on FreeBSD](#5-installation-on-freebsd)
   * [5.1 Install Zonemaster::Backend and related dependencies (FreeBSD)](#51-install-zonemasterbackend-and-related-dependencies-freebsd)
   * [5.2 Database engine installation and configuration (FreeBSD)](#52-database-engine-installation-and-configuration-freebsd)
   * [5.3 Service startup (FreeBSD)](#53-service-startup-freebsd)
   * [5.4 Post-installation (FreeBSD)](#54-post-installation-freebsd)
-* [6. Installation on Ubuntu](#6-installation-on-ubuntu)
-* [7. Post-installation](#7-post-installation)
-  * [7.1 Smoke test](#71-smoke-test)
-  * [7.2 What to do next?](#72-what-to-do-next)
-  * [7.3 Cleaning up the database](#73-cleaning-up-the-database)
-  * [7.4 Upgrade Zonemaster database](#74-upgrade-zonemaster-database)
+* [6. Post-installation](#6-post-installation)
+  * [6.1 Smoke test](#61-smoke-test)
+  * [6.2 What to do next?](#62-what-to-do-next)
+  * [6.3 Cleaning up the database](#63-cleaning-up-the-database)
+  * [6.4 Upgrade Zonemaster database](#64-upgrade-zonemaster-database)
 
 ## 1. Overview
 
@@ -241,9 +240,9 @@ sudo systemctl start zm-testagent
 See the [post-installation] section for post-installation matters.
 
 
-## 4. Installation on Debian
+## 4. Installation on Debian and Ubuntu
 
-### 4.1 Install Zonemaster::Backend and related dependencies (Debian)
+### 4.1 Install Zonemaster::Backend and related dependencies (Debian and Ubuntu)
 
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
@@ -311,7 +310,7 @@ sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 > `/etc/init.d/zm-backend.sh` (script from previous version of Zonemaster-Backend).
 
 
-### 4.2 Database engine installation and configuration (Debian)
+### 4.2 Database engine installation and configuration (Debian and Ubuntu)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -326,7 +325,7 @@ If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
 
 
-#### 4.2.1 Instructions for MariaDB (Debian)
+#### 4.2.1 Instructions for MariaDB (Debian and Ubuntu)
 
 Install the database engine and its dependencies:
 
@@ -353,7 +352,7 @@ sudo mysql < $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backe
 > file). This user has just enough permissions to run the backend software.
 
 
-#### 4.2.2 Instructions for PostgreSQL (Debian)
+#### 4.2.2 Instructions for PostgreSQL (Debian and Ubuntu)
 
 Install database engine and Perl bindings:
 
@@ -380,7 +379,7 @@ sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zone
 > This user has just enough permissions to run the backend software.
 
 
-#### 4.2.3 Instructions for SQLite (Debian)
+#### 4.2.3 Instructions for SQLite (Debian and Ubuntu)
 
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
@@ -408,7 +407,7 @@ sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 > **Note:** See the [backend configuration] documentation for details.
 
 
-### 4.3 Service configuration and startup (Debian)
+### 4.3 Service configuration and startup (Debian and Ubuntu)
 
 Make sure our tmpfiles configuration takes effect:
 
@@ -426,7 +425,7 @@ sudo systemctl start zm-testagent
 ```
 
 
-### 4.4 Post-installation (Debian)
+### 4.4 Post-installation (Debian and Ubuntu)
 
 See the [post-installation] section for post-installation matters.
 
@@ -636,14 +635,9 @@ service zm_testagent status
 See the [post-installation] section for post-installation matters.
 
 
-## 6. Installation on Ubuntu
+## 6. Post-installation
 
-Use the procedure for installation on [Debian](#4-installation-on-debian).
-
-
-## 7. Post-installation
-
-### 7.1 Smoke test
+### 6.1 Smoke test
 
 If you have followed the installation instructions for Zonemaster::Backend above,
 you should be able to use the API on localhost port 5000 as below.
@@ -657,14 +651,14 @@ followed by a percentage ticking up from 0% to 100%.
 Once the number reaches 100% a JSON object is printed and zmtest terminates.
 
 
-### 7.2. What to do next?
+### 6.2. What to do next?
 
 * For a web interface, follow the [Zonemaster::GUI installation] instructions.
 * For a command line interface, follow the [Zonemaster::CLI installation] instruction.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-### 7.3. Cleaning up the database
+### 6.3. Cleaning up the database
 
 If, at some point, you want to delete all traces of Zonemaster in the database,
 you can run the file `cleanup-mysql.sql` or file `cleanup-postgres.sql`
@@ -672,25 +666,25 @@ as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
 database (obviously taking all data with it).
 
-#### 7.3.1 MySQL
+#### 6.3.1 MySQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 mysql --user=root --password < ./cleanup-mysql.sql
 ```
 
-#### 7.3.2 PostgreSQL
+#### 6.3.2 PostgreSQL
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 ```
 
-#### 7.3.3 SQLite
+#### 6.3.3 SQLite
 
 Remove the database file and recreate it following the installation instructions above.
 
-### 7.4 Upgrade Zonemaster database
+### 6.4 Upgrade Zonemaster database
 
 If you upgrade your Zonemaster installation with a newer version of
 Zonemaster-Backend and keep the database, then you might have to upgrade the

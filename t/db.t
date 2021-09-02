@@ -134,6 +134,37 @@ subtest 'encoding and fingerprint' => sub {
         is $fingerprint1, $fingerprint2, 'leave out garbage property in fingerprint computation...';
         is $encoded_params2, $expected_encoded_params, '...but keep it in the encoded string';
     };
+
+    subtest 'should have different fingerprints' => sub {
+        subtest 'different profiles' => sub {
+            my %params1 = (
+                domain => "example.com",
+                profile => "profile_1"
+            );
+            my %params2 = (
+                domain => "example.com",
+                profile => "profile_2"
+            );
+            my ( undef, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+
+            isnt $fingerprint1, $fingerprint2, 'different profiles, different fingerprints';
+        };
+        subtest 'different queues' => sub {
+            my %params1 = (
+                domain => "example.com",
+                queue => 1
+            );
+            my %params2 = (
+                domain => "example.com",
+                queue => 2
+            );
+            my ( undef, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+
+            isnt $fingerprint1, $fingerprint2, 'different queues, different fingerprints';
+        };
+    }
 };
 
 done_testing();

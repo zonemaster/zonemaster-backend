@@ -11,6 +11,8 @@ use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 use Log::Any qw( $log );
 
+use Zonemaster::Backend::Errors;
+
 with 'Zonemaster::Backend::DB';
 
 has 'dbh' => (
@@ -145,7 +147,7 @@ sub user_authorized {
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
-    my ( $batch_id, $creaton_time ) = $self->dbh->selectrow_array( "
+    my ( $batch_id, $creation_time ) = $self->dbh->selectrow_array( "
                SELECT
                     batch_id,
                     batch_jobs.creation_time AS batch_creation_time
@@ -158,7 +160,8 @@ sub create_new_batch_job {
                LIMIT 1
                " );
 
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creaton_time] still running \n" if ( $batch_id );
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+        if ( $batch_id );
 
     $self->dbh->do("INSERT INTO batch_jobs (username) VALUES(" . $self->dbh->quote( $username ) . ")" );
     my ( $new_batch_id ) = $self->dbh->sqlite_last_insert_rowid;
@@ -244,12 +247,16 @@ sub get_test_params {
 
     my ( $params_json ) = $self->dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
 
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $params_json;
+
     my $result;
     eval {
         $result = decode_json( $params_json );
     };
 
-    $log->warn( "decoding of params_json failed (test_id: [$test_id]):".Dumper($params_json) ) if $@;
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
 
     return $result;
 }
@@ -265,8 +272,22 @@ sub test_results {
     my $result;
     my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
     $result            = $hrefs->{$test_id};
-    $result->{params}  = decode_json( $result->{params} );
-    $result->{results} = decode_json( $result->{results} );
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $result;
+
+    eval {
+        $result->{params}  = decode_json( $result->{params} );
+
+        if (defined $result->{results}) {
+            $result->{results} = decode_json( $result->{results} );
+        } else {
+            $result->{results} = [];
+        }
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
 
     return $result;
 }
@@ -363,7 +384,7 @@ sub add_batch_job {
         $dbh->{AutoCommit} = 1;
     }
     else {
-        die "User $params->{username} not authorized to use batch mode\n";
+        die Zonemaster::Backend::Error::PermissionDenied->new( message => 'User not authorized to use batch mode', data => { username => $params->{username}} );
     }
 
     return $batch_id;

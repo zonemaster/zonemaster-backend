@@ -10,6 +10,7 @@ use Encode;
 use JSON::PP;
 
 use Zonemaster::Backend::DB;
+use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
 
@@ -153,8 +154,8 @@ sub create_new_batch_job {
                 test_results.progress<>100
             LIMIT 1
             ", undef, $username );
-
-    die "You can't create a new batch job, job:[$batch_id] started on:[$creation_time] still running \n" if ( $batch_id );
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+        if ( $batch_id );
 
     my ( $new_batch_id ) =
       $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
@@ -207,8 +208,14 @@ sub get_test_params {
 
     my $dbh = $self->dbh;
     my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $params_json;
+
     eval { $result = decode_json( encode_utf8( $params_json ) ); };
-    die "$@ \n" if $@;
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
 
     return $result;
 }
@@ -222,27 +229,36 @@ sub test_results {
       if ( $results );
 
     my $result;
-    eval {
-        my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
-        $result            = $hrefs->{$test_id};
+    my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
+    $result = $hrefs->{$test_id};
 
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $result;
+
+    eval {
         # This workaround is needed to properly handle all versions of perl and the DBD::Pg module
         # More details in the zonemaster backend issue #570
         if (utf8::is_utf8($result->{params}) ) {
-                $result->{params}  = decode_json( encode_utf8($result->{params}) );
+            $result->{params}  = decode_json( encode_utf8($result->{params}) );
         }
         else {
-                $result->{params}  = decode_json( $result->{params} );
+            $result->{params}  = decode_json( $result->{params} );
         }
 
-        if (utf8::is_utf8($result->{results} ) ) {
+        if (defined $result->{results} ) {
+            if (utf8::is_utf8($result->{results} ) ) {
                 $result->{results}  = decode_json( encode_utf8($result->{results}) );
-        }
-        else {
+            }
+            else {
                 $result->{results}  = decode_json( $result->{results} );
+            }
+        } else {
+            $result->{results} = [];
         }
     };
-    die "$@ \n" if $@;
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id })
+        if $@;
 
     return $result;
 }
@@ -342,7 +358,7 @@ sub add_batch_job {
         $dbh->commit();
     }
     else {
-        die "User $params->{username} not authorized to use batch mode\n";
+        die Zonemaster::Backend::Error::PermissionDenied->new( message => 'User not authorized to use batch mode', data => { username => $params->{username}} );
     }
 
     return $batch_id;

@@ -10,7 +10,7 @@ Each section in `backend_config.ini` is documented below.
 Restart the `zm-rpcapi` and `zm-testagent` daemons to load the changes
 made to the `backend_config.ini` file.
 
-## API section
+## RPCAPI section
 
 Available keys: `enable_batch_jobs`, `enable_add_api_user`.
 

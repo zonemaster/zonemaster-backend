@@ -112,7 +112,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'API');
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'RPCAPI');
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -128,8 +128,8 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_API_enable_add_api_user( 'no' );
-    $obj->_set_API_enable_batch_jobs( 'yes' );
+    $obj->_set_RPCAPI_enable_add_api_user( 'no' );
+    $obj->_set_RPCAPI_enable_batch_jobs( 'yes' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -244,11 +244,11 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'API', 'enable_add_api_user' ) ) ) {
-        $obj->_set_API_enable_add_api_user( $value );
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+        $obj->_set_RPCAPI_enable_add_api_user( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'API', 'enable_batch_jobs' ) ) ) {
-        $obj->_set_API_enable_batch_jobs( $value );
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_batch_jobs' ) ) ) {
+        $obj->_set_RPCAPI_enable_batch_jobs( $value );
     }
 
     $obj->{_LANGUAGE_locale} = {};
@@ -371,19 +371,19 @@ sub _set_DB_engine {
     return;
 }
 
-sub _set_API_enable_add_api_user {
+sub _set_RPCAPI_enable_add_api_user {
     my ( $self, $value ) = @_;
 
-    $value = untaint_bool( $value ) // die "Invalid value for API.enable_add_api_user: $value\n";
-    $self->{_API_enable_add_api_user} = $value;
+    $value = untaint_bool( $value ) // die "Invalid value for RPCAPI.enable_add_api_user: $value\n";
+    $self->{_RPCAPI_enable_add_api_user} = $value;
     return;
 }
 
-sub _set_API_enable_batch_jobs {
+sub _set_RPCAPI_enable_batch_jobs {
     my ( $self, $value ) = @_;
 
-    $value = untaint_bool( $value ) // die "Invalid value for API.enable_batch_jobs: $value\n";
-    $self->{_API_enable_batch_jobs} = $value;
+    $value = untaint_bool( $value ) // die "Invalid value for RPCAPI.enable_batch_jobs: $value\n";
+    $self->{_RPCAPI_enable_batch_jobs} = $value;
     return;
 }
 
@@ -487,19 +487,19 @@ Returns an integer.
 
 =cut
 
-=head2 API_enable_add_api_user
+=head2 RPCAPI_enable_add_api_user
 
 Get the value of
-L<API.enable_add_api_user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_api_user>.
+L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_api_user>.
 
 Return 0 or 1
 
 =cut
 
-=head2 API_enable_batch_jobs
+=head2 RPCAPI_enable_batch_jobs
 
 Get the value of
-L<API.enable_batch_jobs|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_batch_jobs>.
+L<RPCAPI.enable_batch_jobs|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_batch_jobs>.
 
 Return 0 or 1
 
@@ -522,8 +522,8 @@ sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMA
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
-sub API_enable_add_api_user                             { return $_[0]->{_API_enable_add_api_user}; }
-sub API_enable_batch_jobs                               { return $_[0]->{_API_enable_batch_jobs}; }
+sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
+sub RPCAPI_enable_batch_jobs                            { return $_[0]->{_RPCAPI_enable_batch_jobs}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {

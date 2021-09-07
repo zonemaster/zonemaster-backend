@@ -395,6 +395,12 @@ sub schedule_for_retry {
     $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
 }
 
+sub get_relative_start_time {
+    my ( $self, $hash_id ) = @_;
+
+    return $self->dbh->selectrow_array("SELECT EXTRACT(EPOCH FROM now() - test_start_time) FROM test_results WHERE hash_id=?", undef, $hash_id);
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

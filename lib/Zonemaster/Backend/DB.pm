@@ -27,6 +27,7 @@ requires qw(
   test_results
   user_authorized
   user_exists_in_db
+  get_relative_start_time
 );
 
 =head2 get_db_class
@@ -137,22 +138,37 @@ sub process_unfinished_tests {
             $self->schedule_for_retry($h->{hash_id});
         }
         else {
-            my $result;
-            if ( defined $h->{results} && $h->{results} =~ /^\[/ ) {
-                $result = decode_json( $h->{results} );
-            }
-            else {
-                $result = [];
-            }
-            push @$result,
-              {
-                "level"     => "CRITICAL",
-                "module"    => "BACKEND_TEST_AGENT",
-                "tag"       => "UNABLE_TO_FINISH_TEST",
-                "timestamp" => $test_run_timeout,
-              };
-            $self->process_unfinished_tests_give_up($result, $h->{hash_id});
+            $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
         }
+    }
+}
+
+sub force_end_test {
+    my ( $self, $hash_id, $results, $timestamp ) = @_;
+    my $result;
+    if ( defined $results && $results =~ /^\[/ ) {
+        $result = decode_json( $results );
+    }
+    else {
+        $result = [];
+    }
+    push @$result,
+        {
+        "level"     => "CRITICAL",
+        "module"    => "BACKEND_TEST_AGENT",
+        "tag"       => "UNABLE_TO_FINISH_TEST",
+        "timestamp" => $timestamp,
+        };
+    $self->process_unfinished_tests_give_up($result, $hash_id);
+}
+
+sub process_dead_test {
+    my ( $self, $hash_id, $test_run_max_retries ) = @_;
+    my ( $nb_retries, $results ) = $self->dbh->selectrow_array("SELECT nb_retries, results FROM test_results WHERE hash_id = ?", undef, $hash_id);
+    if ( $nb_retries < $test_run_max_retries) {
+        $self->schedule_for_retry($hash_id);
+    } else {
+        $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
     }
 }
 

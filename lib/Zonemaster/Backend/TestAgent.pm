@@ -177,7 +177,6 @@ sub run {
     }
 
     # Actually run tests!
-    die Zonemaster::Backend::Error::Internal->new( reason => "called with results");
     eval { Zonemaster::Engine->test_zone( $domain ); };
     if ( $@ ) {
         my $err = $@;

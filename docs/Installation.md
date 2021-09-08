@@ -135,6 +135,9 @@ sudo perl create_db_sqlite.pl
 sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```
 
+> Some parameters can be changed, see the [backend configuration] documentation
+> for details.
+
 
 #### 3.2.2 Instructions for other engines (CentOS)
 
@@ -263,6 +266,9 @@ sudo perl create_db_sqlite.pl
 sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```
 
+> Some parameters can be changed, see the [backend configuration] documentation
+> for details.
+
 
 #### 4.2.2 Instructions for other engines (Debian/Ubuntu)
 
@@ -367,8 +373,6 @@ Configure Zonemaster::Backend to use the correct database path:
 sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
-> **Note:** See the [backend configuration] documentation for details.
-
 Create database directory and database with correct ownership:
 
 ```sh
@@ -376,6 +380,9 @@ cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backen
 install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
 env ZONEMASTER_BACKEND_CONFIG_FILE=/usr/local/etc/zonemaster/backend_config.ini su -m zonemaster -c "perl create_db_sqlite.pl"
 ```
+
+> Some parameters can be changed, see the [backend configuration] documentation
+> for details.
 
 #### 5.2.2 Instructions for other engines (FreeBSD)
 

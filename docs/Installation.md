@@ -75,13 +75,6 @@ Install dependencies not available from binary packages:
 sudo cpanm Daemon::Control JSON::Validator Log::Any Log::Any::Adapter::Dispatch Starman
 ```
 
-Install optional dependencies:
-
-```sh
-# For metrics feature
-sudo cpanm Net::Statsd
-```
-
 Install Zonemaster::Backend:
 
 ```sh
@@ -214,13 +207,6 @@ Install dependencies not available from binary packages:
 sudo cpanm Daemon::Control JSON::Validator
 ```
 
-Install optional dependencies:
-
-```sh
-# For metrics feature
-sudo cpanm Net::Statsd
-```
-
 Install Zonemaster::Backend:
 
 ```sh
@@ -332,13 +318,6 @@ Install dependencies available from binary packages:
 pkg install jq p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML p5-Test-NoWarnings
 ```
 <!-- JSON::Validator requires YAML::PP, but p5-JSON-Validator currently lacks a dependency on p5-YAML-LibYAML -->
-
-Install optional dependencies:
-
-```sh
-# For metrics feature
-sudo cpanm Net::Statsd
-```
 
 Install Zonemaster::Backend:
 
@@ -722,6 +701,32 @@ sudo -u postgres psql -f ./cleanup-postgres.sql # MUST BE VERIFIED!
 #### C.3. SQLite
 
 Remove the database file and recreate it following the installation instructions above.
+
+## D. Optional features
+
+### D.1 Metrics
+
+Statsd metrics are available, to enable the feature install the additional `Net::Statsd` module. See the [configuration][Backend configuration] for additional information.
+
+### D.1.1 Installation on Centos
+
+```sh
+sudo cpanm Net::Statsd
+```
+
+### D.1.2 Installation on Debian / Ubuntu
+
+
+```sh
+sudo apt install libnet-statsd-perl
+```
+
+### D.1.3 Installation on Freebsd
+
+```sh
+# For metrics feature
+cpanm Net::Statsd
+```
 
 -------
 

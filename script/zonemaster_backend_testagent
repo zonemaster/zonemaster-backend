@@ -132,6 +132,8 @@ sub main {
     local $SIG{TERM} = $catch_sigterm;
 
     my $agent = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
+    # Disconnect from database in parent to avoid sharing the connection between children
+    $agent->{_db}->dbh->disconnect;
 
     while ( !$caught_sigterm ) {
         $self->pm->reap_finished_children();    # Reaps terminated child processes

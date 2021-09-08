@@ -469,8 +469,6 @@ Zonemaster-Backend and keep the database, then you might have to upgrade the
 database to use it with the new version of Zonemaster-Backend. Please see the
 [upgrade][README.md-upgrade] information.
 
-For SQLite database upgrading is not needed as of now.
-
 
 
 ## Appendices

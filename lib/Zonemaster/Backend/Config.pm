@@ -147,7 +147,6 @@ sub parse {
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
-    #$obj->_set_METRICS_statsd_host( undef );
     $obj->_set_METRICS_statsd_port( '8125' );
 
     # Assign property values (part 1/2)

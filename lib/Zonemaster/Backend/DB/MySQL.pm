@@ -378,7 +378,6 @@ sub add_batch_job {
             my $undelegated = $self->undelegated ( $test_params );
 
             $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
-            # $sth->execute( $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );

@@ -796,8 +796,8 @@ the `test id` of the previous test will be returned. The default value of
 key in the configuration file.
 
 The parameters that are compared when to determine if two requests are to be
-considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`,
-`profile`, `priority` and `queue`.
+considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
+and `profile`.
 
 #### `"error"`
 

@@ -19,7 +19,7 @@ sub encode_and_fingerprint {
 subtest 'encoding and fingerprint' => sub {
 
     subtest 'missing properties' => sub {
-        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"priority":10,"profile":"default","queue":0}';
+        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
 
         my %params = ( domain => "example.com" );
 
@@ -120,7 +120,7 @@ subtest 'encoding and fingerprint' => sub {
     };
 
     subtest 'garbage properties set' => sub {
-        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"priority":10,"profile":"default","queue":0}';
+        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
         my %params1 = (
             domain => "example.com",
         );
@@ -134,6 +134,39 @@ subtest 'encoding and fingerprint' => sub {
         is $fingerprint1, $fingerprint2, 'leave out garbage property in fingerprint computation...';
         is $encoded_params2, $expected_encoded_params, '...but keep it in the encoded string';
     };
+
+    subtest 'should have different fingerprints' => sub {
+        subtest 'different profiles' => sub {
+            my %params1 = (
+                domain => "example.com",
+                profile => "profile_1"
+            );
+            my %params2 = (
+                domain => "example.com",
+                profile => "profile_2"
+            );
+            my ( undef, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+
+            isnt $fingerprint1, $fingerprint2, 'different profiles, different fingerprints';
+        };
+        subtest 'different IP protocols' => sub {
+            my %params1 = (
+                domain => "example.com",
+                ipv4 => "true",
+                ipv6 => "false"
+            );
+            my %params2 = (
+                domain => "example.com",
+                ipv4 => "false",
+                ipv6 => "true"
+            );
+            my ( undef, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+
+            isnt $fingerprint1, $fingerprint2, 'different IP protocols, different fingerprints';
+        };
+    }
 };
 
 done_testing();

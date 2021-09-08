@@ -202,21 +202,17 @@ sub _new_dbh {
     return $dbh;
 }
 
-sub _normalize_params {
+sub _project_params {
     my ( $self, $params ) = @_;
 
     my $profile = Zonemaster::Engine::Profile->effective;
 
-    my %normalized = ();
+    my %projection = ();
 
-    # some of these values are already set in RPCAPI
-    # however setting them here again is required for testing purpose
-    $normalized{domain}   = lc $$params{domain} // "";
-    $normalized{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
-    $normalized{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
-    $normalized{profile}  = $$params{profile}   // "default";
-    $normalized{priority} = $$params{priority}  // 10;
-    $normalized{queue}    = $$params{queue}     // 0;
+    $projection{domain}   = lc $$params{domain} // "";
+    $projection{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
+    $projection{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
+    $projection{profile}  = $$params{profile}   // "default";
 
     my $array_ds_info = $$params{ds_info} // [];
     my @array_ds_info_sort = sort {
@@ -226,7 +222,7 @@ sub _normalize_params {
         $a->{keytag}    <=> $b->{keytag}
     } @$array_ds_info;
 
-    $normalized{ds_info} = \@array_ds_info_sort;
+    $projection{ds_info} = \@array_ds_info_sort;
 
     my $array_nameservers = $$params{nameservers} // [];
     for my $nameserver (@$array_nameservers) {
@@ -240,9 +236,9 @@ sub _normalize_params {
         ( defined $a->{ip} and defined $b->{ip} and $a->{ip} cmp $b->{ip} )
     } @$array_nameservers;
 
-    $normalized{nameservers} = \@array_nameservers_sort;
+    $projection{nameservers} = \@array_nameservers_sort;
 
-    return \%normalized;
+    return \%projection;
 }
 
 sub _params_to_json_str {
@@ -258,9 +254,10 @@ sub _params_to_json_str {
 
 =head2 encode_params
 
-Encode the params object into a JSON string. The object is first normalized and
-additional properties are kept.  Returns a JSON string of a the using a union
-of the given hash and its normalization using default values, see
+Encode the params object into a JSON string. First a projection of some
+parameters is performed then all additional properties are kept.
+Returns a JSON string of a the using a union of the given hash and its
+normalization using default values, see
 L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
 
 =cut
@@ -268,8 +265,8 @@ L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#param
 sub encode_params {
     my ( $self, $params ) = @_;
 
-    my $normalized_params = $self->_normalize_params( $params );
-    $params = { %$params, %$normalized_params };
+    my $projected_params = $self->_project_params( $params );
+    $params = { %$params, %$projected_params };
     my $encoded_params = $self->_params_to_json_str( $params );
 
     return $encoded_params;
@@ -278,7 +275,7 @@ sub encode_params {
 =head2 generate_fingerprint
 
 Returns a fingerprint of the hash passed in argument.
-The fingerprint is computed after normalizing the hash.
+The fingerprint is computed after projecting the hash.
 Such fingerprint are usefull to find similar tests in the database.
 
 =cut
@@ -286,8 +283,8 @@ Such fingerprint are usefull to find similar tests in the database.
 sub generate_fingerprint {
     my ( $self, $params ) = @_;
 
-    my $normalized_params = $self->_normalize_params( $params );
-    my $encoded_params = $self->_params_to_json_str( $normalized_params );
+    my $projected_params = $self->_project_params( $params );
+    my $encoded_params = $self->_params_to_json_str( $projected_params );
     my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
 
     return $fingerprint;
@@ -298,20 +295,19 @@ sub generate_fingerprint {
 
 Returns the value 1 if the test to be created is if type undelegated,
 else value 0. The test is considered to be undelegated if the "ds_info" or
-"nameservers" parameters is are defined with data after normalization.
+"nameservers" parameters is are defined with data after projection.
 
 =cut
 
 sub undelegated {
     my ( $self, $params ) = @_;
 
-    my $normalized_params = $self->_normalize_params( $params );
+    my $projected_params = $self->_project_params( $params );
 
-    return 1 if defined( $$normalized_params{ds_info}[0] );
-    return 1 if defined( $$normalized_params{nameservers}[0] );
+    return 1 if defined( $$projected_params{ds_info}[0] );
+    return 1 if defined( $$projected_params{nameservers}[0] );
     return 0;
 }
-
 
 
 no Moose::Role;

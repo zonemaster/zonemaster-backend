@@ -126,13 +126,6 @@ but if you have removed the old Zonemaster database, then do the initialization.
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
 
-Configure Zonemaster::Backend to use the correct database engine and database
-path:
-
-```sh
-sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
-```
-
 Create database directory, set correct ownership and create database:
 
 ```sh
@@ -265,13 +258,6 @@ but if you have removed the old Zonemaster database, then do the initialization.
 
 > All binaries and Perl bindings are already installed.
 
-Configure Zonemaster::Backend to use the correct database engine and database
-path:
-
-```sh
-sudo sed -i '/\bengine\b/ s/=.*/= SQLite/' /etc/zonemaster/backend_config.ini
-```
-
 Create database directory, set correct ownership and create database:
 
 ```sh
@@ -385,11 +371,9 @@ but if you have removed the old Zonemaster database, then do the initialization.
 
 > All binaries and Perl bindings are already installed.
 
-Configure Zonemaster::Backend to use the correct database engine and database
-path:
+Configure Zonemaster::Backend to use the correct database path:
 
 ```sh
-sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= SQLite/' /usr/local/etc/zonemaster/backend_config.ini
 sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 

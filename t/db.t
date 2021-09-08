@@ -19,7 +19,7 @@ sub encode_and_fingerprint {
 subtest 'encoding and fingerprint' => sub {
 
     subtest 'missing properties' => sub {
-        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default","queue":0}';
+        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
 
         my %params = ( domain => "example.com" );
 
@@ -120,7 +120,7 @@ subtest 'encoding and fingerprint' => sub {
     };
 
     subtest 'garbage properties set' => sub {
-        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default","queue":0}';
+        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
         my %params1 = (
             domain => "example.com",
         );
@@ -149,20 +149,6 @@ subtest 'encoding and fingerprint' => sub {
             my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
 
             isnt $fingerprint1, $fingerprint2, 'different profiles, different fingerprints';
-        };
-        subtest 'different queues' => sub {
-            my %params1 = (
-                domain => "example.com",
-                queue => 1
-            );
-            my %params2 = (
-                domain => "example.com",
-                queue => 2
-            );
-            my ( undef, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
-            my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
-
-            isnt $fingerprint1, $fingerprint2, 'different queues, different fingerprints';
         };
     }
 };

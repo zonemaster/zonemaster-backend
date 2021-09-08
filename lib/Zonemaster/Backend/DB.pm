@@ -190,13 +190,10 @@ sub _project_params {
 
     my %projection = ();
 
-    # some of these values are already set in RPCAPI
-    # however setting them here again is required for testing purpose
     $projection{domain}   = lc $$params{domain} // "";
     $projection{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
     $projection{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
     $projection{profile}  = $$params{profile}   // "default";
-    $projection{queue}    = $$params{queue}     // 0;
 
     my $array_ds_info = $$params{ds_info} // [];
     my @array_ds_info_sort = sort {

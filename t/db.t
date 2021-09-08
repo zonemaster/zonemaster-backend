@@ -150,6 +150,22 @@ subtest 'encoding and fingerprint' => sub {
 
             isnt $fingerprint1, $fingerprint2, 'different profiles, different fingerprints';
         };
+        subtest 'different IP protocols' => sub {
+            my %params1 = (
+                domain => "example.com",
+                ipv4 => "true",
+                ipv6 => "false"
+            );
+            my %params2 = (
+                domain => "example.com",
+                ipv4 => "false",
+                ipv6 => "true"
+            );
+            my ( undef, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( undef, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+
+            isnt $fingerprint1, $fingerprint2, 'different IP protocols, different fingerprints';
+        };
     }
 };
 

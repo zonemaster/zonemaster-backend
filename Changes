@@ -1,15 +1,5 @@
 Release history for Zonemaster component Zonemaster-Backend
 
-v6.2.1 (public fix release)
-
- [Fixes]
- - Fixes a security issue that allowed to create a API user from anywhere
-   when running behind a reverse proxy. (#838, #850).
-
-   Note: The user API is now disabled by default, but could be enabled in the
-   configuration. It is recommended to check that all users in database are
-   legitimate or disable the batch API if it is not used.
-
 v6.2.0 2021-05-28 (public release version)
 
  [Features]

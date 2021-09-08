@@ -126,7 +126,7 @@ but if you have removed the old Zonemaster database, then do the initialization.
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
 
-Create database directory, set correct ownership and create database:
+Create database directory, database and set correct ownership:
 
 ```sh
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
@@ -134,8 +134,6 @@ sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
 sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```
-
-> **Note:** See the [backend configuration] documentation for details.
 
 
 #### 3.2.2 Instructions for other engines (CentOS)
@@ -256,9 +254,7 @@ but if you have removed the old Zonemaster database, then do the initialization.
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
 
-> All binaries and Perl bindings are already installed.
-
-Create database directory, set correct ownership and create database:
+Create database directory, database and set correct ownership:
 
 ```sh
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
@@ -266,10 +262,6 @@ sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 sudo perl create_db_sqlite.pl
 sudo chown zonemaster:zonemaster /var/lib/zonemaster/db.sqlite
 ```
-
-> SQLite will not run as a daemon and does not need to be started.
-
-> **Note:** See the [backend configuration] documentation for details.
 
 
 #### 4.2.2 Instructions for other engines (Debian/Ubuntu)
@@ -369,25 +361,21 @@ but if you have removed the old Zonemaster database, then do the initialization.
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
 
-> All binaries and Perl bindings are already installed.
-
 Configure Zonemaster::Backend to use the correct database path:
 
 ```sh
 sed -i '' '/[[:<:]]database_file[[:>:]]/ s:=.*:= /var/db/zonemaster/db.sqlite:' /usr/local/etc/zonemaster/backend_config.ini
 ```
 
-Create database directory, set correct ownership and create database:
+> **Note:** See the [backend configuration] documentation for details.
+
+Create database directory and database with correct ownership:
 
 ```sh
 cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
 env ZONEMASTER_BACKEND_CONFIG_FILE=/usr/local/etc/zonemaster/backend_config.ini su -m zonemaster -c "perl create_db_sqlite.pl"
 ```
-
-> SQLite will not run as a daemon and does not need to be started.
-
-> **Note:** See the [backend configuration] documentation for details.
 
 #### 5.2.2 Instructions for other engines (FreeBSD)
 

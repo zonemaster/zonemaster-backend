@@ -120,6 +120,11 @@ my $router = router {
         handler => $handler,
         action => "get_test_history"
     };
+
+    connect "get_batch_job_result" => {
+        handler => $handler,
+        action => "get_batch_job_result"
+    };
 };
 
 if ($config->RPCAPI_enable_add_api_user) {
@@ -130,16 +135,11 @@ if ($config->RPCAPI_enable_add_api_user) {
     });
 }
 
-if ($config->RPCAPI_enable_batch_jobs) {
-    $log->info('Enabling add_batch_job and get_batch_job_result methods');
+if ($config->RPCAPI_enable_add_batch_job) {
+    $log->info('Enabling add_batch_job method');
     $router->connect("add_batch_job", {
         handler => $handler,
         action => "add_batch_job"
-    });
-
-    $router->connect("get_batch_job_result", {
-        handler => $handler,
-        action => "get_batch_job_result"
     });
 }
 

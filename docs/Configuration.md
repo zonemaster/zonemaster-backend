@@ -12,11 +12,11 @@ made to the `backend_config.ini` file.
 
 ## RPCAPI section
 
-Available keys: `enable_batch_jobs`, `enable_add_api_user`.
+Available keys: `enable_add_batch_job`, `enable_add_api_user`.
 
-### enable_batch_jobs
+### enable_add_batch_job
 
-Boolean value to enable the batch jobs methods of the API.
+Boolean value to enable the `enable_add_batch_job` methods of the API.
 
 Accpected values: `yes` (or `true`) or `no` (or `false`),
 default to `yes` (enabled).

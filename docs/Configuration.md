@@ -309,17 +309,6 @@ Note that this feature requires the `Net::Statsd` module to be installed.
 The port the StatsD receiver is listening on.
 Default value: `8125`.
 
-### Available metrics
-
-| Name                                           | Type    |
-| ---------------------------------------------- | ------- |
-| zonemaster.rpcapi.requests.\<METHOD>.\<STATUS> | Counter |
-| zonemaster.testagent.tests_started             | Counter |
-| zonemaster.testagent.tests_completed           | Counter |
-| zonemaster.testagent.tests_died                | Counter |
-| zonemaster.testagent.tests_duration_seconds    | Timing  |
-| zonemaster.testagent.running_processes         | Gauge   |
-| zonemaster.testagent.maximum_processes         | Gauge   |
 
 ## PUBLIC PROFILES and PRIVATE PROFILES sections
 

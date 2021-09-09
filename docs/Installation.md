@@ -27,6 +27,8 @@
   * [A. Installation with MariaDB](#a-installation-with-mariadb)
   * [B. Installation with PostgreSQL](#b-installation-with-postgresql)
   * [C. Cleaning up the database](#c-cleaning-up-the-database)
+  * [D. Optional features](#d-optional-features)
+    * [D.1 Metrics](#d1-metrics)
 
 ## 1. Overview
 
@@ -706,7 +708,11 @@ Remove the database file and recreate it following the installation instructions
 
 ### D.1 Metrics
 
-Statsd metrics are available, to enable the feature install the additional `Net::Statsd` module. See the [configuration][Backend configuration] for additional information.
+Statsd metrics are available, to enable the feature install the additional
+`Net::Statsd` module. See the [configuration][Backend configuration] to
+configure the receiver.
+
+The list of metrics is available in the [Telemetry document][metrics];
 
 ### D.1.1 Installation on Centos
 
@@ -749,3 +755,4 @@ cpanm Net::Statsd
 [Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md
 [Zonemaster::Engine]: https://github.com/zonemaster/zonemaster-engine/blob/master/README.md
 [Zonemaster::LDNS]: https://github.com/zonemaster/zonemaster-ldns/blob/master/README.md
+[metrics]: Telemetry.md#metrics

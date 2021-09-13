@@ -517,6 +517,12 @@ CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';
 GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
 ```
 
+Logout from database:
+
+```sql
+exit;
+```
+
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
 
 
@@ -552,6 +558,12 @@ Create a new user and give it all permissions on the newly created database:
 ```sql
 CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';
 GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';
+```
+
+Logout from database:
+
+```sql
+exit;
 ```
 
 Then update the `/etc/zonemaster/backend_config.ini` file accordingly.

@@ -146,7 +146,7 @@ sub parse {
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_set_RPCAPI_enable_add_api_user( 'no' );
-    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
+    $obj->_set_RPCAPI_enable_add_batch_job( 'no' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
 

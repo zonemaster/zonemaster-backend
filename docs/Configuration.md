@@ -59,14 +59,14 @@ Available keys: `enable_add_batch_job`, `enable_add_api_user`.
 
 Boolean value to enable the `enable_add_batch_job` methods of the API.
 
-Accpected values: `yes` (or `true`) or `no` (or `false`),
+Accepted values: `yes` (or `true`) or `no` (or `false`),
 default to `no` (disabled).
 
 ### enable_add_api_user
 
 Boolean value to enable the `add_api_user` method of the API.
 
-Accpected values: `yes` (or `true`) or `no` (or `false`),
+Accepted values: `yes` (or `true`) or `no` (or `false`),
 default to `no` (disabled).
 
 

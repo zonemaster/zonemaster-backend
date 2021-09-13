@@ -529,12 +529,6 @@ password unless the default values are used.
 
 #### A.2. MariaDB installation on Debian and Ubuntu
 
-Install the database engine and its dependencies:
-
-```sh
-sudo apt install mariadb-server libdbd-mysql-perl
-```
-
 Configure Zonemaster::Backend to use the correct database engine:
 
 ```sh
@@ -542,6 +536,12 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 ```
 
 > **Note:** See the [backend configuration] documentation for details.
+
+Install the database engine and its dependencies:
+
+```sh
+sudo apt install mariadb-server libdbd-mysql-perl
+```
 
 To initialize the database (unless you keep an old database) connect to the
 MariaDB server:

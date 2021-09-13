@@ -523,7 +523,8 @@ Logout from database:
 exit;
 ```
 
-Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
+Then update the `/etc/zonemaster/backend_config.ini` file with username and
+password unless the default values are used.
 
 
 #### A.2. MariaDB installation on Debian and Ubuntu
@@ -566,7 +567,8 @@ Logout from database:
 exit;
 ```
 
-Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
+Then update the `/etc/zonemaster/backend_config.ini` file with username and
+password unless the default values are used.
 
 
 #### A.3. MySQL installation on FreeBSD
@@ -625,7 +627,8 @@ Logout from database:
 exit;
 ```
 
-Then update the `/etc/zonemaster/backend_config.ini` file accordingly.
+Then update the `/etc/zonemaster/backend_config.ini` file with username and
+password unless the default values are used.
 
 
 ### B. Installation with PostgreSQL

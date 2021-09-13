@@ -16,6 +16,7 @@ use Zonemaster::Engine::Profile
 requires qw(
   add_api_user_to_db
   add_batch_job
+  create_db
   create_new_batch_job
   create_new_test
   from_config

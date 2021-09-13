@@ -141,8 +141,8 @@ sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 
 #### 3.2.2 Instructions for other engines (CentOS)
 
-See appendices for [MariaDB][MariaDB instructions for CentOS] and
-[PostgreSQL][PostgreSQL instructions for CentOS].
+See appendices for [MariaDB][MariaDB instructions on CentOS] and
+[PostgreSQL][PostgreSQL instructions on CentOS].
 
 
 ### 3.3 Database configuration (CentOS)
@@ -278,8 +278,8 @@ sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 
 #### 4.2.2 Instructions for other engines (Debian/Ubuntu)
 
-See appendices for [MariaDB][MariaDB instructions for Debian] and
-[PostgreSQL][PostgreSQL instructions for Debian].
+See appendices for [MariaDB][MariaDB instructions on Debian] and
+[PostgreSQL][PostgreSQL instructions on Debian].
 
 
 ### 4.3 Database configuration (Debian/Ubuntu)
@@ -399,8 +399,8 @@ install -v -m 755 -o zonemaster -g zonemaster -d /var/db/zonemaster
 
 #### 5.2.2 Instructions for other engines (FreeBSD)
 
-See appendices for [MariaDB][MariaDB instructions for FreeBSD] and
-[PostgreSQL][PostgreSQL instructions for FreeBSD].
+See appendices for [MariaDB][MariaDB instructions on FreeBSD] and
+[PostgreSQL][PostgreSQL instructions on FreeBSD].
 
 
 ### 5.3 Database configuration (FreeBSD)
@@ -777,12 +777,12 @@ Remove the database file and recreate it following the installation instructions
 [Declaration of prerequisites]: https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]: API.md
 [Main Zonemaster repository]: https://github.com/zonemaster/zonemaster/blob/master/README.md
-[MariaDB instructions for CentOS]: #a1-mariadb-installation-for-centos
-[MariaDB instructions for Debian]: #a2-mariadb-installation-for-debian-and-ubuntu
-[MariaDB instructions for FreeBSD]: #a3-mysql-installation-for-freebsd
-[PostgreSQL instructions for CentOS]: #b1-postgresql-installation-for-centos
-[PostgreSQL instructions for Debian]: #b2-postgresql-installation-for-debian-and-ubuntu
-[PostgreSQL instructions for FreeBSD]: #b3-postgresql-installation-for-freebsd
+[MariaDB instructions on CentOS]: #a1-mariadb-installation-on-centos
+[MariaDB instructions on Debian]: #a2-mariadb-installation-on-debian-and-ubuntu
+[MariaDB instructions on FreeBSD]: #a3-mysql-installation-on-freebsd
+[PostgreSQL instructions on CentOS]: #b1-postgresql-installation-on-centos
+[PostgreSQL instructions on Debian]: #b2-postgresql-installation-on-debian-and-ubuntu
+[PostgreSQL instructions on FreeBSD]: #b3-postgresql-installation-on-freebsd
 [Post-installation]: #6-post-installation
 [README.md-upgrade]: /README.md#upgrade
 [Upgrade database]: #7-upgrade-zonemaster-database

@@ -150,8 +150,7 @@ See appendices for [MariaDB][MariaDB instructions for CentOS] and
 Finally initialize the database:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
+sudo -u zonemaster perl $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
 ```
 
 
@@ -288,8 +287,7 @@ See appendices for [MariaDB][MariaDB instructions for Debian] and
 Finally initialize the database:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-sudo -u zonemaster perl create_db.pl
+sudo -u zonemaster perl $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
 ```
 
 
@@ -410,8 +408,7 @@ See appendices for [MariaDB][MariaDB instructions for FreeBSD] and
 Finally initialize the database:
 
 ```sh
-cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
-su -m zonemaster -c "perl create_db.pl"
+su -m zonemaster -c "perl $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl"
 ```
 
 

@@ -27,7 +27,7 @@ STARMAN=`PATH="$PATH:/usr/local/bin" /usr/bin/which starman`
 . /lib/lsb/init-functions
 
 start () {
-    $STARMAN --user=$USER --group=$GROUP --error-log=$LOGFILE --pid=$PIDFILE --listen=$LISTENIP:$LISTENPORT --preload-app --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi || exit 1
+    $STARMAN --listen=$LISTENIP:$LISTENPORT --preload-app --user=$USER --group=$GROUP --pid=$PIDFILE --error-log=$LOGFILE --daemonize $BINDIR/zonemaster_backend_rpcapi.psgi || exit 1
 }
 
 stop () {

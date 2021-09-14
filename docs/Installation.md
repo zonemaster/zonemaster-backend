@@ -730,7 +730,6 @@ sudo apt install libnet-statsd-perl
 ### D.1.3 Installation on Freebsd
 
 ```sh
-# For metrics feature
 cpanm Net::Statsd
 ```
 

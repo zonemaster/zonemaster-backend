@@ -2,7 +2,7 @@
 
 ## Metrics
 
-If [enabled][metrics feature], Statsd compatible metrics are available to use:
+If [enabled][metrics feature], [Statsd][statsd] compatible metrics are available to use:
 
 | Name                                           | Type    |
 | ---------------------------------------------- | ------- |
@@ -16,3 +16,4 @@ If [enabled][metrics feature], Statsd compatible metrics are available to use:
 
 
 [metrics feature]: Installation.md#d1-metrics
+[statsd]:          https://github.com/statsd/statsd

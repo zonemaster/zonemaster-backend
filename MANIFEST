@@ -6,6 +6,7 @@ docs/Configuration.md
 docs/files-description.md
 docs/GettingStarted.md
 docs/Installation.md
+docs/Telemetry.md
 docs/TypographicConventions.md
 docs/upgrade_db_zonemaster_backend_ver_1.0.3.md
 docs/upgrade_db_zonemaster_backend_ver_1.1.0.md
@@ -30,6 +31,7 @@ lib/Zonemaster/Backend/DB/MySQL.pm
 lib/Zonemaster/Backend/DB/PostgreSQL.pm
 lib/Zonemaster/Backend/DB/SQLite.pm
 lib/Zonemaster/Backend/Errors.pm
+lib/Zonemaster/Backend/Metrics.pm
 lib/Zonemaster/Backend/RPCAPI.pm
 lib/Zonemaster/Backend/TestAgent.pm
 lib/Zonemaster/Backend/Translator.pm

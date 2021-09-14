@@ -22,7 +22,7 @@ sub setup {
     my ( $cls, $host, $port ) = @_;
     if (!defined $host) {
         $enable_metrics = 0;
-    } else {
+    } elsif ( $enable_metrics ) {
         $log->info('Enabling metrics module', { host => $host, port => $port });
         $Net::Statsd::HOST = $host;
         $Net::Statsd::PORT = $port;

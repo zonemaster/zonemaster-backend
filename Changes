@@ -1,5 +1,23 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v7.0.0 2021-09-15 (public security release)
+ [Fixes]
+ - By design adding a API user (needed for the batch function) is limited to
+   connections over localhost. With a default GUI installation with reverse
+   proxy all connections are over localhost, which means that adding a API
+   user is publicly available if the GUI is publicly available. If you can
+   add API users, then you can start several large batch jobs which may
+   overload the Zonemaster system. (#838, #850)
+   - Makes RPCAPI use the real remote IP for verification to restore the
+     limitation that the API key can only be added from localhost.
+   - Disables RPCAPI method "add_api_user" by default.
+   - Adds configuration key for "backend_config.ini" to enable RPCAPI method
+     "add_api_user".
+   - Adds configuration key for "backend_config.ini" to disnable RPCAPI method
+     "add_batch_job".
+ - Prevents RPCAPI daemon to recreate workers when workers crashed to do error
+   in configuration file. This is a FreeBSD specific error. (#813, #862)
+
 v6.2.0 2021-05-28 (public release version)
 
  [Features]

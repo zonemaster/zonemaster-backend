@@ -204,7 +204,7 @@ v3.0.0 2019-01-27 (pre-release version)
    * All link references on Github now to zonemaster/zonemaster instead
      of old dotse/zonemaster #443
    * Added missing support for "filter" in "get_test_history" #446
-   * Add a note about the empty string, stating that it's 
+   * Add a note about the empty string, stating that it's
      allowed but deprecated. #413
    * Fixed invalid Zonemaster::Backend::Config call #472
    * Remove geolocation code #462
@@ -249,14 +249,14 @@ v2.0.2 2018-02-23
 v2.0.1 2018-01-12
     Natural Language support
      * Update Translator.pm Add support for Danish "da" in Backend. (#346)
-    
+
     Fixed
      * Workaround for "query of death" problem (#287, #325)
      * Partial fix of leakage of system path information (#334)
      * Fixed the issue that validate_syntax and start_domain_test functions do not correctly validate
        IPv4 and IPv6 addresses (#173, #328)
      * Fixed: Use of uninitialized value $config/$policy (#268, #329)
-     * Fixed incomplete stored data for unit test and fixed bug in 
+     * Fixed incomplete stored data for unit test and fixed bug in
        TestAgent.pm (#337, #342)
      * Fix config and start files (#336)
      * Fixed: ipv4 || ipv4 must be ipv4 || ipv6 (#319, #326)
@@ -327,10 +327,10 @@ v1.0.6 2016-10-11
 	Fixes #155 - Change de preflight test to block only on Basic00
 	Fixes #153 - Improve the batch API (Fixed and added bulk testing methods)
 v1.0.5 2015-12-17
-	Fixes #148 - Use iana_profile.josn instead of iana.json as source file for IANA tests 
+	Fixes #148 - Use iana_profile.josn instead of iana.json as source file for IANA tests
 	Fixes #141 - Database initialisation files (.sql) not updated with the new hash_id column
 	Fixes #138 - The Bacakend's generated JSON is locale dependant
-	Fixes #134 - Bug fix of the crontab job runner 
+	Fixes #134 - Bug fix of the crontab job runner
 	Fixes #127 - The Bakend Translator does not handle non scalar message parameters
 	Fixes #125 - Non numeric IDs for tests
 	Fixes #124 - modified all instances of .SE to IIS
@@ -355,7 +355,7 @@ v1.0.2 2015-05-11
 	Fixes #99 - Fixes #59
 	Fixes #98 - Further updates for Debian instructions 2
 	Fixes #97 - Debian instructions for the backend updated
-	Fixes #96 - Debian-compatible start script 
+	Fixes #96 - Debian-compatible start script
 	Fixes #93 - Make test more robust
 	Fixes #92 - Updates backend install for Debian
 	Fixes #91 - API documentation needs to be improved
@@ -427,7 +427,7 @@ v1.0.0 2014-12-11 Public beta release.
 	Fixes #129 - History should differentiate from delegated, undelegated and batch
 	Fixes #152 - Delay in start of the test (when the same page is used for testing a second domain)
 	Fixes #121 - Does not support Swedish language
-	Fixes #132 - Does not run for all broken domains (e.g. broken.dnssec.ee) 
+	Fixes #132 - Does not run for all broken domains (e.g. broken.dnssec.ee)
 	Fixes #139 - No line-feed in output from GUI
 	Fixes #127 - Does not support IDN 2.0 domains
 	Fixes #117 - Disable both IPv4 and IPv6 possible

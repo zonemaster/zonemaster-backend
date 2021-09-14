@@ -12,12 +12,14 @@ use Readonly;
 
 our @EXPORT_OK = qw(
   untaint_engine_type
+  untaint_bool
 );
 
 our %EXPORT_TAGS = (
     untaint => [
         qw(
           untaint_engine_type
+          untaint_bool
           )
     ],
 );
@@ -37,6 +39,11 @@ Readonly my $PROFILE_NAME_RE        => qr/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a
 Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
+
+# Boolean
+Readonly my $BOOL_TRUE_RE           => qr/^(true|yes)$/i;
+Readonly my $BOOL_FALSE_RE          => qr/^(false|no)$/i;
+Readonly my $BOOL_RE                => qr/^$BOOL_TRUE_RE|$BOOL_FALSE_RE$/i;
 
 sub joi {
     return JSON::Validator::Joi->new;
@@ -134,6 +141,15 @@ case-insensitively.
 sub untaint_engine_type {
     my ( $value ) = @_;
     return _untaint_pat( $value , $ENGINE_TYPE_RE );
+}
+
+sub untaint_bool {
+    my ( $value ) = @_;
+
+    my $ret;
+    $ret = 1 if defined _untaint_pat( $value, $BOOL_TRUE_RE );
+    $ret = 0 if defined _untaint_pat( $value, $BOOL_FALSE_RE );
+    return $ret;
 }
 
 sub _untaint_pat {

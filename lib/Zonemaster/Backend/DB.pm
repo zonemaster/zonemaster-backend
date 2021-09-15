@@ -11,11 +11,12 @@ use Digest::MD5 qw(md5_hex);
 use Encode;
 use Log::Any qw( $log );
 
-use Zonemaster::Engine::Profile
+use Zonemaster::Engine::Profile;
 
 requires qw(
   add_api_user_to_db
   add_batch_job
+  create_db
   create_new_batch_job
   create_new_test
   from_config

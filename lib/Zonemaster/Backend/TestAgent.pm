@@ -11,15 +11,17 @@ use Scalar::Util qw( blessed );
 use File::Slurp;
 use Locale::TextDomain qw[Zonemaster-Backend];
 use Log::Any qw( $log );
+use Time::HiRes qw[time sleep gettimeofday tv_interval];
 
 use Zonemaster::LDNS;
 
 use Zonemaster::Engine;
 use Zonemaster::Engine::Translator;
-use Zonemaster::Backend::Config;
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Util;
 use Zonemaster::Engine::Logger::Entry;
+use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Metrics;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -136,10 +138,21 @@ sub run {
         }
     }
 
+    #Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_duration",  $callback_duration * 1000);
+
+    my $start_time_2 = [ gettimeofday ];
+
     # TODO: Make minimum level configurable
     my @entries = grep { $_->numeric_level >= $numeric{INFO} } @{ Zonemaster::Engine->logger->entries };
 
+    Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_add_result_entry_grep_duration",  tv_interval($start_time_2) * 1000);
+
     $self->{_db}->add_result_entries( $test_id, \@entries);
+
+    my $callback_add_result_entry_duration = tv_interval($start_time_2);
+    Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_add_result_entry_duration", $callback_add_result_entry_duration * 1000);
+
+    #$log->debug("Callback timing for $test_id: $callback_duration / $callback_add_result_entry_duration ");
 
     $self->{_db}->set_test_completed( $test_id );
 

@@ -54,13 +54,13 @@ Health checks are called *tests* in Zonemaster lingo.
 
 ## Protocol
 
-This API is implemented using [JSON-RPC 2.0](http://www.jsonrpc.org/specification).
+This API is implemented using [JSON-RPC 2.0].
 
 JSON-RPC request objects are accepted in the body of HTTP POST requests to any path.
 The HTTP request must contain the header `Content-Type: application/json`.
 
 All JSON-RPC request and response objects have the keys `"jsonrpc"`, `"id"` and `"method"`.
-For details on these, refer to the JSON-RPC 2.0 specification.
+For details on these, refer to the [JSON-RPC 2.0] specification.
 
 
 ### Deviations from JSON-RPC 2.0
@@ -1369,6 +1369,7 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
+[JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
 [Validation error data]:        #validation-error-data

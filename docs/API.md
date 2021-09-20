@@ -1000,7 +1000,7 @@ An object with the following properties:
     `"ERROR"`, but none with `"CRITICAL"`.
   * `"critical"`, if there is at least one message with *severity level*
     `"CRITICAL"`.
-* `"undelegated"`: `1` if the test is undelegated, `0` otherwise.
+* `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
 
 #### `"error"`
 

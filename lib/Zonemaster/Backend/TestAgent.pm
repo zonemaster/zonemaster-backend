@@ -114,20 +114,6 @@ sub run {
             sub {
                 my ( $entry ) = @_;
 
-                # TODO: Make minimum level configurable
-                if ( $entry->numeric_level >= $numeric{INFO} ) {
-                    $log->debug("Adding result entry in database: " . $entry->string);
-
-                    $self->{_db}->add_result_entry( $test_id, {
-                        timestamp => $entry->timestamp,
-                        module    => $entry->module,
-                        testcase  => $entry->testcase,
-                        tag       => $entry->tag,
-                        level     => $entry->numeric_level,
-                        args      => $entry->args // {},
-                    });
-                }
-
                 if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
                     $nbr_testcases_finished++;
                     # limit to max 99%, 100% is reached when data is stored in database
@@ -149,6 +135,11 @@ sub run {
             die "$err\n";    # Don't know what it is, rethrow
         }
     }
+
+    # TODO: Make minimum level configurable
+    my @entries = grep { $_->numeric_level >= $numeric{INFO} } @{ Zonemaster::Engine->logger->entries };
+
+    $self->{_db}->add_result_entries( $test_id, \@entries);
 
     $self->{_db}->set_test_completed( $test_id );
 

@@ -95,19 +95,19 @@ sub run {
             my ( $entry ) = @_;
 
             # TODO: Make minimum level configurable
-            if ( $entry->numeric_level >= $numeric{INFO} ) {
-                $log->debug("Adding result entry in database: " . $entry->string);
+            # if ( $entry->numeric_level >= $numeric{INFO} ) {
+            #     $log->debug("Adding result entry in database: " . $entry->string);
 
-                $self->{_db}->add_result_entry( $test_id, {
-                    timestamp => $entry->timestamp,
-                    module    => $entry->module,
-                    testcase  => $entry->testcase,
-                    tag       => $entry->tag,
-                    level     => $entry->level,
-                    args      => $entry->args // {},
-                });
+            #     $self->{_db}->add_result_entry( $test_id, {
+            #         timestamp => $entry->timestamp,
+            #         module    => $entry->module,
+            #         testcase  => $entry->testcase,
+            #         tag       => $entry->tag,
+            #         level     => $entry->level,
+            #         args      => $entry->args // {},
+            #     });
 
-            }
+            # }
 
             foreach my $trace ( reverse @{ $entry->trace } ) {
                 foreach my $module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
@@ -189,6 +189,10 @@ sub run {
     }
 
     $progress = $self->{_db}->test_progress( $test_id, 100 );
+
+    my @entries = grep { $_->numeric_level >= $numeric{INFO} } @{ Zonemaster::Engine->logger->entries };
+
+    $self->{_db}->add_result_entries( $test_id, \@entries);
 
     return;
 } ## end sub run

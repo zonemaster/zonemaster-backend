@@ -323,6 +323,31 @@ sub add_result_entry {
     return $nb_inserted;
 }
 
+sub add_result_entries {
+    my ( $self, $hash_id, $entries ) = @_;
+    my @records;
+
+    my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
+
+    foreach my $m ( @$entries ) {
+        my $r = [
+            $hash_id,
+            $m->level,
+            $m->module,
+            $m->testcase,
+            $m->tag,
+            $m->timestamp,
+            $json->encode( $m->args // {} ),
+        ];
+
+        push @records, $r;
+    }
+    my $query_values = join ", ", ("(?, ?, ?, ?, ?, ?, ?)") x @records;
+    my $query = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES $query_values";
+    my $sth = $self->dbh->prepare($query);
+    $sth = $sth->execute(map { @$_ } @records);
+}
+
 no Moose::Role;
 
 1;

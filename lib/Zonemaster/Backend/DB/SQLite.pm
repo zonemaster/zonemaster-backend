@@ -78,7 +78,7 @@ sub create_db {
                  nb_retries integer NOT NULL DEFAULT 0
            )
         '
-    ) or die "SQLite Fatal error: " . $dbh->errstr() . "\n";
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );
 
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
@@ -107,7 +107,7 @@ sub create_db {
                  creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
            )
         '
-    ) or die "SQLite Fatal error: " . $dbh->errstr() . "\n";
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'batch_jobs' table", data => $dbh->errstr() );
 
 
     ####################################################################
@@ -121,7 +121,7 @@ sub create_db {
                 user_info json DEFAULT NULL
            )
         '
-    ) or die "SQLite Fatal error: " . $dbh->errstr() . "\n";
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
 
     return 1;
 }

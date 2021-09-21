@@ -117,7 +117,7 @@ sub create_db {
                 nb_retries integer NOT NULL DEFAULT 0
             )
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
 
     # Manually create the index if it does not exist
     # the clause IF NOT EXISTS is not available for PostgreSQL < 9.5
@@ -161,7 +161,7 @@ sub create_db {
                 creation_time timestamp without time zone DEFAULT NOW() NOT NULL
             )
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
 
 
     ####################################################################
@@ -173,7 +173,7 @@ sub create_db {
                 user_info json
             )
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
 
 }
 

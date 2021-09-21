@@ -122,7 +122,7 @@ sub create_db {
             nb_retries integer NOT NULL DEFAULT 0
         ) ENGINE=InnoDB
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'test_results' table", data => $dbh->errstr() );
 
 
     # Manually create the trigger if it does not exist
@@ -188,7 +188,7 @@ sub create_db {
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
         ) ENGINE=InnoDB;
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
 
 
     ####################################################################
@@ -202,7 +202,7 @@ sub create_db {
             user_info blob DEFAULT NULL
         ) ENGINE=InnoDB;
         '
-    );
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 }
 
 sub user_exists_in_db {

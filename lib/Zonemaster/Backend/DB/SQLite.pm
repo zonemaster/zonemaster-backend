@@ -52,10 +52,12 @@ sub DEMOLISH {
 sub create_db {
     my ( $self ) = @_;
 
+    my $dbh = $self->dbh;
+
     ####################################################################
     # TEST RESULTS
     ####################################################################
-    $self->dbh->do(
+    $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
                  id integer PRIMARY KEY AUTOINCREMENT,
                  hash_id VARCHAR(16) DEFAULT NULL,
@@ -74,21 +76,21 @@ sub create_db {
                  nb_retries integer NOT NULL DEFAULT 0
            )
         '
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+    ) or die "SQLite Fatal error: " . $dbh->errstr() . "\n";
 
-    $self->dbh->do(
+    $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
     );
-    $self->dbh->do(
+    $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (params_deterministic_hash)'
     );
-    $self->dbh->do(
+    $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__batch_id_progress ON test_results (batch_id, progress)'
     );
-    $self->dbh->do(
+    $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
     );
-    $self->dbh->do(
+    $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'
     );
 
@@ -96,20 +98,20 @@ sub create_db {
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    $self->dbh->do(
+    $dbh->do(
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                  id integer PRIMARY KEY,
                  username character varying(50) NOT NULL,
                  creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
            )
         '
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+    ) or die "SQLite Fatal error: " . $dbh->errstr() . "\n";
 
 
     ####################################################################
     # USERS
     ####################################################################
-    $self->dbh->do(
+    $dbh->do(
         'CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username varchar(128),
@@ -117,7 +119,7 @@ sub create_db {
                 user_info json DEFAULT NULL
            )
         '
-    ) or die "SQLite Fatal error: " . $self->dbh->errstr() . "\n";
+    ) or die "SQLite Fatal error: " . $dbh->errstr() . "\n";
 
     return 1;
 }

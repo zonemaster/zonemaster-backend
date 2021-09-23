@@ -119,17 +119,17 @@ sub create_schema {
     # RESULT ENTRIES
     ####################################################################
     $dbh->do(
-        'CREATE TABLE IF NOT EXISTS result_entries (
+        "CREATE TABLE IF NOT EXISTS result_entries (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
-            level VARCHAR(15) NOT NULL,
+            level ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL,
             module VARCHAR(255) NOT NULL,
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
             timestamp REAL NOT NULL,
             args BLOB NOT NULL
         ) ENGINE=InnoDB
-        '
+        "
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'result_entries' table", data => $dbh->errstr() );
 
     $indexes = $dbh->selectall_hashref( 'SHOW INDEXES FROM result_entries', 'Key_name' );

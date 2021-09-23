@@ -105,10 +105,14 @@ sub create_schema {
     # RESULT ENTRIES
     ####################################################################
     $dbh->do(
+        "CREATE TYPE log_level AS ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL')"
+    );
+
+    $dbh->do(
         'CREATE TABLE IF NOT EXISTS result_entries (
             id BIGSERIAL PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
-            level VARCHAR(15) NOT NULL,
+            level log_level NOT NULL,
             module VARCHAR(255) NOT NULL,
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
@@ -176,6 +180,7 @@ sub drop_tables {
         $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
         $self->dbh->do( "DROP TABLE IF EXISTS users" );
         $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
+        $self->dbh->do( "DROP TYPE IF EXISTS log_level" );
     }
     finally {
         $self->dbh->do( "SET client_min_messages = ?", undef, $old_client_min_messages );

@@ -136,10 +136,14 @@ sub create_db {
     );
 
     $dbh->do(
+        "CREATE TYPE log_level AS ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL')"
+    );
+
+    $dbh->do(
         'CREATE TABLE result_entries (
             id serial primary key,
             hash_id VARCHAR(16) not null,
-            level varchar(15) not null,
+            leve log_level not null,
             module varchar(255) not null,
             testcase varchar(255) not null,
             tag varchar(255) not null,

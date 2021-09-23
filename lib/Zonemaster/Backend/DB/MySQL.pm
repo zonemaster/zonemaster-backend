@@ -154,17 +154,17 @@ sub create_db {
     );
 
     $dbh->do(
-        'CREATE TABLE result_entries (
+        "CREATE TABLE result_entries (
             id integer AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) not null,
-            level varchar(15) not null,
+            level ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL') not null,
             module varchar(255) not null,
             testcase varchar(255) not null,
             tag varchar(255) not null,
             timestamp real not null,
             args blob not null
         ) ENGINE=InnoDB
-        '
+        "
     );
 
     $dbh->do(

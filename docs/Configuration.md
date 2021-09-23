@@ -67,7 +67,7 @@ default to `no` (disabled).
 Boolean value to enable the `add_api_user` method of the API.
 
 Accepted values: `yes` (or `true`) or `no` (or `false`),
-default to `no` (disabled).
+default to `yes` (enabled).
 
 
 ## DB section

@@ -8,6 +8,7 @@ Run
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
 perl patch_sqlite_db_zonemaster_backend_ver_7.0.0.pl
 ```
+<<<<<<< HEAD
 
 
 ### MySQL (or MariaDB)
@@ -26,3 +27,5 @@ Run
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
 perl patch_postgresql_db_zonemaster_backend_ver_7.0.0.pl
 ```
+=======
+>>>>>>> 10ff7f7 (remove new deps instruction)

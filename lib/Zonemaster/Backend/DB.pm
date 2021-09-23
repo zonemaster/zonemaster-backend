@@ -31,6 +31,30 @@ requires qw(
   get_relative_start_time
 );
 
+has 'data_source_name' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'user' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'password' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'dbhandle' => (
+    is       => 'rw',
+    isa      => 'DBI::db',
+    required => 1,
+);
+
 =head2 get_db_class
 
 Get the database adapter class for the given database type.
@@ -48,6 +72,22 @@ sub get_db_class {
     $db_class->import();
 
     return $db_class;
+}
+
+sub dbh {
+    my ( $self ) = @_;
+
+    if ( !$self->dbhandle->ping ) {
+        my $dbh = $self->_new_dbh(    #
+            $self->data_source_name,
+            $self->user,
+            $self->password,
+        );
+
+        $self->dbhandle( $dbh );
+    }
+
+    return $self->dbhandle;
 }
 
 sub user_exists {

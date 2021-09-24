@@ -46,7 +46,7 @@ sub from_config {
 
 sub DEMOLISH {
     my ( $self ) = @_;
-    $self->dbh->disconnect() if $self->dbh;
+    $self->dbh->disconnect() if defined $self->dbhandle && $self->dbhandle->ping;
 }
 
 sub create_db {

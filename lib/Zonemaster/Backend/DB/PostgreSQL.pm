@@ -135,6 +135,27 @@ sub create_db {
         "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))"
     );
 
+    $dbh->do(
+        'CREATE TABLE result_entries (
+            id serial primary key,
+            hash_id VARCHAR(16) not null,
+            level varchar(15) not null,
+            module varchar(255) not null,
+            testcase varchar(255) not null,
+            tag varchar(255) not null,
+            timestamp real not null,
+            args json not null
+        )
+        '
+    );
+
+    $dbh->do(
+        'CREATE INDEX result_entries__hash_id ON result_entries (hash_id)'
+    );
+
+    $dbh->do(
+        'CREATE INDEX result_entries__level ON result_entries (level)'
+    );
 
     ####################################################################
     # BATCH JOBS
@@ -198,8 +219,9 @@ sub test_progress {
     if ( $progress ) {
         if ($progress == 1) {
             $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
-        }
-        else {
+        } elsif ($progress == 100) {
+            $dbh->do( "UPDATE test_results SET progress=?, test_end_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+        } else {
             $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
     }
@@ -292,13 +314,9 @@ sub get_test_params {
 }
 
 sub test_results {
-    my ( $self, $test_id, $results ) = @_;
+    my ( $self, $test_id ) = @_;
 
     my $dbh = $self->dbh;
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100",
-        undef, $results, $test_id )
-      if ( $results );
-
     my $result;
 
     my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
@@ -350,9 +368,9 @@ sub get_test_history {
     my @results;
     my $query = "
         SELECT
-            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 5) AS nb_critical,
-            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 4) AS nb_error,
-            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 3) AS nb_warning,
+            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 'CRITICAL') AS nb_critical,
+            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 'ERROR') AS nb_error,
+            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 'WARNING') AS nb_warning,
             id,
             hash_id,
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
@@ -471,12 +489,6 @@ sub select_unfinished_tests {
     }
 }
 
-sub process_unfinished_tests_give_up {
-    my ( $self, $result, $hash_id ) = @_;
-
-    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
-}
-
 sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
 
@@ -487,22 +499,6 @@ sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
 
     return $self->dbh->selectrow_array("SELECT EXTRACT(EPOCH FROM now() - test_start_time) FROM test_results WHERE hash_id=?", undef, $hash_id);
-}
-
-sub add_result_entry {
-    my ( $self, $hash_id, $entry ) = @_;
-    my $nb_inserted = $self->dbh->do(
-        "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        undef,
-        $hash_id,
-        $entry->{level},
-        $entry->{module},
-        $entry->{testcase},
-        $entry->{tag},
-        $entry->{timestamp},
-        encode_json( $entry->{args} ),
-    );
-    return $nb_inserted;
 }
 
 no Moose;

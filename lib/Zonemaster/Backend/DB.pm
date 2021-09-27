@@ -22,7 +22,6 @@ requires qw(
   from_config
   get_test_history
   get_test_params
-  process_unfinished_tests_give_up
   select_unfinished_tests
   test_progress
   test_results
@@ -142,37 +141,32 @@ sub process_unfinished_tests {
             $self->schedule_for_retry($h->{hash_id});
         }
         else {
-            $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
+            $self->force_end_test($h->{hash_id}, $test_run_timeout);
         }
     }
 }
 
 sub force_end_test {
-    my ( $self, $hash_id, $results, $timestamp ) = @_;
-    my $result;
-    if ( defined $results && $results =~ /^\[/ ) {
-        $result = decode_json( $results );
-    }
-    else {
-        $result = [];
-    }
-    push @$result,
-        {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "UNABLE_TO_FINISH_TEST",
-        "timestamp" => $timestamp,
-        };
-    $self->process_unfinished_tests_give_up($result, $hash_id);
+    my ( $self, $hash_id, $timestamp ) = @_;
+
+    $self->add_result_entry( $hash_id, {
+        timestamp => $timestamp,
+        module    => 'BACKEND_TEST_AGENT',
+        testcase  => '',
+        tag       => 'UNABLE_TO_FINISH_TEST',
+        level     => 'CRITICAL',
+        args      => {},
+    });
+    $self->test_progress($hash_id, 100);
 }
 
 sub process_dead_test {
     my ( $self, $hash_id, $test_run_max_retries ) = @_;
-    my ( $nb_retries, $results ) = $self->dbh->selectrow_array("SELECT nb_retries, results FROM test_results WHERE hash_id = ?", undef, $hash_id);
+    my ( $nb_retries ) = $self->dbh->selectrow_array("SELECT nb_retries FROM test_results WHERE hash_id = ?", undef, $hash_id);
     if ( $nb_retries < $test_run_max_retries) {
         $self->schedule_for_retry($hash_id);
     } else {
-        $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
+        $self->force_end_test($hash_id, $self->get_relative_start_time($hash_id));
     }
 }
 
@@ -310,6 +304,24 @@ sub undelegated {
     return 0;
 }
 
+sub add_result_entry {
+    my ( $self, $hash_id, $entry ) = @_;
+
+    my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
+
+    my $nb_inserted = $self->dbh->do(
+        "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        undef,
+        $hash_id,
+        $entry->{level},
+        $entry->{module},
+        $entry->{testcase},
+        $entry->{tag},
+        $entry->{timestamp},
+        $json->encode( $entry->{args} ),
+    );
+    return $nb_inserted;
+}
 
 no Moose::Role;
 

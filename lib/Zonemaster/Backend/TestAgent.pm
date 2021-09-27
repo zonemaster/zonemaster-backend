@@ -94,21 +94,19 @@ sub run {
         sub {
             my ( $entry ) = @_;
 
+            # TODO: Make minimum level configurable
             if ( $entry->numeric_level >= $numeric{INFO} ) {
-                $log->info($entry->string);
-                eval {
-                    $self->{_db}->add_result_entry( $test_id, {
-                        timestamp => $entry->timestamp,
-                        module    => $entry->module,
-                        testcase  => $entry->testcase,
-                        tag       => $entry->tag,
-                        level     => $entry->numeric_level,
-                        args      => $entry->args // {},
-                    });
-                };
-                if ($@) {
-                    $log->error($@);
-                }
+                $log->debug("Adding result entry in database: " . $entry->string);
+
+                $self->{_db}->add_result_entry( $test_id, {
+                    timestamp => $entry->timestamp,
+                    module    => $entry->module,
+                    testcase  => $entry->testcase,
+                    tag       => $entry->tag,
+                    level     => $entry->level,
+                    args      => $entry->args // {},
+                });
+
             }
 
             foreach my $trace ( reverse @{ $entry->trace } ) {
@@ -179,6 +177,7 @@ sub run {
     }
 
     # Actually run tests!
+    die Zonemaster::Backend::Error::Internal->new( reason => "called with results");
     eval { Zonemaster::Engine->test_zone( $domain ); };
     if ( $@ ) {
         my $err = $@;
@@ -190,9 +189,7 @@ sub run {
         }
     }
 
-    $self->{_db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
-
-    $progress = $self->{_db}->test_progress( $test_id );
+    $progress = $self->{_db}->test_progress( $test_id, 100 );
 
     return;
 } ## end sub run

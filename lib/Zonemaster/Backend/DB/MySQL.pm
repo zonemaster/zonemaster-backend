@@ -153,6 +153,28 @@ sub create_db {
         'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
     );
 
+    $dbh->do(
+        'CREATE TABLE result_entries (
+            id integer AUTO_INCREMENT PRIMARY KEY,
+            hash_id VARCHAR(16) not null,
+            level varchar(15) not null,
+            module varchar(255) not null,
+            testcase varchar(255) not null,
+            tag varchar(255) not null,
+            timestamp real not null,
+            args blob not null
+        ) ENGINE=InnoDB
+        '
+    );
+
+    $dbh->do(
+        'CREATE INDEX result_entries__hash_id ON result_entries (hash_id)'
+    );
+
+    $dbh->do(
+        'CREATE INDEX result_entries__level ON result_entries (level)'
+    );
+
 
     ####################################################################
     # BATCH JOBS
@@ -301,6 +323,9 @@ sub test_progress {
         if ($progress == 1) {
             $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
+        elsif ($progress == 100) {
+            $dbh->do( "UPDATE test_results SET progress=?, test_end_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+        }
         else {
             $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
         }
@@ -331,28 +356,28 @@ sub get_test_params {
 }
 
 sub test_results {
-    my ( $self, $test_id, $new_results ) = @_;
-
-    if ( $new_results ) {
-        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100],
-            undef, $new_results, $test_id );
-    }
+    my ( $self, $test_id ) = @_;
 
     my $result;
-    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, CONVERT_TZ(`creation_time`, \@\@session.time_zone, '+00:00') AS creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
+    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, CONVERT_TZ(`creation_time`, \@\@session.time_zone, '+00:00') AS creation_time, params FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
     $result            = $hrefs->{$test_id};
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
         unless defined $result;
 
+    my @result_entries = $self->dbh->selectall_array( "SELECT level, module, testcase, tag, timestamp, args FROM result_entries WHERE hash_id=?", { Slice => {} }, $test_id );
+
     eval {
         $result->{params}  = decode_json( $result->{params} );
 
-        if (defined $result->{results}) {
-            $result->{results} = decode_json( $result->{results} );
-        } else {
-            $result->{results} = [];
-        }
+        @result_entries = map {
+            {
+                %$_,
+                args => decode_json( $_->{args} ),
+            }
+        } @result_entries;
+
+        $result->{results} = \@result_entries;
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
@@ -361,73 +386,52 @@ sub test_results {
     return $result;
 }
 
+
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my @results;
-    my $sth = {};
+    my $dbh = $self->dbh;
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
-        $undelegated = 1;
+        $undelegated = "AND undelegated = 1";
     } elsif ($p->{filter} eq "delegated") {
-        $undelegated = 0;
+        $undelegated = "AND undelegated = 0";
     }
 
-    if ($p->{filter} eq "all") {
-        $sth = $self->dbh->prepare(
-            q[SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                results
-            FROM
-                test_results
-            WHERE
-                domain = ?
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?]
-        );
-        $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
-    } else {
-        $sth = $self->dbh->prepare(
-            q[SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                results
-            FROM
-                test_results
-            WHERE
-                domain = ?
-                AND undelegated = ?
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?]
-        );
-        $sth->execute( $p->{frontend_params}{domain}, $undelegated, $p->{limit}, $p->{offset} );
-    }
-
-    while ( my $h = $sth->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results}) if $h->{results};
-        $h->{params} = decode_json($h->{params}) if $h->{params};
-        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
-        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
-        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
-
-        # More important overwrites
-        my $overall = 'ok';
-        $overall = 'warning'  if $warning;
-        $overall = 'error'    if $error;
-        $overall = 'critical' if $critical;
+    my @results;
+    my $query = "
+        SELECT
+            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 'CRITICAL') AS nb_critical,
+            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 'ERROR') AS nb_error,
+            (SELECT count(*) FROM result_entries where result_entries.hash_id = test_results.hash_id AND level = 'WARNING') AS nb_warning,
+            id,
+            hash_id,
+            CONVERT_TZ(`creation_time`, \@\@session.time_zone, '+00:00') AS creation_time
+        FROM test_results
+        WHERE domain = " . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
+        ORDER BY id DESC
+        LIMIT $p->{limit} OFFSET $p->{offset}";
+    my $sth1 = $dbh->prepare( $query );
+    $sth1->execute;
+    while ( my $h = $sth1->fetchrow_hashref ) {
+        my $overall_result = 'ok';
+        if ( $h->{nb_critical} ) {
+            $overall_result = 'critical';
+        }
+        elsif ( $h->{nb_error} ) {
+            $overall_result = 'error';
+        }
+        elsif ( $h->{nb_warning} ) {
+            $overall_result = 'warning';
+        }
 
         push(
             @results,
             {
                 id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
-                overall_result   => $overall,
+                overall_result   => $overall_result,
             }
         );
     }
@@ -514,12 +518,6 @@ sub select_unfinished_tests {
         );
         return $sth;
     }
-}
-
-sub process_unfinished_tests_give_up {
-    my ( $self, $result, $hash_id ) = @_;
-
-    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
 }
 
 sub schedule_for_retry {

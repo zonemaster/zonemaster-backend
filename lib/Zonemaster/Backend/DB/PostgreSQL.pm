@@ -143,7 +143,7 @@ sub create_db {
         'CREATE TABLE result_entries (
             id serial primary key,
             hash_id VARCHAR(16) not null,
-            leve log_level not null,
+            level log_level not null,
             module varchar(255) not null,
             testcase varchar(255) not null,
             tag varchar(255) not null,

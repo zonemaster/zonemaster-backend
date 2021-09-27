@@ -126,12 +126,6 @@ Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
-If you upgrade and want to keep the database, go to section
-"[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
-then go to section "[Cleaning up the database]" and remove the old database first.
-
-If you keep the database, skip the initialization of the Zonemaster database,
-but if you have removed the old Zonemaster database, then do the initialization.
 
 
 #### 3.2.1 Instructions for SQLite (CentOS)
@@ -263,13 +257,6 @@ Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
-If you upgrade and want to keep the database, go to section 7
-"[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
-then go to section "[Cleaning up the database]" and remove the old database
-first.
-
-If you keep the database, skip the initialization of the Zonemaster database,
-but if you have removed the old Zonemaster database, then do the initialization.
 
 
 #### 4.2.1 Instructions for SQLite (Debian/Ubuntu)
@@ -380,13 +367,6 @@ Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
-If you upgrade and want to keep the database, go to section
-"[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
-then go to section "[Cleaning up the database]" and remove the old database
-first.
-
-If you keep the database, skip the initialization of the Zonemaster database,
-but if you have removed the old Zonemaster database, then do the initialization.
 
 #### 5.2.1 Instructions for SQLite (FreeBSD)
 
@@ -806,7 +786,6 @@ cpanm Net::Statsd
 -------
 
 [Backend configuration]:              Configuration.md
-[Cleaning up the database]:           #10-cleaning-up-the-database
 [Declaration of prerequisites]:       https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]:                       API.md
 [Main Zonemaster repository]:         https://github.com/zonemaster/zonemaster/blob/master/README.md

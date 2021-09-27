@@ -1297,6 +1297,23 @@ A *batch id*.
 * If the given `profile` is not among the [available profiles][Profile sections],
   a user error is returned, see the [profile name section][profile name].
 
+Trying to add a batch when a batch is still running for the current user:
+```json
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "data": {
+      "creation_time": "2021-09-27 07:33:40",
+      "batch_id": 1
+    },
+    "code": -32603,
+    "message": "Batch job still running"
+  },
+  "id": 1
+}
+
+```
+
 Trying to add a batch when wrong user name or API key is used:
 ```json
 {

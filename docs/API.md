@@ -113,8 +113,10 @@ All error states that occur after the RPC method has been identified are reporte
 This API provides three classes of methods:
 
 * *Unrestricted* methods are available to anyone with access to the API.
-* *Authenticated* methods have parameters for username and API key credentials.
-* *Administrative* methods require that the connection to the API is opened from localhost (`127.0.0.1` or `::1`).
+* *Authenticated* methods have parameters for *username* and *api key*
+  credentials.
+* *Administrative* methods require that the connection to the API is opened from
+  localhost (`127.0.0.1` or `::1`).
 
 
 ## Data types
@@ -1100,12 +1102,12 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
-In order to use the [`add_batch_job`](#API-method-add_batch_job) method an API
-user and key must be created by this method.
+In order to use the [`add_batch_job`](#API-method-add_batch_job) method a
+*username* and its *api key* must be added by this method.
 
-This method is not avaialable if [`RPCAPI.enable_add_api_user`] is disabled
+This method is not available if [`RPCAPI.enable_add_api_user`] is disabled
 (disabled by default). This method is not available unless the connection to
-RPCAPI is over localhost.
+RPCAPI is over localhost (*administrative* method).
 
 
 Example request:
@@ -1135,8 +1137,9 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*, required. The name of the user to add.
-* `"api_key"`: An *api key*, required. The API key for the user to add.
+* `"username"`: A *username*, required. The *username* to be added.
+* `"api_key"`: An *api key*, required. The *api key* for the *username* to be
+  added.
 
 
 #### `"result"`
@@ -1224,11 +1227,12 @@ Trying to add a user when the method is disabled:
 Add a new *batch test* composed by a set of *domain name* and a *params* object.
 All the domains will be tested using identical parameters.
 
-This method is not avaialable if [`RPCAPI.enable_add_batch_job`] is disabled
+This method is not available if [`RPCAPI.enable_add_batch_job`] is disabled
 (enabled by default).
 
-API user can be create with the [`add_api_user`](#API-method-add_api_user)
-method. An *api user* can only have one un-finished *batch* at a time.
+A *username* and its *api key* can be added with the
+[`add_api_user`](#API-method-add_api_user) method. A *username* can only have
+one un-finished *batch* at a time.
 
 *Tests* enqueud using this method are assigned a *priority* of 5.
 
@@ -1266,7 +1270,7 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*, required. The name of the account of an authorized user.
+* `"username"`: A *username*, required. The name of the account of an authorized user.
 * `"api_key"`: An *api key*, required. The api_key associated with the username.
 * `"domains"`: A list of *domain names*, required. The domains to be tested.
 * `"test_params"`: As described below, optional. (default: `{}`)
@@ -1293,11 +1297,12 @@ A *batch id*.
 #### `"error"`
 
 * You cannot create a new batch job if a *batch* with unfinished *tests* already
-  exists for this *api user*.
+  exists for this *username*.
 * If the given `profile` is not among the [available profiles][Profile sections],
   a user error is returned, see the [profile name section][profile name].
 
-Trying to add a batch when a batch is still running for the current user:
+Trying to add a batch when a batch is still running for the *username* in the
+request:
 ```json
 {
   "jsonrpc": "2.0",
@@ -1314,7 +1319,7 @@ Trying to add a batch when a batch is still running for the current user:
 
 ```
 
-Trying to add a batch when wrong user name or API key is used:
+Trying to add a batch when wrong *username* or *api key* is used:
 ```json
 {
   "error": {

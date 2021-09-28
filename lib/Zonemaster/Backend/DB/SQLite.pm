@@ -15,11 +15,6 @@ use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
 
-has 'dbh' => (
-    is  => 'rw',
-    isa => 'DBI::db',
-);
-
 =head1 CLASS METHODS
 
 =head2 from_config
@@ -41,14 +36,17 @@ sub from_config {
 
     return $class->new(
         {
-            dbh => $dbh,
+            data_source_name => $data_source_name,
+            user             => '',
+            password         => '',
+            dbhandle         => $dbh,
         }
     );
 }
 
 sub DEMOLISH {
     my ( $self ) = @_;
-    $self->dbh->disconnect() if $self->dbh;
+    $self->dbh->disconnect() if defined $self->dbhandle && $self->dbhandle->ping;
 }
 
 sub create_db {

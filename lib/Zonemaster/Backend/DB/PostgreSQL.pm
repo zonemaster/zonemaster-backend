@@ -14,30 +14,6 @@ use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
 
-has 'data_source_name' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has 'user' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has 'password' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has 'dbhandle' => (
-    is       => 'rw',
-    isa      => 'DBI::db',
-    required => 1,
-);
-
 =head1 CLASS METHODS
 
 =head2 from_config
@@ -73,22 +49,6 @@ sub from_config {
             dbhandle         => $dbh,
         }
     );
-}
-
-sub dbh {
-    my ( $self ) = @_;
-
-    if ( !$self->dbhandle->ping ) {
-        my $dbh = $self->_new_dbh(    #
-            $self->data_source_name,
-            $self->user,
-            $self->password,
-        );
-
-        $self->dbhandle( $dbh );
-    }
-
-    return $self->dbhandle;
 }
 
 sub create_db {

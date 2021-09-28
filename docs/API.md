@@ -1035,10 +1035,12 @@ Example response:
     {
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
+      "undelegated": true,
       "overall_result": "error",
     },
     {
       "id": "32dd4bc0582b6bf9",
+      "undelegated": false,
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
     },
@@ -1089,7 +1091,7 @@ An object with the following properties:
     `"ERROR"`, but none with `"CRITICAL"`.
   * `"critical"`, if there is at least one message with *severity level*
     `"CRITICAL"`.
-
+* `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
 
 #### `"error"`
 

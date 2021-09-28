@@ -508,6 +508,9 @@ sub get_test_history {
         $params->{filter} //= "all";
 
         $results = $self->{db}->get_test_history( $params );
+        my @results = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
+        $results = \@results;
+
     };
     if ($@) {
         handle_exception( $@ );

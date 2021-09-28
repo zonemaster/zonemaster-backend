@@ -31,7 +31,7 @@ use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
-my %json_schemas;
+our %json_schemas;
 our %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
@@ -700,8 +700,6 @@ sub validate_params {
 
     # Customize error message from json validation
     foreach my $err ( @json_validation_error ) {
-        print Data::Dumper::Dumper($err);
-
         my $message = $err->message;
         my @details = @{$err->details};
 

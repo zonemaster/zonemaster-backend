@@ -8,6 +8,7 @@
 ^\.github/pull_request_template\.md$
 ^\.travis\.yml$
 ^docs/internal-documentation/
+^lib/auto/share/dist/
 
 #!start included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.

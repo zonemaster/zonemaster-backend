@@ -1,5 +1,9 @@
-If your zonemaster database was created by a Zonemaster-Backend version smaller than
-v1.0.3, and not upgraded, use the instructions in this file.
+# Upgrade to 1.0.3
+
+## Upgrading the database
+
+If your Zonemaster database was created by a Zonemaster-Backend version smaller than
+v1.0.3, and not upgraded, use the following instructions.
 
 ### FreeBSD
 

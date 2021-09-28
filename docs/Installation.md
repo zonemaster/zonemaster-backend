@@ -454,7 +454,7 @@ Once the number reaches 100% a JSON object is printed and zmtest terminates.
 If you upgrade your Zonemaster installation with a newer version of
 Zonemaster-Backend and keep the database, then you might have to upgrade the
 database to use it with the new version of Zonemaster-Backend. Please see the
-[upgrade][README.md-upgrade] information.
+[Upgrade document].
 
 
 ## 8. Installation with MariaDB
@@ -797,9 +797,7 @@ cpanm Net::Statsd
 [PostgreSQL instructions CentOS]:     #91-postgresql-centos
 [PostgreSQL instructions Debian]:     #92-postgresql-debianubuntu
 [PostgreSQL instructions FreeBSD]:    #93-postgresql-freebsd
-[README.md-upgrade]:                  README.md#upgrade
-[Upgrade Zonemaster database]:        #7-upgrade-zonemaster-database
-[Upgrade database]:                   #7-upgrade-zonemaster-database
+[Upgrade document]:                   Upgrade.md
 [Zonemaster::CLI installation]:       https://github.com/zonemaster/zonemaster-cli/blob/master/docs/Installation.md
 [Zonemaster::Engine installation]:    https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md
 [Zonemaster::Engine]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/README.md

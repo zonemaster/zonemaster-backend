@@ -34,6 +34,27 @@ sub patch_db {
         my $undelegated = $ds_info_values > 0 || $nameservers_values > 0 || 0;
 
         $dbh->do('UPDATE test_results SET undelegated = ? where id = ?', undef, $undelegated, $id);
+
+
+        $dbh->do(q[
+            insert into result_entries (
+                hash_id, args, module, level, tag, timestamp, testcase
+            )
+            (
+                select
+                    hash_id,
+                    (case when res->'args' is null then '{}' else res->'args' end) as args,
+                    res->>'module' as module,
+                    (res->>'level')::log_level as level,
+                    res->>'tag' as tag,
+                    (res->>'timestamp')::real as timestamp,
+                    (case when res->>'testcase' is null then '' else res->>'testcase' end) as testcase
+                from
+                (
+                    select json_array_elements(results) as res, hash_id from test_results
+                ) as s1
+            )
+        ]);
     }
 }
 

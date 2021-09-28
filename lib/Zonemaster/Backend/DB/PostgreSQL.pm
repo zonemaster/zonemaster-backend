@@ -148,7 +148,7 @@ sub create_db {
             testcase varchar(255) not null,
             tag varchar(255) not null,
             timestamp real not null,
-            args json not null
+            args jsonb not null
         )
         '
     );

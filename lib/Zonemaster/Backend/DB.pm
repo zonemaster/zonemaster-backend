@@ -152,7 +152,7 @@ sub force_end_test {
     $self->add_result_entry( $hash_id, {
         timestamp => $timestamp,
         module    => 'BACKEND_TEST_AGENT',
-        testcase  => '',
+        testcase  => 'BACKEND',
         tag       => 'UNABLE_TO_FINISH_TEST',
         level     => 'CRITICAL',
         args      => {},

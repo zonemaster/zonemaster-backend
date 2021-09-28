@@ -124,5 +124,11 @@ before_script:
 script:
     - perl -I./lib ./share/create_db.pl
     - perl Makefile.PL
-    - make distcheck
+    - |
+      make distcheck 1> /tmp/distcheck.stdout 2>/tmp/distcheck.stderr
+      if grep --colour=never 'Not in MANIFEST' /tmp/distcheck.stderr; then
+        /bin/false;
+      else
+        echo "manifest ok";
+      fi
     - make test

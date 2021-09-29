@@ -19,7 +19,7 @@ export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.
 Run
 ```sh
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
-perl patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
+perl patch/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
 ```
 
 ### PostgreSQL

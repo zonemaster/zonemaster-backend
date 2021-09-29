@@ -35,11 +35,11 @@ Current Zonemaster::Backend version | Link to instructions | Comments
  1.0.3 ≤ version < 1.1.0            | [Upgrade to 1.1.0]   |
  1.1.0 ≤ version < 5.0.0            | [Upgrade to 5.0.0]   |
  5.0.0 ≤ version < 5.0.2            | [Upgrade to 5.0.2]   | For MySQL/MariaDB only
- 5.0.2 ≤ version < 7.0.0            | [Upgrade to 7.0.0]   |
+ 5.0.2 ≤ version < 8.0.0            | [Upgrade to 8.0.0]   |
 
 
 [Upgrade to 1.0.3]:  upgrade/upgrade_zonemaster_backend_ver_1.0.3.md
 [Upgrade to 1.1.0]:  upgrade/upgrade_zonemaster_backend_ver_1.1.0.md
 [Upgrade to 5.0.0]:  upgrade/upgrade_zonemaster_backend_ver_5.0.0.md
 [Upgrade to 5.0.2]:  upgrade/upgrade_zonemaster_backend_ver_5.0.2.md
-[Upgrade to 7.0.0]:  upgrade/upgrade_zonemaster_backend_ver_7.0.0.md
+[Upgrade to 8.0.0]:  upgrade/upgrade_zonemaster_backend_ver_8.0.0.md

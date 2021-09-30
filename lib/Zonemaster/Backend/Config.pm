@@ -140,7 +140,6 @@ sub parse {
     $obj->_set_MYSQL_port( '3306' );
     $obj->_set_POSTGRESQL_port( '5432' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
-    $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
@@ -261,9 +260,6 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
         $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
-    }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) ) ) {
-        $obj->_set_ZONEMASTER_maximal_number_of_retries( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) ) ) {
         $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
@@ -558,14 +554,6 @@ L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob
 Returns a number.
 
 
-=head2 ZONEMASTER_maximal_number_of_retries
-
-Get the value of
-L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
-
-Returns a number.
-
-
 =head2 ZONEMASTER_age_reuse_previous_test
 
 Get the value of
@@ -610,7 +598,6 @@ sub LANGUAGE_locale                                     { return %{ $_[0]->{_LAN
 sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
 sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
-sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
@@ -633,7 +620,6 @@ UNITCHECK {
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
     _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
-    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries',                \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );

@@ -49,6 +49,8 @@ share/cleanup-mysql.sql
 share/cleanup-postgres.sql
 share/create_db.pl
 share/freebsd-pwd.conf
+share/initial-mysql.sql
+share/initial-postgres.sql
 share/patch_db_README.txt
 share/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl

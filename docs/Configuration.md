@@ -3,6 +3,9 @@
 ## Table of contents
 
 * [Introduction](#Introduction)
+* [RPCAPI section](#rpcapi-section)
+  * [enable_add_batch_job](#enable_add_batch_job)
+  * [enable_add_api_user](#enable_add_api_user)
 * [DB section](#DB-section)
   * [engine](#engine)
   * [user](#user)

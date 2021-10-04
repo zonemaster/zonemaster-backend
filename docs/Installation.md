@@ -125,8 +125,8 @@ of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
 If you upgrade and want to keep the database, go to section 
-["Upgrade Zonemaster database"] first. If you instead want to start from afresh,
-then go to section ["Cleaning up the database"] and remove the old database first.
+"[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
+then go to section "[Cleaning up the database]" and remove the old database first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
 but if you have removed the old Zonemaster database, then do the initialization.
@@ -155,7 +155,7 @@ See sections for [MariaDB][MariaDB instructions CentOS] and
 
 ### 3.3 Database configuration (CentOS)
 
-Created the database tables:
+Create the database tables:
 
 ```sh
 sudo -u zonemaster $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
@@ -262,8 +262,8 @@ of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
 If you upgrade and want to keep the database, go to section 7
-["Upgrade Zonemaster database"] first. If you instead want to start from afresh,
-then go to section ["Cleaning up the database"] and remove the old database
+"[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
+then go to section "[Cleaning up the database]" and remove the old database
 first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
@@ -293,7 +293,7 @@ See sections for [MariaDB][MariaDB instructions Debian] and
 
 ### 4.3 Database configuration (Debian/Ubuntu)
 
-Created the database tables:
+Create the database tables:
 
 ```sh
 sudo -u zonemaster $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
@@ -380,8 +380,8 @@ of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
 If you upgrade and want to keep the database, go to section
-["Upgrade Zonemaster database"] first. If you instead want to start from afresh,
-then go to section ["Cleaning up the database"] and remove the old database
+"[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
+then go to section "[Cleaning up the database]" and remove the old database
 first.
 
 If you keep the database, skip the initialization of the Zonemaster database,
@@ -415,7 +415,7 @@ See sections for [MariaDB][MariaDB instructions FreeBSD] and
 
 ### 5.3 Database configuration (FreeBSD)
 
-Created the database tables:
+Create the database tables:
 
 ```sh
 su -m zonemaster -c "`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir(qw(Zonemaster-Backend))'`/create_db.pl"
@@ -505,15 +505,15 @@ sudo systemctl start mariadb
 ```
 
 To create the database and the database user (unless you keep an old database)
-run the command. Edit the script first if you want a non-default user name or
-password.
+run the command. Edit the command first if you want a non-default database name,
+user name or password.
 
 ```sh
 sudo mysql -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with username and password
-if non-default values are used.
+Update the `/etc/zonemaster/backend_config.ini` file with database name,
+username and password if non-default values are used.
 
 Now go back to "[Database configuration](#33-database-configuration-centos)"
 to create the database tables and then continue with the steps after that.
@@ -536,15 +536,15 @@ sudo apt install mariadb-server libdbd-mysql-perl
 ```
 
 To create the database and the database user (unless you keep an old database)
-run the command. Edit the script first if you want a non-default user name or
-password.
+run the command. Edit the command first if you want a non-default database name,
+user name or password.
 
 ```sh
 sudo mysql -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with username and password
-if non-default values are used.
+Update the `/etc/zonemaster/backend_config.ini` file with database name, username
+and password if non-default values are used.
 
 Now go back to "[Database configuration](#43-database-configuration-debianubuntu)"
 to create the database tables and then continue with the steps after that.
@@ -585,15 +585,15 @@ when prompted for that.
 ```
 
 To create the database and the database user (unless you keep an old database)
-run the command. Edit the script first if you want a non-default user name or
-password. Use the MySQL root password when prompted.
+run the command. Edit command first if you want a non-default database name,
+user name or password. Use the MySQL root password when prompted.
 
 ```sh
 mysql -u root -p -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with username and password
-if non-default values are used.
+Update the `/etc/zonemaster/backend_config.ini` file with database name, username 
+and password if non-default values are used.
 
 Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
@@ -641,7 +641,7 @@ To create the database and the database user (unless you keep an old database)
 run the command on one line.
 
 ```sh
-sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH ENCODING 'UTF8';"
+sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
 
 Update the `/etc/zonemaster/backend_config.ini` file with username and password
@@ -671,7 +671,7 @@ To create the database and the database user (unless you keep an old database)
 run the command on one line.
 
 ```sh
-sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH ENCODING 'UTF8';"
+sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 
 ```
 
@@ -704,7 +704,8 @@ To create the database and the database user (unless you keep an old database)
 run the command on one line.
 
 ```sh
-psql -U postgres -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH ENCODING 'UTF8';"
+psql -U postgres -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"
+psql -U postgres -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
 
 Update the `/etc/zonemaster/backend_config.ini` file with username and password
@@ -724,6 +725,14 @@ database (obviously taking all data with it).
 
 ### 10.1. MariaDB and MySQL
 
+CentOS, Debian and Ubuntu:
+
+```sh
+sudo mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
+```
+
+FreeBSD (you will get prompted for MySQL password):
+
 ```sh
 mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
 ```
@@ -733,7 +742,7 @@ mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_di
 CentOS, Debian and Ubuntu:
 
 ```sh
-sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/cleanup-postgres.sql # MUST BE VERIFIED!
+sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/cleanup-postgres.sql
 ```
 
 FreeBSD (as root):
@@ -748,9 +757,8 @@ Remove the database file and recreate it following the installation instructions
 
 -------
 
-["Cleaning up the database"]:         #10-cleaning-up-the-database
-["Upgrade Zonemaster database"]:      #7-upgrade-zonemaster-database
 [Backend configuration]:              Configuration.md
+[Cleaning up the database]:           #10-cleaning-up-the-database
 [Declaration of prerequisites]:       https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]:                       API.md
 [Main Zonemaster repository]:         https://github.com/zonemaster/zonemaster/blob/master/README.md
@@ -762,6 +770,7 @@ Remove the database file and recreate it following the installation instructions
 [PostgreSQL instructions Debian]:     #92-postgresql-debianubuntu
 [PostgreSQL instructions FreeBSD]:    #93-postgresql-freebsd
 [README.md-upgrade]:                  README.md#upgrade
+[Upgrade Zonemaster database]:        #7-upgrade-zonemaster-database
 [Upgrade database]:                   #7-upgrade-zonemaster-database
 [Zonemaster::CLI installation]:       https://github.com/zonemaster/zonemaster-cli/blob/master/docs/Installation.md
 [Zonemaster::Engine installation]:    https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md

@@ -361,8 +361,8 @@ install -v -m 755 -d /usr/local/etc/zonemaster
 install -v -m 640 -g zonemaster ./backend_config.ini /usr/local/etc/zonemaster/
 install -v -m 775 -g zonemaster -d /var/log/zonemaster
 install -v -m 775 -g zonemaster -d /var/run/zonemaster
-install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
-install -v -m 755 ./zm_testagent-bsd /usr/local/etc/rc.d/zm_testagent
+install -v -m 755 ./zm-rpcapi.bsd /usr/local/etc/rc.d/zm-rpcapi
+install -v -m 755 ./zm-testagent.bsd /usr/local/etc/rc.d/zm-testagent
 ```
 
 ### 5.2 Database engine installation (FreeBSD)
@@ -412,10 +412,10 @@ su -m zonemaster -c "`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir(
 Enable services at startup and start service:
 
 ```sh
-sysrc zm_rpcapi_enable="YES"
-sysrc zm_testagent_enable="YES"
-service zm_rpcapi start
-service zm_testagent start
+sysrc zm-rpcapi_enable="YES"
+sysrc zm-testagent_enable="YES"
+service zm-rpcapi start
+service zm-testagent start
 ```
 
 ### 5.5 Post-installation (FreeBSD)
@@ -423,8 +423,8 @@ service zm_testagent start
 To check that the running daemons run:
 
 ```sh
-service zm_rpcapi status
-service zm_testagent status
+service zm-rpcapi status
+service zm-testagent status
 ```
 
 See the [post-installation] section for post-installation matters.

@@ -6,7 +6,7 @@
 
 . /etc/rc.subr
 
-name="zm_testagent"
+name="zm-testagent"
 rcvar="${name}_enable"
 
 load_rc_config $name

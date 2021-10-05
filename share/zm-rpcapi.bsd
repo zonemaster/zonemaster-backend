@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# PROVIDE: zm_rpcapi
+# PROVIDE: zm-rpcapi
 # REQUIRE: NETWORKING mysql postgresql
 # KEYWORD: shutdown
 
 . /etc/rc.subr
 
-name="zm_rpcapi"
+name="zm-rpcapi"
 rcvar="${name}_enable"
 
 load_rc_config $name

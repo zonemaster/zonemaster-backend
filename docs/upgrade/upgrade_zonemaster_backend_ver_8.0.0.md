@@ -46,8 +46,8 @@ enable_add_api_user = yes
 
 ## Upgrading init scripts
 
-The `zm-rpcapi` (`zm_rpcapi` on FreeBSD) init script has been updated. It needs
-to be reinstalled.
+The `zm-rpcapi` init script has been updated. It needs to be reinstalled. On
+FreeBSD the scripts have also been renamed with `-` instead of `_`.
 
 ### CentOS
 
@@ -66,8 +66,11 @@ sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 ### FreeBSD
 
 ```
+rm -f /usr/local/etc/rc.d/zm_rpcapi
+rm -f /usr/local/etc/rc.d/zm_testagent
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+install -v -m 755 ./zm-rpcapi.bsd /usr/local/etc/rc.d/zm-rpcapi
+install -v -m 755 ./zm-testagent.bsd /usr/local/etc/rc.d/zm-testagent
 ```
 
 

@@ -500,11 +500,17 @@ sudo systemctl start mariadb
 ```
 
 To create the database and the database user (unless you keep an old database).
-Edit the command first if you want a non-default database name, user name or
-password. Run the command on one line.
+Edit the commands first if you want a non-default database name, user name or
+password. To be safe, run the commands one by one.
 
 ```sh
-sudo mysql -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
+sudo mysql -e "CREATE DATABASE zonemaster;"
+```
+```sh
+sudo mysql -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';"
+```
+```sh
+sudo mysql -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 ```
 
 Update the `/etc/zonemaster/backend_config.ini` file with database name,
@@ -531,11 +537,17 @@ sudo apt install mariadb-server libdbd-mysql-perl
 ```
 
 To create the database and the database user (unless you keep an old database).
-Edit the command first if you want a non-default database name, user name or
-password. Run the command on one line.
+Edit the commands first if you want a non-default database name, user name or
+password. To be safe, run the commands one by one.
 
 ```sh
-sudo mysql -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
+sudo mysql -e "CREATE DATABASE zonemaster;"
+```
+```sh
+sudo mysql -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';"
+```
+```sh
+sudo mysql -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 ```
 
 Update the `/etc/zonemaster/backend_config.ini` file with database name, username
@@ -635,10 +647,13 @@ Install, configure and start database engine:
 
 To create the database and the database user (unless you keep an old database).
 Edit the command first if you want a non-default database name, user name or
-password. Run the command on one line.
+password. To be safe run the commands one by one.
 
 ```sh
-sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
+sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"
+```
+```sh
+sudo -u postgres psql -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
 
 Update the `/etc/zonemaster/backend_config.ini` file with database name, username
@@ -666,10 +681,14 @@ sudo apt install postgresql libdbd-pg-perl
 
 To create the database and the database user (unless you keep an old database).
 Edit the command first if you want a non-default database name, user name or
-password. Run the command on one line.
+password. To be safe run the commands one by one.
 
 ```sh
-sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
+sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"
+
+```
+```sh
+sudo -u postgres psql -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 
 ```
 

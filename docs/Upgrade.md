@@ -7,7 +7,12 @@ Zonemaster::Backend component. An upgrade usually consist of an upgrade script
 to upgrade the database, and instructions to install new dependencies.
 
 
-## 2. Upgrading Zonemaster::Backend
+## 2. Prerequisites
+
+Upgrade Zonemaster::LDNS and Zonemaster::Engine first following instructions
+within the [Zonemaster::Engine installation] document.
+
+## 3. Upgrading Zonemaster::Backend
 
 To upgrade Zonemaster::Backend perform the following tasks:
 
@@ -43,3 +48,4 @@ Current Zonemaster::Backend version | Link to instructions | Comments
 [Upgrade to 5.0.0]:  upgrade/upgrade_zonemaster_backend_ver_5.0.0.md
 [Upgrade to 5.0.2]:  upgrade/upgrade_zonemaster_backend_ver_5.0.2.md
 [Upgrade to 8.0.0]:  upgrade/upgrade_zonemaster_backend_ver_8.0.0.md
+[Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md

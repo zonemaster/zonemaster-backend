@@ -1,5 +1,28 @@
 # Upgrade to 8.0.0
 
+## New dependencies
+
+Depending on the used OS, run the corresponding command.
+
+### FreeBSD
+
+```sh
+pkg install p5-Plack-Middleware-ReverseProxy
+```
+
+### Debian / Ubuntu
+
+```sh
+sudo apt-get install libplack-middleware-reverseproxy-perl
+```
+
+### Centos
+
+```sh
+sudo cpanm Plack::Middleware::ReverseProxy
+```
+
+
 ## Upgrading the database
 
 If your Zonemaster database was created by a Zonemaster-Backend version smaller

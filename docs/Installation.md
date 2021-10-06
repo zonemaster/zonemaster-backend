@@ -424,16 +424,11 @@ su -m zonemaster -c "`perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir(
 
 ### 5.4 Service startup (FreeBSD)
 
-Enable services at startup:
+Enable services at startup and start service:
 
 ```sh
 sysrc zm_rpcapi_enable="YES"
 sysrc zm_testagent_enable="YES"
-```
-
-Start services:
-
-```sh
 service zm_rpcapi start
 service zm_testagent start
 ```
@@ -504,9 +499,9 @@ sudo systemctl enable mariadb
 sudo systemctl start mariadb
 ```
 
-To create the database and the database user (unless you keep an old database)
-run the command. Edit the command first if you want a non-default database name,
-user name or password.
+To create the database and the database user (unless you keep an old database).
+Edit the command first if you want a non-default database name, user name or
+password. Run the command on one line.
 
 ```sh
 sudo mysql -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
@@ -535,9 +530,9 @@ Install the database engine and its dependencies:
 sudo apt install mariadb-server libdbd-mysql-perl
 ```
 
-To create the database and the database user (unless you keep an old database)
-run the command. Edit the command first if you want a non-default database name,
-user name or password.
+To create the database and the database user (unless you keep an old database).
+Edit the command first if you want a non-default database name, user name or
+password. Run the command on one line.
 
 ```sh
 sudo mysql -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
@@ -564,7 +559,7 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/back
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install mysql57-server p5-DBD-mysql
+pkg install -y mysql57-server p5-DBD-mysql
 sysrc mysql_enable="YES"
 service mysql-server start
 ```
@@ -584,9 +579,10 @@ when prompted for that.
 /usr/local/bin/mysqladmin -u root -p password '<selected root password>'
 ```
 
-To create the database and the database user (unless you keep an old database)
-run the command. Edit command first if you want a non-default database name,
-user name or password. Use the MySQL root password when prompted.
+To create the database and the database user (unless you keep an old database).
+Edit the command first if you want a non-default database name, user name or
+password. Run the command on one line.  Use the MySQL root password when
+prompted.
 
 ```sh
 mysql -u root -p -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
@@ -637,15 +633,16 @@ Install, configure and start database engine:
   sudo systemctl start postgresql
   ```
 
-To create the database and the database user (unless you keep an old database)
-run the command on one line.
+To create the database and the database user (unless you keep an old database).
+Edit the command first if you want a non-default database name, user name or
+password. Run the command on one line.
 
 ```sh
 sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with username and password
-if non-default values are used.
+Update the `/etc/zonemaster/backend_config.ini` file with database name, username
+and password if non-default values are used.
 
 Now go back to "[Database configuration](#33-database-configuration-centos)"
 to create the database tables and then continue with the steps after that.
@@ -667,16 +664,17 @@ sudo apt install postgresql libdbd-pg-perl
 
 > **Note:** See the [backend configuration] documentation for details.
 
-To create the database and the database user (unless you keep an old database)
-run the command on one line.
+To create the database and the database user (unless you keep an old database).
+Edit the command first if you want a non-default database name, user name or
+password. Run the command on one line.
 
 ```sh
 sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"  -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with username and password
-if non-default values are used.
+Update the `/etc/zonemaster/backend_config.ini` file with database name, username
+and password if non-default values are used.
 
 Now go back to "[Database configuration](#43-database-configuration-debianubuntu)"
 to create the database tables and then continue with the steps after that.
@@ -694,22 +692,23 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install postgresql12-server p5-DBD-Pg
+pkg install -y postgresql12-server p5-DBD-Pg
 sysrc postgresql_enable="YES"
 service postgresql initdb
 service postgresql start
 ```
 
-To create the database and the database user (unless you keep an old database)
-run the command on one line.
+To create the database and the database user (unless you keep an old database).
+Edit the commands first if you want a non-default database name, user name or
+password.
 
 ```sh
 psql -U postgres -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"
 psql -U postgres -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with username and password
-if non-default values are used.
+Update the `/etc/zonemaster/backend_config.ini` file with database name, username
+and password if non-default values are used.
 
 Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
@@ -728,7 +727,7 @@ database (obviously taking all data with it).
 CentOS, Debian and Ubuntu:
 
 ```sh
-sudo mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
+sudo mysql --user=root < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
 ```
 
 FreeBSD (you will get prompted for MySQL password):

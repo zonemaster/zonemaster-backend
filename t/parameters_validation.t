@@ -31,12 +31,12 @@ my $rpcapi = Zonemaster::Backend::RPCAPI->new(
 );
 
 sub test_validation {
-    my ( $method, $test_cases ) = @_;
+    my ( $method_name, $method_schema, $sub_validator, $test_cases ) = @_;
 
-    subtest "Method $method" => sub {
+    subtest "Method $method_name" => sub {
         for my $test_case (@$test_cases) {
             subtest 'Test case: ' . $test_case->{name} => sub {
-                my @res = $rpcapi->validate_params( $method,  $test_case->{input});
+                my @res = $rpcapi->validate_params( $method_schema, $sub_validator, $test_case->{input});
                 is_deeply(\@res, $test_case->{output}, 'Matched validation output' ) or diag( encode_json \@res);
             };
         }
@@ -44,11 +44,11 @@ sub test_validation {
 }
 
 subtest 'Test JSON schema' => sub {
-    local $Zonemaster::Backend::RPCAPI::json_schemas{test_joi} = joi->new->object->strict->props(
+    my $test_joi_schema = joi->new->object->strict->props(
         hostname => joi->new->string->max(10)->required
     );
 
-    local $Zonemaster::Backend::RPCAPI::json_schemas{test_raw_schema} = {
+    my $test_raw_schema = {
         type => 'object',
         additionalProperties => 0,
         required => [ 'hostname' ],
@@ -88,12 +88,12 @@ subtest 'Test JSON schema' => sub {
         }
     ];
 
-    test_validation 'test_joi', $test_cases;
-    test_validation 'test_raw_schema', $test_cases;
+    test_validation 'test_joi', $test_joi_schema, undef, $test_cases;
+    test_validation 'test_raw', $test_raw_schema, undef, $test_cases;
 };
 
 subtest 'Test custom error message' => sub {
-    local $Zonemaster::Backend::RPCAPI::json_schemas{test_custom_error} = {
+    my $test_custom_error_schema = {
         type => 'object',
         additionalProperties => 0,
         required => [ 'hostname' ],
@@ -150,11 +150,11 @@ subtest 'Test custom error message' => sub {
         }
     ];
 
-    test_validation 'test_custom_error', $test_cases;
+    test_validation 'test_custom_error', $test_custom_error_schema, undef, $test_cases;
 };
 
 subtest 'Test extra validators' => sub {
-    local $Zonemaster::Backend::RPCAPI::extra_validators{test_extra_validator} = sub {
+    my $test_extra_validator_sub = sub {
         my ($self, $input) = @_;
         my @errors;
         if ( $input->{answer} != 42 ) {
@@ -164,7 +164,7 @@ subtest 'Test extra validators' => sub {
         return @errors;
     };
 
-    local $Zonemaster::Backend::RPCAPI::json_schemas{test_extra_validator} = {
+    my $test_extra_validator_schema = {
         type => 'object',
         properties => {
             answer => {
@@ -193,5 +193,5 @@ subtest 'Test extra validators' => sub {
         }
     ];
 
-    test_validation 'test_extra_validator', $test_cases;
+    test_validation 'test_extra_validator', $test_extra_validator_schema,  $test_extra_validator_sub, $test_cases;
 };

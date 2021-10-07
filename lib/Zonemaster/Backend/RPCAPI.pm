@@ -507,6 +507,7 @@ sub get_test_results {
 $json_schemas{get_test_history} = {
     type => 'object',
     additionalProperties => 0,
+    required => [ 'frontend_params' ],
     properties => {
         offset => joi->integer->min(0)->compile,
         limit => joi->integer->min(0)->compile,
@@ -668,8 +669,8 @@ sub jsonrpc_validate {
                 }
             };
         }
-
-        my  @error_response = $self->validate_params($jsonrpc_request->{method}, $jsonrpc_request->{params});
+        my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
+        my @error_response = $self->validate_params($method_schema, $sub_validator, $jsonrpc_request->{params});
 
         if ( scalar @error_response ) {
             return {
@@ -688,9 +689,7 @@ sub jsonrpc_validate {
 }
 
 sub validate_params {
-    my ( $self, $method, $params ) = @_;
-    my $method_schema = $json_schemas{$method};
-
+    my ( $self, $method_schema, $sub_validator, $params ) = @_;
     my @error_response = ();
 
     if (blessed $method_schema) {
@@ -733,8 +732,7 @@ sub validate_params {
     }
 
     # Add messages from extra validation function
-    if ( $extra_validators{$method} ) {
-        my $sub_validator = $extra_validators{$method};
+    if ( defined $sub_validator ) {
         push @error_response, $self->$sub_validator($params);
     }
     return @error_response;

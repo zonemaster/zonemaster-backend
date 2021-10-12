@@ -108,7 +108,7 @@ sub create_db {
     }
     if ( not exists($indexes->{test_results__domain_undelegated}) ) {
         $dbh->do(
-            "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)"
+            'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
         );
     }
 

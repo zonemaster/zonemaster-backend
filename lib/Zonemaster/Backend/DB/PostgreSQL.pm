@@ -111,6 +111,13 @@ sub create_db {
             'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
         );
     }
+    if ( not exists($indexes->{test_results__progress_priority_id}) ) {
+        # this index helps speed up query time to retrieve the next test to
+        # perform when using batches
+        $dbh->do(
+            'CREATE INDEX test_results__progress_priority_id ON test_results (progress, priority DESC, id) WHERE (progress = 0)'
+        );
+    }
 
 
     ####################################################################

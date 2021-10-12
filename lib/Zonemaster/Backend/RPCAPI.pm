@@ -575,6 +575,12 @@ sub add_api_user {
         if ( $allow ) {
             $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
         }
+        else {
+            die Zonemaster::Backend::Error::PermissionDenied->new(
+                message => 'Unauthorized to call this method from a remote IP',
+                data => { remote_ip => $remote_ip }
+            );
+        }
     };
     if ($@) {
         handle_exception( $@ );

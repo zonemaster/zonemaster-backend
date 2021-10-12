@@ -68,6 +68,7 @@ share/zm_rpcapi-bsd
 share/zm_testagent-bsd
 t/config.t
 t/db.t
+t/parameters_validation.t
 t/test01.data
 t/test01.t
 t/test_validate_syntax.t

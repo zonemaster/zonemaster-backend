@@ -129,24 +129,60 @@ sub client_version {
     return joi->string->regex( $CLIENT_VERSION_RE );
 }
 sub domain_name {
-    return joi->string->regex( $RELAXED_DOMAIN_NAME_RE );
+    return {
+        type => 'string',
+        pattern => $RELAXED_DOMAIN_NAME_RE,
+        'x-error-message' => 'The domain name contains a character or characters not supported'
+    };
 }
 sub ds_info {
-    return joi->object->strict->props(
-        digest => joi->string->regex($DIGEST_RE)->required,
-        algorithm => joi->integer->min(0)->required,
-        digtype => joi->integer->min(0)->required,
-        keytag => joi->integer->min(0)->required,
-    );
+    return {
+        type => 'object',
+        additionalProperties => 0,
+        required => [ 'digest', 'algorithm', 'digtype', 'keytag' ],
+        properties => {
+            digest => {
+                type => 'string',
+                pattern => $DIGEST_RE,
+                'x-error-message' => 'Invalid digest format'
+            },
+            algorithm => {
+                type => 'number',
+                minimum => 0,
+                'x-error-message' => 'Algorithm must be a positive integer'
+            },
+            digtype => {
+                type => 'number',
+                minimum => 0,
+                'x-error-message' => 'Digest type must be a positive integer'
+            },
+            keytag => {
+                type => 'number',
+                minimum => 0,
+                'x-error-message' => 'Keytag must be a positive integer'
+            }
+        }
+    };
 }
 sub ip_address {
-    return joi->string->regex( $IPADDR_RE );
+    return {
+        type => 'string',
+        pattern => $IPADDR_RE,
+        'x-error-message' => 'Invalid IP address',
+    };
 }
 sub nameserver {
-    return joi->object->strict->props(
-            ns => joi->string->required,
-            ip => ip_address()
-    );
+    return {
+        type => 'object',
+        required => [ 'ns' ],
+        additionalProperties => 0,
+        properties => {
+            ns => {
+                type => 'string'
+            },
+            ip => ip_address
+        }
+    };
 }
 sub priority {
     return joi->integer;
@@ -161,7 +197,11 @@ sub test_id {
     return joi->string->regex( $TEST_ID_RE );
 }
 sub language_tag {
-    return joi->string->regex( $LANGUAGE_RE );
+    return {
+        type => 'string',
+        pattern => $LANGUAGE_RE,
+        'x-error-message' => 'Invalid language tag format'
+    };
 }
 sub username {
     return joi->string->regex( $USERNAME_RE );

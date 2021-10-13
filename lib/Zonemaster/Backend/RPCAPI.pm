@@ -577,7 +577,7 @@ sub add_api_user {
         }
         else {
             die Zonemaster::Backend::Error::PermissionDenied->new(
-                message => 'Unauthorized to call this method from a remote IP',
+                message => 'Call to "add_api_user" method not permitted from a remote IP',
                 data => { remote_ip => $remote_ip }
             );
         }

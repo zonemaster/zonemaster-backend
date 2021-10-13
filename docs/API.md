@@ -1215,7 +1215,7 @@ Trying to add a user over non-localhost:
     "data": {
       "remote_ip": "10.0.0.1"
     },
-    "message": "Unauthorized to call this method from a remote IP"
+    "message": "Call to \"add_api_user\" method not permitted from a remote IP"
   }
 }
 ```

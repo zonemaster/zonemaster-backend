@@ -1208,9 +1208,15 @@ Omitting params:
 Trying to add a user over non-localhost:
 ```json
 {
-  "result": 0,
   "id": 1,
-  "jsonrpc": "2.0"
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32603,
+    "data": {
+      "remote_ip": "10.0.0.1"
+    },
+    "message": "Call to \"add_api_user\" method not permitted from a remote IP"
+  }
 }
 ```
 

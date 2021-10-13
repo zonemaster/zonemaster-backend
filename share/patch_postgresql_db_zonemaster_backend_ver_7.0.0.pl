@@ -57,6 +57,13 @@ sub patch_db {
     };
     print( "Error while updating the index:  " . $@ ) if ($@);
 
+    # New index
+    eval {
+        # clause IF NOT EXISTS available since PostgreSQL >= 9.5
+        $dbh->do( 'CREATE INDEX IF NOT EXISTS test_results__progress_priority_id ON test_results (progress, priority DESC, id) WHERE (progress = 0)' );
+    };
+    print( "Error while creating the index:  " . $@ ) if ($@);
+
     # Update the "domain" column
     $dbh->do( "UPDATE test_results SET domain = (params->>'domain')" );
     # remove default value to "domain" column

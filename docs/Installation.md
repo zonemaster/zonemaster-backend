@@ -25,7 +25,7 @@
 * [6. Post-installation](#6-post-installation)
   * [6.1 Smoke test](#61-smoke-test)
   * [6.2 What to do next?](#62-what-to-do-next)
-* [7. Upgrade Zonemaster database](#7-upgrade-zonemaster-database)
+* [7. Upgrade of Zonemaster Backend](#7-upgrade-of-zonemaster-backend)
 * [8. Installation with MariaDB](#8-installation-with-mariadb)
   * [8.1 MariaDB (CentOS)](#81-mariadb-centos)
   * [8.2. MariaDB (Debian/Ubuntu)](#82-mariadb-debianubuntu)
@@ -449,7 +449,7 @@ Once the number reaches 100% a JSON object is printed and zmtest terminates.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-## 7. Upgrade Zonemaster database
+## 7. Upgrade of Zonemaster Backend
 
 If you upgrade your Zonemaster installation with a newer version of
 Zonemaster-Backend and keep the database, then you might have to upgrade the

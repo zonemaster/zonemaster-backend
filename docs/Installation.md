@@ -25,26 +25,30 @@
 * [6. Post-installation](#6-post-installation)
   * [6.1 Smoke test](#61-smoke-test)
   * [6.2 What to do next?](#62-what-to-do-next)
-* [7. Upgrade of Zonemaster Backend](#7-upgrade-of-zonemaster-backend)
-* [8. Installation with MariaDB](#8-installation-with-mariadb)
-  * [8.1 MariaDB (CentOS)](#81-mariadb-centos)
-  * [8.2. MariaDB (Debian/Ubuntu)](#82-mariadb-debianubuntu)
-  * [8.3. MySQL (FreeBSD)](#83-mysql-freebsd)
-* [9. Installation with PostgreSQL](#9-installation-with-postgresql)
-  * [9.1. PostgreSQL (CentOS)](#91-postgresql-centos)
-  * [9.2. PostgreSQL (Debian/Ubuntu)](#92-postgresql-debianubuntu)
-  * [9.3. PostgreSQL (FreeBSD)](#93-postgresql-freebsd)
-* [10. Cleaning up the database](#10-cleaning-up-the-database)
-  * [10.1. MariaDB and MySQL](#101-mariadb-and-mysql)
-  * [10.2. PostgreSQL](#102-postgresql)
-  * [10.3. SQLite](#103-sqlite)
-* [11. Optional features](#11-optional-features)
-  * [11.1. Metrics](#111-metrics)
+* [7. Installation with MariaDB](#7-installation-with-mariadb)
+  * [7.1 MariaDB (CentOS)](#71-mariadb-centos)
+  * [7.2. MariaDB (Debian/Ubuntu)](#72-mariadb-debianubuntu)
+  * [7.3. MySQL (FreeBSD)](#73-mysql-freebsd)
+* [8. Installation with PostgreSQL](#8-installation-with-postgresql)
+  * [8.1. PostgreSQL (CentOS)](#81-postgresql-centos)
+  * [8.2. PostgreSQL (Debian/Ubuntu)](#82-postgresql-debianubuntu)
+  * [8.3. PostgreSQL (FreeBSD)](#83-postgresql-freebsd)
+* [9. Cleaning up the database](#9-cleaning-up-the-database)
+  * [9.1. MariaDB and MySQL](#91-mariadb-and-mysql)
+  * [9.2. PostgreSQL](#92-postgresql)
+  * [9.3. SQLite](#93-sqlite)
+* [10. Optional features](#10-optional-features)
+  * [10.1. Metrics](#101-metrics)
 
 ## 1. Overview
 
 This document contains all steps needed to install Zonemaster::Backend. For an overview of the
 Zonemaster product, please see the [main Zonemaster Repository].
+
+If you upgrade your Zonemaster installation with a newer version of
+Zonemaster::Backend instead, and want to keep the database, then see the
+[Upgrade document]. Otherwise [remove the database][Removing database] and
+continue with this installation document.
 
 
 ## 2. Prerequisites
@@ -449,20 +453,12 @@ Once the number reaches 100% a JSON object is printed and zmtest terminates.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-## 7. Upgrade of Zonemaster Backend
-
-If you upgrade your Zonemaster installation with a newer version of
-Zonemaster-Backend and keep the database, then you might have to upgrade the
-database to use it with the new version of Zonemaster-Backend. Please see the
-[Upgrade document].
-
-
-## 8. Installation with MariaDB
+## 7. Installation with MariaDB
 
 First follow the installation instructions for the OS in question, and then go
 to this section to install MariaDB.
 
-### 8.1. MariaDB (CentOS)
+### 7.1. MariaDB (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -501,7 +497,7 @@ Now go back to "[Database configuration](#33-database-configuration-centos)"
 to create the database tables and then continue with the steps after that.
 
 
-### 8.2. MariaDB (Debian/Ubuntu)
+### 7.2. MariaDB (Debian/Ubuntu)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -538,7 +534,7 @@ Now go back to "[Database configuration](#43-database-configuration-debianubuntu
 to create the database tables and then continue with the steps after that.
 
 
-### 8.3. MySQL (FreeBSD)
+### 7.3. MySQL (FreeBSD)
 
 > MariaDB is not compatible with Zonemaster on FreeBSD. MySQL is used instead.
 
@@ -588,12 +584,12 @@ Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
 
 
-## 9. Installation with PostgreSQL
+## 8. Installation with PostgreSQL
 
 First follow the installation instructions for the OS in question, and then go
 to this section to install PostgreSQL.
 
-### 9.1. PostgreSQL (CentOS)
+### 8.1. PostgreSQL (CentOS)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -644,7 +640,7 @@ Now go back to "[Database configuration](#33-database-configuration-centos)"
 to create the database tables and then continue with the steps after that.
 
 
-### 9.2. PostgreSQL (Debian/Ubuntu)
+### 8.2. PostgreSQL (Debian/Ubuntu)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -680,7 +676,7 @@ Now go back to "[Database configuration](#43-database-configuration-debianubuntu
 to create the database tables and then continue with the steps after that.
 
 
-### 9.3. PostgreSQL (FreeBSD)
+### 8.3. PostgreSQL (FreeBSD)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -714,7 +710,7 @@ Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
 
 
-## 10. Cleaning up the database
+## 9. Cleaning up the database
 
 If, at some point, you want to delete all traces of Zonemaster in the database,
 you can run the file `cleanup-mysql.sql` or file `cleanup-postgres.sql`
@@ -722,7 +718,7 @@ as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
 database (obviously taking all data with it).
 
-### 10.1. MariaDB and MySQL
+### 9.1. MariaDB and MySQL
 
 CentOS, Debian and Ubuntu:
 
@@ -736,7 +732,7 @@ FreeBSD (you will get prompted for MySQL password):
 mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
 ```
 
-### 10.2. PostgreSQL
+### 9.2. PostgreSQL
 
 CentOS, Debian and Ubuntu:
 
@@ -750,13 +746,13 @@ FreeBSD (as root):
 psql -U postgres -f `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-postgres.sql
 ```
 
-### 10.3. SQLite
+### 9.3. SQLite
 
 Remove the database file and recreate it following the installation instructions above.
 
-## 11. Optional features
+## 10. Optional features
 
-### 11.1 Metrics
+### 10.1 Metrics
 
 Statsd metrics are available, to enable the feature install the additional
 `Net::Statsd` module. See the [configuration][Backend configuration] to
@@ -764,20 +760,20 @@ configure the receiver.
 
 The list of metrics is available in the [Telemetry document][metrics];
 
-### 11.1.1 Installation on Centos
+### 10.1.1 Installation on Centos
 
 ```sh
 sudo cpanm Net::Statsd
 ```
 
-### 11.1.2 Installation on Debian / Ubuntu
+### 10.1.2 Installation on Debian / Ubuntu
 
 
 ```sh
 sudo apt install libnet-statsd-perl
 ```
 
-### 11.1.3 Installation on Freebsd
+### 10.1.3 Installation on Freebsd
 
 ```sh
 cpanm Net::Statsd
@@ -789,14 +785,15 @@ cpanm Net::Statsd
 [Declaration of prerequisites]:       https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]:                       API.md
 [Main Zonemaster repository]:         https://github.com/zonemaster/zonemaster/blob/master/README.md
-[MariaDB instructions CentOS]:        #81-mariadb-centos
-[MariaDB instructions Debian]:        #82-mariadb-debianubuntu
-[MariaDB instructions FreeBSD]:       #83-mysql-freebsd
-[metrics]: Telemetry.md#metrics
+[MariaDB instructions CentOS]:        #71-mariadb-centos
+[MariaDB instructions Debian]:        #72-mariadb-debianubuntu
+[MariaDB instructions FreeBSD]:       #73-mysql-freebsd
+[metrics]:                            Telemetry.md#metrics
 [Post-installation]:                  #6-post-installation
-[PostgreSQL instructions CentOS]:     #91-postgresql-centos
-[PostgreSQL instructions Debian]:     #92-postgresql-debianubuntu
-[PostgreSQL instructions FreeBSD]:    #93-postgresql-freebsd
+[PostgreSQL instructions CentOS]:     #81-postgresql-centos
+[PostgreSQL instructions Debian]:     #82-postgresql-debianubuntu
+[PostgreSQL instructions FreeBSD]:    #83-postgresql-freebsd
+[Removing database]:                  #9-cleaning-up-the-database
 [Upgrade document]:                   Upgrade.md
 [Zonemaster::CLI installation]:       https://github.com/zonemaster/zonemaster-cli/blob/master/docs/Installation.md
 [Zonemaster::Engine installation]:    https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md

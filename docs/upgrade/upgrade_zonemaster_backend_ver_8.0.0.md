@@ -23,6 +23,29 @@ sudo cpanm Plack::Middleware::ReverseProxy
 ```
 
 
+## Upgrading init scripts
+
+Go to the share folder:
+```
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
+```
+
+And then install the `zm-rpcapi` daemon (`zm_rpcapi` on FreeBSD).
+
+### FreeBSD
+
+```
+su -l
+install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
+```
+
+### Debian / Ubuntu / CentOS
+
+```
+sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
+```
+
+
 ## Upgrading the database
 
 If your Zonemaster database was created by a Zonemaster-Backend version smaller

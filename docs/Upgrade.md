@@ -6,6 +6,11 @@ This document contains pointer to instructions on how to upgrade the
 Zonemaster::Backend component. An upgrade usually consist of an upgrade script
 to upgrade the database, and instructions to install new dependencies.
 
+> When upgrading from a version < v6.2.0 to a version ≥ v8.0.0, it is
+> recommended to install the desired version following the [Installation
+> instructions] skipping the part about the database if you want to keep it. To
+> upgrade the database, apply each upgrade instructions one after another (see
+> table below).
 
 ## 2. Prerequisites
 
@@ -43,6 +48,7 @@ Current Zonemaster::Backend version | Link to instructions | Comments
  5.0.2 ≤ version < 8.0.0            | [Upgrade to 8.0.0]   |
 
 
+[Installation instructions]: Installation.md
 [Upgrade to 1.0.3]:  upgrade/upgrade_zonemaster_backend_ver_1.0.3.md
 [Upgrade to 1.1.0]:  upgrade/upgrade_zonemaster_backend_ver_1.1.0.md
 [Upgrade to 5.0.0]:  upgrade/upgrade_zonemaster_backend_ver_5.0.0.md

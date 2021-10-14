@@ -8,6 +8,9 @@
 ^\.github/pull_request_template\.md$
 ^\.travis\.yml$
 ^docs/internal-documentation/
+\.po$
+^share/[^/]*\.mo$
+^share/Zonemaster-Backend.pot$
 
 #!start included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.

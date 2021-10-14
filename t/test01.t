@@ -56,6 +56,9 @@ database = travis_zonemaster
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
+
+[LANGUAGE]
+locale = en_US
 EOF
 
 # Create Zonemaster::Backend::RPCAPI object

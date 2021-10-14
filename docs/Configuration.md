@@ -271,6 +271,11 @@ English is the Zonemaster default language, but it can be blocked
 from being allowed by RPC-API by including some `locale tag` in the
 configuration, but none starting with language code for English ("en").
 
+The first language in the list will be used as the default for the RPC API
+error messages. If translation not available, then the error messages will be
+send untranslated, i.e. in English. See the [API documentation] to know which
+methods support error message localization.
+
 #### Out-of-the-box support
 
 The default installation and configuration supports the
@@ -411,7 +416,7 @@ shelf life of a previous test result, that test result is reused.
 Otherwise a new test request is enqueued.
 
 
-
+[API documentation]:                  API.md
 [DB.database_host]:                   #database_host
 [DB.database_name]:                   #database_name
 [DB.password]:                        #password

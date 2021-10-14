@@ -582,6 +582,24 @@ Returns a number.
 
 =cut
 
+=head2 METRICS_statsd_host
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_host>.
+
+Returns a string.
+
+=cut
+
+=head2 METRICS_statsd_port
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_port>.
+
+Returns a number.
+
+=cut
+
 =head2 RPCAPI_enable_add_api_user
 
 Get the value of

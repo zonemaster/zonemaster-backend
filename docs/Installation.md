@@ -600,8 +600,8 @@ prompted.
 mysql -u root -p -e "CREATE DATABASE zonemaster;" -e "CREATE USER 'zonemaster'@'localhost' IDENTIFIED BY 'zonemaster';" -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with database name, username 
-and password if non-default values are used.
+Update the `/usr/local/etc/zonemaster/backend_config.ini` file with database
+name, username and password if non-default values are used.
 
 Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
@@ -726,8 +726,8 @@ psql -U postgres -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"
 psql -U postgres -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
 
-Update the `/etc/zonemaster/backend_config.ini` file with database name, username
-and password if non-default values are used.
+Update the `/usr/local/etc/zonemaster/backend_config.ini` file with database
+name, username and password if non-default values are used.
 
 Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.

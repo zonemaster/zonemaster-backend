@@ -135,11 +135,17 @@ sub main {
     my $agent = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
 
     while ( !$caught_sigterm ) {
+        my $cleanup_timer = [ gettimeofday ];
+
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
 
         Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.maximum_processes", $self->pm->max_procs);
         Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.running_processes", scalar($self->pm->running_procs));
+
+        Zonemaster::Backend::Metrics::timing("zonemaster.testagent.cleanup_duration_seconds", tv_interval($cleanup_timer) * 1000);
+
+        my $fetch_test_timer = [ gettimeofday ];
 
         my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
         $self->db->process_unfinished_tests(
@@ -147,6 +153,9 @@ sub main {
             $self->config->ZONEMASTER_max_zonemaster_execution_time,
             $self->config->ZONEMASTER_maximal_number_of_retries,
         );
+
+        Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
+
         if ( $id ) {
             $log->info( "Test found: $id" );
             if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process

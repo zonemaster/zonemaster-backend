@@ -6,6 +6,7 @@ use Moose;
 use 5.14.2;
 
 use DBI qw(:utils);
+use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
 
@@ -13,30 +14,6 @@ use Zonemaster::Backend::DB;
 use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
-
-has 'data_source_name' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has 'user' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has 'password' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has 'dbhandle' => (
-    is       => 'rw',
-    isa      => 'DBI::db',
-    required => 1,
-);
 
 =head1 CLASS METHODS
 
@@ -75,49 +52,104 @@ sub from_config {
     );
 }
 
-sub dbh {
+sub create_db {
     my ( $self ) = @_;
 
-    if ( !$self->dbhandle->ping ) {
-        my $dbh = $self->_new_dbh(    #
-            $self->data_source_name,
-            $self->user,
-            $self->password,
-        );
+    my $dbh = $self->dbh;
 
-        $self->dbhandle( $dbh );
+    ####################################################################
+    # TEST RESULTS
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS test_results (
+                id serial PRIMARY KEY,
+                hash_id VARCHAR(16) NOT NULL,
+                domain VARCHAR(255) NOT NULL,
+                batch_id integer,
+                creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
+                test_start_time timestamp without time zone DEFAULT NULL,
+                test_end_time timestamp without time zone DEFAULT NULL,
+                priority integer DEFAULT 10,
+                queue integer DEFAULT 0,
+                progress integer DEFAULT 0,
+                fingerprint varchar(32),
+                params json NOT NULL,
+                undelegated integer NOT NULL DEFAULT 0,
+                results json,
+                nb_retries integer NOT NULL DEFAULT 0
+            )
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
+
+    # Manually create the index if it does not exist
+    # the clause IF NOT EXISTS is not available for PostgreSQL < 9.5
+
+    # retrieve all indexes by key name
+    my $indexes = $dbh->selectall_hashref( "SELECT indexname FROM pg_indexes WHERE tablename = 'test_results'", 'indexname' );
+    if ( not exists($indexes->{test_results__hash_id}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+        );
+    }
+    if ( not exists($indexes->{test_results__fingerprint}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__fingerprint ON test_results (fingerprint)'
+        );
+    }
+    if ( not exists($indexes->{test_results__batch_id_progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__progress}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__progress ON test_results (progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__domain_undelegated}) ) {
+        $dbh->do(
+            "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)"
+        );
     }
 
-    return $self->dbhandle;
+
+    ####################################################################
+    # BATCH JOBS
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS batch_jobs (
+                id serial PRIMARY KEY,
+                username varchar(50) NOT NULL,
+                creation_time timestamp without time zone DEFAULT NOW() NOT NULL
+            )
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
+
+
+    ####################################################################
+    # USERS
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS users (
+                id serial PRIMARY KEY,
+                username VARCHAR(128),
+                api_key VARCHAR(512)
+            )
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
+
 }
 
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
+sub recent_test_hash_id {
+    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=?", undef, $user );
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > NOW() - ?::interval",
+        undef, $fingerprint, $age_reuse_previous_test
+    );
 
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key ) = @_;
-
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do( "INSERT INTO users (user_info) VALUES (?)", undef, encode_json( { username => $user_name, api_key => $api_key } ) );
-
-    return $nb_inserted;
-}
-
-sub user_authorized {
-    my ( $self, $user, $api_key ) = @_;
-
-    my $dbh = $self->dbh;
-    my $id =
-      $dbh->selectrow_array( "SELECT id FROM users WHERE user_info->>'username'=? AND user_info->>'api_key'=?",
-        undef, $user, $api_key );
-
-    return $id;
+    return $recent_hash_id;
 }
 
 sub test_progress {
@@ -134,88 +166,6 @@ sub test_progress {
     }
 
     my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    return $result;
-}
-
-sub create_new_batch_job {
-    my ( $self, $username ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.creation_time AS batch_creation_time
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id=batch_jobs.id
-                AND username=? WHERE
-                test_results.progress<>100
-            LIMIT 1
-            ", undef, $username );
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
-        if ( $batch_id );
-
-    my ( $new_batch_id ) =
-      $dbh->selectrow_array( "INSERT INTO batch_jobs (username) VALUES (?) RETURNING id", undef, $username );
-
-    return $new_batch_id;
-}
-
-sub create_new_test {
-    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
-    my $dbh = $self->dbh;
-
-    $test_params->{domain} = $domain;
-
-    my $fingerprint = $self->generate_fingerprint( $test_params );
-    my $encoded_params = $self->encode_params( $test_params );
-    my $undelegated = $self->undelegated ( $test_params );
-
-    my $priority    = $test_params->{priority};
-    my $queue_label = $test_params->{queue};
-
-    my $sth = $dbh->prepare( "
-        INSERT INTO test_results (batch_id, priority, queue, params_deterministic_hash, params, undelegated)
-        SELECT ?, ?, ?, ?, ?, ?
-        WHERE NOT EXISTS (
-            SELECT * FROM test_results
-            WHERE params_deterministic_hash = ?
-              AND creation_time > NOW() - ?::interval
-        )" );
-    my $nb_inserted = $sth->execute(    #
-        $batch_id,
-        $priority,
-        $queue_label,
-        $fingerprint,
-        $encoded_params,
-        $undelegated,
-        $fingerprint,
-        sprintf( "%d seconds", $seconds_between_tests_with_same_params ),
-    );
-
-    my ( undef, $hash_id ) = $dbh->selectrow_array(
-        "SELECT id,hash_id FROM test_results WHERE params_deterministic_hash=? ORDER BY id DESC LIMIT 1", undef, $fingerprint );
-
-    return $hash_id;
-}
-
-sub get_test_params {
-    my ( $self, $test_id ) = @_;
-
-    my $result;
-
-    my $dbh = $self->dbh;
-    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $params_json;
-
-    eval { $result = decode_json( encode_utf8( $params_json ) ); };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-        if $@;
 
     return $result;
 }
@@ -283,9 +233,10 @@ sub get_test_history {
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
             id,
             hash_id,
+            undelegated,
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
         FROM test_results
-        WHERE params->>'domain'=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
+        WHERE domain=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
         ORDER BY id DESC
         OFFSET $p->{offset} LIMIT $p->{limit}";
     my $sth1 = $dbh->prepare( $query );
@@ -307,6 +258,7 @@ sub get_test_history {
             {
                 id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
+                undelegated      => $h->{undelegated},
                 overall_result   => $overall_result,
             }
         );
@@ -332,12 +284,12 @@ sub add_batch_job {
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
-        $dbh->do( "DROP INDEX IF EXISTS test_results__params_deterministic_hash" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(batch_id, priority, queue, params_deterministic_hash, params, undelegated) FROM STDIN" );
+        $dbh->do( "COPY test_results(hash_id,domain ,batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -345,15 +297,16 @@ sub add_batch_job {
             my $encoded_params = $self->encode_params( $test_params );
             my $undelegated = $self->undelegated ( $test_params );
 
-            $dbh->pg_putcopydata("$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
+            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+            $dbh->pg_putcopydata("$hash_id\t$test_params->{domain}\t$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
-        $dbh->do( "CREATE INDEX test_results__params_deterministic_hash ON test_results (params_deterministic_hash)" );
+        $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
-        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results ((params->>'domain'), (params->>'undelegated'))" );
+        $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
 
         $dbh->commit();
     }
@@ -403,12 +356,6 @@ sub process_unfinished_tests_give_up {
     my ( $self, $result, $hash_id ) = @_;
 
     $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
-}
-
-sub schedule_for_retry {
-    my ( $self, $hash_id ) = @_;
-
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NOW() WHERE hash_id=?", undef, $hash_id);
 }
 
 sub get_relative_start_time {

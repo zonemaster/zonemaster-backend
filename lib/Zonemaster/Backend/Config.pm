@@ -127,7 +127,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS' );
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -145,6 +145,8 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
+    $obj->_set_RPCAPI_enable_add_api_user( 'no' );
+    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
@@ -281,6 +283,12 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
         $obj->_set_METRICS_statsd_port( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+        $obj->_set_RPCAPI_enable_add_api_user( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+        $obj->_set_RPCAPI_enable_add_batch_job( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
         if ( $value ne "" ) {
@@ -574,6 +582,24 @@ Returns a number.
 
 =cut
 
+=head2 RPCAPI_enable_add_api_user
+
+Get the value of
+L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_api_user>.
+
+Return 0 or 1
+
+=cut
+
+=head2 RPCAPI_enable_add_batch_job
+
+Get the value of
+L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_batch_job>.
+
+Return 0 or 1
+
+=cut
+
 # Getters for the properties documented above
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
@@ -598,6 +624,8 @@ sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMA
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
+sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
+sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
@@ -621,6 +649,8 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
     _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
     _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
+    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
+    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
 
 =head2 new_DB

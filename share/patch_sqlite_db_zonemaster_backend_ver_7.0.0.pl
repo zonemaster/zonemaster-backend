@@ -16,6 +16,31 @@ my $dbh = $db->dbh;
 
 
 sub patch_db {
+
+    # since we change the default value for a column, the whole table needs to
+    # be recreated
+    #  1. rename the "test_results" table to "test_results_old"
+    #  2. create the new "test_results" table
+    #  3. populate it with the values from "test_results_old"
+    #  4. remove old table and indexes
+    #  5. recreate the indexes
+    eval {
+        $dbh->do('ALTER TABLE test_results RENAME TO test_results_old');
+
+        # create the table
+        $db->create_db();
+
+        # populate it
+        $dbh->do('INSERT INTO test_results SELECT * FROM test_results_old');
+
+        $dbh->do('DROP TABLE test_results_old');
+
+        # recreate indexes
+        $db->create_db();
+    };
+    print( "Error while updating the 'test_results' table schema:  " . $@ ) if ($@);
+
+    # Update the "undelegated" column
     my $sth1 = $dbh->prepare('SELECT id, params from test_results', undef);
     $sth1->execute;
     while ( my $row = $sth1->fetchrow_hashref ) {
@@ -27,6 +52,25 @@ sub patch_db {
 
         $dbh->do('UPDATE test_results SET undelegated = ? where id = ?', undef, $undelegated, $id);
     }
+
+
+    # in order to properly drop a column, the whole table needs to be recreated
+    #  1. rename the "users" table to "users_old"
+    #  2. create the new "users" table
+    #  3. populate it with the values from "users_old"
+    #  4. remove old table
+    eval {
+        $dbh->do('ALTER TABLE users RENAME TO users_old');
+
+        # create the table
+        $db->create_db();
+
+        # populate it
+        $dbh->do('INSERT INTO users SELECT id, username, api_key FROM users_old');
+
+        $dbh->do('DROP TABLE users_old');
+    };
+    print( "Error while updating the 'users' table schema:  " . $@ ) if ($@);
 }
 
 patch_db();

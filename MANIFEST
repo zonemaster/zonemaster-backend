@@ -42,8 +42,6 @@ MANIFEST			This list of files
 META.yml
 README.md
 script/add-batch-job.pl
-script/create_db_mysql.pl
-script/create_db_postgresql_9.3.pl
 script/zmb
 script/zmtest
 script/zonemaster_backend_rpcapi.psgi
@@ -51,10 +49,8 @@ script/zonemaster_backend_testagent
 share/backend_config.ini
 share/cleanup-mysql.sql
 share/cleanup-postgres.sql
-share/create_db_sqlite.pl
+share/create_db.pl
 share/freebsd-pwd.conf
-share/initial-mysql.sql
-share/initial-postgres.sql
 share/patch_db_README.txt
 share/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
@@ -74,6 +70,7 @@ share/zm_rpcapi-bsd
 share/zm_testagent-bsd
 t/config.t
 t/db.t
+t/parameters_validation.t
 t/test01.data
 t/test01.t
 t/test_validate_syntax.t

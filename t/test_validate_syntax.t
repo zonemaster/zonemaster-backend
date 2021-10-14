@@ -31,6 +31,7 @@ my $engine = Zonemaster::Backend::RPCAPI->new(
 );
 
 my $start_domain_test_validate_syntax = $Zonemaster::Backend::RPCAPI::extra_validators{start_domain_test};
+my $start_domain_test_schema = $Zonemaster::Backend::RPCAPI::json_schemas{start_domain_test};
 
 subtest 'Everything but NoWarnings' => sub {
 
@@ -225,30 +226,30 @@ subtest 'Everything but NoWarnings' => sub {
     $frontend_params->{ds_info}->[0]->{digtype}   = 1;
     $frontend_params->{ds_info}->[0]->{keytag}   = 5000;
 
-    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 0, encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
+    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 0, encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
         or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 'a';
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
-    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid Algorithm Type' ) )
+    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid Algorithm Type' ) )
         or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = '01234567890123456789012345678901234567890';
-    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest length' ) )
+    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid digest length' ) )
         or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
-    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest format' ) )
+    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid digest format' ) )
         or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
     $frontend_params->{ds_info}->[0]->{digtype} = -1;
-    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid digest type' ) )
+    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid digest type' ) )
         or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{digtype} = 1;
     $frontend_params->{ds_info}->[0]->{keytag} = 'not a int';
-    is( scalar $engine->validate_params( "start_domain_test", $frontend_params ), 1, encode_utf8( 'Invalid keytag' ) )
+    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid keytag' ) )
         or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
 };

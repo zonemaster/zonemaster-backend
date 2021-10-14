@@ -54,13 +54,13 @@ Health checks are called *tests* in Zonemaster lingo.
 
 ## Protocol
 
-This API is implemented using [JSON-RPC 2.0](http://www.jsonrpc.org/specification).
+This API is implemented using [JSON-RPC 2.0].
 
 JSON-RPC request objects are accepted in the body of HTTP POST requests to any path.
 The HTTP request must contain the header `Content-Type: application/json`.
 
 All JSON-RPC request and response objects have the keys `"jsonrpc"`, `"id"` and `"method"`.
-For details on these, refer to the JSON-RPC 2.0 specification.
+For details on these, refer to the [JSON-RPC 2.0] specification.
 
 
 ### Deviations from JSON-RPC 2.0
@@ -113,8 +113,10 @@ All error states that occur after the RPC method has been identified are reporte
 This API provides three classes of methods:
 
 * *Unrestricted* methods are available to anyone with access to the API.
-* *Authenticated* methods have parameters for username and API key credentials.
-* *Administrative* methods require that the connection to the API is opened from localhost (`127.0.0.1` or `::1`).
+* *Authenticated* methods have parameters for *username* and *api key*
+  credentials.
+* *Administrative* methods require that the connection to the API is opened from
+  localhost (`127.0.0.1` or `::1`).
 
 
 ## Data types
@@ -201,7 +203,7 @@ Basic data type: string
 
 This parameter is a string that is either
  - a valid IPv4 address in [dot-decimal notation] ;
- - a valid IPv6 address in [recommend text format for IPv6 addresses].
+ - a valid IPv6 address in [recommended text format][RFC 5952] for IPv6 addresses.
 
 ### Language tag
 
@@ -1035,10 +1037,12 @@ Example response:
     {
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
+      "undelegated": true,
       "overall_result": "error",
     },
     {
       "id": "32dd4bc0582b6bf9",
+      "undelegated": false,
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
     },
@@ -1089,7 +1093,7 @@ An object with the following properties:
     `"ERROR"`, but none with `"CRITICAL"`.
   * `"critical"`, if there is at least one message with *severity level*
     `"CRITICAL"`.
-
+* `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
 
 #### `"error"`
 
@@ -1100,13 +1104,13 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
-In order to use advanced api features such as the *batch test*, it's necessaire to previously create an api key.
-This key can be obtained with the creation of a user in the system.
-This function allow the creation of a new user and so, the creation of a new api key.
+In order to use the [`add_batch_job`](#API-method-add_batch_job) method a
+*username* and its *api key* must be added by this method.
 
-Add a new *user*
+This method is not available if [`RPCAPI.enable_add_api_user`] is disabled
+(disabled by default). This method is not available unless the connection to
+RPCAPI is over localhost (*administrative* method).
 
-This method requires the *administrative* *privilege level*.
 
 Example request:
 ```json
@@ -1135,8 +1139,9 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*, required. The name of the user to add.
-* `"api_key"`: An *api key*, required. The API key for the user to add.
+* `"username"`: A *username*, required. The *username* to be added.
+* `"api_key"`: An *api key*, required. The *api key* for the *username* to be
+  added.
 
 
 #### `"result"`
@@ -1145,6 +1150,7 @@ An integer. The value is equal to 1 if the registration is a success, or 0 if it
 
 
 #### `"error"`
+
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
@@ -1152,29 +1158,89 @@ An integer. The value is equal to 1 if the registration is a success, or 0 if it
 Trying to add a already existing user:
 ```json
 {
-  "code": -32603,
-  "message": "User already exists\n"
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "data": {
+      "username": "citron"
+    },
+    "message": "User already exists",
+    "code": -32603
+  }
 }
 ```
 
-Ommitting params:
+Omitting params:
 ```json
 {
-  "message": "username or api_key not provided to the method add_api_user\n",
-  "code": -32603
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": "-32602",
+    "message": "Invalid method parameter(s).",
+    "data": [
+      {
+        "message": "Expected string - got null.",
+        "path": "/api_key"
+      }
+    ]
+  }
 }
 ```
 
+```json
+{
+  "error": {
+    "data": [
+      {
+        "path": "/username",
+        "message": "Expected string - got null."
+      }
+    ],
+    "message": "Invalid method parameter(s).",
+    "code": "-32602"
+  },
+  "jsonrpc": "2.0",
+  "id": 1
+}
+```
+
+Trying to add a user over non-localhost:
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32603,
+    "data": {
+      "remote_ip": "10.0.0.1"
+    },
+    "message": "Call to \"add_api_user\" method not permitted from a remote IP"
+  }
+}
+```
+
+Trying to add a user when the method is disabled:
+```json
+{
+  "error": {
+    "code": -32601,
+    "message": "Procedure 'add_api_user' not found"
+  }
+}
+```
 
 ## API method: `add_batch_job`
 
-Add a run a new *batch test* composed by a set of *domain name* and a *params* object.
+Add a new *batch test* composed by a set of *domain name* and a *params* object.
 All the domains will be tested using identical parameters.
 
-An *api user* can only have one un-finished *batch* at a time.
+This method is not available if [`RPCAPI.enable_add_batch_job`] is disabled
+(enabled by default).
 
-If an identical *test* for a domain was already enqueued and hasn't been started or was enqueued less than 10 minutes earlier,
-no new *test* is enqueued for this domain.
+A *username* and its *api key* can be added with the
+[`add_api_user`](#API-method-add_api_user) method. A *username* can only have
+one un-finished *batch* at a time.
 
 *Tests* enqueud using this method are assigned a *priority* of 5.
 
@@ -1212,7 +1278,7 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*, required. The name of the account of an authorized user.
+* `"username"`: A *username*, required. The name of the account of an authorized user.
 * `"api_key"`: An *api key*, required. The api_key associated with the username.
 * `"domains"`: A list of *domain names*, required. The domains to be tested.
 * `"test_params"`: As described below, optional. (default: `{}`)
@@ -1238,10 +1304,53 @@ A *batch id*.
 
 #### `"error"`
 
-* You can't create a new batch job.
-  A *batch* with unfinished *tests* already exists for this *api user*.
+* You cannot create a new batch job if a *batch* with unfinished *tests* already
+  exists for this *username*.
 * If the given `profile` is not among the [available profiles][Profile sections],
   a user error is returned, see the [profile name section][profile name].
+
+Trying to add a batch when a batch is still running for the *username* in the
+request:
+```json
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "data": {
+      "creation_time": "2021-09-27 07:33:40",
+      "batch_id": 1
+    },
+    "code": -32603,
+    "message": "Batch job still running"
+  },
+  "id": 1
+}
+
+```
+
+Trying to add a batch when wrong *username* or *api key* is used:
+```json
+{
+  "error": {
+    "message": "User not authorized to use batch mode",
+    "code": -32603,
+    "data": {
+      "username": "citron"
+    }
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
+}
+```
+
+Trying to add a batch when the method has been disabled.
+```
+{
+  "error": {
+    "message": "Procedure 'add_batch_job' not found",
+    "code": -32601
+  }
+}
+```
 
 
 ## API method: `get_batch_job_result`
@@ -1367,20 +1476,24 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [Add_batch_job]:                #api-method-add_batch_job
 [DS info]:                      #ds-info
 [Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
+[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
+[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
+[JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
-[Validation error data]:        #validation-error-data
-[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
-[Recommend text format for IPv6 addresses]: https://datatracker.ietf.org/doc/html/rfc5952
-[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
 [Name server]:                  #name-server
 [Privilege levels]:             #privilege-levels
 [Profile name]:                 #profile-name
 [Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
+[RFC 5952]:                     https://datatracker.ietf.org/doc/html/rfc5952
+[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
 [Start_domain_test]:            #api-method-start_domain_test
+[Validation error data]:        #validation-error-data
+[`RPCAPI.enable_add_api_user`]: Configuration.md#enable_add_api_user
+[`RPCAPI.enable_add_batch_job`]: Configuration.md#enable_add_batch_job
 [`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
-[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
+

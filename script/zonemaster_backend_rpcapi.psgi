@@ -129,29 +129,33 @@ my $router = router {
         action => "get_test_history"
     };
 
-############ BATCH MODE ####################
-
-    connect "add_api_user" => {
-        handler => $handler,
-        action => "add_api_user"
-    };
-
-    connect "add_batch_job" => {
-        handler => $handler,
-        action => "add_batch_job"
-    };
-
     connect "get_batch_job_result" => {
         handler => $handler,
         action => "get_batch_job_result"
     };
 };
 
+if ($config->RPCAPI_enable_add_api_user) {
+    $log->info('Enabling add_api_user method');
+    $router->connect("add_api_user", {
+        handler => $handler,
+        action => "add_api_user"
+    });
+}
+
+if ($config->RPCAPI_enable_add_batch_job) {
+    $log->info('Enabling add_batch_job method');
+    $router->connect("add_batch_job", {
+        handler => $handler,
+        action => "add_batch_job"
+    });
+}
+
 my $dispatch = JSON::RPC::Dispatch->new(
     router => $router,
 );
 
-sub {
+my $rpcapi_app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
     my $res = {};
@@ -172,7 +176,7 @@ sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
-            $res = $dispatch->handle_psgi($env, $env->{REMOTE_HOST});
+            $res = $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
             my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
             Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");
             $res;
@@ -191,4 +195,9 @@ sub {
         $res->finalize;
 
     }
+};
+
+builder {
+    enable "Plack::Middleware::ReverseProxy";
+    mount "/" => $rpcapi_app;
 };

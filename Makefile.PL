@@ -33,6 +33,7 @@ requires
   'Try::Tiny'                   => 0.12,
   'Zonemaster::Engine'          => 4.002,
   'Zonemaster::LDNS'            => 2.002,
+  'Plack::Middleware::ReverseProxy' => 0,
   ;
 
 test_requires 'DBD::SQLite';

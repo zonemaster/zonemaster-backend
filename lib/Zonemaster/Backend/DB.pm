@@ -6,28 +6,49 @@ use Moose::Role;
 
 use 5.14.2;
 
-use JSON::PP;
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use JSON::PP;
 use Log::Any qw( $log );
 
-use Zonemaster::Engine::Profile
+use Zonemaster::Engine::Profile;
+use Zonemaster::Backend::Errors;
 
 requires qw(
-  add_api_user_to_db
   add_batch_job
-  create_new_batch_job
-  create_new_test
+  create_db
   from_config
   get_test_history
-  get_test_params
   process_unfinished_tests_give_up
+  recent_test_hash_id
   select_unfinished_tests
   test_progress
   test_results
-  user_authorized
-  user_exists_in_db
   get_relative_start_time
+);
+
+has 'data_source_name' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'user' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'password' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'dbhandle' => (
+    is       => 'rw',
+    isa      => 'DBI::db',
+    required => 1,
 );
 
 =head2 get_db_class
@@ -47,6 +68,22 @@ sub get_db_class {
     $db_class->import();
 
     return $db_class;
+}
+
+sub dbh {
+    my ( $self ) = @_;
+
+    if ( !$self->dbhandle->ping ) {
+        my $dbh = $self->_new_dbh(    #
+            $self->data_source_name,
+            $self->user,
+            $self->password,
+        );
+
+        $self->dbhandle( $dbh );
+    }
+
+    return $self->dbhandle;
 }
 
 sub user_exists {
@@ -76,6 +113,120 @@ sub add_api_user {
 }
 
 # Standard SQL, can be here
+sub create_new_test {
+    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
+
+    my $dbh = $self->dbh;
+
+    $test_params->{domain} = $domain;
+
+    my $fingerprint = $self->generate_fingerprint( $test_params );
+    my $encoded_params = $self->encode_params( $test_params );
+    my $undelegated = $self->undelegated ( $test_params );
+
+    my $hash_id;
+
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
+
+    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
+
+    if ( $recent_hash_id ) {
+        # A recent entry exists, so return its id
+        $hash_id = $recent_hash_id;
+    }
+    else {
+        $hash_id = substr(md5_hex(time().rand()), 0, 16);
+        $dbh->do(
+            "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
+            undef,
+            $hash_id,
+            $batch_id,
+            $priority,
+            $queue_label,
+            $fingerprint,
+            $encoded_params,
+            $test_params->{domain},
+            $undelegated,
+        );
+    }
+
+    return $hash_id;
+}
+
+# Standard SQL, can be here
+sub create_new_batch_job {
+    my ( $self, $username ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
+            SELECT
+                batch_id,
+                batch_jobs.creation_time AS batch_creation_time
+            FROM
+                test_results
+            JOIN batch_jobs
+                ON batch_id = batch_jobs.id
+                AND username = ?
+            WHERE
+                test_results.progress <> 100
+            LIMIT 1
+            ", undef, $username );
+
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+        if ( $batch_id );
+
+    $dbh->do( "INSERT INTO batch_jobs (username) VALUES (?)", undef, $username );
+    my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
+
+    return $new_batch_id;
+}
+
+# Standard SQL, can be here
+sub user_exists_in_db {
+    my ( $self, $user ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        "SELECT id FROM users WHERE username = ?",
+        undef,
+        $user
+    );
+
+    return $id;
+}
+
+# Standard SQL, can be here
+sub add_api_user_to_db {
+    my ( $self, $user_name, $api_key  ) = @_;
+
+    my $dbh = $self->dbh;
+    my $nb_inserted = $dbh->do(
+        "INSERT INTO users (username, api_key) VALUES (?,?)",
+        undef,
+        $user_name,
+        $api_key,
+    );
+
+    return $nb_inserted;
+}
+
+# Standard SQL, can be here
+sub user_authorized {
+    my ( $self, $user, $api_key ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        "SELECT id FROM users WHERE username = ? AND api_key = ?",
+        undef,
+        $user,
+        $api_key
+    );
+
+    return $id;
+}
+
+# Standard SQL, can be here
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
@@ -95,6 +246,29 @@ sub get_test_request {
         $result_id = $hash_id;
     }
     return $result_id;
+}
+
+# Standard SQL, can be here
+sub get_test_params {
+    my ( $self, $test_id ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $params_json ) = $dbh->selectrow_array( "SELECT params FROM test_results WHERE hash_id = ?", undef, $test_id );
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $params_json;
+
+    my $result;
+    eval {
+        # TODO: do we use "encode_utf8" as this was the case in PostgreSQL
+        #       (see commit diff)
+        $result = decode_json( $params_json );
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
+
+    return $result;
 }
 
 # Standatd SQL, can be here
@@ -173,6 +347,19 @@ sub process_dead_test {
     } else {
         $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
     }
+}
+
+=head2 schedule_for_retry
+
+For the test with the given "hash_id" increments its number of retries by 1,
+resets its progress to 0 and its start time to NULL.
+
+=cut
+
+sub schedule_for_retry {
+    my ( $self, $hash_id ) = @_;
+
+    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
 }
 
 # A thin wrapper around DBI->connect to ensure similar behavior across database

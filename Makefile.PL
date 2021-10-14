@@ -9,6 +9,8 @@ bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 # "2.1.0" could be declared as "2.001" but not as "2.1"
 # (see Zonemaster::LDNS below)
 
+configure_requires 'Locale::Msgfmt' => 0.15;
+
 requires
   'Class::Method::Modifiers'    => 1.09,
   'Config::IniFiles'            => 0,
@@ -35,6 +37,7 @@ requires
   'Zonemaster::Engine'          => 4.002,
   'Zonemaster::LDNS'            => 2.002,
   'Plack::Middleware::ReverseProxy' => 0,
+  'Locale::TextDomain'          => 1.20,
   ;
 
 test_requires 'DBD::SQLite';

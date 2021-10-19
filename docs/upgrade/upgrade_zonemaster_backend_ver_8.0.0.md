@@ -1,5 +1,11 @@
 # Upgrade to 8.0.0
 
+On FreeBSD run the following command first to become root:
+
+```sh
+su -l
+```
+
 ## New dependencies
 
 Depending on the used OS, run the corresponding command.
@@ -35,7 +41,6 @@ And then install the `zm-rpcapi` daemon (`zm_rpcapi` on FreeBSD).
 ### FreeBSD
 
 ```
-su -l
 install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 ```
 
@@ -50,6 +55,8 @@ sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 
 If your Zonemaster database was created by a Zonemaster-Backend version smaller
 than v8.0.0, and not upgraded, use the following instructions.
+
+> You may need to run the command with `sudo`.
 
 ### SQLite
 

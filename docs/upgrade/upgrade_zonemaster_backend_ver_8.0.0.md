@@ -29,6 +29,20 @@ pkg install p5-Plack-Middleware-ReverseProxy
 ```
 
 
+## Changes in the ini file
+
+New sections and properties have been added to the `backend_config.ini` file.
+By default the `add_api_user` method is disabled. To enable it, add the
+following to your `backend_config.ini` file:
+
+```
+[RPCAPI]
+enable_add_api_user = yes
+```
+
+> See the [Configuration document] for more information.
+
+
 ## Upgrading init scripts
 
 Go to the share folder:
@@ -90,3 +104,5 @@ Run
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
 perl patch/patch_postgresql_db_zonemaster_backend_ver_8.0.0.pl
 ```
+
+[Configuration document]: ../Configuration.md

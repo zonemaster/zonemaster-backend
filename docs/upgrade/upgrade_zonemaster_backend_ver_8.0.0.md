@@ -56,6 +56,9 @@ sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 If your Zonemaster database was created by a Zonemaster-Backend version smaller
 than v8.0.0, and not upgraded, use the following instructions.
 
+> Depending on the database size this upgrade can take some time (around
+> 30 minutes for a database with 1 million entries)
+
 > You may need to run the command with `sudo`.
 
 ### SQLite

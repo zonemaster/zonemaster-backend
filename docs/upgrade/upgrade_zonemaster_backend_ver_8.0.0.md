@@ -8,7 +8,8 @@ su -l
 
 ## New dependencies
 
-Depending on the used OS, run the corresponding command.
+Zonemaster::Backend requires new dependencies. Depending on the used OS, run
+the corresponding command.
 
 ### Centos
 

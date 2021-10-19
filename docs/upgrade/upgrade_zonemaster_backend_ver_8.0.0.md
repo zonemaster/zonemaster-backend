@@ -10,10 +10,10 @@ su -l
 
 Depending on the used OS, run the corresponding command.
 
-### FreeBSD
+### Centos
 
 ```sh
-pkg install p5-Plack-Middleware-ReverseProxy
+sudo cpanm Plack::Middleware::ReverseProxy
 ```
 
 ### Debian / Ubuntu
@@ -22,10 +22,10 @@ pkg install p5-Plack-Middleware-ReverseProxy
 sudo apt-get install libplack-middleware-reverseproxy-perl
 ```
 
-### Centos
+### FreeBSD
 
 ```sh
-sudo cpanm Plack::Middleware::ReverseProxy
+pkg install p5-Plack-Middleware-ReverseProxy
 ```
 
 
@@ -38,16 +38,22 @@ cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 
 And then install the `zm-rpcapi` daemon (`zm_rpcapi` on FreeBSD).
 
+### CentOS
+
+```
+sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
+```
+
+### Debian / Ubuntu
+
+```
+sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
+```
+
 ### FreeBSD
 
 ```
 install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
-```
-
-### Debian / Ubuntu / CentOS
-
-```
-sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 ```
 
 
@@ -69,7 +75,6 @@ cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backe
 perl patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
 ```
 
-
 ### MySQL (or MariaDB)
 
 Run
@@ -77,7 +82,6 @@ Run
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
 perl patch/patch_mysql_db_zonemaster_backend_ver_8.0.0.pl
 ```
-
 
 ### PostgreSQL
 

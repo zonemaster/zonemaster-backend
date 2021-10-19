@@ -45,28 +45,27 @@ enable_add_api_user = yes
 
 ## Upgrading init scripts
 
-Go to the share folder:
-```
-cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
-```
-
-And then install the `zm-rpcapi` daemon (`zm_rpcapi` on FreeBSD).
+The `zm-rpcapi` (`zm_rpcapi` on FreeBSD) init script has been updated. It needs
+to be reinstalled.
 
 ### CentOS
 
 ```
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 ```
 
 ### Debian / Ubuntu
 
 ```
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 sudo install -v -m 755 ./zm-rpcapi.lsb /etc/init.d/zm-rpcapi
 ```
 
 ### FreeBSD
 
 ```
+cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`
 install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 ```
 

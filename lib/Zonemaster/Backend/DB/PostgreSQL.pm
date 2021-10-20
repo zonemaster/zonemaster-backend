@@ -81,43 +81,26 @@ sub create_db {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
 
-    # Manually create the index if it does not exist
-    # the clause IF NOT EXISTS is not available for PostgreSQL < 9.5
-
-    # retrieve all indexes by key name
-    my $indexes = $dbh->selectall_hashref( "SELECT indexname FROM pg_indexes WHERE tablename = 'test_results'", 'indexname' );
-    if ( not exists($indexes->{test_results__hash_id}) ) {
-        $dbh->do(
-            'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
-        );
-    }
-    if ( not exists($indexes->{test_results__fingerprint}) ) {
-        $dbh->do(
-            'CREATE INDEX test_results__fingerprint ON test_results (fingerprint)'
-        );
-    }
-    if ( not exists($indexes->{test_results__batch_id_progress}) ) {
-        $dbh->do(
-            'CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)'
-        );
-    }
-    if ( not exists($indexes->{test_results__progress}) ) {
-        $dbh->do(
-            'CREATE INDEX test_results__progress ON test_results (progress)'
-        );
-    }
-    if ( not exists($indexes->{test_results__domain_undelegated}) ) {
-        $dbh->do(
-            'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'
-        );
-    }
-    if ( not exists($indexes->{test_results__progress_priority_id}) ) {
-        # this index helps speed up query time to retrieve the next test to
-        # perform when using batches
-        $dbh->do(
-            'CREATE INDEX test_results__progress_priority_id ON test_results (progress, priority DESC, id) WHERE (progress = 0)'
-        );
-    }
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (fingerprint)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__batch_id_progress ON test_results (batch_id, progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'
+    );
+    # this index helps speed up query time to retrieve the next test to
+    # perform when using batches
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__progress_priority_id ON test_results (progress, priority DESC, id) WHERE (progress = 0)'
+    );
 
 
     ####################################################################

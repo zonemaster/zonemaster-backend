@@ -2,7 +2,8 @@
 
 ## Metrics
 
-If [enabled][metrics feature], [Statsd][statsd] compatible metrics are available to use:
+If enabled in the [Metrics section][metrics feature] in the configuration file,
+[Statsd][statsd] compatible metrics are available to use:
 
 | Name                                             | Type    | Description |
 | ------------------------------------------------ | ------- | ----------- |
@@ -67,6 +68,6 @@ StatsD metrics can be integrated to a number of metrics backend like Prometheus 
 
 [metrics feature]: Installation.md#d1-metrics
 [statsd]:          https://github.com/statsd/statsd
-[StatsD exporter]: https://github.com/grafana/statsd_exporter
+[StatsD exporter]: https://github.com/prometheus/statsd_exporter
 [StatsD plugin]:   https://github.com/influxdata/telegraf/tree/master/plugins/inputs/statsd
 [integration guide]: https://github.com/statsd/statsd/blob/master/docs/graphite.md

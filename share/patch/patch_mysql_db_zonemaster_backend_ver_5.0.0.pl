@@ -1,8 +1,5 @@
 use strict;
 use warnings;
-use utf8;
-use Data::Dumper;
-use Encode;
 
 use DBI qw(:utils);
 
@@ -16,10 +13,10 @@ if ( $config->DB_engine ne 'MySQL' ) {
 my $dbh = Zonemaster::Backend::DB::MySQL->from_config( $config )->dbh;
 
 sub patch_db {
-    ############################################################################
-    # Convert column "results" to MEDIUMBLOB so that it can hold larger results
-    ############################################################################
-    $dbh->do( 'ALTER TABLE test_results MODIFY results mediumblob' );
+    ####################################################################
+    # TEST RESULTS
+    ####################################################################
+    $dbh->do( 'ALTER TABLE test_results ADD COLUMN nb_retries INTEGER NOT NULL DEFAULT 0' );
 }
 
 patch_db();

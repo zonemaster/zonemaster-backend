@@ -127,7 +127,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'RPCAPI');
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -149,6 +149,7 @@ sub parse {
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
+    $obj->_set_METRICS_statsd_port( '8125' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -276,6 +277,12 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_host' ) ) ) {
+        $obj->_set_METRICS_statsd_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
+        $obj->_set_METRICS_statsd_port( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
         $obj->_set_RPCAPI_enable_add_api_user( $value );
@@ -575,6 +582,24 @@ Returns a number.
 
 =cut
 
+=head2 METRICS_statsd_host
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_host>.
+
+Returns a string.
+
+=cut
+
+=head2 METRICS_statsd_port
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_port>.
+
+Returns a number.
+
+=cut
+
 =head2 RPCAPI_enable_add_api_user
 
 Get the value of
@@ -615,6 +640,8 @@ sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMA
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
+sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
+sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
 sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
 sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
@@ -638,6 +665,8 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
+    _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
+    _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
     _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }

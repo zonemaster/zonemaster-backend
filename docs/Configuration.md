@@ -29,6 +29,9 @@
   * [database_file](#database_file)
 * [LANGUAGE section](#LANGUAGE-section)
   * [locale](#locale)
+* [METRICS section](#METRICS-section)
+  * [statsd_host](#statsd_host)
+  * [statsd_port](#statsd_port)
 * [PUBLIC PROFILES and PRIVATE PROFILES sections](#PUBLIC-PROFILES-and-PRIVATE-PROFILES-sections)
 * [ZONEMASTER section](#ZONEMASTER-section)
   * [max_zonemaster_execution_time](#max_zonemaster_execution_time)
@@ -310,6 +313,23 @@ to documentation instead.)
 Each locale set in the configuration file, including the implied
 ".UTF-8", must also be installed or activate on the system
 running the RPCAPI daemon for the translation to work correctly.
+
+## METRICS section
+
+### statsd_host
+
+An [LDH domain name] or IP address.
+
+The host name of the machine on which the StatsD receiver is running.
+
+Leave unspecified to disable the metrics.
+
+Note that this feature requires the `Net::Statsd` module to be installed.
+
+### statsd_port
+
+The port the StatsD receiver is listening on.
+Default value: `8125`.
 
 
 ## PUBLIC PROFILES and PRIVATE PROFILES sections

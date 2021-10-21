@@ -38,6 +38,8 @@
   * [10.1. MariaDB and MySQL](#101-mariadb-and-mysql)
   * [10.2. PostgreSQL](#102-postgresql)
   * [10.3. SQLite](#103-sqlite)
+* [11. Optional features](#11-optional-features)
+  * [11.1. Metrics](#111-metrics)
 
 ## 1. Overview
 
@@ -124,7 +126,7 @@ Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
 
 The installation instructions below assumes that this is a new installation.
-If you upgrade and want to keep the database, go to section 
+If you upgrade and want to keep the database, go to section
 "[Upgrade Zonemaster database]" first. If you instead want to start from afresh,
 then go to section "[Cleaning up the database]" and remove the old database first.
 
@@ -342,7 +344,6 @@ Install dependencies available from binary packages:
 pkg install jq p5-Class-Method-Modifiers p5-Config-IniFiles p5-Daemon-Control p5-DBI p5-File-ShareDir p5-File-Slurp p5-HTML-Parser p5-JSON-PP p5-JSON-RPC p5-Moose p5-Parallel-ForkManager p5-Plack p5-Plack-Middleware-ReverseProxy p5-Role-Tiny p5-Router-Simple p5-Starman p5-String-ShellQuote p5-DBD-SQLite p5-Log-Dispatch p5-Log-Any p5-Log-Any-Adapter-Dispatch p5-JSON-Validator p5-YAML-LibYAML p5-Test-NoWarnings
 ```
 <!-- JSON::Validator requires YAML::PP, but p5-JSON-Validator currently lacks a dependency on p5-YAML-LibYAML -->
-
 
 Install Zonemaster::Backend:
 
@@ -583,7 +584,7 @@ already).
 cat /root/.mysql_secret
 ```
 
-Set password for MySQL root (required by MySQL). Use the password from 
+Set password for MySQL root (required by MySQL). Use the password from
 `/root/.mysql_secret` when prompted for password, and then the new password
 when prompted for that.
 
@@ -773,6 +774,35 @@ psql -U postgres -f `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("
 
 Remove the database file and recreate it following the installation instructions above.
 
+## 11. Optional features
+
+### 11.1 Metrics
+
+Statsd metrics are available, to enable the feature install the additional
+`Net::Statsd` module. See the [configuration][Backend configuration] to
+configure the receiver.
+
+The list of metrics is available in the [Telemetry document][metrics];
+
+### 11.1.1 Installation on Centos
+
+```sh
+sudo cpanm Net::Statsd
+```
+
+### 11.1.2 Installation on Debian / Ubuntu
+
+
+```sh
+sudo apt install libnet-statsd-perl
+```
+
+### 11.1.3 Installation on Freebsd
+
+```sh
+cpanm Net::Statsd
+```
+
 -------
 
 [Backend configuration]:              Configuration.md
@@ -783,6 +813,7 @@ Remove the database file and recreate it following the installation instructions
 [MariaDB instructions CentOS]:        #81-mariadb-centos
 [MariaDB instructions Debian]:        #82-mariadb-debianubuntu
 [MariaDB instructions FreeBSD]:       #83-mysql-freebsd
+[metrics]: Telemetry.md#metrics
 [Post-installation]:                  #6-post-installation
 [PostgreSQL instructions CentOS]:     #91-postgresql-centos
 [PostgreSQL instructions Debian]:     #92-postgresql-debianubuntu

@@ -758,7 +758,7 @@ Statsd metrics are available, to enable the feature install the additional
 `Net::Statsd` module. See the [configuration][Backend configuration] to
 configure the receiver.
 
-The list of metrics is available in the [Telemetry document][metrics];
+The list of metrics is available in the [Telemetry document][metrics].
 
 ### 10.1.1 Installation on Centos
 

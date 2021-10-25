@@ -302,21 +302,15 @@ sub get_batch_job_result {
 }
 
 sub process_unfinished_tests {
-    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
+    my ( $self, $queue_label, $test_run_timeout ) = @_;
 
     my $sth1 = $self->select_unfinished_tests(    #
         $queue_label,
         $test_run_timeout,
-        $test_run_max_retries,
     );
 
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{nb_retries} < $test_run_max_retries ) {
-            $self->schedule_for_retry($h->{hash_id});
-        }
-        else {
-            $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
-        }
+        $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
     }
 }
 
@@ -340,26 +334,9 @@ sub force_end_test {
 }
 
 sub process_dead_test {
-    my ( $self, $hash_id, $test_run_max_retries ) = @_;
-    my ( $nb_retries, $results ) = $self->dbh->selectrow_array("SELECT nb_retries, results FROM test_results WHERE hash_id = ?", undef, $hash_id);
-    if ( $nb_retries < $test_run_max_retries) {
-        $self->schedule_for_retry($hash_id);
-    } else {
-        $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
-    }
-}
-
-=head2 schedule_for_retry
-
-For the test with the given "hash_id" increments its number of retries by 1,
-resets its progress to 0 and its start time to NULL.
-
-=cut
-
-sub schedule_for_retry {
     my ( $self, $hash_id ) = @_;
-
-    $self->dbh->do("UPDATE test_results SET nb_retries = nb_retries + 1, progress = 0, test_start_time = NULL WHERE hash_id=?", undef, $hash_id);
+    my ( $results ) = $self->dbh->selectrow_array("SELECT results FROM test_results WHERE hash_id = ?", undef, $hash_id);
+    $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
 }
 
 # A thin wrapper around DBI->connect to ensure similar behavior across database

@@ -308,35 +308,31 @@ sub add_batch_job {
 }
 
 sub select_unfinished_tests {
-    my ( $self, $queue_label, $test_run_timeout, $test_run_max_retries ) = @_;
+    my ( $self, $queue_label, $test_run_timeout ) = @_;
 
     if ( $queue_label ) {
         my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results, nb_retries
+            SELECT hash_id, results
             FROM test_results
             WHERE test_start_time < NOW() - ?::interval
-            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
             sprintf( "%d seconds", $test_run_timeout ),
-            $test_run_max_retries,
             $queue_label,
         );
         return $sth;
     }
     else {
         my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results, nb_retries
+            SELECT hash_id, results
             FROM test_results
             WHERE test_start_time < NOW() - ?::interval
-            AND nb_retries <= ?
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
             sprintf( "%d seconds", $test_run_timeout ),
-            $test_run_max_retries,
         );
         return $sth;
     }

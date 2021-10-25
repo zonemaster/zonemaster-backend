@@ -153,7 +153,6 @@ sub main {
         $self->db->process_unfinished_tests(
             $self->config->ZONEMASTER_lock_on_queue,
             $self->config->ZONEMASTER_max_zonemaster_execution_time,
-            $self->config->ZONEMASTER_maximal_number_of_retries,
         );
 
         Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
@@ -169,7 +168,7 @@ sub main {
                     chomp $@;
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");
                     $log->error( "Test died: $id: $@" );
-                    $self->db->process_dead_test( $id, $self->config->ZONEMASTER_maximal_number_of_retries )
+                    $self->db->process_dead_test( $id )
                 }
                 else {
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");

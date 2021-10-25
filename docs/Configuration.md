@@ -35,7 +35,6 @@
 * [PUBLIC PROFILES and PRIVATE PROFILES sections](#PUBLIC-PROFILES-and-PRIVATE-PROFILES-sections)
 * [ZONEMASTER section](#ZONEMASTER-section)
   * [max_zonemaster_execution_time](#max_zonemaster_execution_time)
-  * [maximal_number_of_retries](#maximal_number_of_retries)
   * [number_of_processes_for_frontend_testing](#number_of_processes_for_frontend_testing)
   * [number_of_processes_for_batch_testing](#number_of_processes_for_batch_testing)
   * [lock_on_queue](#lock_on_queue)
@@ -367,7 +366,6 @@ The ZONEMASTER section has several keys :
 * number_of_processes_for_frontend_testing
 * number_of_processes_for_batch_testing
 * lock_on_queue
-* maximal_number_of_retries
 * age_reuse_previous_test
 
 ### max_zonemaster_execution_time
@@ -376,17 +374,6 @@ A strictly positive integer. Max length 5 digits.
 
 Time in seconds before reporting an unfinished test as failed.
 Default value: `600`.
-
-### maximal_number_of_retries
-
-A non-negative integer. Max length 5 digits.
-
-Number of time a test is allowed to be run again if unfinished after
-`max_zonemaster_execution_time`.
-Default value: `0`.
-
-This option is experimental and all edge cases are not fully tested.
-Do not use it (keep the default value "0"), or use it with care.
 
 ### number_of_processes_for_frontend_testing
 

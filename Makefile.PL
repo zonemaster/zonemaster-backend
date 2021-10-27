@@ -57,8 +57,8 @@ install_script 'zmb';
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';
 
+# Make all platforms include inc/Module/Install/External.pm
 requires_external_bin 'find';
-
 if ($^O eq "freebsd") {
     requires_external_bin 'gmake';
 };

@@ -271,11 +271,6 @@ English is the Zonemaster default language, but it can be blocked
 from being allowed by RPC-API by including some `locale tag` in the
 configuration, but none starting with language code for English ("en").
 
-The first language in the list will be used as the default for the RPC API
-error messages. If translation not available, then the error messages will be
-send untranslated, i.e. in English. See the [API documentation] to know which
-methods support error message localization.
-
 #### Out-of-the-box support
 
 The default installation and configuration supports the

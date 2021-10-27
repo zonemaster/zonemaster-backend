@@ -17,7 +17,8 @@ use Mojo::JSON::Pointer;
 use Scalar::Util qw(blessed);
 use JSON::Validator::Schema::Draft7;
 use Locale::TextDomain qw[Zonemaster-Backend];
-use Locale::Messages qw[setlocale LC_MESSAGES];
+use Locale::Messages qw[LC_MESSAGES LC_ALL];
+use POSIX qw (setlocale);
 use Encode;
 
 # Zonemaster Modules
@@ -677,8 +678,6 @@ sub _get_locale {
 
     if (defined $locale) {
         $locale .= '.UTF-8';
-    } else {
-        $locale = $self->{config}->LANGUAGE_default_locale
     }
 
     return $locale, \@error,
@@ -691,10 +690,13 @@ sub _set_error_message_locale {
     my ($locale, $locale_error) = $self->_get_locale( $params );
     push @error_response, @{$locale_error};
 
-    $locale //= $self->{config}->LANGUAGE_default_locale;
+    if (not defined $locale or $locale eq "") {
+        # Don't translate message if locale is not defined
+        $locale = "C";
+    }
 
-    $ENV{LANGUAGE} = $locale;
-    setlocale( LC_MESSAGES, $locale );
+    # Use POSIX implementation instead of Locale::Messages wrapper
+    setlocale( LC_ALL, $locale );
     return @error_response;
 }
 
@@ -727,7 +729,7 @@ sub jsonrpc_validate {
                 id => $jsonrpc_request->{id},
                 error => {
                     code => '-32602',
-                    message => decode_utf8(__ "Missing 'params' object"),
+                    message => "Missing 'params' object",
                 }
             };
         }

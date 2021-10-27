@@ -687,8 +687,7 @@ An object with the properties:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 * `"language"`: A [Language Tag], optional, used for validation error messages
-  translation, the default value is defined in the [language section]
-  of the configuration.
+  translation, if not provided messages will be untranslated.
 
 #### `"result"`
 
@@ -786,8 +785,7 @@ An object with the following properties:
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
 * `"language"`: A [Language Tag], optional, used for validation error messages
-  translation, the default value is defined in the [language section]
-  of the configuration.
+  translation, if not provided messages will be untranslated.
 
 > TODO: Clarify the purpose of each `"params"` property.
 >

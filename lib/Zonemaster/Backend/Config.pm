@@ -286,13 +286,8 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
         if ( $value ne "" ) {
             $obj->_reset_LANGUAGE_locale();
-            my $default_set = 0;
             for my $locale_tag ( split / +/, $value ) {
                 $obj->_add_LANGUAGE_locale( $locale_tag );
-                if ( not $default_set ) {
-                    $obj->_set_LANGUAGE_default_locale( $locale_tag );
-                    $default_set = 1;
-                }
             }
         }
     }
@@ -512,10 +507,6 @@ E.g.:
         },
     )
 
-=head2 LANGUAGE_default_locale
-Get the first locale passed to the L<locale list|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale> in the configuration file.
-Returns a string.
-
 
 =head2 PUBLIC_PROFILES
 
@@ -616,7 +607,6 @@ sub POSTGRESQL_password                                 { return $_[0]->{_POSTGR
 sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
 sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
 sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
-sub LANGUAGE_default_locale                             { return $_[0]->{_LANGUAGE_default_locale}; }
 sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
 sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
@@ -631,7 +621,6 @@ sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
     _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
-    _create_setter( '_set_LANGUAGE_default_locale',                             '_LANGUAGE_default_locale',                             \&untaint_locale_tag );
     _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_host );
     _create_setter( '_set_MYSQL_port',                                          '_MYSQL_port',                                          \&untaint_strictly_positive_int );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );

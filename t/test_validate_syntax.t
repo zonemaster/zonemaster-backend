@@ -257,15 +257,23 @@ subtest 'Everything but NoWarnings' => sub {
         or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{keytag} = 5000;
-    $frontend_params->{language} = "zz";
-    cmp_ok( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), '>', 0, encode_utf8( 'Invalid language, "zz" unknown' ) )
-        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
-    $frontend_params->{language} = "fr-FR";
-    cmp_ok( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), '>', 0, encode_utf8( 'Invalid language, should be underscore not hyphen' ) )
-        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
+    {
+        $frontend_params->{language} = "zz";
+        my @res = $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params );
+        is( scalar @res, 1, 'Invalid language, "zz" unknown' ) or diag(  explain \@res );
+    }
 
-    $frontend_params->{language} = "nb_NO";
-    is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 0, encode_utf8( 'Valid language' ) )
-        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
+    {
+        $frontend_params->{language} = "fr-FR";
+        my @res = $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params );
+        # Because of the multiple validation layers two messages are returned here, one for the invalid format, the other for the unknown language
+        is( scalar @res, 2, 'Invalid language, should be underscore not hyphen' ) or diag(  explain \@res );
+    }
+
+    {
+        $frontend_params->{language} = "nb_NO";
+        my @res = $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params );
+        is( scalar @res, 0, 'Valid language' ) or diag( explain \@res );
+    }
 };

@@ -1481,7 +1481,6 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
 [LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
-[language section]:             Configuration.md#usage
 [Name server]:                  #name-server
 [Privilege levels]:             #privilege-levels
 [Profile name]:                 #profile-name

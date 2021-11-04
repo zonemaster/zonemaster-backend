@@ -19,7 +19,10 @@ use Plack::Response;
 use Router::Simple::Declare;
 use Try::Tiny;
 
-BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
+BEGIN {
+    $ENV{PERL_JSON_BACKEND} = 'JSON::PP';
+    undef $ENV{LANGUAGE};
+};
 
 use Zonemaster::Backend::RPCAPI;
 use Zonemaster::Backend::Config;

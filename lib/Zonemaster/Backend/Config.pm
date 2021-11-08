@@ -127,7 +127,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'RPCAPI');
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -140,7 +140,6 @@ sub parse {
     $obj->_set_MYSQL_port( '3306' );
     $obj->_set_POSTGRESQL_port( '5432' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
-    $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
@@ -149,6 +148,7 @@ sub parse {
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_add_LANGUAGE_locale( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
+    $obj->_set_METRICS_statsd_port( '8125' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -262,9 +262,6 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
         $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) ) ) {
-        $obj->_set_ZONEMASTER_maximal_number_of_retries( $value );
-    }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) ) ) {
         $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
     }
@@ -276,6 +273,12 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_host' ) ) ) {
+        $obj->_set_METRICS_statsd_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
+        $obj->_set_METRICS_statsd_port( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
         $obj->_set_RPCAPI_enable_add_api_user( $value );
@@ -558,18 +561,28 @@ L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob
 Returns a number.
 
 
-=head2 ZONEMASTER_maximal_number_of_retries
-
-Get the value of
-L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
-
-Returns a number.
-
-
 =head2 ZONEMASTER_age_reuse_previous_test
 
 Get the value of
 L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
+
+Returns a number.
+
+=cut
+
+=head2 METRICS_statsd_host
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_host>.
+
+Returns a string.
+
+=cut
+
+=head2 METRICS_statsd_port
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_port>.
 
 Returns a number.
 
@@ -610,11 +623,12 @@ sub LANGUAGE_locale                                     { return %{ $_[0]->{_LAN
 sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
 sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
-sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
+sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
+sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
 sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
 sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
@@ -633,11 +647,12 @@ UNITCHECK {
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
     _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
-    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries',                \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
+    _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
+    _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
     _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }

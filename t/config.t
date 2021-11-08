@@ -56,7 +56,6 @@ subtest 'Everything but NoWarnings' => sub {
             number_of_processes_for_frontend_testing = 30
             number_of_processes_for_batch_testing    = 40
             lock_on_queue                            = 1
-            maximal_number_of_retries                = 2
             age_reuse_previous_test                  = 800
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
@@ -86,7 +85,6 @@ subtest 'Everything but NoWarnings' => sub {
           },
           'set: PRIVATE PROFILES';
         is $config->ZONEMASTER_max_zonemaster_execution_time,            1200, 'set: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->ZONEMASTER_maximal_number_of_retries,                2,    'set: ZONEMASTER.maximal_number_of_retries';
         is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 30,   'set: ZONEMASTER.number_of_processes_for_frontend_testing';
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    40,   'set: ZONEMASTER.number_of_processes_for_batch_testing';
         is $config->ZONEMASTER_lock_on_queue,                            1,    'set: ZONEMASTER.lock_on_queue';
@@ -109,7 +107,6 @@ subtest 'Everything but NoWarnings' => sub {
         eq_or_diff { $config->PUBLIC_PROFILES }, { default => undef }, 'default: PUBLIC_PROFILES';
         eq_or_diff { $config->PRIVATE_PROFILES }, {}, 'default: PRIVATE_PROFILES';
         is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
-        is $config->ZONEMASTER_maximal_number_of_retries,                0,   'default: ZONEMASTER.maximal_number_of_retries';
         is $config->ZONEMASTER_number_of_processes_for_frontend_testing, 20,  'default: ZONEMASTER.number_of_processes_for_frontend_testing';
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
         is $config->ZONEMASTER_lock_on_queue,                            0,   'default: ZONEMASTER.lock_on_queue';
@@ -415,18 +412,6 @@ subtest 'Everything but NoWarnings' => sub {
         Zonemaster::Backend::Config->parse( $text );
     }
     qr{ZONEMASTER\.max_zonemaster_execution_time.*0}, 'die: Invalid ZONEMASTER.max_zonemaster_execution_time value';
-
-    throws_ok {
-        my $text = q{
-            [DB]
-            engine = SQLite
-
-            [ZONEMASTER]
-            maximal_number_of_retries = -1
-        };
-        Zonemaster::Backend::Config->parse( $text );
-    }
-    qr{ZONEMASTER\.maximal_number_of_retries.*-1}, 'die: Invalid ZONEMASTER.maximal_number_of_retries value';
 
     throws_ok {
         my $text = q{

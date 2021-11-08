@@ -23,6 +23,7 @@ BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
 
 use Zonemaster::Backend::RPCAPI;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Metrics;
 
 local $| = 1;
 
@@ -60,6 +61,8 @@ $SIG{__WARN__} = sub {
 };
 
 my $config = Zonemaster::Backend::Config->load_config();
+
+Zonemaster::Backend::Metrics->setup($config->METRICS_statsd_host, $config->METRICS_statsd_port);
 
 builder {
     enable sub {
@@ -173,7 +176,10 @@ my $rpcapi_app = sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
-            $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
+            $res = $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
+            my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
+            Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");
+            $res;
         }
     } else {
         $res = Plack::Response->new(200);

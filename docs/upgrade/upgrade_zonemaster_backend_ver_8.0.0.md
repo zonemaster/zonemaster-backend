@@ -49,7 +49,7 @@ enable_add_api_user = yes
 The `zm-rpcapi` (`zm_rpcapi` on FreeBSD) init script has been updated. It needs
 to be reinstalled.
 
-### CentOS
+### Rocky Linux
 
 ```
 cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'`

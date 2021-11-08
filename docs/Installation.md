@@ -26,11 +26,11 @@
   * [6.1 Smoke test](#61-smoke-test)
   * [6.2 What to do next?](#62-what-to-do-next)
 * [7. Installation with MariaDB](#7-installation-with-mariadb)
-  * [7.1 MariaDB (CentOS)](#71-mariadb-centos)
+  * [7.1 MariaDB (Rocky Linux)](#71-mariadb-rocky-linux)
   * [7.2. MariaDB (Debian/Ubuntu)](#72-mariadb-debianubuntu)
   * [7.3. MySQL (FreeBSD)](#73-mysql-freebsd)
 * [8. Installation with PostgreSQL](#8-installation-with-postgresql)
-  * [8.1. PostgreSQL (CentOS)](#81-postgresql-centos)
+  * [8.1. PostgreSQL (Rocky Linux)](#81-postgresql-rocky-linux)
   * [8.2. PostgreSQL (Debian/Ubuntu)](#82-postgresql-debianubuntu)
   * [8.3. PostgreSQL (FreeBSD)](#83-postgresql-freebsd)
 * [9. Cleaning up the database](#9-cleaning-up-the-database)
@@ -149,8 +149,8 @@ sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 
 #### 3.2.2 Instructions for other engines (Rocky Linux)
 
-See sections for [MariaDB][MariaDB instructions CentOS] and
-[PostgreSQL][PostgreSQL instructions CentOS].
+See sections for [MariaDB][MariaDB instructions Rocky Linux] and
+[PostgreSQL][PostgreSQL instructions Rocky Linux].
 
 
 ### 3.3 Database configuration (Rocky Linux)
@@ -701,7 +701,7 @@ database (obviously taking all data with it).
 
 ### 9.1. MariaDB and MySQL
 
-CentOS, Debian and Ubuntu:
+Rocky Linux, Debian and Ubuntu:
 
 ```sh
 sudo mysql --user=root < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
@@ -715,7 +715,7 @@ mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_di
 
 ### 9.2. PostgreSQL
 
-CentOS, Debian and Ubuntu:
+Rocky Linux, Debian and Ubuntu:
 
 ```sh
 sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/cleanup-postgres.sql
@@ -741,7 +741,7 @@ configure the receiver.
 
 The list of metrics is available in the [Telemetry document][metrics].
 
-### 10.1.1 Installation on Centos
+### 10.1.1 Installation on Rocky Linux
 
 ```sh
 sudo cpanm Net::Statsd
@@ -766,12 +766,12 @@ cpanm Net::Statsd
 [Declaration of prerequisites]:       https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]:                       API.md
 [Main Zonemaster repository]:         https://github.com/zonemaster/zonemaster/blob/master/README.md
-[MariaDB instructions CentOS]:        #71-mariadb-centos
+[MariaDB instructions Rocky Linux]:        #71-mariadb-rocky-linux
 [MariaDB instructions Debian]:        #72-mariadb-debianubuntu
 [MariaDB instructions FreeBSD]:       #73-mysql-freebsd
 [metrics]:                            Telemetry.md#metrics
 [Post-installation]:                  #6-post-installation
-[PostgreSQL instructions CentOS]:     #81-postgresql-centos
+[PostgreSQL instructions Rocky Linux]:     #81-postgresql-rocky-linux
 [PostgreSQL instructions Debian]:     #82-postgresql-debianubuntu
 [PostgreSQL instructions FreeBSD]:    #83-postgresql-freebsd
 [Removing database]:                  #9-cleaning-up-the-database

@@ -11,7 +11,7 @@ su -l
 Zonemaster::Backend requires new dependencies. Depending on the used OS, run
 the corresponding command.
 
-### Centos
+### Rocky Linux
 
 ```sh
 sudo cpanm Plack::Middleware::ReverseProxy

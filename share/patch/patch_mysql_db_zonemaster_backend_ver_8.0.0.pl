@@ -65,6 +65,12 @@ sub patch_db {
         $dbh->do( "ALTER TABLE users DROP COLUMN user_info" );
     };
     print( "Error while dropping the column:  " . $@ ) if ($@);
+
+    # remove the "nb_retries" column from the "test_results" table
+    eval {
+        $dbh->do( "ALTER TABLE test_results DROP COLUMN nb_retries" );
+    };
+    print( "Error while dropping the column:  " . $@ ) if ($@);
 }
 
 patch_db();

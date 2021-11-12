@@ -70,8 +70,7 @@ sub create_db {
                  fingerprint character varying(32),
                  params text NOT NULL,
                  results text DEFAULT NULL,
-                 undelegated boolean NOT NULL DEFAULT false,
-                 nb_retries integer NOT NULL DEFAULT 0
+                 undelegated boolean NOT NULL DEFAULT false
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );

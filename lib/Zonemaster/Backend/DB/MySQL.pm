@@ -79,8 +79,7 @@ sub create_db {
             fingerprint character varying(32),
             params blob NOT NULL,
             results mediumblob DEFAULT NULL,
-            undelegated integer NOT NULL DEFAULT 0,
-            nb_retries integer NOT NULL DEFAULT 0
+            undelegated integer NOT NULL DEFAULT 0
         ) ENGINE=InnoDB
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'test_results' table", data => $dbh->errstr() );

@@ -687,7 +687,7 @@ An object with the properties:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
 * `"language"`: A [Language Tag], optional, used for validation error messages
-  translation, if not provided messages will be untranslated.
+  translation, if not provided messages will be untranslated (in English).
 
 #### `"result"`
 

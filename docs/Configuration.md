@@ -43,7 +43,7 @@
 ## Introduction
 
 Zonemaster *Backend* is configured in
-`/etc/zonemaster/backend_config.ini` (Rocky Linux, Debian and Ubuntu) or
+`/etc/zonemaster/backend_config.ini` (Linux) or
 `/usr/local/etc/zonemaster/backend_config.ini` (FreeBSD). Following
 [Installation instructions] will create the file with factory settings.
 

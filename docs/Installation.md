@@ -119,11 +119,6 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemaster-Backend, you should remove any
-> `/etc/init.d/zm-backend.sh` and `/etc/init.d/zm-centos.sh` (scripts from
-> previous version of Zonemaster-Backend).
-
-
 ### 3.2 Database engine installation (Rocky Linux)
 
 Check the [declaration of prerequisites] to make sure your preferred combination

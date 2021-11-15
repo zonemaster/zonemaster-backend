@@ -1,4 +1,5 @@
 use inc::Module::Install;
+use Module::Install::Share;
 
 name 'Zonemaster-Backend';
 all_from 'lib/Zonemaster/Backend.pm';
@@ -7,6 +8,8 @@ bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 
 # "2.1.0" could be declared as "2.001" but not as "2.1"
 # (see Zonemaster::LDNS below)
+
+configure_requires 'Locale::Msgfmt' => 0.15;
 
 requires
   'Class::Method::Modifiers'    => 1.09,
@@ -34,6 +37,7 @@ requires
   'Zonemaster::Engine'          => 4.002,
   'Zonemaster::LDNS'            => 2.002,
   'Plack::Middleware::ReverseProxy' => 0,
+  'Locale::TextDomain'          => 1.20,
   ;
 
 test_requires 'DBD::SQLite';
@@ -52,5 +56,27 @@ install_script 'zmb';
 
 no_index directory => 'CodeSnippets';
 no_index directory => 'Doc';
+
+# Make all platforms include inc/Module/Install/External.pm
+requires_external_bin 'find';
+if ($^O eq "freebsd") {
+    requires_external_bin 'gmake';
+};
+
+sub MY::postamble {
+    my $text;
+    if ($^O eq "freebsd") {
+        # Make FreeBSD use gmake for share/Makefile
+        $text = 'GMAKE ?= "gmake"' . "\n"
+            . 'pure_all :: share/Makefile' . "\n"
+            . "\t" . 'cd share && $(GMAKE) all' . "\n";
+    } else {
+        $text = 'pure_all :: share/Makefile' . "\n"
+            . "\t" . 'cd share && $(MAKE) all' . "\n";
+    };
+    return $text;
+};
+
+install_share;
 
 WriteAll;

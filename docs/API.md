@@ -683,9 +683,11 @@ Example response:
 
 #### `"params"`
 
-An object with the property:
+An object with the properties:
 
 * `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, if not provided messages will be untranslated (in English).
 
 #### `"result"`
 
@@ -782,6 +784,8 @@ An object with the following properties:
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, if not provided messages will be untranslated.
 
 > TODO: Clarify the purpose of each `"params"` property.
 >
@@ -1496,4 +1500,3 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
-

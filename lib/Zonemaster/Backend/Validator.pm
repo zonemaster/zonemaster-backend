@@ -10,6 +10,7 @@ use Exporter qw( import );
 use File::Spec::Functions qw( file_name_is_absolute );
 use JSON::Validator::Joi;
 use Readonly;
+use Locale::TextDomain qw[Zonemaster-Backend];
 use Zonemaster::Engine::Net::IP;
 
 our @EXPORT_OK = qw(
@@ -132,7 +133,7 @@ sub domain_name {
     return {
         type => 'string',
         pattern => $RELAXED_DOMAIN_NAME_RE,
-        'x-error-message' => 'The domain name contains a character or characters not supported'
+        'x-error-message' => N__ 'The domain name contains a character or characters not supported'
     };
 }
 sub ds_info {
@@ -144,22 +145,22 @@ sub ds_info {
             digest => {
                 type => 'string',
                 pattern => $DIGEST_RE,
-                'x-error-message' => 'Invalid digest format'
+                'x-error-message' => N__ 'Invalid digest format'
             },
             algorithm => {
                 type => 'number',
                 minimum => 0,
-                'x-error-message' => 'Algorithm must be a positive integer'
+                'x-error-message' => N__ 'Algorithm must be a positive integer'
             },
             digtype => {
                 type => 'number',
                 minimum => 0,
-                'x-error-message' => 'Digest type must be a positive integer'
+                'x-error-message' => N__ 'Digest type must be a positive integer'
             },
             keytag => {
                 type => 'number',
                 minimum => 0,
-                'x-error-message' => 'Keytag must be a positive integer'
+                'x-error-message' => N__ 'Keytag must be a positive integer'
             }
         }
     };
@@ -168,7 +169,7 @@ sub ip_address {
     return {
         type => 'string',
         pattern => $IPADDR_RE,
-        'x-error-message' => 'Invalid IP address',
+        'x-error-message' => N__ 'Invalid IP address',
     };
 }
 sub nameserver {
@@ -200,7 +201,7 @@ sub language_tag {
     return {
         type => 'string',
         pattern => $LANGUAGE_RE,
-        'x-error-message' => 'Invalid language tag format'
+        'x-error-message' => N__ 'Invalid language tag format'
     };
 }
 sub username {

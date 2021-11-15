@@ -14,19 +14,23 @@ the corresponding command.
 ### Rocky Linux
 
 ```sh
+sudo dnf install perl-libintl
+```
+
+```sh
 sudo cpanm Plack::Middleware::ReverseProxy
 ```
 
 ### Debian / Ubuntu
 
 ```sh
-sudo apt-get install libplack-middleware-reverseproxy-perl
+sudo apt-get install libplack-middleware-reverseproxy-perl libintl-perl
 ```
 
 ### FreeBSD
 
 ```sh
-pkg install p5-Plack-Middleware-ReverseProxy
+pkg install p5-Plack-Middleware-ReverseProxy p5-Locale-libintl
 ```
 
 

@@ -21,6 +21,9 @@ engine = SQLite
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
+
+[LANGUAGE]
+locale = en_US fr_FR da_DK fi_FI nb_NO sv_SE
 EOF
 
 my $engine = Zonemaster::Backend::RPCAPI->new(
@@ -227,29 +230,50 @@ subtest 'Everything but NoWarnings' => sub {
     $frontend_params->{ds_info}->[0]->{keytag}   = 5000;
 
     is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 0, encode_utf8( 'Valid Algorithm Type [numeric format]' ) )
-        or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+        or diag( encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 'a';
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
     is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid Algorithm Type' ) )
-        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{algorithm} = 1;
     $frontend_params->{ds_info}->[0]->{digest}    = '01234567890123456789012345678901234567890';
     is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid digest length' ) )
-        or diag( encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+        or diag( encode_json$engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{digest}    = 'Z123456789012345678901234567890123456789';
     is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid digest format' ) )
-        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{digest}    = '0123456789012345678901234567890123456789';
     $frontend_params->{ds_info}->[0]->{digtype} = -1;
     is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid digest type' ) )
-        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
 
     $frontend_params->{ds_info}->[0]->{digtype} = 1;
     $frontend_params->{ds_info}->[0]->{keytag} = 'not a int';
     is( scalar $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ), 1, encode_utf8( 'Invalid keytag' ) )
-        or diag(  encode_json $engine->validate_params( "start_domain_test", $frontend_params ) );
+        or diag(  encode_json $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params ) );
+
+    $frontend_params->{ds_info}->[0]->{keytag} = 5000;
+
+    {
+        local $frontend_params->{language} = "zz";
+        my @res = $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params );
+        is( scalar @res, 1, 'Invalid language, "zz" unknown' ) or diag(  explain \@res );
+    }
+
+    {
+        local $frontend_params->{language} = "fr-FR";
+        my @res = $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params );
+        # Because of the multiple validation layers two messages are returned here, one for the invalid format, the other for the unknown language
+        is( scalar @res, 2, 'Invalid language, should be underscore not hyphen' ) or diag(  explain \@res );
+    }
+
+    {
+        local $frontend_params->{language} = "nb_NO";
+        my @res = $engine->validate_params( $start_domain_test_schema, $start_domain_test_validate_syntax, $frontend_params );
+        is( scalar @res, 0, 'Valid language' ) or diag( explain \@res );
+    }
 };

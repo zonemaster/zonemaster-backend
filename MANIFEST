@@ -24,6 +24,7 @@ inc/Module/Install/Scripts.pm
 inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+inc/Module/Install/External.pm
 lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
 lib/Zonemaster/Backend/Config/DCPlugin.pm
@@ -69,6 +70,9 @@ share/zm-rpcapi.lsb
 share/zm-testagent.lsb
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
+share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
+share/Makefile
+share/GNUmakefile
 t/config.t
 t/db.t
 t/parameters_validation.t

@@ -418,7 +418,7 @@ shelf life of a previous test result, that test result is reused.
 Otherwise a new test request is enqueued.
 
 
-
+[API documentation]:                  API.md
 [DB.database_host]:                   #database_host
 [DB.database_name]:                   #database_name
 [DB.password]:                        #password

@@ -4,12 +4,12 @@
 
 * [1. Overview](#1-overview)
 * [2. Prerequisites](#2-prerequisites)
-* [3. Installation on CentOS](#3-installation-on-centos)
-  * [3.1 Install Zonemaster::Backend and related dependencies (CentOS)](#31-install-zonemasterbackend-and-related-dependencies-centos)
-  * [3.2 Database engine installation (CentOS)](#32-database-engine-installation-centos)
-  * [3.3 Database configuration (CentOS)](#33-database-configuration-centos)
-  * [3.4 Service configuration and startup (CentOS)](#34-service-configuration-and-startup-centos)
-  * [3.5 Post-installation (CentOS)](#35-post-installation-centos)
+* [3. Installation on Rocky Linux](#3-installation-on-rocky-linux)
+  * [3.1 Install Zonemaster::Backend and related dependencies (Rocky Linux)](#31-install-zonemasterbackend-and-related-dependencies-rocky-linux)
+  * [3.2 Database engine installation (Rocky Linux)](#32-database-engine-installation-rocky-linux)
+  * [3.3 Database configuration (Rocky Linux)](#33-database-configuration-rocky-linux)
+  * [3.4 Service configuration and startup (Rocky Linux)](#34-service-configuration-and-startup-rocky-linux)
+  * [3.5 Post-installation (Rocky Linux)](#35-post-installation-rocky-linux)
 * [4. Installation on Debian and Ubuntu](#4-installation-on-debian-and-ubuntu)
   * [4.1 Install Zonemaster::Backend and related dependencies (Debian/Ubuntu)](#41-install-zonemasterbackend-and-related-dependencies-debianubuntu)
   * [4.2 Database engine installation (Debian/Ubuntu)](#42-database-engine-installation-debianubuntu)
@@ -26,11 +26,11 @@
   * [6.1 Smoke test](#61-smoke-test)
   * [6.2 What to do next?](#62-what-to-do-next)
 * [7. Installation with MariaDB](#7-installation-with-mariadb)
-  * [7.1 MariaDB (CentOS)](#71-mariadb-centos)
+  * [7.1 MariaDB (Rocky Linux)](#71-mariadb-rocky-linux)
   * [7.2. MariaDB (Debian/Ubuntu)](#72-mariadb-debianubuntu)
   * [7.3. MySQL (FreeBSD)](#73-mysql-freebsd)
 * [8. Installation with PostgreSQL](#8-installation-with-postgresql)
-  * [8.1. PostgreSQL (CentOS)](#81-postgresql-centos)
+  * [8.1. PostgreSQL (Rocky Linux)](#81-postgresql-rocky-linux)
   * [8.2. PostgreSQL (Debian/Ubuntu)](#82-postgresql-debianubuntu)
   * [8.3. PostgreSQL (FreeBSD)](#83-postgresql-freebsd)
 * [9. Cleaning up the database](#9-cleaning-up-the-database)
@@ -69,9 +69,9 @@ For details on supported versions of Perl, database engine and operating system
 for Zonemaster::Backend, see the [declaration of prerequisites].
 
 
-## 3. Installation on CentOS
+## 3. Installation on Rocky Linux
 
-### 3.1 Install Zonemaster::Backend and related dependencies (CentOS)
+### 3.1 Install Zonemaster::Backend and related dependencies (Rocky Linux)
 
 > **Note:** Zonemaster::LDNS and Zonemaster::Engine are not listed here as they
 > are dealt with in the [prerequisites](#prerequisites) section.
@@ -79,7 +79,7 @@ for Zonemaster::Backend, see the [declaration of prerequisites].
 Install dependencies available from binary packages:
 
 ```sh
-sudo yum -y install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-NoWarnings perl-Test-Warn perl-Try-Tiny redhat-lsb-core
+sudo dnf -y install jq perl-Class-Method-Modifiers perl-Config-IniFiles perl-DBD-SQLite perl-DBI perl-HTML-Parser perl-JSON-RPC perl-libwww-perl perl-Log-Dispatch perl-Net-Server perl-Parallel-ForkManager perl-Plack perl-Plack-Test perl-Role-Tiny perl-Router-Simple perl-String-ShellQuote perl-Test-NoWarnings perl-Test-Warn perl-Try-Tiny redhat-lsb-core
 ```
 
 > **Note:** perl-Net-Server and perl-Test-Warn are listed here even though they
@@ -119,12 +119,7 @@ sudo install -v -m 755 ./zm-testagent.lsb /etc/init.d/zm-testagent
 sudo install -v -m 755 ./tmpfiles.conf /usr/lib/tmpfiles.d/zonemaster.conf
 ```
 
-> If this is an update of Zonemaster-Backend, you should remove any
-> `/etc/init.d/zm-backend.sh` and `/etc/init.d/zm-centos.sh` (scripts from
-> previous version of Zonemaster-Backend).
-
-
-### 3.2 Database engine installation (CentOS)
+### 3.2 Database engine installation (Rocky Linux)
 
 Check the [declaration of prerequisites] to make sure your preferred combination
 of operating system version and database engine version is supported.
@@ -132,7 +127,7 @@ of operating system version and database engine version is supported.
 The installation instructions below assumes that this is a new installation.
 
 
-#### 3.2.1 Instructions for SQLite (CentOS)
+#### 3.2.1 Instructions for SQLite (Rocky Linux)
 
 > **Note:** Zonemaster with SQLite is not meant for an installation with heavy
 > load.
@@ -147,13 +142,13 @@ sudo install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 > for details.
 
 
-#### 3.2.2 Instructions for other engines (CentOS)
+#### 3.2.2 Instructions for other engines (Rocky Linux)
 
-See sections for [MariaDB][MariaDB instructions CentOS] and
-[PostgreSQL][PostgreSQL instructions CentOS].
+See sections for [MariaDB][MariaDB instructions Rocky Linux] and
+[PostgreSQL][PostgreSQL instructions Rocky Linux].
 
 
-### 3.3 Database configuration (CentOS)
+### 3.3 Database configuration (Rocky Linux)
 
 Create the database tables:
 
@@ -162,7 +157,7 @@ sudo -u zonemaster $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("
 ```
 
 
-### 3.4 Service configuration and startup (CentOS)
+### 3.4 Service configuration and startup (Rocky Linux)
 
 Make sure our tmpfiles configuration takes effect:
 
@@ -180,7 +175,7 @@ sudo systemctl start zm-testagent
 ```
 
 
-### 3.5 Post-installation (CentOS)
+### 3.5 Post-installation (Rocky Linux)
 
 See the [post-installation] section for post-installation matters.
 
@@ -212,17 +207,11 @@ sv_SE.utf8
 Install dependencies available from binary packages:
 
 ```sh
-sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-stringy-perl libjson-pp-perl libjson-rpc-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl libplack-middleware-reverseproxy-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-nowarnings-perl libtry-tiny-perl perl-doc starman
+sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdaemon-control-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-stringy-perl libjson-pp-perl libjson-rpc-perl libjson-validator-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl libplack-middleware-reverseproxy-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-nowarnings-perl libtry-tiny-perl perl-doc starman
 ```
 
 > **Note**: libio-stringy-perl is listed here even though it's not a direct
 > dependency. It's an undeclared dependency of libconfig-inifiles-perl.
-
-Install dependencies not available from binary packages:
-
-```sh
-sudo cpanm Daemon::Control JSON::Validator
-```
 
 Install Zonemaster::Backend:
 
@@ -458,7 +447,7 @@ Once the number reaches 100% a JSON object is printed and zmtest terminates.
 First follow the installation instructions for the OS in question, and then go
 to this section to install MariaDB.
 
-### 7.1. MariaDB (CentOS)
+### 7.1. MariaDB (Rocky Linux)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -493,7 +482,7 @@ sudo mysql -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
 Update the `/etc/zonemaster/backend_config.ini` file with database name,
 username and password if non-default values are used.
 
-Now go back to "[Database configuration](#33-database-configuration-centos)"
+Now go back to "[Database configuration](#33-database-configuration-rocky-linux)"
 to create the database tables and then continue with the steps after that.
 
 
@@ -589,7 +578,7 @@ to create the database tables and then continue with the steps after that.
 First follow the installation instructions for the OS in question, and then go
 to this section to install PostgreSQL.
 
-### 8.1. PostgreSQL (CentOS)
+### 8.1. PostgreSQL (Rocky Linux)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -601,26 +590,13 @@ sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.in
 
 Install, configure and start database engine:
 
-* On CentOS 7:
-
-  ```sh
-  sudo rpm -iUvh https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm
-  sudo yum -y install postgresql93-server perl-DBD-Pg
-  sudo /usr/pgsql-9.3/bin/postgresql93-setup initdb
-  sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/9.3/data/pg_hba.conf
-  sudo systemctl enable postgresql-9.3
-  sudo systemctl start postgresql-9.3
-  ```
-
-* On CentOS 8:
-
-  ```sh
-  sudo yum -y install postgresql-server perl-DBD-Pg
-  sudo postgresql-setup --initdb --unit postgresql
-  sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
-  sudo systemctl enable postgresql
-  sudo systemctl start postgresql
-  ```
+```sh
+sudo yum -y install postgresql-server perl-DBD-Pg
+sudo postgresql-setup --initdb --unit postgresql
+sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+```
 
 To create the database and the database user (unless you keep an old database).
 Edit the command first if you want a non-default database name, user name or
@@ -636,7 +612,7 @@ sudo -u postgres psql -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENC
 Update the `/etc/zonemaster/backend_config.ini` file with database name, username
 and password if non-default values are used.
 
-Now go back to "[Database configuration](#33-database-configuration-centos)"
+Now go back to "[Database configuration](#33-database-configuration-rocky-linux)"
 to create the database tables and then continue with the steps after that.
 
 
@@ -720,7 +696,7 @@ database (obviously taking all data with it).
 
 ### 9.1. MariaDB and MySQL
 
-CentOS, Debian and Ubuntu:
+Rocky Linux, Debian and Ubuntu:
 
 ```sh
 sudo mysql --user=root < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
@@ -734,7 +710,7 @@ mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_di
 
 ### 9.2. PostgreSQL
 
-CentOS, Debian and Ubuntu:
+Rocky Linux, Debian and Ubuntu:
 
 ```sh
 sudo -u postgres psql -f $(perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")')/cleanup-postgres.sql
@@ -760,7 +736,7 @@ configure the receiver.
 
 The list of metrics is available in the [Telemetry document][metrics].
 
-### 10.1.1 Installation on Centos
+### 10.1.1 Installation on Rocky Linux
 
 ```sh
 sudo cpanm Net::Statsd
@@ -785,12 +761,12 @@ cpanm Net::Statsd
 [Declaration of prerequisites]:       https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]:                       API.md
 [Main Zonemaster repository]:         https://github.com/zonemaster/zonemaster/blob/master/README.md
-[MariaDB instructions CentOS]:        #71-mariadb-centos
+[MariaDB instructions Rocky Linux]:        #71-mariadb-rocky-linux
 [MariaDB instructions Debian]:        #72-mariadb-debianubuntu
 [MariaDB instructions FreeBSD]:       #73-mysql-freebsd
 [metrics]:                            Telemetry.md#metrics
 [Post-installation]:                  #6-post-installation
-[PostgreSQL instructions CentOS]:     #81-postgresql-centos
+[PostgreSQL instructions Rocky Linux]:     #81-postgresql-rocky-linux
 [PostgreSQL instructions Debian]:     #82-postgresql-debianubuntu
 [PostgreSQL instructions FreeBSD]:    #83-postgresql-freebsd
 [Removing database]:                  #9-cleaning-up-the-database

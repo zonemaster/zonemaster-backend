@@ -31,7 +31,26 @@ sub patch_db {
         $db->create_db();
 
         # populate it
-        $dbh->do('INSERT INTO test_results SELECT * FROM test_results_old');
+        # - nb_retries is omitted as we remove this column
+        # - params_deterministic_hash is renamed to fingerprint
+        $dbh->do('
+            INSERT INTO test_results
+            SELECT id,
+                   hash_id,
+                   domain,
+                   batch_id,
+                   creation_time,
+                   test_start_time,
+                   test_end_time,
+                   priority,
+                   queue,
+                   progress,
+                   params_deterministic_hash,
+                   params,
+                   results,
+                   undelegated
+            FROM test_results_old
+        ');
 
         $dbh->do('DROP TABLE test_results_old');
 

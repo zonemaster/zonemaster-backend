@@ -94,10 +94,16 @@ sub patch_db {
     print( "Error while changing DB schema:  " . $@ ) if ($@);
 
     # update the columns
-    $dbh->do( "UPDATE users SET username = (user_info->>'username'), api_key = (user_info->>'api_key')" );
+    eval {
+        $dbh->do( "UPDATE users SET username = (user_info->>'username'), api_key = (user_info->>'api_key')" );
+    };
+    print( "Error while updating the users table:  " . $@ ) if ($@);
 
     # remove the "user_info" column from the "users" table
     $dbh->do( "ALTER TABLE users DROP COLUMN IF EXISTS user_info" );
+
+    # remove the "nb_retries" column from the "test_results" table
+    $dbh->do( "ALTER TABLE test_results DROP COLUMN IF EXISTS nb_retries" );
 }
 
 patch_db();

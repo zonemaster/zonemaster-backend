@@ -75,8 +75,7 @@ sub create_db {
                 fingerprint varchar(32),
                 params json NOT NULL,
                 undelegated integer NOT NULL DEFAULT 0,
-                results json,
-                nb_retries integer NOT NULL DEFAULT 0
+                results json
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );

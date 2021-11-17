@@ -26,6 +26,7 @@ requires
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,
   'LWP::UserAgent'              => 0,
+  'Mojolicious'                 => 7.28,
   'Moose'                       => 2.04,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,

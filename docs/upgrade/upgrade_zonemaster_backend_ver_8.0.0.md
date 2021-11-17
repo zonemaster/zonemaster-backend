@@ -75,6 +75,14 @@ install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 ```
 
 
+## Cleaning old files
+
+Run
+```sh
+cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
+sudo rm patch_*.pl
+```
+
 ## Upgrading the database
 
 If your Zonemaster database was created by a Zonemaster-Backend version smaller
@@ -90,7 +98,7 @@ than v8.0.0, and not upgraded, use the following instructions.
 Run
 ```sh
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
-perl patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
+perl patch/patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
 ```
 
 ### MySQL (or MariaDB)

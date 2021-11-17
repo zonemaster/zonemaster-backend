@@ -209,9 +209,13 @@ Install dependencies available from binary packages:
 ```sh
 sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdbd-sqlite3-perl libdaemon-control-perl libdbi-perl libfile-sharedir-perl libfile-slurp-perl libhtml-parser-perl libio-stringy-perl libjson-pp-perl libjson-rpc-perl libjson-validator-perl liblog-any-adapter-dispatch-perl liblog-any-perl liblog-dispatch-perl libmoose-perl libparallel-forkmanager-perl libplack-perl libplack-middleware-debug-perl libplack-middleware-reverseproxy-perl librole-tiny-perl librouter-simple-perl libstring-shellquote-perl libtest-nowarnings-perl libtry-tiny-perl libintl-perl perl-doc starman
 ```
-
 > **Note**: libio-stringy-perl is listed here even though it's not a direct
 > dependency. It's an undeclared dependency of libconfig-inifiles-perl.
+
+* On Ubuntu, install the following dependency from CPAN:
+  ```
+  sudo cpanm JSON::Validator
+  ```
 
 Install Zonemaster::Backend:
 

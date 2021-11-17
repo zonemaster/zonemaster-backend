@@ -21,7 +21,7 @@ requires
   'HTML::Entities'              => 0,
   'JSON::PP'                    => 0,
   'JSON::RPC'                   => 1.01,
-  'JSON::Validator'             => 3.12,
+  'JSON::Validator'             => 4.00,
   'Log::Any'                    => 0,
   'Log::Any::Adapter::Dispatch' => 0,
   'Log::Dispatch'               => 0,

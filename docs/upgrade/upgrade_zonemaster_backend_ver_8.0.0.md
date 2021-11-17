@@ -27,6 +27,12 @@ sudo cpanm Plack::Middleware::ReverseProxy
 sudo apt-get install libplack-middleware-reverseproxy-perl libintl-perl libmojolicious-perl
 ```
 
+#### Specific to Ubuntu
+
+```sh
+sudo cpanm JSON::Validator
+```
+
 ### FreeBSD
 
 ```sh

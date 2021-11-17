@@ -103,7 +103,12 @@ perl patch/patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
 
 ### MySQL (or MariaDB)
 
-Run
+First update the privileges of the `zonemaste` user:
+```sh
+sudo mysql -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
+```
+
+then run
 ```sh
 cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
 perl patch/patch_mysql_db_zonemaster_backend_ver_8.0.0.pl

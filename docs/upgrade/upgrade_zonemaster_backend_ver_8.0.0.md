@@ -81,6 +81,18 @@ install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 ```
 
 
+## Cleaning old files
+
+### Linux
+```sh
+sudo rm `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')`/patch_*.pl
+```
+
+### FreeBSD
+```sh
+rm `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')`/patch_*.pl
+```
+
 ## Upgrading the database
 
 If your Zonemaster database was created by a Zonemaster-Backend version smaller
@@ -95,15 +107,26 @@ than v8.0.0, and not upgraded, use the following instructions.
 
 Run
 ```sh
-cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
-perl patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
+perl patch/patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
 ```
 
 ### MySQL (or MariaDB)
 
-Run
+First update the privileges of the `zonemaster` user:
+* Linux
+  ```sh
+  sudo mysql -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
+  ```
+* FreeBSD
+  ```sh
+  mysql -u root -p -e "GRANT ALL ON zonemaster.* TO 'zonemaster'@'localhost';"
+  ```
+
+
+then run
 ```sh
-cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 perl patch/patch_mysql_db_zonemaster_backend_ver_8.0.0.pl
 ```
 
@@ -111,7 +134,7 @@ perl patch/patch_mysql_db_zonemaster_backend_ver_8.0.0.pl
 
 Run
 ```sh
-cd $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')
+cd `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`
 perl patch/patch_postgresql_db_zonemaster_backend_ver_8.0.0.pl
 ```
 

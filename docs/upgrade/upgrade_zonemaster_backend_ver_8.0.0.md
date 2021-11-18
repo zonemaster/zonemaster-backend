@@ -14,7 +14,7 @@ the corresponding command.
 ### Rocky Linux
 
 ```sh
-sudo dnf install perl-libintl
+sudo dnf install perl-libintl perl-Mojolicious
 ```
 
 ```sh
@@ -24,13 +24,19 @@ sudo cpanm Plack::Middleware::ReverseProxy
 ### Debian / Ubuntu
 
 ```sh
-sudo apt-get install libplack-middleware-reverseproxy-perl libintl-perl
+sudo apt-get install libplack-middleware-reverseproxy-perl libintl-perl libmojolicious-perl
+```
+
+#### Specific to Ubuntu
+
+```sh
+sudo cpanm JSON::Validator
 ```
 
 ### FreeBSD
 
 ```sh
-pkg install p5-Plack-Middleware-ReverseProxy p5-Locale-libintl
+pkg install p5-Plack-Middleware-ReverseProxy p5-Locale-libintl p5-Mojolicious
 ```
 
 

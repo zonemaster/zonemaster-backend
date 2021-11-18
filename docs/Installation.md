@@ -698,6 +698,8 @@ as a database administrator. Commands
 for locating and running the file are below. It removes the user and drops the
 database (obviously taking all data with it).
 
+> Each script uses default values, you may need to adapt them to your setup.
+
 ### 9.1. MariaDB and MySQL
 
 Rocky Linux, Debian and Ubuntu:

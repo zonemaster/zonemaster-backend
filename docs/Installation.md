@@ -464,7 +464,7 @@ sudo sed -i '/\bengine\b/ s/=.*/= MySQL/' /etc/zonemaster/backend_config.ini
 Install, configure and start database engine:
 
 ```sh
-sudo yum -y install mariadb-server
+sudo dnf -y install mariadb-server
 sudo systemctl enable mariadb
 sudo systemctl start mariadb
 ```
@@ -595,7 +595,7 @@ sudo sed -i '/\bengine\b/ s/=.*/= PostgreSQL/' /etc/zonemaster/backend_config.in
 Install, configure and start database engine:
 
 ```sh
-sudo yum -y install postgresql-server perl-DBD-Pg
+sudo dnf -y install postgresql-server perl-DBD-Pg
 sudo postgresql-setup --initdb --unit postgresql
 sudo sed -i '/^[^#]/ s/ident$/md5/' /var/lib/pgsql/data/pg_hba.conf
 sudo systemctl enable postgresql
@@ -612,6 +612,9 @@ sudo -u postgres psql -c "CREATE USER zonemaster WITH PASSWORD 'zonemaster';"
 ```sh
 sudo -u postgres psql -c "CREATE DATABASE zonemaster WITH OWNER 'zonemaster' ENCODING 'UTF8';"
 ```
+
+> **Note:** You may get error messages from these commands about lack of
+> permission to change directory. You can safely ignore those messages.
 
 Update the `/etc/zonemaster/backend_config.ini` file with database name, username
 and password if non-default values are used.

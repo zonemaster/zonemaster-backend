@@ -70,7 +70,12 @@ share/zm-rpcapi.lsb
 share/zm-testagent.lsb
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
+share/locale/da/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/es/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/fi/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
 share/Makefile
 share/GNUmakefile
 t/config.t

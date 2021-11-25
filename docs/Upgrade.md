@@ -23,10 +23,11 @@ To upgrade Zonemaster::Backend perform the following tasks:
 
   1. stop the `zm-rpcapi` and `zm-testagent` daemons (`zm_rpcapi` and
      `zm_testagent` on FreeBSD)
-  2. install any new dependencies (see corresponding upgrade document)
-  3. install the latest version from CPAN with `cpanm Zonemaster::Backend`
-  4. apply any remaining instructions specific to this new release
-  5. start the `zm-rpcapi` and `zm-testagent` daemons (`zm_rpcapi` and
+  2. remove old files with `cpanm --uninstall Zonemaster::Backend`
+  3. install any new dependencies (see corresponding upgrade document)
+  4. install the latest version from CPAN with `cpanm Zonemaster::Backend`
+  5. apply any remaining instructions specific to this new release
+  6. start the `zm-rpcapi` and `zm-testagent` daemons (`zm_rpcapi` and
      `zm_testagent` on FreeBSD)
 
 

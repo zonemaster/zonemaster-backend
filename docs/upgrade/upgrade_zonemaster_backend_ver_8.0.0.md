@@ -81,18 +81,6 @@ install -v -m 755 ./zm_rpcapi-bsd /usr/local/etc/rc.d/zm_rpcapi
 ```
 
 
-## Cleaning old files
-
-### Linux
-```sh
-sudo rm `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')`/patch_*.pl
-```
-
-### FreeBSD
-```sh
-rm `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')`/patch_*.pl
-```
-
 ## Upgrading the database
 
 If your Zonemaster database was created by a Zonemaster-Backend version smaller

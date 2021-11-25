@@ -134,15 +134,20 @@ $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
-    my %locales = $self->{config}->LANGUAGE_locale;
-
     my @lang_tags;
-    for my $lang ( sort keys %locales ) {
-        my @locale_tags = sort keys %{ $locales{$lang} };
-        if ( scalar @locale_tags == 1 ) {
-            push @lang_tags, $lang;
+    eval {
+        my %locales = $self->{config}->LANGUAGE_locale;
+
+        for my $lang ( sort keys %locales ) {
+            my @locale_tags = sort keys %{ $locales{$lang} };
+            if ( scalar @locale_tags == 1 ) {
+                push @lang_tags, $lang;
+            }
+            push @lang_tags, @locale_tags;
         }
-        push @lang_tags, @locale_tags;
+    };
+    if ( $@ ) {
+        handle_exception( $@ );
     }
 
     return \@lang_tags;
@@ -396,11 +401,10 @@ $json_schemas{get_test_params} = joi->object->strict->props(
 sub get_test_params {
     my ( $self, $params ) = @_;
 
-    my $test_id = $params->{test_id};
-
-    my $result = 0;
-
+    my $result;
     eval {
+        my $test_id = $params->{test_id};
+
         $result = $self->{db}->get_test_params( $test_id );
     };
     if ($@) {
@@ -422,24 +426,24 @@ $json_schemas{get_test_results} = {
 sub get_test_results {
     my ( $self, $params ) = @_;
 
-    # Already validated by json_validate
-    my ($locale, undef) = $self->_get_locale($params);
-
     my $result;
-    my $translator;
-    $translator = Zonemaster::Backend::Translator->new;
-
-    my $previous_locale = $translator->locale;
-    if ( !$translator->locale( $locale ) ) {
-        handle_exception( "Failed to set locale: $locale" );
-    }
-
-    eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
-
-    my $test_info;
-    my @zm_results;
     eval{
-        $test_info = $self->{db}->test_results( $params->{id} );
+        # Already validated by json_validate
+        my ( $locale, undef ) = $self->_get_locale( $params );
+
+        my $translator;
+        $translator = Zonemaster::Backend::Translator->new;
+
+        my $previous_locale = $translator->locale;
+        if ( !$translator->locale( $locale ) ) {
+            die "Failed to set locale: $locale";
+        }
+
+        eval { $translator->data } if $translator; # Provoke lazy loading of translation data
+
+        my @zm_results;
+
+        my $test_info = $self->{db}->test_results( $params->{id} );
         foreach my $test_res ( @{ $test_info->{results} } ) {
             my $res;
             if ( $test_res->{module} eq 'NAMESERVER' ) {
@@ -488,15 +492,15 @@ sub get_test_results {
 
         $result = $test_info;
         $result->{results} = \@zm_results;
+
+        $translator->locale( $previous_locale );
+
+        $result = $test_info;
+        $result->{results} = \@zm_results;
     };
     if ($@) {
         handle_exception( $@ );
     }
-
-    $translator->locale( $previous_locale );
-
-    $result = $test_info;
-    $result->{results} = \@zm_results;
 
     return $result;
 }
@@ -609,11 +613,11 @@ $json_schemas{add_batch_job} = {
 sub add_batch_job {
     my ( $self, $params ) = @_;
 
-    $params->{test_params}->{priority}  //= 5;
-    $params->{test_params}->{queue}     //= 0;
-
     my $results;
     eval {
+        $params->{test_params}->{priority} //= 5;
+        $params->{test_params}->{queue}    //= 0;
+
         $results = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
@@ -630,7 +634,6 @@ sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
     my $result;
-
     eval {
         my $batch_id = $params->{batch_id};
 

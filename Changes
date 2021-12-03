@@ -1,5 +1,43 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v8.0.0 2021-12-03 (public release version)
+
+ [Features]
+ - Adds Finnish translation of error messages (#921, #911)
+ - Replaces CentOS with Rocky Linux (#908, #895)
+ - Adds upgrade documentation (#907, #879, #618)
+ - Adds Swedish translation of error messages (#899)
+ - Adds translation of error messages (#891)
+ - Drops support for PostgreSQL version 9 and before (#892)
+ - Adds support for collecting metrics (#844)
+ - Optimization of batches when PostgreSQL is used (#890)
+ - Improved result history response in API (#837, #830)
+ - Deprecates country code (#796, #794)
+ - Makes database port configurable (#755, #496)
+
+ [Fixes]
+ - Document clean-up and improvement (#913, #907, #882, #873, #871,
+   #822, #814, #816, #797)
+ - Improves error catching (#916, #914)
+ - Database clean-up and improvement (#906, #887, #859, #833, #839, #831,
+   #815, #824, #826, #812, #798, #775, #804, #805, 806)
+ - Updates zmb command line tool (#825, #628, #810, #768, #787, #780)
+ - Updates dependencies (#902, #901, 903)
+ - Removes "retry" (#896, 881)
+ - Fix translation issue (#894, #811, #809)
+ - Improves error message when creation of API user is blocked (#889)
+ - Improves RPC API error messages (#853, #789, #847, #819, #817, #820,
+   #703)
+ - Harmonize database code (#841, #832, #840, #865, #834, #689, #805)
+ - Use SQLite by default (#855)
+ - Improves handling of crashed tests (#845)
+ - Fixes configuration loading error (#851, #813)
+ - Improves log handling (#843)
+ - Fixes local adress mapping (#836)
+ - Updates default location for configuration file (#835)
+ - Improves validation (#801, #808, #685, #808, #802, #799, #757)
+
+
 v7.0.0 2021-09-15 (public security release)
  [Fixes]
  - By design adding a API user (needed for the batch function) is limited to

@@ -3,9 +3,11 @@ Release history for Zonemaster component Zonemaster-Backend
 v8.0.0 2021-12-03 (public release version)
 
  [Breaking changes]
- - Drops support for PostgreSQL version 9 and before (#892)
- - Deprecates country code in RPC API calls (#796, #794)
+ - Removes support of PostgreSQL before version 10 (#892)
  - Removes "retry" configuration setting (#896, 881)
+
+ [Deprecation]
+ - Deprecates country code in RPC API calls (#796, #794)
 
  [Features]
  - Adds translation of error messages (#891)

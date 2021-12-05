@@ -1,21 +1,19 @@
 use strict;
 use warnings;
-use utf8;
-use Data::Dumper;
-use Encode;
 
 use DBI qw(:utils);
 
 use Zonemaster::Backend::Config;
-use Zonemaster::Backend::DB::MySQL;
+use Zonemaster::Backend::DB::PostgreSQL;
 
 my $config = Zonemaster::Backend::Config->load_config();
-if ( $config->DB_engine ne 'MySQL' ) {
-    die "The configuration file does not contain the MySQL backend";
+if ( $config->DB_engine ne 'PostgreSQL' ) {
+    die "The configuration file does not contain the PostgreSQL backend";
 }
-my $dbh = Zonemaster::Backend::DB::MySQL->new( { config => $config } )->dbh;
+my $dbh = Zonemaster::Backend::DB::PostgreSQL->from_config( $config )->dbh;
 
 sub patch_db {
+
     ####################################################################
     # TEST RESULTS
     ####################################################################

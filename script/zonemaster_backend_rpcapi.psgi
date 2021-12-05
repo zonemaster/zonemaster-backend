@@ -19,10 +19,14 @@ use Plack::Response;
 use Router::Simple::Declare;
 use Try::Tiny;
 
-BEGIN { $ENV{PERL_JSON_BACKEND} = 'JSON::PP' };
+BEGIN {
+    $ENV{PERL_JSON_BACKEND} = 'JSON::PP';
+    undef $ENV{LANGUAGE};
+};
 
 use Zonemaster::Backend::RPCAPI;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Metrics;
 
 local $| = 1;
 
@@ -45,16 +49,23 @@ Log::Any::Adapter->set(
                 'Screen',
                 min_level => get_loglevel(),
                 stderr    => 1,
+                newline   => 1,
                 callbacks => sub {
                     my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s\n", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
+                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
                 },
             ],
         ]
     ),
 );
 
+$SIG{__WARN__} = sub {
+    $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
+};
+
 my $config = Zonemaster::Backend::Config->load_config();
+
+Zonemaster::Backend::Metrics->setup($config->METRICS_statsd_host, $config->METRICS_statsd_port);
 
 builder {
     enable sub {
@@ -161,14 +172,17 @@ my $rpcapi_app = sub {
     };
 
     if ($json_error eq '') {
-        my $errors = Zonemaster::Backend::RPCAPI->jsonrpc_validate($content);
+        my $errors = $handler->jsonrpc_validate($content);
         if ($errors ne '') {
           $res = Plack::Response->new(200);
           $res->content_type('application/json');
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
-            $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
+            $res = $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
+            my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
+            Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");
+            $res;
         }
     } else {
         $res = Plack::Response->new(200);

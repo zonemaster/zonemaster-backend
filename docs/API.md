@@ -1,5 +1,50 @@
 # API
 
+## Table of contents
+
+* [Purpose](#purpose)
+* [Protocol](#protocol)
+  * [Deviations from JSON-RPC 2.0](#deviations-from-json-rpc-20)
+  * [Notes on the JSON-RPC 2.0 implementation](#notes-on-the-json-rpc-20-implementation)
+* [Request handling](#Request-handling)
+* [Error reporting](#Error-reporting)
+* [Privilege levels](#Privilege-levels)
+* [Data types](#Data-types)
+  * [API key](#API-key)
+  * [Batch id](#Batch-id)
+  * [Client id](#Client-id)
+  * [Client version](#Client-version)
+  * [Domain name](#Domain-name)
+  * [DS info](#DS-info)
+  * [IP address](#IP-address)
+  * [Language tag](#Language-tag)
+  * [Name server](#Name-server)
+  * [Non-negative integer](#Non-negative-integer)
+  * [Priority](#Priority)
+  * [Profile name](#Profile-name)
+  * [Progress percentage](#Progress-percentage)
+  * [Queue](#Queue)
+  * [Severity level](#Severity-level)
+  * [Test id](#Test-id)
+  * [Test result](#Test-result)
+  * [Timestamp](#Timestamp)
+  * [Username](#Username)
+* [API method: version_info](#API-method-version_info)
+* [API method: profile_names](#API-method-profile_names)
+* [API method: get_language_tags](#API-method-get_language_tags)
+* [API method: get_host_by_name](#API-method-get_host_by_name)
+* [API method: get_data_from_parent_zone](#API-method-get_data_from_parent_zone)
+* [API method: start_domain_test](#API-method-start_domain_test)
+* [API method: test_progress](#API-method-test_progress)
+* [API method: get_test_results](#API-method-get_test_results)
+* [API method: get_test_history](#API-method-get_test_history)
+  * [Undelegated and delegated](#undelegated-and-delegated)
+* [API method: add_api_user](#API-method-add_api_user)
+* [API method: add_batch_job](#API-method-add_batch_job)
+* [API method: get_batch_job_result](#API-method-get_batch_job_result)
+* [API method: get_test_params](#API-method-get_test_params)
+
+
 ## Purpose
 
 This document describes the JSON-RPC API provided by the Zonemaster *RPC API daemon*.
@@ -9,13 +54,13 @@ Health checks are called *tests* in Zonemaster lingo.
 
 ## Protocol
 
-This API is implemented using [JSON-RPC 2.0](http://www.jsonrpc.org/specification).
+This API is implemented using [JSON-RPC 2.0].
 
 JSON-RPC request objects are accepted in the body of HTTP POST requests to any path.
 The HTTP request must contain the header `Content-Type: application/json`.
 
 All JSON-RPC request and response objects have the keys `"jsonrpc"`, `"id"` and `"method"`.
-For details on these, refer to the JSON-RPC 2.0 specification.
+For details on these, refer to the [JSON-RPC 2.0] specification.
 
 
 ### Deviations from JSON-RPC 2.0
@@ -28,7 +73,7 @@ For details on these, refer to the JSON-RPC 2.0 specification.
 ### Notes on the JSON-RPC 2.0 implementation
 
 * Extra top-level properties in request objects are allowed but ignored.
-* Extra properties in the `"params"` object are allowed for some methods but ignored for others.
+* No extra properties are allowed in the `"params"` object.
 * Error messages from the API should be considered sensitive as they sometimes leak details about the internals of the application and the system.
 * The error code -32601 is used when the `"method"` property is missing, rather than the perhaps expected error code -32600.
 
@@ -55,6 +100,11 @@ If the request object is invalid JSON, an error with code `-32700` is reported.
 
 If no method is specified or an invalid method is specified, an error with code `-32601` is reported.
 
+If no `params` object is specified when it is required, or the `params` object
+for the specified method is invalid, an error with code `-32602` is reported.
+For more information on the validation error data format see
+[Validation error data].
+
 All error states that occur after the RPC method has been identified are reported as internal errors with code `-32603`.
 
 
@@ -63,8 +113,10 @@ All error states that occur after the RPC method has been identified are reporte
 This API provides three classes of methods:
 
 * *Unrestricted* methods are available to anyone with access to the API.
-* *Authenticated* methods have parameters for username and API key credentials.
-* *Administrative* methods require that the connection to the API is opened from localhost (`127.0.0.1` or `::1`).
+* *Authenticated* methods have parameters for *username* and *api key*
+  credentials.
+* *Administrative* methods require that the connection to the API is opened from
+  localhost (`127.0.0.1` or `::1`).
 
 
 ## Data types
@@ -88,7 +140,7 @@ Represents the password of an authenticated account (see *[Privilege levels]*)
 
 Basic data type: number
 
-A positive integer.
+A strictly positive integer.
 
 The unique id of a *batch*.
 
@@ -136,24 +188,62 @@ Basic data type: string
 
 Basic data type: object
 
-DS for [Delegation Signer](https://tools.ietf.org/html/rfc4034) references DNSKEY-records in the sub-delegated zone.
+DS for [Delegation Signer] references a DNSKEY record in the delegated zone.
 
 Properties:
-* `"digest"`: A string, required. Either 40 or 64 hexadecimal characters (case insensitive).
+* `"digest"`: A string, required. Either 40, 64 or 96 hexadecimal characters (case insensitive).
 * `"algorithm"`: An non negative integer, required.
 * `"digtype"`: An non negative integer, required.
 * `"keytag"`: An non negative integer, required.
-
-Extra properties in *DS info* objects are ignored when present in RPC method arguments, and never returned as part of RPC method results.
 
 
 ### IP address
 
 Basic data type: string
 
-This parameter is a string that are an IPv4 or IPv6. It's validated with the following regexes:
- - IPv4 : `/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/`
- - IPv6 : `/^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/`
+This parameter is a string that is either
+ - a valid IPv4 address in [dot-decimal notation] ;
+ - a valid IPv6 address in [recommended text format][RFC 5952] for IPv6 addresses.
+
+### Language tag
+
+Basic data type: string
+
+A string matching one of the following regular expression:
+* `/^[a-z]{2}$/`, preferred format.
+* `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
+
+The set of valid *language tags* is further constrained by the
+[LANGUAGE.locale] property.
+* If the *language tag* is a five character string, it needs to match a *locale
+  tag* in [LANGUAGE.locale].
+* If the *language tag* is a two-character string, it needs to match the
+  first two characters of exactly one *locale tag* in [LANGUAGE.locale].
+  (So that it is unambiguous which *locale tag* is matched.)
+
+E.g. if [LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
+are "en_US", "en_UK", "sv_SE" and "sv".
+
+The use of `language tags` that include the country code is *deprecated*.
+
+#### Design
+
+The two first characters of the *language tag* are intended to be an
+[ISO 639-1] two-character language code and the optional two last characters
+are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+
+#### Out-of-the box support
+
+A default installation will accept the following *language tags*:
+
+Language | Preferred language tag | Deprecated language tag
+---------|------------------------|------------------
+Danish   | da                     | da_DK
+English  | en                     | en_US
+Finnish  | fi                     | fi_FI
+French   | fr                     | fr_FR
+Norwegian| nb                     | nb_NO
+Swedish  | sv                     | sv_SE
 
 
 ### Name server
@@ -164,6 +254,13 @@ Properties:
 
 * `"ns"`: A *domain name*, required.
 * `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: unset)
+
+
+### Non-negative integer
+
+Basic data type: number (integer)
+
+A non-negative integer is either zero or strictly positive.
 
 
 ### Priority
@@ -179,22 +276,57 @@ The drawback of this setup will be that the GUI will have to wait for at least o
 Basic data type: string
 
 This parameter is a case-insensitive string validated with the case-insensitive
-regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i`.
+regex `/^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$/i` which must be predefined
+in the configuration file as specified in the Configuration document
+[profile sections].
 
 The name of a [*profile*](Architecture.md#profile).
 
-When a method received an unknown *profile name* value for in parameter with this type, it returns the following error message:
+Below are the current error messages for an incorrect *profile name*. The
+messages should, however, considered to be unstable and are planned to be updated
+to gain consistent error messages from the RPCAPI.
+
+When a method receives an illegal *profile name* value for a parameter with this
+type, it returns the following error message:
 
 ```json
 {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "message": "Invalid profile option format",
-        "status": "nok"
+    "jsonrpc":"2.0",
+    "id":1,
+    "error":{
+        "message":"Invalid method parameter(s).",
+        "data": [
+            {
+              "path": "/profile",
+              "message": "String does not match (?^ui:^[a-z0-9]$|^[a-z0-9][a-z0-9_-]{0,30}[a-z0-9]$)."
+            },
+        ],
+        "code":"-32602"
     }
 }
 ```
+
+When a method receives a legal but undefined *profile name* value for a parameter
+with this type, it returns the following error message:
+
+```json
+{
+    "jsonrpc":"2.0",
+    "id":1,
+    "error":{
+        "message":"Invalid method parameter(s).",
+        "data": [
+            {
+              "path": "/profile",
+              "message": "Unknown profile"
+            },
+        ],
+        "code":"-32602"
+    }
+}
+```
+The error code is "009" (as above) if method [start_domain_test] was requested.
+Instead it will be "015" if method [add_batch_job] is requested.
 
 
 ### Progress percentage
@@ -218,12 +350,19 @@ Basic data type: string
 
 One of the strings (in order from least to most severe):
 
-* `"DEBUG"`
 * `"INFO"`
 * `"NOTICE"`
 * `"WARNING"`
 * `"ERROR"`
 * `"CRITICAL"`
+
+Severity levels in Zonemaster are defined in the [Severity Level Definitions]
+document. The following severity levels are not available through the RPCAPI
+(in order from least to most severe):
+
+* DEBUG3
+* DEBUG2
+* DEBUG
 
 
 ### Test id
@@ -247,7 +386,7 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*. 
+* `"ns"`: a *domain name*. The name server used by the *test module*.
 This key is added when the module name is `"NAMESERVER"`.
 
 
@@ -258,42 +397,6 @@ Basic data type: string
 Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 
-
-### Language tag
-
-Basic data type: string
-
-A string of A-Z, a-z and underscores matching the regular expression
-`/^[a-z]{2}(_[A-Z]{2})?$/`.
-
-The `language tag` must match a `locale tag` in the configuration file.
-If the `language tag` is a two-character string, it only needs to match the
-first two characters of the `locale tag` from the configuration file, if
-that is unique (there is only one `locale tag` starting with the same two
-characters), else it is an error.
-
-Any other string is an error.
-
-The two first characters of the `language tag` are intended to be an
-[ISO 639-1] two-character language code and the optional two last characters
-are intended to be an [ISO 3166-1 alpha-2] two-character country code.
-
-A default installation will accept the following `language tags`:
-* `da` or `da_DK` for Danish language.
-* `en` or `en_US` for English language.
-* `fi` or `fi_FI` for Finnish language.
-* `fr` or `fr_FR` for French language.
-* `nb` or `nb_NO` for Norwegian language.
-* `sv` or `sv_SE` for Swedish language.
-
-
-### Unsigned integer
-
-Basic data type: number (integer)
- 
-An unsigned integer is either positive or zero.
- 
-
 ### Username
 
 Basic data type: string
@@ -303,6 +406,16 @@ most 50 characters.
 I.e. a string matching `/^[a-zA-Z0-9-.@]{1,50}$/`.
 
 Represents the name of an authenticated account (see *[Privilege levels]*)
+
+### Validation error data
+
+Basic data type: array
+
+The items of the array are objects with two keys, `"path"` and `"message"`:
+* `"path"`: a string. A [JSON Pointer] to an element in the request's param
+  object. E.g.: `"/nameservers/0/ip"`.
+* `"message"`: a string. The error message associated with the element
+  referenced by `"path"`.
 
 
 ## API method: `version_info`
@@ -348,7 +461,8 @@ An object with the following properties:
 
 ## API method: `profile_names`
 
-Returns the names of the public subset of the [available profiles].
+Returns the names of the public subset of the
+[available profiles][Profile sections].
 
 Example request:
 ```json
@@ -379,8 +493,13 @@ An array of *Profile names* in lower case. `"default"` is always included.
 
 ## API method: `get_language_tags`
 
-Returns all valid [language tags][language tag] generated from the setting in
-the configuration file.
+Returns the set of valid [*language tags*][Language tag].
+
+> Note: If there are two [*locale tags*][LANGUAGE.locale] in [LANGUAGE.locale]
+> that would give the same [short language tag][Language tag] then the short tag
+> is excluded from the set of valid [*language tags*][Language tag].
+>
+> Note: Language tags that include country code are *deprecated*.
 
 Example request:
 ```json
@@ -397,10 +516,16 @@ Example response:
   "jsonrpc": "2.0",
   "id": 1,
   "result": [
+    "da",
+    "da_DK",
     "en",
     "en_US",
+    "fi",
+    "fi_FI",
     "fr",
     "fr_FR",
+    "nb",
+    "nb_NO",
     "sv",
     "sv_SE"
   ]
@@ -460,7 +585,7 @@ Example response:
 
 An object with the property:
 
-`"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
+* `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
@@ -477,10 +602,26 @@ value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
+  Example of error response:
+
+```json
+{
+  "error": {
+    "message": "Invalid method parameter(s).",
+    "code": "-32602",
+    "data": [
+      {
+        "path": "/hostname",
+        "message": "Missing property"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 1624630143271
+}
+```
 
 ## API method: `get_data_from_parent_zone`
 
@@ -542,24 +683,42 @@ Example response:
 
 #### `"params"`
 
-An object with the property:
+An object with the properties:
 
-`"domain"`: A *domain name*, required. The domain whose DNS records are requested.
-
+* `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, if not provided messages will be untranslated (in English).
 
 #### `"result"`
 
 An object with the following properties:
 
-* `"ns_list"`: A list of *name server* objects representing the nameservers of the given *domain name*.
-* `"ds_list"`: A list of *DS info* objects representing delegated signer of the given *domain name*.
+* `"ns_list"`: A list of [*name server*][Name server] objects representing the nameservers of the given *domain name*.
+* `"ds_list"`: A list of [*DS info*][DS info] objects representing delegation signer (DS record data) of the given *domain name*.
 
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
+
+  Example of error response:
+
+```json
+{
+  "error": {
+    "data": [
+      {
+        "message": "The domain name character(s) are not supported",
+        "path": "/domain"
+      }
+    ],
+    "code": "-32602",
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1624630143271,
+  "jsonrpc": "2.0"
+}
+```
 
 
 ## API method: `start_domain_test`
@@ -615,38 +774,80 @@ Example response:
 An object with the following properties:
 
 * `"domain"`: A *domain name*, required. The zone to test.
-* `"ipv6"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv4 tests.
-* `"ipv4"`: A boolean, optional. (default `true`). Used to configure the test and enable IPv6 tests.
-* `"nameservers"`: A list of *name server* objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`). Used to perform un-delegated test.
-* `"profile"`: A *profile name*, optional. (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated**. A string, optional. Ignored. Specify `"profile"` instead.
+* `"ipv6"`: A boolean, optional. (default: [`net.ipv4`][net.ipv4] profile value). Used to enable or disable testing over IPv4 transport protocol.
+* `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value). Used to enable or disable testing over IPv6 transport protocol.
+* `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`). Used to perform un-delegated test.
+* `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`). Used to perform un-delegated test.
+* `"profile"`: A [*profile name*][profile name], optional. (default:
+  `"default"`). Run the tests using the given profile.
 * `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
 * `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A *priority*, optional. (default: `10`)
 * `"queue"`: A *queue*, optional. (default: `0`)
+* `"language"`: A [Language Tag], optional, used for validation error messages
+  translation, if not provided messages will be untranslated.
 
->
 > TODO: Clarify the purpose of each `"params"` property.
 >
 
 
 #### `"result"`
 
-A *test id*. 
+A *test id*.
 
-If the test has been run with the same domain name within an interval of 10 mins (hard coded), 
-then the new request does not trigger a new test, but returns with the results of the last test
+If a test has been requested with the same parameters (as listed below) not more
+than "reuse time" ago, then a new request will not trigger a new test. Instead
+the `test id` of the previous test will be returned. The default value of
+"reuse time" is 600 seconds, and can be set by the [`age_reuse_previous_test`]
+key in the configuration file.
 
+The parameters that are compared when to determine if two requests are to be
+considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
+and `profile`.
 
 #### `"error"`
 
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
+* If any parameter is invalid an error code of -32602 is returned.
+  The `data` property contains an array of all errors, see [Validation error data].
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+* If the given `profile` is not among the [available profiles][Profile sections],
+  a user error is returned, see [profile name section][profile name].
+
+Example of error response:
+
+```json
+{
+  "error": {
+    "code": "-32602",
+    "data": [
+      {
+        "message": "Expected integer - got string.",
+        "path": "/ds_info/0/algorithm"
+      },
+      {
+        "message": "Missing property.",
+        "path": "/ds_info/0/digest"
+      },
+      {
+        "path": "/profile",
+        "message": "Unknown profile"
+      },
+      {
+        "path": "/domain",
+        "message": "The domain name character(s) are not supported"
+      },
+      {
+        "path": "/nameservers/0/ip",
+        "message": "Invalid IP address"
+      }
+    ],
+    "message": "Invalid method parameter(s)."
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
+}
+```
+
 
 
 ## API method: `test_progress`
@@ -730,7 +931,6 @@ Example response:
       "domain": "zonemaster.net",
       "profile": "default",
       "ipv6": true,
-      "advanced": true,
       "nameservers": [
         {
           "ns": "ns3.nic.se",
@@ -784,19 +984,20 @@ In the case of a test created with `start_domain_test`:
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
-* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
-  was started.
+* `"hash_id"`: A *test id*. The *test* in question.
+* `"params"`: A normalized version `"params"` object sent to
+  `start_domain_test` when the *test* was started.
 * `"results"`: A list of *test result* objects.
 
 
 In the case of a test created with `add_batch_job`:
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
 * `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question. 
-* `"params"`: The `"params"` object sent to `start_domain_test` when the *test*
-  was started.
-* `"results"`: the result is a list of *test id* corresponding to each tested domain.
+* `"hash_id"`: A *test id*. The *test* in question.
+* `"params"`: A normalized version `"params"` object sent to `add_batch_job`
+  when the *test* was started.
+* `"results"`: the result is a list of *test id* corresponding to each tested
+  domain.
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -840,14 +1041,14 @@ Example response:
     {
       "id": "c45a3f8256c4a155",
       "creation_time": "2016-11-15 11:53:13.965982",
+      "undelegated": true,
       "overall_result": "error",
-      "advanced_options": null
     },
     {
       "id": "32dd4bc0582b6bf9",
+      "undelegated": false,
       "creation_time": "2016-11-14 08:46:41.532047",
       "overall_result": "error",
-      "advanced_options": null
     },
     ...
   ]
@@ -860,13 +1061,18 @@ Example response:
 > symbol.
 >
 
+### Undelegated and delegated
+
+A test is considered to be `"delegated"` below if the test was started, by
+`start_domain_test` or `add_batch_job` without specifying neither `"nameserver"`
+nor `"ds_info"`. Else it is considered to be `"undelegated"`.
 
 #### `"params"`
 
 An object with the following properties:
 
-* `"offset"`: An *unsigned integer*, optional. (default: 0). Position of the first returned element from the database returned list.  
-* `"limit"`: An *unsigned integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"offset"`: A *non-negative integer*, optional. (default: 0). Position of the first returned element from the database returned list.
+* `"limit"`: A *non-negative integer*, optional. (default: 200). Number of element returned from the *offset* element.
 * `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
 * `"frontend_params"`: An object, required.
 
@@ -881,16 +1087,17 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
-* `"overall_result"`: A string. The most severe problem level logged in the test results.
-It could be:
-    * `"ok"`, all is normal
-    * `"warning"`, equivalent to the `"WARNING"` *severity level*.
-    * `"error"`, equivalent to the `"ERROR"` *severity level*.
-    * `"critical"`, equivalent to the `"CRITICAL"` *severity level*.
-
-
-> TODO: What about if the *test* was created with `add_batch_job` or something else?
-
+* `"overall_result"`: A string. It reflects the most severe problem level among
+  the test results for the test. It has one of the following values:
+  * `"ok"`, if there are only messages with *severity level* `"INFO"` or
+    `"NOTICE"`.
+  * `"warning"`, if there is at least one message with *severity level*
+    `"WARNING"`, but none with `"ERROR"` or `"CRITICAL"`.
+  * `"error"`, if there is at least one message with *severity level*
+    `"ERROR"`, but none with `"CRITICAL"`.
+  * `"critical"`, if there is at least one message with *severity level*
+    `"CRITICAL"`.
+* `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
 
 #### `"error"`
 
@@ -901,13 +1108,13 @@ It could be:
 
 ## API method: `add_api_user`
 
-In order to use advanced api features such as the *batch test*, it's necessaire to previously create an api key.
-This key can be obtained with the creation of a user in the system.
-This function allow the creation of a new user and so, the creation of a new api key.
+In order to use the [`add_batch_job`](#API-method-add_batch_job) method a
+*username* and its *api key* must be added by this method.
 
-Add a new *user* 
+This method is not available if [`RPCAPI.enable_add_api_user`] is disabled
+(disabled by default). This method is not available unless the connection to
+RPCAPI is over localhost (*administrative* method).
 
-This method requires the *administrative* *privilege level*.
 
 Example request:
 ```json
@@ -936,8 +1143,9 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*, required. The name of the user to add.
-* `"api_key"`: An *api key*, required. The API key for the user to add.
+* `"username"`: A *username*, required. The *username* to be added.
+* `"api_key"`: An *api key*, required. The *api key* for the *username* to be
+  added.
 
 
 #### `"result"`
@@ -946,6 +1154,7 @@ An integer. The value is equal to 1 if the registration is a success, or 0 if it
 
 
 #### `"error"`
+
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
@@ -953,29 +1162,89 @@ An integer. The value is equal to 1 if the registration is a success, or 0 if it
 Trying to add a already existing user:
 ```json
 {
-  "code": -32603,
-  "message": "User already exists\n"
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "data": {
+      "username": "citron"
+    },
+    "message": "User already exists",
+    "code": -32603
+  }
 }
 ```
 
-Ommitting params:
-```json 
+Omitting params:
+```json
 {
-  "message": "username or api_key not provided to the method add_api_user\n",
-  "code": -32603
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": "-32602",
+    "message": "Invalid method parameter(s).",
+    "data": [
+      {
+        "message": "Expected string - got null.",
+        "path": "/api_key"
+      }
+    ]
+  }
 }
 ```
 
+```json
+{
+  "error": {
+    "data": [
+      {
+        "path": "/username",
+        "message": "Expected string - got null."
+      }
+    ],
+    "message": "Invalid method parameter(s).",
+    "code": "-32602"
+  },
+  "jsonrpc": "2.0",
+  "id": 1
+}
+```
+
+Trying to add a user over non-localhost:
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32603,
+    "data": {
+      "remote_ip": "10.0.0.1"
+    },
+    "message": "Call to \"add_api_user\" method not permitted from a remote IP"
+  }
+}
+```
+
+Trying to add a user when the method is disabled:
+```json
+{
+  "error": {
+    "code": -32601,
+    "message": "Procedure 'add_api_user' not found"
+  }
+}
+```
 
 ## API method: `add_batch_job`
 
-Add a run a new *batch test* composed by a set of *domain name* and a *params* object.
+Add a new *batch test* composed by a set of *domain name* and a *params* object.
 All the domains will be tested using identical parameters.
 
-An *api user* can only have one un-finished *batch* at a time.
+This method is not available if [`RPCAPI.enable_add_batch_job`] is disabled
+(enabled by default).
 
-If an identical *test* for a domain was already enqueued and hasn't been started or was enqueued less than 10 minutes earlier,
-no new *test* is enqueued for this domain.
+A *username* and its *api key* can be added with the
+[`add_api_user`](#API-method-add_api_user) method. A *username* can only have
+one un-finished *batch* at a time.
 
 *Tests* enqueud using this method are assigned a *priority* of 5.
 
@@ -1013,7 +1282,7 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: An *username*, required. The name of the account of an authorized user.
+* `"username"`: A *username*, required. The name of the account of an authorized user.
 * `"api_key"`: An *api key*, required. The api_key associated with the username.
 * `"domains"`: A list of *domain names*, required. The domains to be tested.
 * `"test_params"`: As described below, optional. (default: `{}`)
@@ -1021,13 +1290,13 @@ An object with the following properties:
 The value of `"test_params"` is an object with the following properties:
 
 * `"client_id"`: A *client id*, optional. (default: unset)
-* `"profile"`: A *profile name*, optional (default `"default"`). Run the tests using the given profile.
-* `"config"`: **Deprecated.** A string, optional. Ignored. Specify profile instead.
+* `"profile"`: A [*profile name*][profile name], optional (default:
+  `"default"`). Run the tests using the given profile.
 * `"client_version"`: A *client version*, optional. (default: unset)
-* `"nameservers"`: A list of *name server* objects, optional. (default: `[]`)
-* `"ds_info"`: A list of *DS info* objects, optional. (default: `[]`)
-* `"ipv4"`: A boolean, optional. (default: `true`)
-* `"ipv6"`: A boolean, optional. (default: `true`)
+* `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)
+* `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`)
+* `"ipv6"`: A boolean, optional. (default: [`net.ipv4`][net.ipv4] profile value).
+* `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value).
 * `"priority"`: A *priority*, optional. (default: `5`)
 * `"queue"`: A *queue*, optional. (default: `0`)
 
@@ -1039,15 +1308,53 @@ A *batch id*.
 
 #### `"error"`
 
-* You can't create a new batch job.
-  A *batch* with unfinished *tests* already exists for this *api user*.
-* If the given `profile` is not among the [available profiles], a user
-  error is returned.
+* You cannot create a new batch job if a *batch* with unfinished *tests* already
+  exists for this *username*.
+* If the given `profile` is not among the [available profiles][Profile sections],
+  a user error is returned, see the [profile name section][profile name].
 
+Trying to add a batch when a batch is still running for the *username* in the
+request:
+```json
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "data": {
+      "creation_time": "2021-09-27 07:33:40",
+      "batch_id": 1
+    },
+    "code": -32603,
+    "message": "Batch job still running"
+  },
+  "id": 1
+}
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+```
+
+Trying to add a batch when wrong *username* or *api key* is used:
+```json
+{
+  "error": {
+    "message": "User not authorized to use batch mode",
+    "code": -32603,
+    "data": {
+      "username": "citron"
+    }
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
+}
+```
+
+Trying to add a batch when the method has been disabled.
+```
+{
+  "error": {
+    "message": "Procedure 'add_batch_job' not found",
+    "code": -32601
+  }
+}
+```
 
 
 ## API method: `get_batch_job_result`
@@ -1097,8 +1404,8 @@ An object with the property:
 
 An object with the following properties:
 
-* `"nb_finished"`: an *unsigned integer*. The number of finished tests.
-* `"nb_running"`: an *unsigned integer*. The number of running tests.
+* `"nb_finished"`: a *non-negative integer*. The number of finished tests.
+* `"nb_running"`: a *non-negative integer*. The number of running tests.
 * `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
 
 
@@ -1110,7 +1417,7 @@ An object with the following properties:
 
 ## API method: `get_test_params`
 
-Return all *params* objects of a *test*.
+Return a normalized *params* objects of a *test*.
 
 Example request:
 
@@ -1133,7 +1440,6 @@ Example response:
          "domain": "zonemaster.net",
          "profile": "default",
          "client_id": "Zonemaster Dancer Frontend",
-         "advanced": true,
          "nameservers": [
             {
                 "ns": "ns3.nic.se",
@@ -1171,8 +1477,26 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Available profiles]:           Configuration.md#profiles-section
+[Add_batch_job]:                #api-method-add_batch_job
+[DS info]:                      #ds-info
+[Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
+[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
 [ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
-[Privilege levels]:             #privilege-levels
+[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
+[JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
+[LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
+[Name server]:                  #name-server
+[Privilege levels]:             #privilege-levels
+[Profile name]:                 #profile-name
+[Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
+[RFC 5952]:                     https://datatracker.ietf.org/doc/html/rfc5952
+[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
+[Start_domain_test]:            #api-method-start_domain_test
+[Validation error data]:        #validation-error-data
+[`RPCAPI.enable_add_api_user`]: Configuration.md#enable_add_api_user
+[`RPCAPI.enable_add_batch_job`]: Configuration.md#enable_add_batch_job
+[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
+[net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
+[net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6

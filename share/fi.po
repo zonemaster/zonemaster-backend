@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-11-29 17:02+0100\n"
+"PO-Revision-Date: 2021-11-29 17:07+0100\n"
+"Last-Translator: mats.dufberg@iis.se\n"
+"Language-Team: Zonemaster project\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+
+msgid "Domain name required"
+msgstr "Vaaditaan verkkotunnus"
+
+msgid ""
+"The domain name is not a valid IDNA string and cannot be converted to an A-"
+"label"
+msgstr ""
+"Verkkotunnus ei ole kelvollinen IDNA-merkkijono, eikä sitä voi muuntaa A-"
+"tunnisteeksi"
+
+msgid "The domain name contains non-ascii characters and IDNA is not installed"
+msgstr ""
+"Verkkotunnuksen nimi sisältää muita kuin ascii-merkkejä, mutta IDNA:ta ei "
+"ole asennettu"
+
+msgid "The domain name character(s) are not supported"
+msgstr "Verkkotunnuksen sisältämiä merkkejä ei tueta"
+
+msgid "The domain name or label is too long"
+msgstr "Verkkotunnus tai sen tunnisteet ovat liian pitkiä"
+
+msgid "Unknown profile"
+msgstr "Tuntematon profiili"
+
+msgid "Invalid IP address"
+msgstr "Virheellinen IP-osoite"
+
+msgid "Unkown language string"
+msgstr "Tuntematon kielitunniste"
+
+msgid "Language string not unique"
+msgstr "Kielitunniste ei ole yksilöivä"
+
+msgid "Invalid method parameter(s)."
+msgstr "Virheelliset asetukset"
+
+msgid "Missing property"
+msgstr "Kenttä puuttuu"
+
+msgid ""
+"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
+"names correctly."
+msgstr ""
+"Varoitus: Zonemaster :: LDNS ei ole käännetty libidnillä, eikä pysty "
+"käsittelemään ei-ASCII-nimiä oikein."
+
+msgid "The domain name contains a character or characters not supported"
+msgstr "Verkkotunnus sisältää merkin tai merkkejä joita ei tueta"
+
+msgid "Invalid digest format"
+msgstr "Virheellinen tiivisteen muoto"
+
+msgid "Algorithm must be a positive integer"
+msgstr "Algoritmin on oltava positiivinen kokonaisluku"
+
+msgid "Digest type must be a positive integer"
+msgstr "Tiivistetyypin (Digest type) on oltava positiivinen kokonaisluku"
+
+msgid "Keytag must be a positive integer"
+msgstr "Tunnisteen (Keytag) on oltava positiivinen kokonaisluku"
+
+msgid "Invalid language tag format"
+msgstr "Virheellinen kielitunnisteen muoto"
+

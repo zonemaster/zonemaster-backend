@@ -16,21 +16,7 @@ require Zonemaster::Engine::Logger::Entry;
 extends 'Zonemaster::Engine::Translator';
 
 sub translate_tag {
-    my ( $self, $hashref, $browser_lang ) = @_;
-
-    # Workaround for broken Zonemaster::Engine::translate_tag in Zonemaster-Engine 3.1.2.
-    # Make locale really be set. Fix that makes translation work on FreeBSD 12.1. Solution copied from
-    # CLI.pm in the Zonemaster-CLI repository.
-    undef $ENV{LANGUAGE};
-    $ENV{LC_ALL} = $self->locale;
-    if ( not defined setlocale( LC_MESSAGES, "" ) ) {
-        warn sprintf "Warning: setting locale category LC_MESSAGES to %s failed (is it installed on this system?).",
-        $ENV{LANGUAGE} || $ENV{LC_ALL} || $ENV{LC_MESSAGES};
-    }
-    if ( not defined setlocale( LC_CTYPE, "" ) ) {
-        warn sprintf "Warning: setting locale category LC_CTYPE to %s failed (is it installed on this system?)." ,
-        $ENV{LC_ALL} || $ENV{LC_CTYPE};
-    }
+    my ( $self, $hashref ) = @_;
 
     my $entry = Zonemaster::Engine::Logger::Entry->new( %{ $hashref } );
     my $octets = Zonemaster::Engine::Translator::translate_tag( $self, $entry );

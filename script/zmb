@@ -147,6 +147,7 @@ sub cmd_get_language_tags {
     --ipv4 true|false|null
     --ipv6 true|false|null
     --nameserver DOMAIN_NAME:IP_ADDRESS
+    --nameserver DOMAIN_NAME  # Trailing colon is optional when not specifing IP_ADDRESS
     --ds-info DS_INFO
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
@@ -154,9 +155,9 @@ sub cmd_get_language_tags {
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
-    keytag=UNSIGNED_INTEGER
-    algorithm=UNSIGNED_INTEGER
-    digtype=UNSIGNED_INTEGER
+    keytag=NON_NEGATIVE_INTEGER
+    algorithm=NON_NEGATIVE_INTEGER
+    digtype=NON_NEGATIVE_INTEGER
     digest=HEX_STRING
 
 =cut
@@ -214,6 +215,7 @@ sub cmd_start_domain_test {
         my @nameserver_objects;
         for my $domain_ip_pair ( @opt_nameserver ) {
             my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
+            $ip //= "";
             push @nameserver_objects,
               {
                 ns => $domain,
@@ -243,12 +245,14 @@ sub cmd_start_domain_test {
 }
 
 
+
+
 =head2 test_progress
 
  zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
 
  Options:
-   --testid TEST_ID
+   --test-id TEST_ID
 
 =cut
 
@@ -256,15 +260,45 @@ sub cmd_test_progress {
     my @opts = @_;
 
     my $opt_lang;
-    my $opt_testid;
-    GetOptionsFromArray( \@opts, 'testid|t=s' => \$opt_testid, )
-      or pod2usage( 2 );
+    my $opt_test_id;
+    GetOptionsFromArray(
+        \@opts,
+        'test-id|t=s' => \$opt_test_id,
+    ) or pod2usage( 2 );
 
     return to_jsonrpc(
         id     => 1,
         method => 'test_progress',
         params => {
-            test_id => $opt_testid,
+            test_id => $opt_test_id,
+        },
+    );
+}
+
+
+=head2 get_test_params
+
+ zmb [GLOBAL OPTIONS] get_test_params [OPTIONS]
+
+ Options:
+   --test-id TEST_ID
+
+=cut
+
+sub cmd_get_test_params {
+    my @opts = @_;
+
+    my $opt_test_id;
+    GetOptionsFromArray(    #
+        \@opts,
+        'test-id|t=s' => \$opt_test_id,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_test_params',
+        params => {
+            test_id => $opt_test_id,
         },
     );
 }
@@ -275,7 +309,7 @@ sub cmd_test_progress {
  zmb [GLOBAL OPTIONS] get_test_results [OPTIONS]
 
  Options:
-   --testid TEST_ID
+   --test-id TEST_ID
    --lang LANGUAGE
 
 =cut
@@ -284,18 +318,18 @@ sub cmd_get_test_results {
     my @opts = @_;
 
     my $opt_lang;
-    my $opt_testid;
+    my $opt_test_id;
     GetOptionsFromArray(
         \@opts,
-        'testid|t=s' => \$opt_testid,
-        'lang|l=s'   => \$opt_lang,
+        'test-id|t=s' => \$opt_test_id,
+        'lang|l=s'    => \$opt_lang,
     ) or pod2usage( 2 );
 
     return to_jsonrpc(
         id     => 1,
         method => 'get_test_results',
         params => {
-            id       => $opt_testid,
+            id       => $opt_test_id,
             language => $opt_lang,
         },
     );
@@ -308,7 +342,7 @@ sub cmd_get_test_results {
 
  Options:
    --domain DOMAIN_NAME
-   --nameserver true|false|null
+   --filter all|delegated|undelegated
    --offset COUNT
    --limit COUNT
 
@@ -316,7 +350,7 @@ sub cmd_get_test_results {
 
 sub cmd_get_test_history {
     my @opts = @_;
-    my $opt_nameserver;
+    my $opt_filter;
     my $opt_domain;
     my $opt_offset;
     my $opt_limit;
@@ -324,7 +358,7 @@ sub cmd_get_test_history {
     GetOptionsFromArray(
         \@opts,
         'domain|d=s'     => \$opt_domain,
-        'nameserver|n=s' => \$opt_nameserver,
+        'filter|n=s'     => \$opt_filter,
         'offset|o=i'     => \$opt_offset,
         'limit|l=i'      => \$opt_limit,
     ) or pod2usage( 2 );
@@ -335,8 +369,11 @@ sub cmd_get_test_history {
         },
     );
 
-    if ( $opt_nameserver ) {
-        $params{frontend_params}{nameservers} = json_tern( $opt_nameserver );
+    if ( $opt_filter ) {
+        unless ( $opt_filter =~ /^(?:all|delegated|undelegated)$/ ) {
+            die 'Illegal filter value. Expects "all", "delegated" or "undelegated" ';
+        }
+        $params{filter} = $opt_filter;
     }
 
     if ( defined $opt_offset ) {
@@ -387,6 +424,155 @@ sub cmd_add_api_user {
 }
 
 
+=head2 add_batch_job
+
+ zmb [GLOBAL OPTIONS] add_batch_job [OPTIONS]
+
+ Options:
+    --username USERNAME
+    --api-key API_KEY
+    --domain DOMAIN_NAME
+    --ipv4 true|false|null
+    --ipv6 true|false|null
+    --nameserver DOMAIN_NAME:IP_ADDRESS
+    --nameserver DOMAIN_NAME  # Trailing colon is optional when not specifing IP_ADDRESS
+    --ds-info DS_INFO
+    --client-id CLIENT_ID
+    --client-version CLIENT_VERSION
+    --profile PROFILE_NAME
+
+ "--domain" is repeated for each domain to be tested.
+ "--nameserver" can be repeated for each name server.
+ "--ds-info" can be repeated for each DS record.
+
+ DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
+
+    keytag=NON_NEGATIVE_INTEGER
+    algorithm=NON_NEGATIVE_INTEGER
+    digtype=NON_NEGATIVE_INTEGER
+    digest=HEX_STRING
+
+=cut
+
+sub cmd_add_batch_job {
+    my @opts = @_;
+
+    my $opt_username;
+    my $opt_api_key;
+    my @opt_nameserver;
+    my @opt_domains;
+    my $opt_client_id;
+    my $opt_client_version;
+    my @opt_ds_info;
+    my $opt_ipv4;
+    my $opt_ipv6;
+    my $opt_profile;
+    GetOptionsFromArray(
+        \@opts,
+        'username|u=s'     => \$opt_username,
+        'api-key|a=s'      => \$opt_api_key,
+        'domain|d=s'       => \@opt_domains,
+        'nameserver|n=s'   => \@opt_nameserver,
+        'client-id=s'      => \$opt_client_id,
+        'client-version=s' => \$opt_client_version,
+        'ds-info=s'        => \@opt_ds_info,
+        'ipv4=s'           => \$opt_ipv4,
+        'ipv6=s'           => \$opt_ipv6,
+        'profile=s'        => \$opt_profile,
+    ) or pod2usage( 2 );
+
+
+    my %params = ( domains => \@opt_domains );
+
+    $params{username} = $opt_username;
+    $params{api_key} = $opt_api_key;
+
+    if ( $opt_client_id ) {
+        $params{test_params}{client_id} = $opt_client_id;
+    }
+
+    if ( $opt_client_version ) {
+        $params{test_params}{client_version} = $opt_client_version;
+    }
+
+    if ( @opt_ds_info ) {
+        my @info_objects;
+        for my $property_value_pairs ( @opt_ds_info ) {
+            my %info_object;
+            for my $pair ( split /,/, $property_value_pairs ) {
+                my ( $property, $value ) = split /=/, $pair;
+                if ( $property =~ /^(?:keytag|algorithm|digtype)$/ ) {
+                    $value = 0 + $value;
+                }
+                $info_object{$property} = $value;
+            }
+            push @info_objects, \%info_object;
+        }
+        $params{test_params}{ds_info} = \@info_objects;
+    }
+
+    if ( @opt_nameserver ) {
+        my @nameserver_objects;
+        for my $domain_ip_pair ( @opt_nameserver ) {
+            my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
+            $ip //= "";
+            push @nameserver_objects,
+              {
+                ns => $domain,
+                ip => $ip,
+              };
+        }
+        $params{test_params}{nameservers} = \@nameserver_objects;
+    }
+
+    if ( $opt_ipv4 ) {
+        $params{test_params}{ipv4} = json_tern( $opt_ipv4 );
+    }
+
+    if ( $opt_ipv6 ) {
+        $params{test_params}{ipv6} = json_tern( $opt_ipv6 );
+    }
+
+    if ( $opt_profile ) {
+        $params{test_params}{profile} = $opt_profile;
+    }
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'add_batch_job',
+        params => \%params,
+    );
+}
+
+
+=head2 get_batch_job_result
+
+ zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
+
+ Options:
+   --batch-id BATCH-ID
+
+=cut
+
+sub cmd_get_batch_job_result {
+    my @opts = @_;
+
+    my $opt_batch_id;
+    GetOptionsFromArray(
+        \@opts,
+        'batch-id|i=s' => \$opt_batch_id,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_batch_job_result',
+        params => {
+            batch_id => $opt_batch_id,
+        },
+    );
+}
+
+
 sub show_commands {
     my %specials = (
         man                 => 'Show the full manual page.',
@@ -429,7 +615,7 @@ sub json_tern {
         return undef;
     }
     else {
-        die "unknown ternary value";
+        die 'Illegal value. Expects "true", "false" or "null" ';
     }
 }
 

@@ -541,7 +541,10 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= MySQL/' /usr/local/etc/zonemaster/back
 Install, configure and start database engine (and Perl bindings):
 
 ```sh
-pkg install -y mysql57-server p5-DBD-mysql
+pkg install mysql57-server p5-DBD-mysql
+```
+
+```sh
 sysrc mysql_enable="YES"
 service mysql-server start
 ```
@@ -668,10 +671,29 @@ sed -i '' '/[[:<:]]engine[[:>:]]/ s/=.*/= PostgreSQL/' /usr/local/etc/zonemaster
 ```
 > **Note:** See the [backend configuration] documentation for details.
 
-Install, configure and start database engine (and Perl bindings):
+Install, configure and start database engine and Perl bindings:
 
 ```sh
-pkg install -y postgresql12-server p5-DBD-Pg
+pkg install p5-DBD-Pg
+```
+
+The Perl bindings library (`p5-DBD-Pg`) has a dependency to a specific version
+of `postgresql-client`. Determine what version was installed:
+
+```sh
+pkg info | grep postgresql |grep client
+```
+If the installed client is not version `13` then adjust the following command to
+install `postgresql-server` with the same version as `postgresql-client`
+installed.
+
+```sh
+pkg install postgresql13-server
+```
+
+Enable daemon, initiate and start:
+
+```sh
 sysrc postgresql_enable="YES"
 service postgresql initdb
 service postgresql start

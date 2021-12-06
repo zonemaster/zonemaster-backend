@@ -56,6 +56,9 @@ database = travis_zonemaster
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
+
+[LANGUAGE]
+locale = en_US
 EOF
 
 # Create Zonemaster::Backend::RPCAPI object
@@ -75,13 +78,7 @@ if ( $db_backend eq 'SQLite' ) {
 # add test user
 is( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
-my $user_check_query;
-if ( $db_backend eq 'PostgreSQL' ) {
-    $user_check_query = q/SELECT * FROM users WHERE user_info->>'username' = 'zonemaster_test'/;
-}
-elsif ( $db_backend eq 'MySQL' || $db_backend eq 'SQLite' ) {
-    $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-}
+my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
 is( scalar( $engine->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
 
 # add a new test to the db
@@ -135,12 +132,6 @@ sub run_zonemaster_test_with_backend_API {
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
     ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
     cmp_ok( scalar( @{ $test_results->{results} } ), '>', 1, 'TEST1 got some results' );
-
-    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'fr-FR' } ); }
-    'API get_test_results -> [results] parameter not present (wrong language tag: underscore not hyphen)'; # Should be underscore, not hyphen.
-
-    dies_ok { $engine->get_test_results( { id => $hash_id, language => 'zz' } ); }
-    'API get_test_results -> [results] parameter not present (wrong language tag: "zz" unknown)'; # "zz" is not our configuration file.
 }
 
 run_zonemaster_test_with_backend_API(1);
@@ -156,6 +147,124 @@ is( scalar( @$test_history ), 2, 'Two tests created' );
 
 is( length($test_history->[0]->{id}), 16, 'Test 0 has 16 characters length hash ID' );
 is( length($test_history->[1]->{id}), 16, 'Test 1 has 16 characters length hash ID' );
+
+subtest 'mock another client' => sub {
+    $frontend_params_1->{client_id} = 'Another Client';
+    $frontend_params_1->{client_version} = '0.1';
+
+    my $hash_id = $engine->start_domain_test( $frontend_params_1 );
+    ok( $hash_id, "API start_domain_test OK" );
+    is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
+
+    # check that we reuse one of the previous test
+    subtest 'check that previous test was reused' => sub {
+        my %ids = map { $_->{id} => 1 } @$test_history;
+        ok ( exists( $ids{$hash_id} ), "Has the same hash than previous test" );
+    };
+
+    subtest 'check test_params values' => sub {
+        my $res = $engine->get_test_params( { test_id => "$hash_id" } );
+        my @keys_res = sort( keys %$res );
+        my @keys_params = sort( keys %$frontend_params_1 );
+
+        is_deeply( \@keys_res, \@keys_params, "All keys are in database" );
+
+        foreach my $key (@keys_res) {
+            if ( $key eq "client_id" or $key eq "client_version" ) {
+                isnt( $frontend_params_1->{$key}, $res->{$key}, "but value for key '$key' is different (which is fine)" );
+            }
+            else {
+                is_deeply( $frontend_params_1->{$key}, $res->{$key}, "same value for key '$key'" );
+            }
+        }
+    };
+    #diag "...but values for client_id and client_version are different (which is fine)";
+
+};
+
+subtest 'check historic tests' => sub {
+    # Verifies that delegated and undelegated tests are coded correctly when started
+    # and that the filter option in "get_test_history" works correctly
+    use_ok( 'Zonemaster::Backend::TestAgent' );
+    my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
+    isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
+
+    my $domain          = 'xa';
+    # Non-batch for "start_domain_test":
+    my $params_un1      = { # undelegated, non-batch
+        domain          => $domain,
+        nameservers     => [
+            { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+            ],
+    };
+    my $params_un2      = { # undelegated, non-batch
+        domain          => $domain,
+        ds_info         => [
+            { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+            ],
+    };
+    my $params_dn1 = { # delegated, non-batch
+        domain          => $domain,
+    };
+    # Batch for "add_batch_job"
+    my $domain2         = 'xb';
+    my $params_ub1      = { # undelegated, batch
+        domains         => [ $domain, $domain2 ],
+        test_params     => {
+            nameservers => [
+                { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+                ],
+        },
+    };
+    my $params_ub2      = { # undelegated, batch
+        domains         => [ $domain, $domain2 ],
+        test_params     => {
+            ds_info     => [
+                { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
+                ],
+        },
+    };
+    my $params_db1      = { # delegated, batch
+        domains         => [ $domain, $domain2 ],
+    };
+    # The batch jobs, $params_ub1, $params_ub2 and $params_db1, cannot be run from here due to limitation in the API. See issue #827.
+
+    foreach my $param ($params_un1, $params_un2, $params_dn1) {
+        my $testid = $engine->start_domain_test( $param );
+        ok( $testid, "API start_domain_test ID OK" );
+        diag "running the agent on test $testid";
+        $agent->run( $testid );
+        my $cnt = 0;
+        while ($cnt < 10 ) {
+            my $progress = $engine->test_progress( { test_id => $testid } );
+            last if $progress == 100;
+            $cnt++;
+            diag "Sleep 10 s";
+            sleep 10;
+        };
+        is( $engine->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
+    };
+
+    my $test_history_delegated = $engine->get_test_history(
+        {
+            filter => 'delegated',
+            frontend_params => {
+                domain => $domain,
+            }
+        } );
+    my $test_history_undelegated = $engine->get_test_history(
+        {
+            filter => 'undelegated',
+            frontend_params => {
+                domain => $domain,
+            }
+        } );
+
+    # diag explain( $test_history_delegated );
+    is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
+    # diag explain( $test_history_undelegated );
+    is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
+};
 
 if ( $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster::Engine->save_cache( $datafile );

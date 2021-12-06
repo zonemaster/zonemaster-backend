@@ -5,13 +5,21 @@ use warnings;
 use 5.14.2;
 
 # Public Modules
-use JSON::PP;
 use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
-use String::ShellQuote;
 use File::Slurp qw(append_file);
 use HTML::Entities;
+use JSON::PP;
 use JSON::Validator::Joi;
+use Log::Any qw($log);
+use String::ShellQuote;
+use Mojo::JSON::Pointer;
+use Scalar::Util qw(blessed);
+use JSON::Validator::Schema::Draft7;
+use Locale::TextDomain qw[Zonemaster-Backend];
+use Locale::Messages qw[LC_MESSAGES LC_ALL];
+use POSIX qw (setlocale);
+use Encode;
 
 # Zonemaster Modules
 use Zonemaster::LDNS;
@@ -25,9 +33,11 @@ use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
+use Zonemaster::Backend::Errors;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
-my %json_schemas;
+our %json_schemas;
+our %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -41,7 +51,7 @@ sub new {
     bless( $self, $type );
 
     if ( ! $params || ! $params->{config} ) {
-        handle_exception('new', "Missing 'config' parameter", '001');
+        handle_exception("Missing 'config' parameter");
     }
 
     $self->{config} = $params->{config};
@@ -62,23 +72,30 @@ sub _init_db {
     my ( $self, $dbtype ) = @_;
 
     eval {
-        my $backend_module = "Zonemaster::Backend::DB::" . $dbtype;
-        eval "require $backend_module";
-        die "$@ \n" if $@;
-        $self->{db} = $backend_module->new( { config => $self->{config} } );
+        my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
+        $self->{db} = $dbclass->from_config( $self->{config} );
     };
+
     if ($@) {
-        handle_exception('_init_db', "Failed to initialize the [$dbtype] database backend module: [$@]", '002');
+        handle_exception("Failed to initialize the [$dbtype] database backend module: [$@]");
     }
 }
 
 sub handle_exception {
-    my ( $method, $exception, $exception_id ) = @_;
+    my ( $exception ) = @_;
 
-    $exception =~ s/\n/ /g;
-    $exception =~ s/^\s+|\s+$//g;
-    warn "Internal error $exception_id: Unexpected error in the $method API call: [$exception] \n";
-    die "Internal error $exception_id \n";
+    if ( !$exception->isa('Zonemaster::Backend::Error') ) {
+        my $reason = $exception;
+        $exception = Zonemaster::Backend::Error::Internal->new( reason => $reason );
+    }
+
+    if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
+        $log->error($exception->as_string);
+    } else {
+        $log->info($exception->as_string);
+    }
+
+    die $exception->as_hash;
 }
 
 $json_schemas{version_info} = joi->object->strict;
@@ -92,7 +109,7 @@ sub version_info {
 
     };
     if ($@) {
-        handle_exception('version_info', $@, '003');
+        handle_exception( $@ );
     }
 
     return \%ver;
@@ -102,16 +119,13 @@ $json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
     my ( $self ) = @_;
 
-    my @profiles;
-    eval {
-        @profiles = $self->{config}->ListPublicProfiles();
-
-    };
-    if ($@) {
-        handle_exception('profile_names', $@, '004');
+    my %profiles;
+    eval { %profiles = $self->{config}->PUBLIC_PROFILES };
+    if ( $@ ) {
+        handle_exception( $@ );
     }
 
-    return \@profiles;
+    return [ keys %profiles ];
 }
 
 # Return the list of language tags supported by get_test_results(). The tags are
@@ -120,14 +134,33 @@ $json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
-    my @lang = $self->{config}->ListLanguageTags();
+    my @lang_tags;
+    eval {
+        my %locales = $self->{config}->LANGUAGE_locale;
 
-    return \@lang;
+        for my $lang ( sort keys %locales ) {
+            my @locale_tags = sort keys %{ $locales{$lang} };
+            if ( scalar @locale_tags == 1 ) {
+                push @lang_tags, $lang;
+            }
+            push @lang_tags, @locale_tags;
+        }
+    };
+    if ( $@ ) {
+        handle_exception( $@ );
+    }
+
+    return \@lang_tags;
 }
 
-$json_schemas{get_host_by_name} = joi->object->strict->props(
-    hostname   => $zm_validator->domain_name->required
-);
+$json_schemas{get_host_by_name} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'hostname' ],
+    properties => {
+        hostname => $zm_validator->domain_name
+    }
+};
 sub get_host_by_name {
     my ( $self, $params ) = @_;
     my @adresses;
@@ -140,25 +173,37 @@ sub get_host_by_name {
 
     };
     if ($@) {
-        handle_exception('get_host_by_name', $@, '005');
+        handle_exception( $@ );
     }
 
     return \@adresses;
 }
 
-$json_schemas{get_data_from_parent_zone} = joi->object->strict->props(
-    domain   => $zm_validator->domain_name->required
-);
+$extra_validators{get_data_from_parent_zone} = sub {
+    my ( $self, $syntax_input ) = @_;
+    my @errors;
+
+    if ( defined $syntax_input->{domain} ) {
+        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
+        push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
+    }
+    return @errors;
+};
+$json_schemas{get_data_from_parent_zone} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'domain' ],
+    properties => {
+        domain => $zm_validator->domain_name,
+        language => $zm_validator->language_tag,
+    }
+};
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
     my $result = eval {
         my %result;
-
         my $domain = $params->{domain};
-
-        my ( $dn, $dn_syntax ) = $self->_check_domain( $domain, 'Domain name' );
-        return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
 
         my @ns_list;
         my @ns_names;
@@ -184,7 +229,7 @@ sub get_data_from_parent_zone {
         return \%result;
     };
     if ($@) {
-        handle_exception('get_data_from_parent_zone', $@, '006');
+        handle_exception( $@ );
     }
     elsif ($result) {
         return $result;
@@ -193,10 +238,10 @@ sub get_data_from_parent_zone {
 
 
 sub _check_domain {
-    my ( $self, $domain, $type ) = @_;
+    my ( $self, $domain ) = @_;
 
     if ( !defined( $domain ) ) {
-        return ( $domain, { status => 'nok', message => encode_entities( "$type required" ) } );
+        return ( $domain, { status => 'nok', message => N__ 'Domain name required' } );
     }
 
     if ( $domain =~ m/[^[:ascii:]]+/ ) {
@@ -207,7 +252,7 @@ sub _check_domain {
                     $domain,
                     {
                         status  => 'nok',
-                        message => encode_entities( "The domain name is not a valid IDNA string and cannot be converted to an A-label" )
+                        message => N__ 'The domain name is not a valid IDNA string and cannot be converted to an A-label'
                     }
                 );
             }
@@ -217,7 +262,7 @@ sub _check_domain {
                 $domain,
                 {
                     status  => 'nok',
-                    message => encode_entities( "$type contains non-ascii characters and IDNA is not installed" )
+                    message => N__ 'The domain name contains non-ascii characters and IDNA is not installed'
                 }
             );
         }
@@ -228,7 +273,7 @@ sub _check_domain {
             $domain,
             {
                 status  => 'nok',
-                message => encode_entities( "The domain name character(s) not supported" )
+                message => N__ 'The domain name character(s) are not supported'
             }
         );
     }
@@ -238,150 +283,87 @@ sub _check_domain {
     @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
     @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
     if ( @res != 0 ) {
-        return ( $domain, { status => 'nok', message => encode_entities( "$type name or label is too long" ) } );
+        return ( $domain, { status => 'nok', message => N__ 'The domain name or label is too long' } );
     }
 
     return ( $domain, { status => 'ok', message => 'Syntax ok' } );
 }
 
-sub validate_syntax {
+$extra_validators{start_domain_test} = sub {
     my ( $self, $syntax_input ) = @_;
 
-    my $result = eval {
-        my @allowed_params_keys = (
-            'domain',   'ipv4',      'ipv6', 'ds_info', 'nameservers', 'profile',
-            'client_id', 'client_version', 'config', 'priority', 'queue'
-        );
-
-        foreach my $k ( keys %$syntax_input ) {
-            return { status => 'nok', message => encode_entities( "Unknown option [$k] in parameters" ) }
-            unless ( grep { $_ eq $k } @allowed_params_keys );
-        }
-
-        if ( ( defined $syntax_input->{nameservers} && @{ $syntax_input->{nameservers} } ) ) {
-            foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
-                foreach my $k ( keys %$ns_ip ) {
-                    delete( $ns_ip->{$k} ) unless ( $k eq 'ns' || $k eq 'ip' );
-                }
-            }
-        }
-
-        if ( ( defined $syntax_input->{ds_info} && @{ $syntax_input->{ds_info} } ) ) {
-            foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-                foreach my $k ( keys %$ds_digest ) {
-                    delete( $ds_digest->{$k} ) unless ( $k eq 'algorithm' || $k eq 'digest' || $k eq 'digtype' || $k eq 'keytag' );
-                }
-            }
-        }
-
-        if ( defined $syntax_input->{ipv4} ) {
-            return { status => 'nok', message => encode_entities( "Invalid IPv4 transport option format" ) }
-            unless ( $syntax_input->{ipv4} eq JSON::PP::false
-                || $syntax_input->{ipv4} eq JSON::PP::true
-                || $syntax_input->{ipv4} eq '1'
-                || $syntax_input->{ipv4} eq '0' );
-        }
-
-        if ( defined $syntax_input->{ipv6} ) {
-            return { status => 'nok', message => encode_entities( "Invalid IPv6 transport option format" ) }
-            unless ( $syntax_input->{ipv6} eq JSON::PP::false
-                || $syntax_input->{ipv6} eq JSON::PP::true
-                || $syntax_input->{ipv6} eq '1'
-                || $syntax_input->{ipv6} eq '0' );
-        }
+    my @errors = eval {
+        my @errors;
 
         if ( defined $syntax_input->{profile} ) {
-            my @profiles = map lc, $self->{config}->ListPublicProfiles();
-            return { status => 'nok', message => encode_entities( "Invalid profile option format" ) }
-            unless ( grep { $_ eq lc $syntax_input->{profile} } @profiles );
+            $syntax_input->{profile} = lc $syntax_input->{profile};
+            my %profiles = ( $self->{config}->PUBLIC_PROFILES, $self->{config}->PRIVATE_PROFILES );
+            if ( !exists $profiles{ $syntax_input->{profile} } ) {
+                push @errors, { path => '/profile', message => N__ 'Unknown profile' };
+            }
         }
 
-        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain}, 'Domain name' );
+        if ( defined $syntax_input->{domain} ) {
+            my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
+            push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
+        }
 
-        return $dn_syntax if ( $dn_syntax->{status} eq 'nok' );
+        if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
+            while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
+                my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns} );
+                push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
 
-        if ( defined $syntax_input->{nameservers} && @{ $syntax_input->{nameservers} } ) {
-            foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
-                my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns}, "NS [$ns_ip->{ns}]" );
-                return $ns_syntax if ( $ns_syntax->{status} eq 'nok' );
-            }
-
-            foreach my $ns_ip ( @{ $syntax_input->{nameservers} } ) {
-                # Although counterintuitive both tests are necessary as Zonemaster::Engine::Net::IP accepts incomplete IP adresses (network adresses) as valid IP adresses
-                return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
-                    unless( !$ns_ip->{ip} || $ns_ip->{ip} =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ || $ns_ip->{ip} =~ /^([0-9A-Fa-f]{1,4}:[0-9A-Fa-f:]{1,}(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?)|([0-9A-Fa-f]{1,4}::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/);
-
-                return { status => 'nok', message => encode_entities( "Invalid IP address: [$ns_ip->{ip}]" ) }
+                push @errors, { path => "/nameservers/$index/ip", message => N__ 'Invalid IP address' }
                 unless ( !$ns_ip->{ip}
                     || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
                     || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
             }
-
-            foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-                return {
-                    status  => 'nok',
-                    message => encode_entities( "Invalid algorithm type: [$ds_digest->{algorithm}]" )
-                }
-                if ( $ds_digest->{algorithm} =~ /\D/ );
-            }
-
-            foreach my $ds_digest ( @{ $syntax_input->{ds_info} } ) {
-                return {
-                    status  => 'nok',
-                    message => encode_entities( "Invalid digest format: [$ds_digest->{digest}]" )
-                }
-                if (
-                    ( length( $ds_digest->{digest} ) != 96 &&
-                        length( $ds_digest->{digest} ) != 64 &&
-                        length( $ds_digest->{digest} ) != 40 ) ||
-                        $ds_digest->{digest} =~ /[^A-Fa-f0-9]/
-                );
-            }
         }
+
+        return @errors;
     };
     if ($@) {
-        handle_exception('validate_syntax', $@, '008');
-    }
-    elsif ($result) {
-        return $result;
+        handle_exception( $@ );
     }
     else {
-        return { status => 'ok', message =>  encode_entities( 'Syntax ok' ) };
+        return @errors;
     }
-}
+};
 
-$json_schemas{start_domain_test} = joi->object->strict->props(
-    domain => $zm_validator->domain_name->required,
-    ipv4 => joi->boolean,
-    ipv6 => joi->boolean,
-    nameservers => joi->array->items(
-        $zm_validator->nameserver
-    ),
-    ds_info => joi->array->items(
-        $zm_validator->ds_info
-    ),
-    profile => $zm_validator->profile_name,
-    client_id => $zm_validator->client_id,
-    client_version => $zm_validator->client_version,
-    config => joi->string,
-    priority => $zm_validator->priority,
-    queue => $zm_validator->queue
-);
+$json_schemas{start_domain_test} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'domain' ],
+    properties => {
+        domain => $zm_validator->domain_name,
+        ipv4 => joi->boolean->compile,
+        ipv6 => joi->boolean->compile,
+        nameservers => {
+            type => 'array',
+            items => $zm_validator->nameserver
+        },
+        ds_info => {
+            type => 'array',
+            items => $zm_validator->ds_info
+        },
+        profile => $zm_validator->profile_name->compile,
+        client_id => $zm_validator->client_id->compile,
+        client_version => $zm_validator->client_version->compile,
+        config => joi->string->compile,
+        priority => $zm_validator->priority->compile,
+        queue => $zm_validator->queue->compile,
+        language => $zm_validator->language_tag,
+
+    }
+};
 sub start_domain_test {
     my ( $self, $params ) = @_;
 
     my $result = 0;
     eval {
         $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
-        my $syntax_result = $self->validate_syntax( $params );
-        die "$syntax_result->{message} \n" unless ( $syntax_result && $syntax_result->{status} eq 'ok' );
 
         die "No domain in parameters\n" unless ( $params->{domain} );
-
-        if ($params->{config}) {
-            $params->{config} =~ s/[^\w_]//isg;
-            die "Unknown test configuration: [$params->{config}]\n" unless ( $self->{config}->GetCustomConfigParameter('ZONEMASTER', $params->{config}) );
-        }
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;
@@ -389,7 +371,7 @@ sub start_domain_test {
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
     if ($@) {
-        handle_exception('start_domain_test', $@, '009');
+        handle_exception( $@ );
     }
 
     return $result;
@@ -407,7 +389,7 @@ sub test_progress {
         $result = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
-        handle_exception('test_progress', $@, '010');
+        handle_exception( $@ );
     }
 
     return $result;
@@ -419,50 +401,49 @@ $json_schemas{get_test_params} = joi->object->strict->props(
 sub get_test_params {
     my ( $self, $params ) = @_;
 
-    my $test_id = $params->{test_id};
-
-    my $result = 0;
-
+    my $result;
     eval {
+        my $test_id = $params->{test_id};
+
         $result = $self->{db}->get_test_params( $test_id );
     };
     if ($@) {
-        handle_exception('get_test_params', $@, '011');
+        handle_exception( $@ );
     }
 
     return $result;
 }
 
-$json_schemas{get_test_results} = joi->object->strict->props(
-    id => $zm_validator->test_id->required,
-    language => $zm_validator->language_tag->required
-);
+$json_schemas{get_test_results} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'id', 'language' ],
+    properties => {
+        id => $zm_validator->test_id->required->compile,
+        language => $zm_validator->language_tag,
+    }
+};
 sub get_test_results {
     my ( $self, $params ) = @_;
 
     my $result;
-    my $translator;
-    $translator = Zonemaster::Backend::Translator->new;
-
-    my %locale = $self->{config}->Language_Locale_hash();
-    if ( $locale{$params->{language}} ) {
-        if ( $locale{$params->{language}} eq 'NOT-UNIQUE') {
-            die "Language string not unique: '$params->{language}'\n";
-        }
-    }
-    else {
-        die "Undefined language string: '$params->{language}'\n";
-    }
-
-    my $previous_locale = $translator->locale;
-    $translator->locale( $locale{$params->{language}} );
-
-    eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
-
-    my $test_info;
-    my @zm_results;
     eval{
-        $test_info = $self->{db}->test_results( $params->{id} );
+        # Already validated by json_validate
+        my ( $locale, undef ) = $self->_get_locale( $params );
+
+        my $translator;
+        $translator = Zonemaster::Backend::Translator->new;
+
+        my $previous_locale = $translator->locale;
+        if ( !$translator->locale( $locale ) ) {
+            die "Failed to set locale: $locale";
+        }
+
+        eval { $translator->data } if $translator; # Provoke lazy loading of translation data
+
+        my @zm_results;
+
+        my $test_info = $self->{db}->test_results( $params->{id} );
         foreach my $test_res ( @{ $test_info->{results} } ) {
             my $res;
             if ( $test_res->{module} eq 'NAMESERVER' ) {
@@ -476,7 +457,7 @@ sub get_test_results {
             }
 
             $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res, $params->{language} ) . "\n";
+            $res->{message} = $translator->translate_tag( $test_res ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};
@@ -511,27 +492,37 @@ sub get_test_results {
 
         $result = $test_info;
         $result->{results} = \@zm_results;
+
+        $translator->locale( $previous_locale );
+
+        $result = $test_info;
+        $result->{results} = \@zm_results;
     };
     if ($@) {
-        handle_exception('get_test_results', $@, '012');
+        handle_exception( $@ );
     }
-
-    $translator->locale( $previous_locale );
-
-    $result = $test_info;
-    $result->{results} = \@zm_results;
 
     return $result;
 }
 
-$json_schemas{get_test_history} = joi->object->strict->props(
-    offset => joi->integer->min(0),
-    limit => joi->integer->min(0),
-    filter => joi->string->regex('^(?:all|delegated|undelegated)$'),
-    frontend_params => joi->object->strict->props(
-        domain => $zm_validator->domain_name->required
-    )->required
-);
+$json_schemas{get_test_history} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'frontend_params' ],
+    properties => {
+        offset => joi->integer->min(0)->compile,
+        limit => joi->integer->min(0)->compile,
+        filter => joi->string->regex('^(?:all|delegated|undelegated)$')->compile,
+        frontend_params => {
+            type => 'object',
+            additionalProperties => 0,
+            required => [ 'domain' ],
+            properties => {
+                domain => $zm_validator->domain_name
+            }
+        }
+    }
+};
 sub get_test_history {
     my ( $self, $params ) = @_;
 
@@ -543,9 +534,12 @@ sub get_test_history {
         $params->{filter} //= "all";
 
         $results = $self->{db}->get_test_history( $params );
+        my @results = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
+        $results = \@results;
+
     };
     if ($@) {
-        handle_exception('get_test_history', $@, '013');
+        handle_exception( $@ );
     }
 
     return $results;
@@ -563,7 +557,7 @@ sub add_api_user {
     eval {
         my $allow = 0;
         if ( defined $remote_ip ) {
-            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' );
+            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' || $remote_ip eq '::ffff:127.0.0.1' );
         }
         else {
             $allow = 1;
@@ -572,49 +566,62 @@ sub add_api_user {
         if ( $allow ) {
             $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
         }
+        else {
+            die Zonemaster::Backend::Error::PermissionDenied->new(
+                message => 'Call to "add_api_user" method not permitted from a remote IP',
+                data => { remote_ip => $remote_ip }
+            );
+        }
     };
     if ($@) {
-        handle_exception('add_api_user', $@, '014');
+        handle_exception( $@ );
     }
 
     return $result;
 }
 
-$json_schemas{add_batch_job} = joi->object->strict->props(
-    username => $zm_validator->username->required,
-    api_key => $zm_validator->api_key->required,
-    domains => joi->array->strict->items(
-        $zm_validator->domain_name->required
-    )->required,
-    test_params => joi->object->strict->props(
-        ipv4 => joi->boolean,
-        ipv6 => joi->boolean,
-        nameservers => joi->array->strict->items(
-            $zm_validator->nameserver
-        ),
-        ds_info => joi->array->strict->items(
-            $zm_validator->ds_info
-        ),
-        profile => $zm_validator->profile_name,
-        client_id => $zm_validator->client_id,
-        client_version => $zm_validator->client_version,
-        config => joi->string,
-        priority => $zm_validator->priority,
-        queue => $zm_validator->queue
-    )
-);
+$json_schemas{add_batch_job} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'username', 'api_key', 'domains' ],
+    properties => {
+        username => $zm_validator->username->required->compile,
+        api_key => $zm_validator->api_key->required->compile,
+        domains => {
+            type => "array",
+            additionalItems => 0,
+            items => $zm_validator->domain_name
+        },
+        test_params => joi->object->strict->props(
+            ipv4 => joi->boolean,
+            ipv6 => joi->boolean,
+            nameservers => joi->array->strict->items(
+                $zm_validator->nameserver
+            ),
+            ds_info => joi->array->strict->items(
+                $zm_validator->ds_info
+            ),
+            profile => $zm_validator->profile_name,
+            client_id => $zm_validator->client_id,
+            client_version => $zm_validator->client_version,
+            config => joi->string,
+            priority => $zm_validator->priority,
+            queue => $zm_validator->queue
+        )->compile
+    }
+};
 sub add_batch_job {
     my ( $self, $params ) = @_;
 
-    $params->{test_params}->{priority}  //= 5;
-    $params->{test_params}->{queue}     //= 0;
-
     my $results;
     eval {
+        $params->{test_params}->{priority} //= 5;
+        $params->{test_params}->{queue}    //= 0;
+
         $results = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
-        handle_exception('add_batch_job', $@, '015');
+        handle_exception( $@ );
     }
 
     return $results;
@@ -627,17 +634,79 @@ sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
     my $result;
-
     eval {
         my $batch_id = $params->{batch_id};
 
         $result = $self->{db}->get_batch_job_result($batch_id);
     };
     if ($@) {
-        handle_exception('get_batch_job_result', $@, '016');
+        handle_exception( $@ );
     }
 
     return $result;
+}
+
+sub _get_locale {
+    my ( $self, $params ) = @_;
+    my @error;
+
+    my $language = $params->{language};
+    my %locales = $self->{config}->LANGUAGE_locale;
+    my $locale;
+
+    if ( !defined $language ) {
+        return $locale, \@error;
+    }
+
+    if ( length $language == 2 ) {
+        if ( !exists $locales{$language} ) {
+            push @error, {
+                path => "/language",
+                message => N__ "Unkown language string"
+            };
+        }
+        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
+            push @error, {
+                path => "/language",
+                message => N__ "Language string not unique"
+            };
+        } else {
+            ( $locale ) = keys %{ $locales{$language} };
+        }
+    }
+    else {
+        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
+            push @error, {
+                path => "/language",
+                message => N__ "Unkown language string"
+            };
+        } else {
+            $locale = $language;
+        }
+    }
+
+    if (defined $locale) {
+        $locale .= '.UTF-8';
+    }
+
+    return $locale, \@error,
+}
+
+sub _set_error_message_locale {
+    my ( $self, $params ) = @_;
+
+    my @error_response = ();
+    my ($locale, $locale_error) = $self->_get_locale( $params );
+    push @error_response, @{$locale_error};
+
+    if (not defined $locale or $locale eq "") {
+        # Don't translate message if locale is not defined
+        $locale = "C";
+    }
+
+    # Use POSIX implementation instead of Locale::Messages wrapper
+    setlocale( LC_ALL, $locale );
+    return @error_response;
 }
 
 my $rpc_request = joi->object->props(
@@ -648,6 +717,7 @@ sub jsonrpc_validate {
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
     if (!exists $jsonrpc_request->{id} || @error_rpc) {
+        $self->_set_error_message_locale;
         return {
             jsonrpc => '2.0',
             id => undef,
@@ -672,15 +742,17 @@ sub jsonrpc_validate {
                 }
             };
         }
-        my @error = $method_schema->validate($jsonrpc_request->{params});
-        if ( @error ) {
+        my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
+        my @error_response = $self->validate_params($method_schema, $sub_validator, $jsonrpc_request->{params});
+
+        if ( scalar @error_response ) {
             return {
                 jsonrpc => '2.0',
                 id => $jsonrpc_request->{id},
                 error => {
                     code => '-32602',
-                    message => 'Invalid method parameter(s).',
-                    data => "@error"
+                    message => decode_utf8(__ 'Invalid method parameter(s).'),
+                    data => \@error_response
                 }
             };
         }
@@ -688,4 +760,62 @@ sub jsonrpc_validate {
 
     return '';
 }
+
+sub validate_params {
+    my ( $self, $method_schema, $sub_validator, $params ) = @_;
+    my @error_response = ();
+
+    push @error_response, $self->_set_error_message_locale( $params );
+
+    if (blessed $method_schema) {
+        $method_schema = $method_schema->compile;
+    }
+    my @json_validation_error = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data($method_schema)->validate( $params );
+
+    # Customize error message from json validation
+    foreach my $err ( @json_validation_error ) {
+        my $message = $err->message;
+        my @details = @{$err->details};
+
+        # Handle 'required' errors globally so it does not get overwritten
+        if ($details[1] eq 'required') {
+            $message = decode_utf8(__ 'Missing property');
+        } else {
+            my @path = split '/', $err->path, -1;
+            shift @path; # first item is an empty string
+            my $found = 1;
+            my $data = Mojo::JSON::Pointer->new($method_schema);
+
+            foreach my $p (@path) {
+                if ( $data->contains("/properties/$p") ) {
+                    $data = $data->get("/properties/$p")
+                } elsif ( $p =~ /^\d+$/ and $data->contains("/items") ) {
+                    $data = $data->get("/items")
+                } else {
+                    $found = 0;
+                    last;
+                }
+                $data = Mojo::JSON::Pointer->new($data);
+            }
+
+            if ($found and exists $data->data->{'x-error-message'}) {
+                $message = $data->data->{'x-error-message'};
+            }
+        }
+
+        push @error_response, { path => $err->path, message => $message };
+
+    }
+
+    # Add messages from extra validation function
+    if ( defined $sub_validator ) {
+        push @error_response, $self->$sub_validator($params);
+    }
+
+    # Translate messages
+    @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
+
+    return @error_response;
+}
+
 1;

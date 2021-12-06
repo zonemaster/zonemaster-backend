@@ -13,16 +13,26 @@ use File::Slurp qw( read_file );
 use Log::Any qw( $log );
 use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
+use Zonemaster::Backend::DB;
 
 our $path;
+
 if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
     $path = $ENV{ZONEMASTER_BACKEND_CONFIG_FILE};
 }
-elsif ( -e '/etc/zonemaster/backend_config.ini' ) {
-    $path = '/etc/zonemaster/backend_config.ini';
-}
 else {
-    $path = dist_file('Zonemaster-Backend', "backend_config.ini");
+    my @search_paths = (
+        '/etc/zonemaster/backend_config.ini',
+        '/usr/local/etc/zonemaster/backend_config.ini',
+        dist_file('Zonemaster-Backend', "backend_config.ini")
+    );
+
+    for my $default_path (@search_paths) {
+        if ( -e $default_path ) {
+            $path = $default_path;
+            last;
+        }
+    }
 }
 
 Readonly my @SIG_NAME => split ' ', $Config{sig_name};
@@ -71,8 +81,8 @@ The configuration is interpreted according to the
 L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
 
 Returns a new Zonemaster::Backend::Config instance with its properties set to
-values according to the given configuration with defaults according to the
-configuration format.
+normalized and untainted values according to the given configuration with
+defaults according to the configuration format.
 
 Emits a log warning with a deprecation message for each deprecated property that
 is present.
@@ -99,20 +109,25 @@ sub parse {
     my ( $class, $text ) = @_;
 
     my $obj = bless( {}, $class );
+    $obj->{_public_profiles}  = {};
+    $obj->{_private_profiles} = {};
 
     my $ini = Config::IniFiles->new( -file => \$text )
       or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
 
     my $get_and_clear = sub {    # Read and clear a property from a Config::IniFiles object.
         my ( $section, $param ) = @_;
-        my $value = $ini->val( $section, $param );
+        my ( $value, @extra ) = $ini->val( $section, $param );
+        if ( @extra ) {
+            die "Property not unique: $section.$param\n";
+        }
         $ini->delval( $section, $param );
         return $value;
     };
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'RPCAPI');
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -122,21 +137,25 @@ sub parse {
 
     # Assign default values
     $obj->_set_DB_polling_interval( '0.5' );
+    $obj->_set_MYSQL_port( '3306' );
+    $obj->_set_POSTGRESQL_port( '5432' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
-    $obj->_set_ZONEMASTER_maximal_number_of_retries( '0' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_set_RPCAPI_enable_add_api_user( 'no' );
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
+    $obj->_add_LANGUAGE_locale( 'en_US' );
+    $obj->_add_public_profile( 'default', undef );
+    $obj->_set_METRICS_statsd_port( '8125' );
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
         $obj->_set_DB_engine( $value );
     }
 
-    # Check required propertys (part 1/2)
+    # Check required properties (part 1/2)
     if ( !defined $obj->DB_engine ) {
         die "config: missing required property DB.engine\n";
     }
@@ -184,6 +203,11 @@ sub parse {
         $obj->_set_SQLITE_database_file( $value )
           if $obj->DB_engine eq 'SQLite';
     }
+    if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
+        if ( $value eq "" ) {
+            push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
+        }
+    }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
         push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
 
@@ -202,6 +226,12 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'host' ) ) ) {
         $obj->_set_MYSQL_host( $value );
     }
+    if ( defined( my $value = $get_and_clear->( 'MYSQL', 'port' ) ) ) {
+        if ( $obj->MYSQL_host eq 'localhost' ) {
+            push @warnings, "MYSQL.port is disregarded if MYSQL.host is set to 'localhost'";
+        }
+        $obj->{_MYSQL_port} = $value;
+    }
     if ( defined( my $value = $get_and_clear->( 'MYSQL', 'user' ) ) ) {
         $obj->_set_MYSQL_user( $value );
     }
@@ -213,6 +243,9 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'host' ) ) ) {
         $obj->_set_POSTGRESQL_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'port' ) ) ) {
+        $obj->{_POSTGRESQL_port} = $value;
     }
     if ( defined( my $value = $get_and_clear->( 'POSTGRESQL', 'user' ) ) ) {
         $obj->_set_POSTGRESQL_user( $value );
@@ -229,9 +262,6 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
         $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'maximal_number_of_retries' ) ) ) {
-        $obj->_set_ZONEMASTER_maximal_number_of_retries( $value );
-    }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_processes_for_frontend_testing' ) ) ) {
         $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
     }
@@ -244,33 +274,35 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'age_reuse_previous_test' ) ) ) {
         $obj->_set_ZONEMASTER_age_reuse_previous_test( $value );
     }
+    if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_host' ) ) ) {
+        $obj->_set_METRICS_statsd_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
+        $obj->_set_METRICS_statsd_port( $value );
+    }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
         $obj->_set_RPCAPI_enable_add_api_user( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
         $obj->_set_RPCAPI_enable_add_batch_job( $value );
     }
-
-    $obj->{_LANGUAGE_locale} = {};
-    for my $locale_tag ( split /\s+/, $get_and_clear->( 'LANGUAGE', 'locale' ) || 'en_US' ) {
-        $locale_tag =~ /^[a-z]{2}_[A-Z]{2}$/
-          or die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
-
-        !exists $obj->{_LANGUAGE_locale}{$locale_tag}
-          or die "Repeated locale tag in LANGUAGE.locale: $locale_tag\n";
-
-        $obj->{_LANGUAGE_locale}{$locale_tag} = 1;
+    if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
+        if ( $value ne "" ) {
+            $obj->_reset_LANGUAGE_locale();
+            for my $locale_tag ( split / +/, $value ) {
+                $obj->_add_LANGUAGE_locale( $locale_tag );
+            }
+        }
     }
 
-    $obj->{_public_profiles} = {
-        default => '',
-    };
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
-        $obj->{_public_profiles}{lc $name} = $get_and_clear->( 'PUBLIC PROFILES', $name );
+        my $path = $get_and_clear->( 'PUBLIC PROFILES', $name );
+        $obj->_add_public_profile( $name, $path );
     }
-    $obj->{_private_profiles} = {};
+
     for my $name ( $ini->Parameters( 'PRIVATE PROFILES' ) ) {
-        $obj->{_private_profiles}{lc $name} = $get_and_clear->( 'PRIVATE PROFILES', $name );
+        my $path = $get_and_clear->( 'PRIVATE PROFILES', $name );
+        $obj->_add_private_profile( $name, $path );
     }
 
     # Check required propertys (part 2/2)
@@ -371,79 +403,138 @@ sub _set_DB_engine {
     return;
 }
 
-sub _set_RPCAPI_enable_add_api_user {
-    my ( $self, $value ) = @_;
-
-    $value = untaint_bool( $value ) // die "Invalid value for RPCAPI.enable_add_api_user: $value\n";
-    $self->{_RPCAPI_enable_add_api_user} = $value;
-    return;
-}
-
-sub _set_RPCAPI_enable_add_batch_job {
-    my ( $self, $value ) = @_;
-
-    $value = untaint_bool( $value ) // die "Invalid value for RPCAPI.enable_add_batch_job: $value\n";
-    $self->{_RPCAPI_enable_add_batch_job} = $value;
-    return;
-}
-
-
-
 =head2 DB_polling_interval
 
 Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
+
+Returns a number.
 
 
 =head2 MYSQL_database
 
 Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>.
 
+Returns a string.
 
-=head2 MySQL_host
+
+=head2 MYSQL_host
 
 Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
+
+Returns a string.
+
+
+=head2 MYSQL_port
+
+Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port>
+property from the loaded config.
+
+Returns a number.
 
 
 =head2 MYSQL_password
 
 Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
 
+Returns a string.
+
 
 =head2 MYSQL_user
 
 Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
+
+Returns a string.
 
 
 =head2 POSTGRESQL_database
 
 Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>.
 
+Returns a string.
+
 
 =head2 POSTGRESQL_host
 
 Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>.
+
+Returns a string.
+
+
+=head2 POSTGRESQL_port
+
+Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port-1>
+property from the loaded config.
+
+Returns a number.
 
 
 =head2 POSTGRESQL_password
 
 Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>.
 
+Returns a string.
+
 
 =head2 POSTGRESQL_user
 
 Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>.
+
+Returns a string.
 
 
 =head2 SQLITE_database_file
 
 Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>.
 
+Returns a string.
+
+
+=head2 LANGUAGE_locale
+
+Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale>.
+
+Returns a mapping from two-letter locale tag prefixes to sets of full locale
+tags.
+This is represented by a hash of hashrefs where all second level values are
+C<1>.
+
+E.g.:
+
+    (
+        en => {
+            en_GB => 1,
+            en_US => 1,
+        },
+        sv => {
+            sv_SE => 1,
+        },
+    )
+
+
+=head2 PUBLIC_PROFILES
+
+Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+
+Returns a hash mapping profile names to profile paths.
+The profile names are normalized to lowercase.
+Profile paths are either strings or C<undef>.
+C<undef> means that the Zonemaster Engine default profile should be used.
+
+
+=head2 PRIVATE_PROFILES
+
+Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+
+Returns a hash mapping profile names to profile paths.
+The profile names are normalized to lowercase.
+Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
+
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
 Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
@@ -451,7 +542,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
 
-Returns a positive integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
@@ -459,7 +550,7 @@ Returns a positive integer.
 Get the value of
 L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
 
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_lock_on_queue
@@ -467,15 +558,7 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
 
-Returns an integer.
-
-
-=head2 ZONEMASTER_maximal_number_of_retries
-
-Get the value of
-L<ZONEMASTER.maximal_number_of_retries|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#maximal_number_of_retries>.
-
-Returns an integer.
+Returns a number.
 
 
 =head2 ZONEMASTER_age_reuse_previous_test
@@ -483,7 +566,25 @@ Returns an integer.
 Get the value of
 L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
 
-Returns an integer.
+Returns a number.
+
+=cut
+
+=head2 METRICS_statsd_host
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_host>.
+
+Returns a string.
+
+=cut
+
+=head2 METRICS_statsd_port
+
+Get the value of
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_port>.
+
+Returns a number.
 
 =cut
 
@@ -508,130 +609,52 @@ Return 0 or 1
 # Getters for the properties documented above
 sub DB_polling_interval                                 { return $_[0]->{_DB_polling_interval}; }
 sub MYSQL_host                                          { return $_[0]->{_MYSQL_host}; }
+sub MYSQL_port                                          { return $_[0]->{_MYSQL_port}; }
 sub MYSQL_user                                          { return $_[0]->{_MYSQL_user}; }
 sub MYSQL_password                                      { return $_[0]->{_MYSQL_password}; }
 sub MYSQL_database                                      { return $_[0]->{_MYSQL_database}; }
 sub POSTGRESQL_host                                     { return $_[0]->{_POSTGRESQL_host}; }
+sub POSTGRESQL_port                                     { return $_[0]->{_POSTGRESQL_port}; }
 sub POSTGRESQL_user                                     { return $_[0]->{_POSTGRESQL_user}; }
 sub POSTGRESQL_password                                 { return $_[0]->{_POSTGRESQL_password}; }
 sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
 sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
+sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
+sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
+sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
-sub ZONEMASTER_maximal_number_of_retries                { return $_[0]->{_ZONEMASTER_maximal_number_of_retries}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
 sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMASTER_number_of_processes_for_batch_testing}; }
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
+sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
+sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
 sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
 sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
-    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval' );
-    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host' );
-    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user' );
-    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password' );
-    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database' );
-    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host' );
-    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user' );
-    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password' );
-    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database' );
-    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file' );
-    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time' );
-    _create_setter( '_set_ZONEMASTER_maximal_number_of_retries',                '_ZONEMASTER_maximal_number_of_retries' );
-    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue' );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing' );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing' );
-    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test' );
-}
-
-=head2 Language_Locale_hash
-
-Read LANGUAGE.locale from the configuration (.ini) file and returns
-the valid language tags for RPCAPI. The incoming language tag
-from RPCAPI is compared to those. The language tags are mapped to
-locale setting value.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-A hash of valid language tags as keys with set locale value as value.
-The hash is never empty.
-
-=cut
-
-sub Language_Locale_hash {
-    # There is one special value to capture ambiguous (and therefore
-    # not permitted) translation language tags.
-    my ($self) = @_;
-    my @localetags = keys %{ $self->{_LANGUAGE_locale} };
-    my %locale;
-    foreach my $la (@localetags) {
-        (my $a) = split (/_/,$la); # $a is the language code only
-        my $lo = "$la.UTF-8";
-        # Set special value if the same language code is used more than once
-        # with different country codes.
-        if ( $locale{$a} and $locale{$a} ne $lo ) {
-            $locale{$a} = 'NOT-UNIQUE';
-        }
-        else {
-            $locale{$a} = $lo;
-        }
-        $locale{$la} = $lo;
-    }
-    return %locale;
-}
-
-=head2 ListLanguageTags
-
-Read indirectly LANGUAGE.locale from the configuration (.ini) file
-and returns a list of valid language tags for RPCAPI. The list can
-be retrieved via an RPCAPI method.
-
-=head3 INPUT
-
-None
-
-=head3 RETURNS
-
-An array of valid language tags. The array is never empty.
-
-=cut
-
-sub ListLanguageTags {
-    my ($self) = @_;
-    my %locale = &Language_Locale_hash($self);
-    my @langtags;
-    foreach my $key (keys %locale) {
-        push @langtags, $key unless $locale{$key} eq 'NOT-UNIQUE';
-    }
-    return @langtags;
-}
-
-sub ReadProfilesInfo {
-    my ($self) = @_;
-
-    my $profiles;
-    foreach my $public_profile ( keys %{ $self->{_public_profiles} } ) {
-        $profiles->{$public_profile}->{type} = 'public';
-        $profiles->{$public_profile}->{profile_file_name} = $self->{_public_profiles}{$public_profile};
-    }
-
-    foreach my $private_profile ( keys %{ $self->{_private_profiles} } ) {
-        $profiles->{$private_profile}->{type} = 'private';
-        $profiles->{$private_profile}->{profile_file_name} = $self->{_private_profiles}{$private_profile};
-    }
-
-    return $profiles;
-}
-
-sub ListPublicProfiles {
-    my ($self) = @_;
-
-    return keys %{ $self->{_public_profiles} };
+    _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
+    _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_host );
+    _create_setter( '_set_MYSQL_port',                                          '_MYSQL_port',                                          \&untaint_strictly_positive_int );
+    _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
+    _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
+    _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );
+    _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_host );
+    _create_setter( '_set_POSTGRESQL_port',                                     '_POSTGRESQL_port',                                     \&untaint_strictly_positive_int );
+    _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user',                                     \&untaint_postgresql_ident );
+    _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
+    _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
+    _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
+    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
+    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
+    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
+    _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
+    _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
+    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
+    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
 
 =head2 new_DB
@@ -655,8 +678,6 @@ A configured L<Zonemaster::Backend::DB> object.
 
 =over 4
 
-=item Dies if no database engine type is defined in the configuration.
-
 =item Dies if no adapter for the configured database engine can be loaded.
 
 =item Dies if the adapter is unable to connect to the database.
@@ -666,23 +687,11 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
-    # Get DB type from config
-    my $dbtype = $self->DB_engine;
-    if (!defined $dbtype) {
-        die "Unrecognized DB.engine in backend config";
-    }
-
-    # Load and construct DB adapter
-    my $dbclass = 'Zonemaster::Backend::DB::' . $dbtype;
-    require( join( "/", split( /::/, $dbclass ) ) . ".pm" );
-    $dbclass->import();
-
-    my $db = $dbclass->new({ config => $self });
-
-    # Connect or die
-    $db->dbh;
+    my $dbtype  = $self->DB_engine;
+    my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
+    my $db      = $dbclass->from_config( $self );
 
     return $db;
 }
@@ -764,14 +773,88 @@ sub new_PM {
     return $pm;
 }
 
-# Create a setter method with a given name using the given field
+sub _add_LANGUAGE_locale {
+    my ( $self, $locale_tag ) = @_;
+
+    $locale_tag = untaint_locale_tag( $locale_tag )    #
+      // die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+
+    my $lang_code = $locale_tag =~ s/_..$//r;
+
+    if ( exists $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} ) {
+        die "Repeated locale tags in LANGUAGE.locale: $locale_tag\n";
+    }
+
+    $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} = 1;
+
+    return;
+}
+
+sub _reset_LANGUAGE_locale {
+    my ( $self ) = @_;
+
+    delete $self->{_LANGUAGE_locale};
+    return;
+}
+
+sub _add_public_profile {
+    my ( $self, $name, $path ) = @_;
+
+    $name = untaint_profile_name( $name )    #
+      // die "Invalid profile name in PUBLIC PROFILES section: $name\n";
+
+    $name = lc $name;
+
+    if ( defined $self->{_public_profiles}{$name} || exists $self->{_private_profiles}{$name} ) {
+        die "Profile name not unique: $name\n";
+    }
+
+    if ( defined $path ) {
+        $path = untaint_abs_path( $path )    #
+          // die "Path must be absolute for profile: $name\n";
+    }
+
+    $self->{_public_profiles}{$name} = $path;
+    return;
+}
+
+sub _add_private_profile {
+    my ( $self, $name, $path ) = @_;
+
+    $name = untaint_profile_name( $name )    #
+      // die "Invalid profile name in PRIVATE PROFILES section: $name\n";
+
+    $name = lc $name;
+
+    if ( $name eq 'default' ) {
+        die "Profile name must not be present in PRIVATE PROFILES section: $name\n";
+    }
+
+    if ( exists $self->{_public_profiles}{$name} || exists $self->{_private_profiles}{$name} ) {
+        die "Profile name not unique: $name\n";
+    }
+
+    $path = untaint_abs_path( $path )    #
+      // die "Path must be absolute for profile: $name\n";
+
+    $self->{_private_profiles}{$name} = $path;
+    return;
+}
+
+# Create a setter method with a given name using the given field and validator
 sub _create_setter {
-    my ( $setter, $field ) = @_;
+    my ( $setter, $field, $validate ) = @_;
+
+    $setter =~ /^_set_([A-Z_]*)_([a-z_]*)$/
+      or confess "Invalid setter name";
+    my $section  = $1;
+    my $property = $2;
 
     my $setter_impl = sub {
         my ( $self, $value ) = @_;
 
-        $self->{$field} = $value;
+        $self->{$field} = $validate->( $value )    #
+          // die "Invalid value for $section.$property: $value\n";
 
         return;
     };
@@ -785,13 +868,14 @@ sub _create_setter {
 sub _normalize_engine_type {
     my ( $value ) = @_;
 
+    # Normalized to camel case to match the database engine Perl module name, e.g. "SQLite.pm".
     state $db_module_names = {
         mysql      => 'MySQL',
         postgresql => 'PostgreSQL',
         sqlite     => 'SQLite',
     };
 
-    return scalar $db_module_names->{ lc $value };
+    return $db_module_names->{ lc $value };
 }
 
 1;

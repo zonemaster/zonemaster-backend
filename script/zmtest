@@ -72,7 +72,7 @@ fi
 # Wait for test to finish
 while true
 do
-    output="$(zmb "${server_url}" test_progress --testid "${testid}")" || exit $?
+    output="$(zmb "${server_url}" test_progress --test-id "${testid}")" || exit $?
     progress="$(printf "%s" "${output}" | "${JQ}" -r .result)" || exit $?
     printf "\r${progress}%% done" >&2
     if [ "${progress}" -eq 100 ] ; then
@@ -83,4 +83,4 @@ do
 done
 
 # Get test results
-zmb "${server_url}" get_test_results --testid "${testid}" --lang "${lang}"
+zmb "${server_url}" get_test_results --test-id "${testid}" --lang "${lang}"

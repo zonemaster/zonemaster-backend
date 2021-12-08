@@ -260,9 +260,11 @@ sub get_test_params {
 
     my $result;
     eval {
-        # TODO: do we use "encode_utf8" as this was the case in PostgreSQL
-        #       (see commit diff)
-        $result = decode_json( $params_json );
+        if ( utf8::is_utf8( $params_json ) ) {
+            $result = decode_json( encode_utf8( $params_json ) );
+        } else {
+            $result = decode_json( $params_json );
+        }
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )

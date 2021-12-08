@@ -175,22 +175,10 @@ sub test_results {
         unless defined $result;
 
     eval {
-        # This workaround is needed to properly handle all versions of perl and the DBD::Pg module
-        # More details in the zonemaster backend issue #570
-        if (utf8::is_utf8($result->{params}) ) {
-            $result->{params}  = decode_json( encode_utf8($result->{params}) );
-        }
-        else {
-            $result->{params}  = decode_json( $result->{params} );
-        }
+        $result->{params} = _decode_json_sanitize( $result->{params} );
 
         if (defined $result->{results} ) {
-            if (utf8::is_utf8($result->{results} ) ) {
-                $result->{results}  = decode_json( encode_utf8($result->{results}) );
-            }
-            else {
-                $result->{results}  = decode_json( $result->{results} );
-            }
+            $result->{results} = _decode_json_sanitize( $result->{results} );
         } else {
             $result->{results} = [];
         }

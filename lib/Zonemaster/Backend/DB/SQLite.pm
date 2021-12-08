@@ -169,10 +169,10 @@ sub test_results {
         unless defined $result;
 
     eval {
-        $result->{params}  = decode_json( $result->{params} );
+        $result->{params}  = _decode_json_sanitize( $result->{params} );
 
         if (defined $result->{results}) {
-            $result->{results} = decode_json( $result->{results} );
+            $result->{results} = _decode_json_sanitize( $result->{results} );
         } else {
             $result->{results} = [];
         }

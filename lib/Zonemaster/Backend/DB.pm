@@ -260,11 +260,7 @@ sub get_test_params {
 
     my $result;
     eval {
-        if ( utf8::is_utf8( $params_json ) ) {
-            $result = decode_json( encode_utf8( $params_json ) );
-        } else {
-            $result = decode_json( $params_json );
-        }
+        $result = _decode_json_sanitize( $params_json );
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
@@ -366,6 +362,21 @@ sub _new_dbh {
     $dbh->{AutoInactiveDestroy} = 1;
 
     return $dbh;
+}
+
+# A wrapper around JSON::PP->decode_json to be sure to pass a string in the
+# expected format
+sub _decode_json_sanitize {
+    my ( $input ) = @_;
+    my $output;
+
+    if ( utf8::is_utf8( $input ) ) {
+        $output = decode_json( encode_utf8( $input ) );
+    } else {
+        $output = decode_json( $input );
+    }
+
+    return $output;
 }
 
 sub _project_params {

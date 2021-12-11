@@ -5,7 +5,7 @@ use 5.14.2;
 
 our $VERSION = '1.1.0';
 
-use Carp qw( confess );
+use Carp qw( confess croak );
 use Config::IniFiles;
 use Config;
 use File::ShareDir qw[dist_file];
@@ -15,27 +15,52 @@ use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
 use Zonemaster::Backend::DB;
 
-our $path;
-
-if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
-    $path = $ENV{ZONEMASTER_BACKEND_CONFIG_FILE};
-}
-else {
-    my @search_paths = (
-        '/etc/zonemaster/backend_config.ini',
-        '/usr/local/etc/zonemaster/backend_config.ini',
-        dist_file('Zonemaster-Backend', "backend_config.ini")
-    );
-
-    for my $default_path (@search_paths) {
-        if ( -e $default_path ) {
-            $path = $default_path;
-            last;
-        }
-    }
-}
-
 Readonly my @SIG_NAME => split ' ', $Config{sig_name};
+
+=head1 STATIC METHODS
+
+=head2 get_default_path
+
+Determine the path for the default backend_config.ini file.
+A list of values and locations are checked and the first match is returned.
+If all places are checked and no file is found, an exception is thrown.
+
+This procedure is idempotent - i.e. if you call this procedure multiple times
+the same value is returned no matter if envirnmental circumstances have changed.
+
+The following checks are made in order:
+
+=over 4
+
+=item $ZONEMASTER_BACKEND_CONFIG_FILE
+
+If this environment variable is set ot a truthy value, that path is returned.
+
+=item /etc/zonemaster/backend_config.ini
+
+If a file exists at this path, it is returned.
+
+=item /usr/local/etc/zonemaster/backend_config.ini
+
+If a file exists at such a path, it is returned.
+
+=item DIST_DIR/backend_config.ini
+
+If a file exists at this path, it is returned.
+DIST_DIR is wherever File::ShareDir installs the Zonemaster-Backend dist.
+
+=back
+
+=cut
+
+sub get_default_path {
+    state $path =
+        $ENV{ZONEMASTER_BACKEND_CONFIG_FILE}              ? $ENV{ZONEMASTER_BACKEND_CONFIG_FILE}
+      : -e '/etc/zonemaster/backend_config.ini'           ? '/etc/zonemaster/backend_config.ini'
+      : -e '/usr/local/etc/zonemaster/backend_config.ini' ? '/usr/local/etc/zonemaster/backend_config.ini'
+      :                                                     eval { dist_file( 'Zonemaster-Backend', 'backend_config.ini' ) };
+    return $path // croak "File not found: backend_config.ini\n";
+}
 
 =head1 CONSTRUCTORS
 
@@ -52,6 +77,7 @@ See L<parse> for details on additional parsing-related error modes.
 sub load_config {
     my ( $class ) = @_;
 
+    my $path = get_default_path();
     $log->notice( "Loading config: $path" );
     my $text = read_file $path;
 

@@ -681,7 +681,7 @@ The Perl bindings library (`p5-DBD-Pg`) has a dependency to a specific version
 of `postgresql-client`. Determine what version was installed:
 
 ```sh
-pkg info | grep postgresql |grep client
+pkg info | grep postgresql | grep client
 ```
 If the installed client is not version `13` then adjust the following command to
 install `postgresql-server` with the same version as `postgresql-client`

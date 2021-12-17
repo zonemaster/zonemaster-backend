@@ -240,6 +240,7 @@ Language | Preferred language tag | Deprecated language tag
 ---------|------------------------|------------------
 Danish   | da                     | da_DK
 English  | en                     | en_US
+Spanish  | es                     | es_ES
 Finnish  | fi                     | fi_FI
 French   | fr                     | fr_FR
 Norwegian| nb                     | nb_NO
@@ -520,6 +521,8 @@ Example response:
     "da_DK",
     "en",
     "en_US",
+    "es",
+    "es_ES",
     "fi",
     "fi_FI",
     "fr",

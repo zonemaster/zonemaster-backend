@@ -50,7 +50,18 @@ Current Zonemaster::Backend version | Link to instructions | Comments
  1.1.0 ≤ version < 5.0.0            | [Upgrade to 5.0.0]   |
  5.0.0 ≤ version < 5.0.2            | [Upgrade to 5.0.2]   | For MySQL/MariaDB only
  5.0.2 ≤ version < 8.0.0            | [Upgrade to 8.0.0]   |
- 8.0.0                              | -                    | No special steps
+ 8.0.0                              | -                    | No special steps needed for upgrade
+
+## 4. Find current version
+
+The following command will report the version of Zonemaster-Backend currently
+installed. If an error is report Zonemaster-Backend is not installed or not
+available for the user. If so, consider tunning the command as root or with
+`sudo`.
+
+```sh
+perl -E 'use Zonemaster::Backend; say $Zonemaster::Backend::VERSION;'
+```
 
 [Installation instructions]: Installation.md
 [Upgrade to 1.0.3]:  upgrade/upgrade_zonemaster_backend_ver_1.0.3.md

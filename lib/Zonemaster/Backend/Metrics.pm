@@ -1,5 +1,8 @@
 package Zonemaster::Backend::Metrics;
 
+use strict;
+use warnings;
+
 use Log::Any qw($log);
 
 eval("use Net::Statsd");
@@ -32,26 +35,26 @@ sub setup {
 sub code_to_status {
     my ($cls, $code) = @_;
     if (defined $code) {
-        return %CODE_STATUS_HASH{$code};
+        return $CODE_STATUS_HASH{$code};
     } else {
-        return 'RPC_SUCCESS'
+        return 'RPC_SUCCESS';
     }
 }
 
 sub increment {
     if ( $enable_metrics ) {
-        Net::Statsd::increment(@_)
+        Net::Statsd::increment(@_);
     }
 }
 
 sub gauge {
     if ( $enable_metrics ) {
-        Net::Statsd::gauge(@_)
+        Net::Statsd::gauge(@_);
     }
 }
 
 sub timing {
     if ( $enable_metrics ) {
-        Net::Statsd::timing(@_)
+        Net::Statsd::timing(@_);
     }
 }

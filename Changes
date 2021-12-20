@@ -1,5 +1,25 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+
+v8.1.0 2021-12-20 (public fix release)
+
+ [Features]
+
+ - Adds support of Spanish language (#900)
+ - Adds Spanish translation of error messages (#936, #910)
+ - Adds Danish translation of error messages (#930, #909)
+ - Adds Norwegian translation of error messages (#935, #912)
+
+ [Fixes]
+
+ - Corrects installation instruction for FreeBSD (#926, #925)
+ - Fixes Perl code to be compatible with older versions of Perl (#929)
+ - Fixes inconsistency of test age definition (#928)
+ - Fixes handling of UTF-8 in PostgreSQL. The error made testing of IDN
+   names in U-label format break when PostgreSQL was database backend (#932,
+   #931)
+
+
 v8.0.0 2021-12-03 (public release version)
 
  [Breaking changes]

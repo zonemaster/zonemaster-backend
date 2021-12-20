@@ -128,7 +128,7 @@ sub recent_test_hash_id {
 
     my $dbh = $self->dbh;
     my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND test_start_time > DATETIME('now', ?)",
+        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > DATETIME('now', ?)",
         undef, $fingerprint, "-$age_reuse_previous_test seconds"
     );
 

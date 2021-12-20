@@ -2,12 +2,73 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-14 11:25+0200\n"
-"PO-Revision-Date: 2021-10-14 11:25+0200\n"
-"Last-Translator: mats.dufberg@iis.se\n"
+"POT-Creation-Date: 2021-12-08 15:14+0100\n"
+"PO-Revision-Date: 2021-12-09 09:06+0100\n"
+"Last-Translator: richard.persson@norid.no\n"
 "Language-Team: Zonemaster project\n"
 "Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Domain name required"
+msgstr "Domenenavn påkrevd"
+
+msgid ""
+"The domain name is not a valid IDNA string and cannot be converted to an A-"
+"label"
+msgstr ""
+"Domenenavnet er ikke en gyldig IDNA streng og kan ikke konverteres til en "
+"ACE-kode"
+
+msgid "The domain name contains non-ascii characters and IDNA is not installed"
+msgstr "Domenenavnet innholder non-ascii tegn og IDNA er ikke installert"
+
+msgid "The domain name character(s) are not supported"
+msgstr "Tegn i domenenavn er ikke supportert"
+
+msgid "The domain name or label is too long"
+msgstr "Domenenavn eller label er for lang"
+
+msgid "Unknown profile"
+msgstr "Ukjent profil"
+
+msgid "Invalid IP address"
+msgstr "Ugylding IP-adresse"
+
+msgid "Unkown language string"
+msgstr "Ukjent språk-tag"
+
+msgid "Language string not unique"
+msgstr "Språk er ikke unik"
+
+msgid "Invalid method parameter(s)."
+msgstr "Ugyldig metodeparameter."
+
+msgid "Missing property"
+msgstr "Mangler verdi"
+
+msgid ""
+"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
+"names correctly."
+msgstr ""
+"Advarsel: Zonemaster::LDNS som ikke er kompilert med libidn kan ikke "
+"håndtere non-ASCII navn korrekt."
+
+msgid "The domain name contains a character or characters not supported"
+msgstr "Domenenavnet innholder et ugyldig tegn"
+
+msgid "Invalid digest format"
+msgstr "Ugyldig format på digest"
+
+msgid "Algorithm must be a positive integer"
+msgstr "Algoritme må være et positivt tall"
+
+msgid "Digest type must be a positive integer"
+msgstr "Algoritme-type må være et positivt tall"
+
+msgid "Keytag must be a positive integer"
+msgstr "Keytag må være et positivt tall"
+
+msgid "Invalid language tag format"
+msgstr "Ugyldig format på språk-tag"

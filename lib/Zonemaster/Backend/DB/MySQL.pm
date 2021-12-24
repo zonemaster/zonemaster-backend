@@ -207,8 +207,7 @@ sub test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my @results;
-    my $sth = {};
+    my $dbh = $self->dbh;
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
@@ -217,8 +216,10 @@ sub get_test_history {
         $undelegated = 0;
     }
 
+    my @results;
+    my $sth = {};
     if ($p->{filter} eq "all") {
-        $sth = $self->dbh->prepare(
+        $sth = $dbh->prepare(
             q[SELECT
                 id,
                 hash_id,
@@ -235,7 +236,7 @@ sub get_test_history {
         );
         $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
     } else {
-        $sth = $self->dbh->prepare(
+        $sth = $dbh->prepare(
             q[SELECT
                 id,
                 hash_id,

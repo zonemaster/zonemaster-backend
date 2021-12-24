@@ -196,25 +196,24 @@ sub get_test_history {
         $undelegated = "AND undelegated = 0";
     }
 
-    my $quoted_domain = $dbh->quote( $p->{frontend_params}->{domain} );
-    $quoted_domain =~ s/'/"/g;
-
     my @results;
-    my $query = "SELECT
-                    id,
-                    hash_id,
-                    creation_time,
-                    params,
-                    undelegated,
-                    results
-                 FROM
-                    test_results
-                 WHERE
-                    params like '\%\"domain\":$quoted_domain\%'
-                    $undelegated
-                 ORDER BY id DESC LIMIT $p->{limit} OFFSET $p->{offset} ";
+    my $query = q[
+        SELECT
+            id,
+            hash_id,
+            creation_time,
+            params,
+            undelegated,
+            results
+        FROM test_results
+        WHERE domain = ? ] . $undelegated . q[
+        ORDER BY id DESC
+        LIMIT ?
+        OFFSET ?];
+
     my $sth1 = $dbh->prepare( $query );
-    $sth1->execute;
+    $sth1->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
+
     while ( my $h = $sth1->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );

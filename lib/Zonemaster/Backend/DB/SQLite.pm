@@ -214,7 +214,7 @@ sub get_test_history {
     my $sth1 = $self->dbh->prepare( $query );
     $sth1->execute;
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results}) if $h->{results};
+        $h->{results} = _decode_json_sanitize($h->{results}) if $h->{results};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
         my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
         my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );

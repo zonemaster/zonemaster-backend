@@ -64,7 +64,7 @@ sub patch_db {
     $sth1->execute;
     while ( my $row = $sth1->fetchrow_hashref ) {
         my $id = $row->{id};
-        my $raw_params = decode_json($row->{params});
+        my $raw_params = _decode_json_sanitize($row->{params});
         my $ds_info_values = scalar grep !/^$/, map { values %$_ } @{$raw_params->{ds_info}};
         my $nameservers_values = scalar grep !/^$/, map { values %$_ } @{$raw_params->{nameservers}};
         my $undelegated = $ds_info_values > 0 || $nameservers_values > 0 || 0;

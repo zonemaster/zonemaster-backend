@@ -316,7 +316,7 @@ sub force_end_test {
     my ( $self, $hash_id, $results, $timestamp ) = @_;
     my $result;
     if ( defined $results && $results =~ /^\[/ ) {
-        $result = decode_json( $results );
+        $result = _decode_json_sanitize( $results );
     }
     else {
         $result = [];

@@ -255,8 +255,8 @@ sub get_test_history {
     }
 
     while ( my $h = $sth->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results}) if $h->{results};
-        $h->{params} = decode_json($h->{params}) if $h->{params};
+        $h->{results} = _decode_json_sanitize($h->{results}) if $h->{results};
+        $h->{params} = _decode_json_sanitize($h->{params}) if $h->{params};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
         my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
         my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );

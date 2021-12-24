@@ -215,7 +215,7 @@ sub get_test_history {
     }
 
     my @results;
-    my $query = "
+    my $query = q[
         SELECT
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
             (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,
@@ -225,11 +225,13 @@ sub get_test_history {
             undelegated,
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
         FROM test_results
-        WHERE domain=" . $dbh->quote( $p->{frontend_params}->{domain} ) . " $undelegated
-        ORDER BY id DESC
-        OFFSET $p->{offset} LIMIT $p->{limit}";
+        WHERE domain = ? ] . $undelegated . q[
+        LIMIT ?
+        OFFSET ?];
+
     my $sth1 = $dbh->prepare( $query );
-    $sth1->execute;
+    $sth1->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
+
     while ( my $h = $sth1->fetchrow_hashref ) {
         my $overall_result = 'ok';
         if ( $h->{nb_critical} ) {

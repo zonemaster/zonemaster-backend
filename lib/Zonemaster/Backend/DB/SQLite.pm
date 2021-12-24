@@ -202,7 +202,6 @@ sub get_test_history {
             id,
             hash_id,
             creation_time,
-            params,
             undelegated,
             results
         FROM test_results

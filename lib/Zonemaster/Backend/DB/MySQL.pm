@@ -225,7 +225,7 @@ sub get_test_history {
             undelegated,
             results
         FROM test_results
-        WHERE domain = ? ] . $undelegated . q[
+        WHERE progress = 100 AND domain = ? ] . $undelegated . q[
         ORDER BY id DESC
         LIMIT ?
         OFFSET ?];

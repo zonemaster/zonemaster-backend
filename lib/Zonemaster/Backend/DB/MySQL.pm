@@ -211,49 +211,28 @@ sub get_test_history {
 
     my $undelegated = "";
     if ($p->{filter} eq "undelegated") {
-        $undelegated = 1;
+        $undelegated = "AND undelegated = 1";
     } elsif ($p->{filter} eq "delegated") {
-        $undelegated = 0;
+        $undelegated = "AND undelegated = 0";
     }
 
     my @results;
-    my $sth = {};
-    if ($p->{filter} eq "all") {
-        $sth = $dbh->prepare(
-            q[SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                undelegated,
-                results
-            FROM
-                test_results
-            WHERE
-                domain = ?
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?]
-        );
-        $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
-    } else {
-        $sth = $dbh->prepare(
-            q[SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                undelegated,
-                results
-            FROM
-                test_results
-            WHERE
-                domain = ?
-                AND undelegated = ?
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?]
-        );
-        $sth->execute( $p->{frontend_params}{domain}, $undelegated, $p->{limit}, $p->{offset} );
-    }
+    my $query = q[
+        SELECT
+            id,
+            hash_id,
+            CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+            params,
+            undelegated,
+            results
+        FROM test_results
+        WHERE domain = ? ] . $undelegated . q[
+        ORDER BY id DESC
+        LIMIT ?
+        OFFSET ?];
+
+    my $sth = $dbh->prepare( $query );
+    $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
 
     while ( my $h = $sth->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};

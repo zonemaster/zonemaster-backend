@@ -147,14 +147,14 @@ sub main {
 
         my $fetch_test_timer = [ gettimeofday ];
 
-        my $test_id;
+        my ( $test_id, $batch_id );
         eval {
             $self->db->process_unfinished_tests(
                 $self->config->ZONEMASTER_lock_on_queue,
                 $self->config->ZONEMASTER_max_zonemaster_execution_time,
             );
 
-            $test_id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
+            ( $test_id, $batch_id ) = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
 
             Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
         };
@@ -162,13 +162,15 @@ sub main {
             $log->error( $@ );
         }
 
+        my $show_progress = defined $batch_id ? 0 : 1;
+
         if ( $test_id ) {
             $log->info( "Test found: $test_id" );
             if ( $self->pm->start( $test_id ) == 0 ) {    # Forks off child process
                 $log->info( "Test starting: $test_id" );
                 Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
                 my $start_time = [ gettimeofday ];
-                eval { $agent->run( $test_id ) };
+                eval { $agent->run( $test_id, $show_progress ) };
                 if ( $@ ) {
                     chomp $@;
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");

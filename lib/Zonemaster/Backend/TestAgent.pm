@@ -58,7 +58,7 @@ sub new {
 }
 
 sub run {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $test_id, $show_progress ) = @_;
     my @accumulator;
     my %counter;
     my %counter_for_progress_indicator;
@@ -124,7 +124,7 @@ sub run {
 
             $counter{ uc $entry->level } += 1;
         }
-    );
+    ) if ( $show_progress );
 
     if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
         $self->add_fake_delegation( $domain, $params->{nameservers} );

@@ -384,11 +384,10 @@ sub get_test_request {
         ( $id, $hash_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
     }
 
-    if ($id) {
-        $dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
-        $result_id = $hash_id;
+    if ( $hash_id ) {
+        $self->test_progress( $hash_id, 1 );
     }
-    return $result_id;
+    return $hash_id;
 }
 
 sub get_test_params {

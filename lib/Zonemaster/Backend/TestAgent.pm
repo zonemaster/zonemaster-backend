@@ -65,8 +65,6 @@ sub run {
 
     my $params;
 
-    my $progress = $self->{_db}->test_progress( $test_id, 1 );
-
     $params = $self->{_db}->get_test_params( $test_id );
 
     my %methods = Zonemaster::Engine->all_methods;
@@ -172,7 +170,7 @@ sub run {
 
     $self->{_db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
 
-    $progress = $self->{_db}->test_progress( $test_id );
+    $self->{_db}->test_progress( $test_id );
 
     return;
 } ## end sub run

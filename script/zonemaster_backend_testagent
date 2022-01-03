@@ -147,14 +147,14 @@ sub main {
 
         my $fetch_test_timer = [ gettimeofday ];
 
-        my $id;
+        my $test_id;
         eval {
             $self->db->process_unfinished_tests(
                 $self->config->ZONEMASTER_lock_on_queue,
                 $self->config->ZONEMASTER_max_zonemaster_execution_time,
             );
 
-            $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
+            $test_id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
 
             Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
         };
@@ -162,22 +162,22 @@ sub main {
             $log->error( $@ );
         }
 
-        if ( $id ) {
-            $log->info( "Test found: $id" );
-            if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
-                $log->info( "Test starting: $id" );
+        if ( $test_id ) {
+            $log->info( "Test found: $test_id" );
+            if ( $self->pm->start( $test_id ) == 0 ) {    # Forks off child process
+                $log->info( "Test starting: $test_id" );
                 Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
                 my $start_time = [ gettimeofday ];
-                eval { $agent->run( $id ) };
+                eval { $agent->run( $test_id ) };
                 if ( $@ ) {
                     chomp $@;
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");
-                    $log->error( "Test died: $id: $@" );
-                    $self->db->process_dead_test( $id )
+                    $log->error( "Test died: $test_id: $@" );
+                    $self->db->process_dead_test( $test_id )
                 }
                 else {
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");
-                    $log->info( "Test completed: $id" );
+                    $log->info( "Test completed: $test_id" );
                 }
                 Zonemaster::Backend::Metrics::timing("zonemaster.testagent.tests_duration_seconds", tv_interval($start_time) * 1000);
                 $agent->reset();

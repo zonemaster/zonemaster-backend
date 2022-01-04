@@ -25,7 +25,7 @@ use sigtrap qw(die normal-signals);
 ###
 
 BEGIN {
-	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
+    $ENV{PERL_JSON_BACKEND} = 'JSON::PP';
 }
 
 # Enable immediate flush to stdout and stderr

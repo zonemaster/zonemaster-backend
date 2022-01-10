@@ -226,6 +226,7 @@ sub get_test_history {
             creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
         FROM test_results
         WHERE progress = 100 AND domain = ? ] . $undelegated . q[
+        ORDER BY id DESC
         LIMIT ?
         OFFSET ?];
 

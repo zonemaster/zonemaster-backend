@@ -5,7 +5,7 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use DBI qw(:utils);
+use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
@@ -189,11 +189,11 @@ sub get_test_history {
 
     my $dbh = $self->dbh;
 
-    my $undelegated = "";
+    my $undelegated = undef;
     if ($p->{filter} eq "undelegated") {
-        $undelegated = "AND undelegated = 1";
+        $undelegated = 1;
     } elsif ($p->{filter} eq "delegated") {
-        $undelegated = "AND undelegated = 0";
+        $undelegated = 0;
     }
 
     my @results;
@@ -205,13 +205,20 @@ sub get_test_history {
             undelegated,
             results
         FROM test_results
-        WHERE progress = 100 AND domain = ? ] . $undelegated . q[
+        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY id DESC
         LIMIT ?
         OFFSET ?];
 
     my $sth1 = $dbh->prepare( $query );
-    $sth1->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
+
+    $sth1->bind_param( 1, $p->{frontend_params}{domain} );
+    $sth1->bind_param( 2, $undelegated, SQL_INTEGER );
+    $sth1->bind_param( 3, $undelegated, SQL_INTEGER );
+    $sth1->bind_param( 4, $p->{limit} );
+    $sth1->bind_param( 5, $p->{offset} );
+
+    $sth1->execute();
 
     while ( my $h = $sth1->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};

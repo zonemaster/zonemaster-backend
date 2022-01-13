@@ -165,21 +165,21 @@ sub main {
         my $show_progress = defined $batch_id ? 0 : 1;
 
         if ( $test_id ) {
-            $log->info( "Test found: $test_id" );
+            $log->infof( "Test found: %s", $test_id );
             if ( $self->pm->start( $test_id ) == 0 ) {    # Forks off child process
-                $log->info( "Test starting: $test_id" );
+                $log->infof( "Test starting: %s", $test_id );
                 Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
                 my $start_time = [ gettimeofday ];
                 eval { $agent->run( $test_id, $show_progress ) };
                 if ( $@ ) {
                     chomp $@;
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");
-                    $log->error( "Test died: $test_id: $@" );
+                    $log->errorf( "Test died: %s: %s", $test_id, $@ );
                     $self->db->process_dead_test( $test_id )
                 }
                 else {
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");
-                    $log->info( "Test completed: $test_id" );
+                    $log->infof( "Test completed: %s", $test_id );
                 }
                 Zonemaster::Backend::Metrics::timing("zonemaster.testagent.tests_duration_seconds", tv_interval($start_time) * 1000);
                 $agent->reset();

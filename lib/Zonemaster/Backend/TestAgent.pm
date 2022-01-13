@@ -84,47 +84,49 @@ sub run {
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
 
-    # Callback defined here so it closes over the setup above.
-    Zonemaster::Engine->logger->callback(
-        sub {
-            my ( $entry ) = @_;
+    if ( $show_progress ) {
+        # Callback defined here so it closes over the setup above.
+        Zonemaster::Engine->logger->callback(
+            sub {
+                my ( $entry ) = @_;
 
-            foreach my $trace ( reverse @{ $entry->trace } ) {
-                foreach my $module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
-                    if ( index( $trace->[1], $module_method ) > -1 ) {
-                        my $percent_progress = 0;
-                        my ( $module ) = ( $module_method =~ /(.+::)[^:]+/ );
-                        if ( $previous_module eq $module ) {
-                            $counter_for_progress_indicator{executed}{$module_method}++;
-                        }
-                        elsif ( $previous_module ) {
-                            foreach my $planned_module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
-                                $counter_for_progress_indicator{executed}{$planned_module_method}++
-                                  if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq
-                                    $previous_module );
+                foreach my $trace ( reverse @{ $entry->trace } ) {
+                    foreach my $module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
+                        if ( index( $trace->[1], $module_method ) > -1 ) {
+                            my $percent_progress = 0;
+                            my ( $module ) = ( $module_method =~ /(.+::)[^:]+/ );
+                            if ( $previous_module eq $module ) {
+                                $counter_for_progress_indicator{executed}{$module_method}++;
                             }
-                        }
-                        $previous_module = $module;
+                            elsif ( $previous_module ) {
+                                foreach my $planned_module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
+                                    $counter_for_progress_indicator{executed}{$planned_module_method}++
+                                      if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq
+                                        $previous_module );
+                                }
+                            }
+                            $previous_module = $module;
 
-                        if ( $previous_method ne $module_method ) {
-                            $percent_progress = sprintf(
-                                "%.0f",
-                                99 * (
-                                    scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
-                                      scalar( keys %{ $counter_for_progress_indicator{planned} } )
-                                )
-                            );
-                            $self->{_db}->test_progress( $test_id, $percent_progress );
+                            if ( $previous_method ne $module_method ) {
+                                $percent_progress = sprintf(
+                                    "%.0f",
+                                    99 * (
+                                        scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
+                                          scalar( keys %{ $counter_for_progress_indicator{planned} } )
+                                    )
+                                );
+                                $self->{_db}->test_progress( $test_id, $percent_progress );
 
-                            $previous_method = $module_method;
+                                $previous_method = $module_method;
+                            }
                         }
                     }
                 }
-            }
 
-            $counter{ uc $entry->level } += 1;
-        }
-    ) if ( $show_progress );
+                $counter{ uc $entry->level } += 1;
+            }
+        );
+    }
 
     if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
         $self->add_fake_delegation( $domain, $params->{nameservers} );

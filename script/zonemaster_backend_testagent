@@ -25,7 +25,7 @@ use sigtrap qw(die normal-signals);
 ###
 
 BEGIN {
-	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
+    $ENV{PERL_JSON_BACKEND} = 'JSON::PP';
 }
 
 # Enable immediate flush to stdout and stderr
@@ -191,6 +191,23 @@ sub main {
     return;
 }
 
+sub preflight_checks {
+    # Make sure we can load the configuration file
+    $log->debug("Starting pre-flight check");
+    my $initial_config = Zonemaster::Backend::Config->load_config();
+
+    Zonemaster::Backend::Metrics->setup($initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port);
+
+    # Validate the Zonemaster-Engine profile
+    Zonemaster::Backend::TestAgent->new( { config => $initial_config } );
+
+    # Connect to the database
+    $initial_config->new_DB();
+    $log->debug("Completed pre-flight check");
+
+    return $initial_config;
+}
+
 
 # Initialize logging
 my $dispatcher;
@@ -203,26 +220,18 @@ else {
 }
 Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
 
-# Make sure the environment is alright before forking
 my $initial_config;
-eval {
-    # Make sure we can load the configuration file
-    $log->debug("Starting pre-flight check");
-    $initial_config = Zonemaster::Backend::Config->load_config();
 
-    Zonemaster::Backend::Metrics->setup($initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port);
-
-    # Validate the Zonemaster-Engine profile
-    Zonemaster::Backend::TestAgent->new( { config => $initial_config } );
-
-    # Connect to the database
-    $initial_config->new_DB();
-    $log->debug("Completed pre-flight check");
-};
-if ( $@ ) {
-    $log->critical( "Aborting startup: $@" );
-    print STDERR "Aborting startup: $@";
-    exit 1;
+# Make sure the environment is alright before forking (only on startup)
+if ( grep /start/, @ARGV ) {
+    eval {
+        $initial_config = preflight_checks();
+    };
+    if ( $@ ) {
+        $log->critical( "Aborting startup: $@" );
+        print STDERR "Aborting startup: $@";
+        exit 1;
+    }
 }
 
 ###

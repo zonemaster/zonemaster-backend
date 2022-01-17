@@ -9,6 +9,7 @@ use Zonemaster::Engine;
 use JSON::PP;
 use File::ShareDir qw[dist_file];
 use File::Temp qw[tempdir];
+use Cwd;
 
 # Use the TARGET environment variable to set the database to use
 # default to SQLite
@@ -38,6 +39,8 @@ use_ok( 'Zonemaster::Backend::RPCAPI' );
 
 use_ok( 'Zonemaster::Backend::Config' );
 
+my $cwd = cwd();
+
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
 [DB]
 engine = $db_backend
@@ -59,6 +62,9 @@ database_file = $tempdir/zonemaster.sqlite
 
 [LANGUAGE]
 locale = en_US
+
+[PUBLIC PROFILES]
+test_profile=$cwd/t/test_profile.json
 EOF
 
 # Create Zonemaster::Backend::RPCAPI object
@@ -88,7 +94,7 @@ my $frontend_params_1 = {
     domain         => 'afnic.fr',          # content of the domain text field
     ipv4           => JSON::PP::true,                   # 0 or 1, is the ipv4 checkbox checked
     ipv6           => JSON::PP::true,                   # 0 or 1, is the ipv6 checkbox checked
-    profile        => 'default',    # the id if the Test profile listbox
+    profile        => 'test_profile',    # the id if the Test profile listbox
 
     nameservers => [                       # list of the nameserves up to 32
         { ns => 'ns1.nic.fr' },       # key values pairs representing nameserver => namesterver_ip

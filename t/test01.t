@@ -208,38 +208,28 @@ subtest 'get_test_history' => sub {
     }
 };
 
-subtest 'mock another client' => sub {
+subtest 'mock another client (i.e. reuse a previous test)' => sub {
     $frontend_params_1->{client_id} = 'Another Client';
     $frontend_params_1->{client_version} = '0.1';
 
-    my $hash_id = $backend->start_domain_test( $frontend_params_1 );
-    ok( $hash_id, "API start_domain_test OK" );
-    is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
+    my $new_hash_id = $backend->start_domain_test( $frontend_params_1 );
 
-    # check that we reuse one of the previous test
-    subtest 'check that previous test was reused' => sub {
-        my %ids = map { $_->{id} => 1 } @$test_history;
-        ok ( exists( $ids{$hash_id} ), "Has the same hash than previous test" );
-    };
+    is( $new_hash_id, $hash_id, 'Has the same hash than previous test' );
 
     subtest 'check test_params values' => sub {
         my $res = $backend->get_test_params( { test_id => "$hash_id" } );
-        my @keys_res = sort( keys %$res );
-        my @keys_params = sort( keys %$frontend_params_1 );
+        # the following values are part of the fingerprint
+        is( $res->{domain}, $frontend_params_1->{domain}, 'Retrieve the correct "domain" value' );
+        is( $res->{profile}, $frontend_params_1->{profile}, 'Retrieve the correct "profile" value' );
+        is( $res->{ipv4}, $frontend_params_1->{ipv4}, 'Retrieve the correct "ipv4" value' );
+        is( $res->{ipv6}, $frontend_params_1->{ipv6}, 'Retrieve the correct "ipv6" value' );
+        is_deeply( $res->{nameservers}, $frontend_params_1->{nameservers}, 'Retrieve the correct "nameservers" value' );
+        is_deeply( $res->{ds_info}, $frontend_params_1->{ds_info}, 'Retrieve the correct "ds_info" value' );
 
-        is_deeply( \@keys_res, \@keys_params, "All keys are in database" );
-
-        foreach my $key (@keys_res) {
-            if ( $key eq "client_id" or $key eq "client_version" ) {
-                isnt( $frontend_params_1->{$key}, $res->{$key}, "but value for key '$key' is different (which is fine)" );
-            }
-            else {
-                is_deeply( $frontend_params_1->{$key}, $res->{$key}, "same value for key '$key'" );
-            }
-        }
+        # both client_id and client_version are different since an old test has been reused
+        isnt( $res->{client_id}, $frontend_params_1->{client_id}, 'The "client_id" value is not the same (which is fine)' );
+        isnt( $res->{client_version}, $frontend_params_1->{client_version}, 'The "client_version" value is not the same (which is fine)' );
     };
-    #diag "...but values for client_id and client_version are different (which is fine)";
-
 };
 
 subtest 'check historic tests' => sub {

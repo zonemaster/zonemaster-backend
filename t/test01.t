@@ -149,16 +149,32 @@ subtest 'add a first test' => sub {
 diag "running the agent on test $hash_id";
 $agent->run( $hash_id ); # blocking call
 
-my $progress = $backend->test_progress( { test_id => $hash_id } );
-is( $progress, 100 , 'API test_progress -> Test finished' );
 
-subtest 'test results' => sub {
-    my $test_results = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
-    ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
-    ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
-    ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
-    ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
-    cmp_ok( scalar( @{ $test_results->{results} } ), '>', 1, 'TEST1 got some results' );
+subtest 'API calls' => sub {
+    my $progress = $backend->test_progress( { test_id => $hash_id } );
+    is( $progress, 100 , 'test_progress' );
+
+    subtest 'get_test_results' => sub {
+        my $res = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
+        is( $res->{id}, $test_id, 'Retrieve the correct "id"' );
+        is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
+        ok( defined $res->{params}, 'Value "params" properly defined' );
+        ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( defined $res->{results}, 'Value "results" properly defined' );
+        cmp_ok( scalar( @{ $res->{results} } ), '>', 1, 'The test has some results' );
+    };
+
+    subtest 'get_test_params' => sub {
+        my $res = $backend->get_test_params( { test_id => $hash_id } );
+        is( $res->{domain}, $frontend_params_1->{domain}, 'Retrieve the correct "domain" value' );
+        is( $res->{profile}, $frontend_params_1->{profile}, 'Retrieve the correct "profile" value' );
+        is( $res->{client_id}, $frontend_params_1->{client_id}, 'Retrieve the correct "client_id" value' );
+        is( $res->{client_version}, $frontend_params_1->{client_version}, 'Retrieve the correct "client_version" value' );
+        is( $res->{ipv4}, $frontend_params_1->{ipv4}, 'Retrieve the correct "ipv4" value' );
+        is( $res->{ipv6}, $frontend_params_1->{ipv6}, 'Retrieve the correct "ipv6" value' );
+        is_deeply( $res->{nameservers}, $frontend_params_1->{nameservers}, 'Retrieve the correct "nameservers" value' );
+        is_deeply( $res->{ds_info}, $frontend_params_1->{ds_info}, 'Retrieve the correct "ds_info" value' );
+    };
 };
 
 # start a second test with IPv6 disabled

@@ -138,8 +138,9 @@ subtest 'add a first test' => sub {
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
 
-    my $test_id_db = scalar( $dbh->selectrow_array( "SELECT id FROM test_results WHERE id=?", undef, $test_id ) );
+    my ( $test_id_db, $hash_id_db ) = $dbh->selectrow_array( "SELECT id, hash_id FROM test_results WHERE id=?", undef, $test_id );
     is( $test_id_db, $test_id , 'API start_domain_test -> Test inserted in the DB' );
+    is( $hash_id_db, $hash_id , 'Correct hash_id in database' );
 
     # test test_progress API
     is( $backend->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');

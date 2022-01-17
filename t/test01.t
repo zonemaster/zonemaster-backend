@@ -115,11 +115,6 @@ sub run_zonemaster_test_with_backend_API {
     # test test_progress API
     is( $backend->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
 
-    if ( not $ENV{ZONEMASTER_RECORD} ) {
-        Zonemaster::Engine->preload_cache( $datafile );
-        Zonemaster::Engine->profile->set( q{no_network}, 1 );
-    }
-
     use_ok( 'Zonemaster::Backend::TestAgent' );
     my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
     isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');

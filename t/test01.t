@@ -68,24 +68,24 @@ test_profile=$cwd/t/test_profile.json
 EOF
 
 # Create Zonemaster::Backend::RPCAPI object
-my $engine = Zonemaster::Backend::RPCAPI->new(
+my $backend = Zonemaster::Backend::RPCAPI->new(
     {
         dbtype => $db_backend,
         config => $config,
     }
 );
-isa_ok( $engine, 'Zonemaster::Backend::RPCAPI' );
+isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
 
 if ( $db_backend eq 'SQLite' ) {
     # create a new memory SQLite database
-    ok( $engine->{db}->create_db(), "$db_backend database created");
+    ok( $backend->{db}->create_db(), "$db_backend database created");
 }
 
 # add test user
-is( $engine->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
+is( $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
 my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-is( scalar( $engine->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
+is( scalar( $backend->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
 
 # add a new test to the db
 my $frontend_params_1 = {
@@ -108,13 +108,13 @@ my $frontend_params_1 = {
 sub run_zonemaster_test_with_backend_API {
     my ($test_id) = @_;
 
-    my $hash_id = $engine->start_domain_test( $frontend_params_1 );
+    my $hash_id = $backend->start_domain_test( $frontend_params_1 );
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
-    is( scalar( $engine->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ), $test_id , 'API start_domain_test -> Test inserted in the DB' );
+    is( scalar( $backend->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ), $test_id , 'API start_domain_test -> Test inserted in the DB' );
 
     # test test_progress API
-    is( $engine->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
+    is( $backend->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
 
     if ( not $ENV{ZONEMASTER_RECORD} ) {
         Zonemaster::Engine->preload_cache( $datafile );
@@ -130,9 +130,9 @@ sub run_zonemaster_test_with_backend_API {
 
     Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
 
-    is( $engine->test_progress( { test_id => $hash_id } ), 100 , 'API test_progress -> Test finished' );
+    is( $backend->test_progress( { test_id => $hash_id } ), 100 , 'API test_progress -> Test finished' );
 
-    my $test_results = $engine->get_test_results( { id => $hash_id, language => 'en_US' } );
+    my $test_results = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
     ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
     ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
@@ -147,7 +147,7 @@ run_zonemaster_test_with_backend_API(2);
 my $offset = 0;
 my $limit  = 10;
 my $test_history =
-    $engine->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
+    $backend->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
 diag explain( $test_history );
 is( scalar( @$test_history ), 2, 'Two tests created' );
 
@@ -158,7 +158,7 @@ subtest 'mock another client' => sub {
     $frontend_params_1->{client_id} = 'Another Client';
     $frontend_params_1->{client_version} = '0.1';
 
-    my $hash_id = $engine->start_domain_test( $frontend_params_1 );
+    my $hash_id = $backend->start_domain_test( $frontend_params_1 );
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
 
@@ -169,7 +169,7 @@ subtest 'mock another client' => sub {
     };
 
     subtest 'check test_params values' => sub {
-        my $res = $engine->get_test_params( { test_id => "$hash_id" } );
+        my $res = $backend->get_test_params( { test_id => "$hash_id" } );
         my @keys_res = sort( keys %$res );
         my @keys_params = sort( keys %$frontend_params_1 );
 
@@ -236,29 +236,29 @@ subtest 'check historic tests' => sub {
     # The batch jobs, $params_ub1, $params_ub2 and $params_db1, cannot be run from here due to limitation in the API. See issue #827.
 
     foreach my $param ($params_un1, $params_un2, $params_dn1) {
-        my $testid = $engine->start_domain_test( $param );
+        my $testid = $backend->start_domain_test( $param );
         ok( $testid, "API start_domain_test ID OK" );
         diag "running the agent on test $testid";
         $agent->run( $testid );
         my $cnt = 0;
         while ($cnt < 10 ) {
-            my $progress = $engine->test_progress( { test_id => $testid } );
+            my $progress = $backend->test_progress( { test_id => $testid } );
             last if $progress == 100;
             $cnt++;
             diag "Sleep 10 s";
             sleep 10;
         };
-        is( $engine->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
+        is( $backend->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
     };
 
-    my $test_history_delegated = $engine->get_test_history(
+    my $test_history_delegated = $backend->get_test_history(
         {
             filter => 'delegated',
             frontend_params => {
                 domain => $domain,
             }
         } );
-    my $test_history_undelegated = $engine->get_test_history(
+    my $test_history_undelegated = $backend->get_test_history(
         {
             filter => 'undelegated',
             frontend_params => {
@@ -279,7 +279,7 @@ if ( $ENV{ZONEMASTER_RECORD} ) {
 done_testing();
 
 if ( $db_backend eq 'SQLite' ) {
-    my $dbfile = $engine->{db}->dbh->sqlite_db_filename;
+    my $dbfile = $backend->{db}->dbh->sqlite_db_filename;
     if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
         unlink $dbfile;
     }

@@ -127,8 +127,6 @@ sub run_zonemaster_test_with_backend_API {
     diag "running the agent on test $hash_id";
     $agent->run( $hash_id );
 
-    Zonemaster::Backend::TestAgent->reset() unless ( $ENV{ZONEMASTER_RECORD} );
-
     is( $backend->test_progress( { test_id => $hash_id } ), 100 , 'API test_progress -> Test finished' );
 
     my $test_results = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );

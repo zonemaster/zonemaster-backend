@@ -192,15 +192,21 @@ subtest 'second test has IPv6 disabled' => sub {
     ok( grep( /IPv6 is disabled/, @msg_basic ), 'Results contain an "IPv6 is disabled" message' );
 };
 
-my $offset = 0;
-my $limit  = 10;
-my $test_history =
-    $backend->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
-diag explain( $test_history );
-is( scalar( @$test_history ), 2, 'Two tests created' );
+my $test_history;
+subtest 'get_test_history' => sub {
+    my $offset = 0;
+    my $limit  = 10;
+    $test_history = $backend->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
+    #diag explain( $test_history );
+    is( scalar( @$test_history ), 2, 'Two tests created' );
 
-is( length($test_history->[0]->{id}), 16, 'Test 0 has 16 characters length hash ID' );
-is( length($test_history->[1]->{id}), 16, 'Test 1 has 16 characters length hash ID' );
+    foreach my $res (@$test_history) {
+        is( length($res->{id}), 16, 'Test has 16 characters length hash ID' );
+        is( $res->{undelegated}, JSON::PP::true, 'Test is undelegated' );
+        ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( defined $res->{overall_result}, 'Value "overall_result" properly defined' );
+    }
+};
 
 subtest 'mock another client' => sub {
     $frontend_params_1->{client_id} = 'Another Client';

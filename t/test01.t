@@ -2,13 +2,13 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use Test::More;    # see done_testing()
+use Cwd;
+use File::Temp qw[tempdir];
+use JSON::PP;
 use Test::Exception;
+use Test::More;    # see done_testing()
 
 use Zonemaster::Engine;
-use JSON::PP;
-use File::Temp qw[tempdir];
-use Cwd;
 
 =head1 ENVIRONMENT
 
@@ -95,6 +95,8 @@ if ( $db_backend eq 'SQLite' ) {
     ok( $backend->{db}->create_db(), "$db_backend database created");
 }
 
+my $dbh = $backend->{db}->dbh;
+
 # Create the agent
 use_ok( 'Zonemaster::Backend::TestAgent' );
 my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
@@ -105,7 +107,7 @@ subtest 'add test user' => sub {
     is( $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
     my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-    is( scalar( $backend->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
+    is( scalar( $dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
 };
 
 # add a new test to the db
@@ -126,33 +128,43 @@ my $frontend_params_1 = {
     ],
 };
 
-sub run_zonemaster_test_with_backend_API {
-    my ($test_id) = @_;
+my $hash_id;
 
-    my $hash_id = $backend->start_domain_test( $frontend_params_1 );
+# This is the first test added to the DB, its 'id' is 1
+my $test_id = 1;
+subtest 'add a first test' => sub {
+    $hash_id = $backend->start_domain_test( $frontend_params_1 );
+
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
-    is( scalar( $backend->{db}->dbh->selectrow_array( qq/SELECT id FROM test_results WHERE id=$test_id/ ) ), $test_id , 'API start_domain_test -> Test inserted in the DB' );
+
+    my $test_id_db = scalar( $dbh->selectrow_array( "SELECT id FROM test_results WHERE id=?", undef, $test_id ) );
+    is( $test_id_db, $test_id , 'API start_domain_test -> Test inserted in the DB' );
 
     # test test_progress API
     is( $backend->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
+};
 
-    diag "running the agent on test $hash_id";
-    $agent->run( $hash_id );
+diag "running the agent on test $hash_id";
+$agent->run( $hash_id ); # blocking call
 
-    is( $backend->test_progress( { test_id => $hash_id } ), 100 , 'API test_progress -> Test finished' );
+my $progress = $backend->test_progress( { test_id => $hash_id } );
+is( $progress, 100 , 'API test_progress -> Test finished' );
 
+subtest 'test results' => sub {
     my $test_results = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
     ok( defined $test_results->{id},                 'TEST1 $test_results->{id} defined' );
     ok( defined $test_results->{params},             'TEST1 $test_results->{params} defined' );
     ok( defined $test_results->{creation_time},      'TEST1 $test_results->{creation_time} defined' );
     ok( defined $test_results->{results},            'TEST1 $test_results->{results} defined' );
     cmp_ok( scalar( @{ $test_results->{results} } ), '>', 1, 'TEST1 got some results' );
-}
+};
 
-run_zonemaster_test_with_backend_API(1);
+# start a second test with IPv6 disabled
 $frontend_params_1->{ipv6} = 0;
-run_zonemaster_test_with_backend_API(2);
+$hash_id = $backend->start_domain_test( $frontend_params_1 );
+diag "running the agent on test $hash_id";
+$agent->run($hash_id);
 
 my $offset = 0;
 my $limit  = 10;
@@ -278,7 +290,7 @@ if ( $ENV{ZONEMASTER_RECORD} ) {
 done_testing();
 
 if ( $db_backend eq 'SQLite' ) {
-    my $dbfile = $backend->{db}->dbh->sqlite_db_filename;
+    my $dbfile = $dbh->sqlite_db_filename;
     if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
         unlink $dbfile;
     }

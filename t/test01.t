@@ -101,11 +101,12 @@ my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", conf
 isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
 
 
-# add test user
-is( $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
+subtest 'add test user' => sub {
+    is( $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
-my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-is( scalar( $backend->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
+    my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
+    is( scalar( $backend->{db}->dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
+};
 
 # add a new test to the db
 my $frontend_params_1 = {

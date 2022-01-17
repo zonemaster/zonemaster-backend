@@ -247,14 +247,6 @@ subtest 'check historic tests' => sub {
         ok( $testid, "API start_domain_test ID OK" );
         diag "running the agent on test $testid";
         $agent->run( $testid );
-        my $cnt = 0;
-        while ($cnt < 10 ) {
-            my $progress = $backend->test_progress( { test_id => $testid } );
-            last if $progress == 100;
-            $cnt++;
-            diag "Sleep 10 s";
-            sleep 10;
-        };
         is( $backend->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
     };
 

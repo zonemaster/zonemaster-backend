@@ -7,7 +7,6 @@ use Test::Exception;
 
 use Zonemaster::Engine;
 use JSON::PP;
-use File::ShareDir qw[dist_file];
 use File::Temp qw[tempdir];
 use Cwd;
 

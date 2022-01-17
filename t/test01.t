@@ -149,7 +149,6 @@ subtest 'add a first test' => sub {
 diag "running the agent on test $hash_id";
 $agent->run( $hash_id ); # blocking call
 
-
 subtest 'API calls' => sub {
     my $progress = $backend->test_progress( { test_id => $hash_id } );
     is( $progress, 100 , 'test_progress' );
@@ -182,6 +181,16 @@ $frontend_params_1->{ipv6} = 0;
 $hash_id = $backend->start_domain_test( $frontend_params_1 );
 diag "running the agent on test $hash_id";
 $agent->run($hash_id);
+
+subtest 'second test has IPv6 disabled' => sub {
+    my $res = $backend->get_test_params( { test_id => $hash_id } );
+    is( $res->{ipv4}, $frontend_params_1->{ipv4}, 'Retrieve the correct "ipv4" value' );
+    is( $res->{ipv6}, $frontend_params_1->{ipv6}, 'Retrieve the correct "ipv6" value' );
+
+    $res = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
+    my @msg_basic = map { $_->{message} if $_->{module} eq 'BASIC' } @{ $res->{results} };
+    ok( grep( /IPv6 is disabled/, @msg_basic ), 'Results contain an "IPv6 is disabled" message' );
+};
 
 my $offset = 0;
 my $limit  = 10;

@@ -80,6 +80,12 @@ if ( $db_backend eq 'SQLite' ) {
     ok( $backend->{db}->create_db(), "$db_backend database created");
 }
 
+# Create the agent
+use_ok( 'Zonemaster::Backend::TestAgent' );
+my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
+isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
+
+
 # add test user
 is( $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
 
@@ -114,10 +120,6 @@ sub run_zonemaster_test_with_backend_API {
 
     # test test_progress API
     is( $backend->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
-
-    use_ok( 'Zonemaster::Backend::TestAgent' );
-    my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
-    isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
 
     diag "running the agent on test $hash_id";
     $agent->run( $hash_id );
@@ -183,9 +185,6 @@ subtest 'mock another client' => sub {
 subtest 'check historic tests' => sub {
     # Verifies that delegated and undelegated tests are coded correctly when started
     # and that the filter option in "get_test_history" works correctly
-    use_ok( 'Zonemaster::Backend::TestAgent' );
-    my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
-    isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
 
     my $domain          = 'xa';
     # Non-batch for "start_domain_test":

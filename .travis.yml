@@ -77,6 +77,8 @@ addons:
 before_install:
     # Help Perl find modules installed from OS packages
   - export PERL5LIB=/usr/share/perl5
+  - set -xe
+  - set -o pipefail
 
     # Provide cpanm helper
   - eval $(curl https://travis-perl.github.io/init) --auto

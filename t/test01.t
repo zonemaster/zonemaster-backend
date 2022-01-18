@@ -175,6 +175,54 @@ subtest 'API calls' => sub {
         is( scalar( $dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
     };
 
+    subtest 'version_info' => sub {
+        my $res = $backend->version_info();
+        ok( defined( $res->{zonemaster_engine} ), 'Has a "zonemaster_engine" key' );
+        ok( defined( $res->{zonemaster_backend} ), 'Has a "zonemaster_backend" key' );
+    };
+
+    subtest 'profile_names' => sub {
+        my $res = $backend->profile_names();
+        is( scalar( @$res ), 2, 'There are exactly 2 public profiles' );
+        ok( grep( /default/, @$res ), 'The profile "default" is defined' );
+        ok( grep( /test_profile/, @$res ), 'The profile "test_profile" is defined' );
+    };
+
+    subtest 'get_data_from_parent_zone' => sub {
+        my $res = $backend->get_data_from_parent_zone( { domain => "fr" } );
+        #diag explain( $res );
+        ok( defined( $res->{ns_list} ), 'Has a list of nameservers' );
+        ok( defined( $res->{ds_list} ), 'Has a list of DS records' );
+
+        my @ns_list = map { $_->{ns} } @{ $res->{ns_list} };
+        ok( grep( /d\.nic\.fr/, @ns_list ), 'Has "d.nic.fr" nameserver' );
+        ok( grep( /e\.ext\.nic\.fr/, @ns_list ), 'Has "e.ext.nic.fr" nameserver' );
+        ok( grep( /f\.ext\.nic\.fr/, @ns_list ), 'Has "f.ext.nic.fr" nameserver' );
+        ok( grep( /g\.ext\.nic\.fr/, @ns_list ), 'Has "g.ext.nic.fr" nameserver' );
+
+        my @ip_list = map { $_->{ip} } @{ $res->{ns_list} };
+        ok( grep( /194\.0\.9\.1/, @ip_list ), 'Has "194.0.9.1" ip' ); # d.nic.fr
+        ok( grep( /2001:678:c::1/, @ip_list ), 'Has "2001:678:c::1" ip' );
+        ok( grep( /194\.0\.36\.1/, @ip_list ), 'Has "194.0.36.1" ip' ); # g.ext.nic.fr
+        ok( grep( /2001:678:4c::1/, @ip_list ), 'Has "2001:678:4c::1" ip' );
+        ok( grep( /193\.176\.144\.22/, @ip_list ), 'Has "193.176.144.22" ip' ); # e.ext.nic.fr
+        ok( grep( /2a00:d78:0:102:193:176:144:22/, @ip_list ), 'Has "2a00:d78:0:102:193:176:144:22" ip' );
+        ok( grep( /194\.146\.106\.46/, @ip_list ), 'Has "194.146.106.46" ip' ); # f.ext.nic.fr
+        ok( grep( /2001:67c:1010:11::53/, @ip_list ), 'Has "2001:67c:1010:11::53" ip' );
+
+        my $ds_value = {
+            'algorithm' => 13,
+            'digest' => '1b3386864d30ccc8f4541b985bf2ca320e4f52c57c53353f6d29c9ad58a5671f',
+            'digtype' => 2,
+            'keytag' => 51508
+        };
+        is( scalar( @{ $res->{ds_list} } ), 1, 'Has only one DS set' );
+        is_deeply( $res->{ds_list}[0], $ds_value, 'Has correct DS values' );
+    };
+
+    # TODO add_batch_job
+    # TODO get_batch_job_result
+
 };
 
 # start a second test with IPv6 disabled

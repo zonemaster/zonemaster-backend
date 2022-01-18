@@ -98,9 +98,13 @@ if ( $@ ) {
 
 isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
 
-if ( $db_backend eq 'SQLite' ) {
-    # create a new memory SQLite database
-    ok( $backend->{db}->create_db(), "$db_backend database created");
+# prepare the database
+eval {
+    ok( $backend->{db}->create_db(), "$db_backend database prepared");
+};
+if ( $@ ) {
+    diag explain( $@ );
+    BAIL_OUT( 'Could not prepare the database' );
 }
 
 my $dbh = $backend->{db}->dbh;
@@ -382,6 +386,11 @@ if ( $ENV{ZONEMASTER_RECORD} ) {
 }
 
 done_testing();
+
+# cleaning up
+$dbh->do( "DROP table test_results" );
+$dbh->do( "DROP table users" );
+$dbh->do( "DROP table batch_jobs" );
 
 if ( $db_backend eq 'SQLite' ) {
     my $dbfile = $dbh->sqlite_db_filename;

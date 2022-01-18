@@ -122,6 +122,7 @@ my $frontend_params_1 = {
 };
 
 my $hash_id;
+my $progress;
 
 # This is the first test added to the DB, its 'id' is 1
 my $test_id = 1;
@@ -136,15 +137,25 @@ subtest 'add a first test' => sub {
     is( $hash_id_db, $hash_id , 'Correct hash_id in database' );
 
     # test test_progress API
-    is( $backend->test_progress( { test_id => $hash_id } ), 0 , 'API test_progress -> OK');
+    $progress = $backend->test_progress( { test_id => $hash_id } );
+    is( $progress, 0 , 'Test has been created, its progress is 0' );
 };
 
-diag "running the agent on test $hash_id";
-$agent->run( $hash_id ); # blocking call
+subtest 'get and run test' => sub {
+    my $hash_id_from_db = $backend->{db}->get_test_request();
+    is( $hash_id_from_db, $hash_id, 'Get correct test to run' );
+
+    $progress = $backend->test_progress( { test_id => $hash_id } );
+    is( $progress, 1, 'Test has been picked, its progress is 1' );
+
+    diag "running the agent on test $hash_id";
+    $agent->run( $hash_id ); # blocking call
+
+    $progress = $backend->test_progress( { test_id => $hash_id } );
+    is( $progress, 100 , 'Test has finished, its progress is 100' );
+};
 
 subtest 'API calls' => sub {
-    my $progress = $backend->test_progress( { test_id => $hash_id } );
-    is( $progress, 100 , 'test_progress' );
 
     subtest 'get_test_results' => sub {
         my $res = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );

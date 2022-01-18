@@ -82,12 +82,20 @@ test_profile=$cwd/t/test_profile.json
 EOF
 
 # Create Zonemaster::Backend::RPCAPI object
-my $backend = Zonemaster::Backend::RPCAPI->new(
-    {
-        dbtype => $db_backend,
-        config => $config,
-    }
-);
+my $backend;
+eval {
+    $backend = Zonemaster::Backend::RPCAPI->new(
+        {
+            dbtype => $db_backend,
+            config => $config,
+        }
+    );
+};
+if ( $@ ) {
+    diag explain( $@ );
+    BAIL_OUT( 'Could not connect to database' );
+}
+
 isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
 
 if ( $db_backend eq 'SQLite' ) {
@@ -180,7 +188,11 @@ subtest 'API calls' => sub {
     };
 
     subtest 'add_api_user' => sub {
-        is( $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } ), 1, 'API add_api_user success');
+        my $res;
+        eval {
+            $res = $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } );
+        };
+        is( $res, 1, 'API add_api_user success');
 
         my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
         is( scalar( $dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );

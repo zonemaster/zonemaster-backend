@@ -26,7 +26,8 @@ A list of values and locations are checked and the first match is returned.
 If all places are checked and no file is found, an exception is thrown.
 
 This procedure is idempotent - i.e. if you call this procedure multiple times
-the same value is returned no matter if envirnmental circumstances have changed.
+the same value is returned no matter if environmental circumstances have
+changed.
 
 The following checks are made in order:
 

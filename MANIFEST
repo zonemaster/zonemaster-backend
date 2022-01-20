@@ -78,6 +78,7 @@ share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
 share/Makefile
 share/GNUmakefile
+t/00-load.t
 t/config.t
 t/db.t
 t/parameters_validation.t

@@ -79,9 +79,9 @@ before_install:
   - export PERL5LIB=/usr/share/perl5
 
     # Provide cpanm helper
-    # the eval call combines all lines into one, therefore comments should be
-    # removed before executing the script
-  - eval $(curl https://travis-perl.github.io/init | grep -v '#') --auto
+    # quoting preserves newlines in the script and then avoid error when
+    # the script contains comments
+  - eval "$(curl https://travis-perl.github.io/init)" --auto
 
     # Zonemaster LDNS needs a newer version of Module::Install
   - cpan-install Module::Install Module::Install::XSUtil

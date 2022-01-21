@@ -152,6 +152,7 @@ sub cmd_get_language_tags {
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
     --profile PROFILE_NAME
+    --language LANGUAGE
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
@@ -173,6 +174,7 @@ sub cmd_start_domain_test {
     my $opt_ipv4;
     my $opt_ipv6;
     my $opt_profile;
+    my $opt_language;
     GetOptionsFromArray(
         \@opts,
         'domain|d=s'       => \$opt_domain,
@@ -183,6 +185,7 @@ sub cmd_start_domain_test {
         'ipv4=s'           => \$opt_ipv4,
         'ipv6=s'           => \$opt_ipv6,
         'profile=s'        => \$opt_profile,
+        'language=s'       => \$opt_language,
     ) or pod2usage( 2 );
 
     my %params = ( domain => $opt_domain, );
@@ -237,6 +240,10 @@ sub cmd_start_domain_test {
         $params{profile} = $opt_profile;
     }
 
+    if ( $opt_language ) {
+        $params{language} = $opt_language;
+    }
+
     return to_jsonrpc(
         id     => 1,
         method => 'start_domain_test',
@@ -259,7 +266,6 @@ sub cmd_start_domain_test {
 sub cmd_test_progress {
     my @opts = @_;
 
-    my $opt_lang;
     my $opt_test_id;
     GetOptionsFromArray(
         \@opts,

@@ -288,6 +288,27 @@ subtest 'get_test_history' => sub {
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
         ok( defined $res->{overall_result}, 'Value "overall_result" properly defined' );
     }
+
+    subtest 'include finished tests only' => sub {
+        # start a thirs test with IPv4 disabled
+        $frontend_params_1->{ipv6} = 1;
+        $frontend_params_1->{ipv4} = 0;
+
+        # create the test, retrieve its id but we don't run it
+        $backend->start_domain_test( $frontend_params_1 );
+        $hash_id = $backend->{db}->get_test_request();
+
+        $test_history = $backend->get_test_history( $method_params );
+        #diag explain( $test_history );
+        is( scalar( @$test_history ), 2, 'Only 2 tests should be retrieved' );
+
+        # now run the test
+        diag "running the agent on test $hash_id";
+        $agent->run( $hash_id );
+
+        $test_history = $backend->get_test_history( $method_params );
+        is( scalar( @$test_history ), 3, 'Now 3 tests should be retrieved' );
+    }
 };
 
 subtest 'mock another client (i.e. reuse a previous test)' => sub {

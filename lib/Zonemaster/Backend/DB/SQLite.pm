@@ -5,7 +5,7 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use DBI qw(:utils);
+use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
@@ -187,32 +187,39 @@ sub test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my @results;
+    my $dbh = $self->dbh;
 
-    my $undelegated = "";
+    my $undelegated = undef;
     if ($p->{filter} eq "undelegated") {
-        $undelegated = "AND undelegated = 1";
+        $undelegated = 1;
     } elsif ($p->{filter} eq "delegated") {
-        $undelegated = "AND undelegated = 0";
+        $undelegated = 0;
     }
 
-    my $quoted_domain = $self->dbh->quote( $p->{frontend_params}->{domain} );
-    $quoted_domain =~ s/'/"/g;
-    my $query = "SELECT
-                    id,
-                    hash_id,
-                    creation_time,
-                    params,
-                    undelegated,
-                    results
-                 FROM
-                    test_results
-                 WHERE
-                    params like '\%\"domain\":$quoted_domain\%'
-                    $undelegated
-                 ORDER BY id DESC LIMIT $p->{limit} OFFSET $p->{offset} ";
-    my $sth1 = $self->dbh->prepare( $query );
-    $sth1->execute;
+    my @results;
+    my $query = q[
+        SELECT
+            id,
+            hash_id,
+            creation_time,
+            undelegated,
+            results
+        FROM test_results
+        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
+        ORDER BY id DESC
+        LIMIT ?
+        OFFSET ?];
+
+    my $sth1 = $dbh->prepare( $query );
+
+    $sth1->bind_param( 1, $p->{frontend_params}{domain} );
+    $sth1->bind_param( 2, $undelegated, SQL_INTEGER );
+    $sth1->bind_param( 3, $undelegated, SQL_INTEGER );
+    $sth1->bind_param( 4, $p->{limit} );
+    $sth1->bind_param( 5, $p->{offset} );
+
+    $sth1->execute();
+
     while ( my $h = $sth1->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
@@ -224,13 +231,14 @@ sub get_test_history {
         $overall = 'warning'  if $warning;
         $overall = 'error'    if $error;
         $overall = 'critical' if $critical;
-        push( @results,
-              {
-                  id => $h->{hash_id},
-                  creation_time => $h->{creation_time},
-                  undelegated      => $h->{undelegated},
-                  overall_result   => $overall,
-              }
+        push(
+            @results,
+            {
+                id               => $h->{hash_id},
+                creation_time    => $h->{creation_time},
+                undelegated      => $h->{undelegated},
+                overall_result   => $overall,
+            }
             );
     }
     $sth1->finish;

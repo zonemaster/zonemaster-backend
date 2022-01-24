@@ -5,7 +5,7 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use DBI qw(:utils);
+use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
@@ -207,56 +207,41 @@ sub test_results {
 sub get_test_history {
     my ( $self, $p ) = @_;
 
-    my @results;
-    my $sth = {};
+    my $dbh = $self->dbh;
 
-    my $undelegated = "";
+    my $undelegated = undef;
     if ($p->{filter} eq "undelegated") {
         $undelegated = 1;
     } elsif ($p->{filter} eq "delegated") {
         $undelegated = 0;
     }
 
-    if ($p->{filter} eq "all") {
-        $sth = $self->dbh->prepare(
-            q[SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                undelegated,
-                results
-            FROM
-                test_results
-            WHERE
-                domain = ?
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?]
-        );
-        $sth->execute( $p->{frontend_params}{domain}, $p->{limit}, $p->{offset} );
-    } else {
-        $sth = $self->dbh->prepare(
-            q[SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                undelegated,
-                results
-            FROM
-                test_results
-            WHERE
-                domain = ?
-                AND undelegated = ?
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?]
-        );
-        $sth->execute( $p->{frontend_params}{domain}, $undelegated, $p->{limit}, $p->{offset} );
-    }
+    my @results;
+    my $query = q[
+        SELECT
+            id,
+            hash_id,
+            CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+            undelegated,
+            results
+        FROM test_results
+        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
+        ORDER BY id DESC
+        LIMIT ?
+        OFFSET ?];
+
+    my $sth = $dbh->prepare( $query );
+
+    $sth->bind_param( 1, $p->{frontend_params}{domain} );
+    $sth->bind_param( 2, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 3, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 4, $p->{limit} );
+    $sth->bind_param( 5, $p->{offset} );
+
+    $sth->execute();
 
     while ( my $h = $sth->fetchrow_hashref ) {
         $h->{results} = decode_json($h->{results}) if $h->{results};
-        $h->{params} = decode_json($h->{params}) if $h->{params};
         my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
         my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
         my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );

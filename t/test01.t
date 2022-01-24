@@ -272,7 +272,13 @@ my $test_history;
 subtest 'get_test_history' => sub {
     my $offset = 0;
     my $limit  = 10;
-    $test_history = $backend->get_test_history( { frontend_params => $frontend_params_1, offset => $offset, limit => $limit } );
+    my $method_params = {
+        frontend_params => { domain => $frontend_params_1->{domain} },
+        offset => $offset,
+        limit => $limit
+    };
+
+    $test_history = $backend->get_test_history( $method_params );
     #diag explain( $test_history );
     is( scalar( @$test_history ), 2, 'Two tests created' );
 

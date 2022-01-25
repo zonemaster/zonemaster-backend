@@ -134,8 +134,15 @@ sub recent_test_hash_id {
 
     my $dbh = $self->dbh;
     my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > NOW() - ?::interval",
-        undef, $fingerprint, $age_reuse_previous_test
+        q[
+            SELECT hash_id
+            FROM test_results
+            WHERE fingerprint = ?
+              AND creation_time > NOW() - ?::interval",
+        ],
+        undef,
+        $fingerprint,
+        $age_reuse_previous_test,
     );
 
     return $recent_hash_id;
@@ -146,8 +153,19 @@ sub test_progress {
 
     my $dbh = $self->dbh;
     if ( $progress ) {
-        if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+        if ( $progress == 1 ) {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?,
+                        test_start_time = NOW()
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $test_id,
+            );
         }
         else {
             $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
@@ -163,9 +181,21 @@ sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
     my $dbh = $self->dbh;
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100",
-        undef, $results, $test_id )
-      if ( $results );
+    if ( $results ) {
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = 100,
+                    test_end_time = NOW(),
+                    results = ?
+                WHERE hash_id = ?
+                  AND progress < 100
+            ],
+            undef,
+            $results,
+            $test_id,
+        );
+    }
 
     my $result;
     my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
@@ -350,13 +380,32 @@ sub select_unfinished_tests {
 sub process_unfinished_tests_give_up {
     my ( $self, $result, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                test_end_time = NOW(),
+                results = ?
+            WHERE hash_id = ?
+        ],
+        undef,
+        encode_json($result),
+        $hash_id,
+    );
 }
 
 sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
 
-    return $self->dbh->selectrow_array("SELECT EXTRACT(EPOCH FROM now() - test_start_time) FROM test_results WHERE hash_id=?", undef, $hash_id);
+    return $self->dbh->selectrow_array(
+        q[
+            SELECT EXTRACT(EPOCH FROM now() - test_start_time)
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $hash_id,
+    );
 }
 
 no Moose;

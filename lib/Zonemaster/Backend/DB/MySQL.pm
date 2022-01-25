@@ -148,8 +148,15 @@ sub recent_test_hash_id {
 
     my $dbh = $self->dbh;
     my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?",
-        undef, $fingerprint, $age_reuse_previous_test
+        q[
+            SELECT hash_id
+            FROM test_results
+            WHERE fingerprint = ?
+              AND (TO_SECONDS(NOW()) - TO_SECONDS(creation_time)) < ?
+        ],
+        undef,
+        $fingerprint,
+        $age_reuse_previous_test,
     );
 
     return $recent_hash_id;
@@ -160,11 +167,32 @@ sub test_progress {
 
     my $dbh = $self->dbh;
     if ( $progress ) {
-        if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+        if ( $progress == 1 ) {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?,
+                        test_start_time = NOW()
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $test_id,
+            );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $test_id,
+            );
         }
     }
 
@@ -177,8 +205,19 @@ sub test_results {
     my ( $self, $test_id, $new_results ) = @_;
 
     if ( $new_results ) {
-        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100],
-            undef, $new_results, $test_id );
+        $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = 100,
+                    test_end_time = NOW(),
+                    results = ?
+                WHERE hash_id = ?
+                  AND progress < 100
+            ],
+            undef,
+            $new_results,
+            $test_id,
+        );
     }
 
     my $result;
@@ -286,7 +325,20 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__domain_undelegated ON test_results" );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, fingerprint, params, undelegated) VALUES (?,?,?,?,?,?,?,?)' );
+        my $sth = $dbh->prepare(
+            q[
+                INSERT INTO test_results (
+                    hash_id,
+                    domain,
+                    batch_id,
+                    priority,
+                    queue,
+                    fingerprint,
+                    params,
+                    undelegated
+                ) VALUES (?,?,?,?,?,?,?,?)
+            ]
+        );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -295,7 +347,16 @@ sub add_batch_job {
             my $undelegated = $self->undelegated ( $test_params );
 
             my $hash_id = substr(md5_hex(time().rand()), 0, 16);
-            $sth->execute( $hash_id, $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
+            $sth->execute(
+                $hash_id,
+                $test_params->{domain},
+                $batch_id,
+                $priority,
+                $queue_label,
+                $fingerprint,
+                $encoded_params,
+                $undelegated,
+            );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
@@ -347,13 +408,32 @@ sub select_unfinished_tests {
 sub process_unfinished_tests_give_up {
     my ( $self, $result, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                test_end_time = NOW(),
+                results = ?
+            WHERE hash_id = ?
+        ],
+        undef,
+        encode_json( $result ),
+        $hash_id,
+    );
 }
 
 sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
 
-    return $self->dbh->selectrow_array("SELECT now() - test_start_time FROM test_results WHERE hash_id=?", undef, $hash_id);
+    return $self->dbh->selectrow_array(
+        q[
+            SELECT now() - test_start_time
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $hash_id,
+    );
 }
 
 

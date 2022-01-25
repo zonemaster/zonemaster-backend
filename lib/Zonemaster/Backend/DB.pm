@@ -475,7 +475,6 @@ sub undelegated {
     return 0;
 }
 
-
 no Moose::Role;
 
 1;

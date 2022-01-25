@@ -120,27 +120,6 @@ sub create_db {
     return 1;
 }
 
-# Search for recent test result with the test same parameters, where
-# "threshold" gives the oldest start time.
-sub recent_test_hash_id {
-    my ( $self, $fingerprint, $threshold ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $recent_hash_id ) = $dbh->selectrow_array(
-        q[
-            SELECT hash_id
-            FROM test_results
-            WHERE fingerprint = ?
-              AND test_start_time > ?
-        ],
-        undef,
-        $fingerprint,
-        $self->format_time( $threshold ),
-    );
-
-    return $recent_hash_id;
-}
-
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
@@ -353,37 +332,6 @@ sub add_batch_job {
     }
 
     return $batch_id;
-}
-
-sub select_unfinished_tests {
-    my ( $self, $queue_label, $test_run_timeout ) = @_;
-
-    if ( $queue_label ) {
-        my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results
-            FROM test_results
-            WHERE test_start_time < ?
-            AND progress > 0
-            AND progress < 100
-            AND queue = ?" );
-        $sth->execute(    #
-            $self->format_time( time() - $test_run_timeout ),
-            $queue_label,
-        );
-        return $sth;
-    }
-    else {
-        my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results
-            FROM test_results
-            WHERE test_start_time < ?
-            AND progress > 0
-            AND progress < 100" );
-        $sth->execute(    #
-            $self->format_time( time() - $test_run_timeout ),
-        );
-        return $sth;
-    }
 }
 
 sub process_unfinished_tests_give_up {

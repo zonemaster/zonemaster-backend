@@ -21,8 +21,6 @@ requires qw(
   from_config
   get_test_history
   process_unfinished_tests_give_up
-  recent_test_hash_id
-  select_unfinished_tests
   test_progress
   test_results
   get_relative_start_time
@@ -155,6 +153,27 @@ sub create_new_test {
     }
 
     return $hash_id;
+}
+
+# Search for recent test result with the test same parameters, where
+# "threshold" gives the oldest start time.
+sub recent_test_hash_id {
+    my ( $self, $fingerprint, $threshold ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        q[
+            SELECT hash_id
+            FROM test_results
+            WHERE fingerprint = ?
+              AND test_start_time > ?
+        ],
+        undef,
+        $fingerprint,
+        $self->format_time( $threshold ),
+    );
+
+    return $recent_hash_id;
 }
 
 # Standard SQL, can be here
@@ -316,6 +335,37 @@ sub process_unfinished_tests {
 
     while ( my $h = $sth1->fetchrow_hashref ) {
         $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
+    }
+}
+
+sub select_unfinished_tests {
+    my ( $self, $queue_label, $test_run_timeout ) = @_;
+
+    if ( $queue_label ) {
+        my $sth = $self->dbh->prepare( "
+            SELECT hash_id, results
+            FROM test_results
+            WHERE test_start_time < ?
+            AND progress > 0
+            AND progress < 100
+            AND queue = ?" );
+        $sth->execute(    #
+            $self->format_time( time() - $test_run_timeout ),
+            $queue_label,
+        );
+        return $sth;
+    }
+    else {
+        my $sth = $self->dbh->prepare( "
+            SELECT hash_id, results
+            FROM test_results
+            WHERE test_start_time < ?
+            AND progress > 0
+            AND progress < 100" );
+        $sth->execute(    #
+            $self->format_time( time() - $test_run_timeout ),
+        );
+        return $sth;
     }
 }
 

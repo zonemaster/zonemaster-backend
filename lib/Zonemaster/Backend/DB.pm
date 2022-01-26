@@ -10,6 +10,7 @@ use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
+use POSIX qw( strftime );
 
 use Zonemaster::Engine::Profile;
 use Zonemaster::Backend::Errors;
@@ -128,15 +129,17 @@ sub create_new_test {
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
+    my $now         = time();
+    my $threshold   = $now - $seconds_between_tests_with_same_params;
 
-    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
+    my $recent_hash_id = $self->recent_test_hash_id( $fingerprint, $threshold );
 
     if ( $recent_hash_id ) {
         # A recent entry exists, so return its id
         $hash_id = $recent_hash_id;
     }
     else {
-        $hash_id = substr(md5_hex(time().rand()), 0, 16);
+        $hash_id = substr(md5_hex($now.rand()), 0, 16);
         $dbh->do(
             "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
             undef,
@@ -473,6 +476,11 @@ sub undelegated {
     return 1 if defined( $$projected_params{ds_info}[0] );
     return 1 if defined( $$projected_params{nameservers}[0] );
     return 0;
+}
+
+sub format_time {
+    my ( $class, $time ) = @_;
+    return strftime "%Y-%m-%d %H:%M:%S", gmtime( $time );
 }
 
 no Moose::Role;

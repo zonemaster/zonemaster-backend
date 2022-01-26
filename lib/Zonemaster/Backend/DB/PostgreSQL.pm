@@ -130,7 +130,7 @@ sub create_db {
 }
 
 sub recent_test_hash_id {
-    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+    my ( $self, $fingerprint, $threshold ) = @_;
 
     my $dbh = $self->dbh;
     my ( $recent_hash_id ) = $dbh->selectrow_array(
@@ -138,11 +138,11 @@ sub recent_test_hash_id {
             SELECT hash_id
             FROM test_results
             WHERE fingerprint = ?
-              AND creation_time > NOW() - ?::interval",
+              AND test_start_time > ?
         ],
         undef,
         $fingerprint,
-        $age_reuse_previous_test,
+        $self->format_time( $threshold ),
     );
 
     return $recent_hash_id;
@@ -158,12 +158,13 @@ sub test_progress {
                 q[
                     UPDATE test_results
                     SET progress = ?,
-                        test_start_time = NOW()
+                        test_start_time = ?
                     WHERE hash_id = ?
                       AND progress <> 100
                 ],
                 undef,
                 $progress,
+                $self->format_time( time() ),
                 $test_id,
             );
         }
@@ -186,12 +187,13 @@ sub test_results {
             q[
                 UPDATE test_results
                 SET progress = 100,
-                    test_end_time = NOW(),
+                    test_end_time = ?,
                     results = ?
                 WHERE hash_id = ?
                   AND progress < 100
             ],
             undef,
+            $self->format_time( time() ),
             $results,
             $test_id,
         );
@@ -353,12 +355,12 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < NOW() - ?::interval
+            WHERE test_start_time < ?
             AND progress > 0
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
-            sprintf( "%d seconds", $test_run_timeout ),
+            $self->format_time( time() - $test_run_timeout ),
             $queue_label,
         );
         return $sth;
@@ -367,11 +369,11 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < NOW() - ?::interval
+            WHERE test_start_time < ?
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
-            sprintf( "%d seconds", $test_run_timeout ),
+            $self->format_time( time() - $test_run_timeout ),
         );
         return $sth;
     }
@@ -384,11 +386,12 @@ sub process_unfinished_tests_give_up {
         q[
             UPDATE test_results
             SET progress = 100,
-                test_end_time = NOW(),
+                test_end_time = ?,
                 results = ?
             WHERE hash_id = ?
         ],
         undef,
+        $self->format_time( time() ),
         encode_json($result),
         $hash_id,
     );
@@ -399,11 +402,12 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
-            SELECT EXTRACT(EPOCH FROM now() - test_start_time)
+            SELECT EXTRACT(EPOCH FROM ? - test_start_time)
             FROM test_results
-            WHERE hash_id = ?
+            WHERE hash_id=?
         ],
         undef,
+        $self->format_time( time() ),
         $hash_id,
     );
 }

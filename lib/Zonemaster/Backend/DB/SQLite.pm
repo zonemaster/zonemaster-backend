@@ -121,10 +121,9 @@ sub create_db {
 }
 
 # Search for recent test result with the test same parameters, where
-# "age_reuse_previous_test" gives the time limit for how old test result that
-# is accepted.
+# "threshold" gives the oldest start time.
 sub recent_test_hash_id {
-    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+    my ( $self, $fingerprint, $threshold ) = @_;
 
     my $dbh = $self->dbh;
     my ( $recent_hash_id ) = $dbh->selectrow_array(
@@ -132,11 +131,11 @@ sub recent_test_hash_id {
             SELECT hash_id
             FROM test_results
             WHERE fingerprint = ?
-              AND creation_time > DATETIME('now', ?)",
+              AND test_start_time > ?
         ],
         undef,
         $fingerprint,
-        "-$age_reuse_previous_test seconds",
+        $self->format_time( $threshold ),
     );
 
     return $recent_hash_id;
@@ -152,12 +151,13 @@ sub test_progress {
                 q[
                     UPDATE test_results
                     SET progress = ?,
-                        test_start_time = DATETIME('now')
+                        test_start_time = DATETIME(?)
                     WHERE hash_id = ?
                       AND progress <> 100
                 ],
                 undef,
                 $progress,
+                $self->format_time( time() ),
                 $test_id,
             );
         }
@@ -189,12 +189,13 @@ sub test_results {
             q[
                 UPDATE test_results
                 SET progress = 100,
-                    test_end_time = datetime('now'),
+                    test_end_time = datetime(?),
                     results = ?
                 WHERE hash_id = ?
                   AND progress < 100
             ],
             undef,
+            $self->format_time( time() ),
             $new_results,
             $test_id,
         );
@@ -310,12 +311,13 @@ sub add_batch_job {
                 hash_id,
                 domain,
                 batch_id,
+                creation_time,
                 priority,
                 queue,
                 fingerprint,
                 params,
                 undelegated
-            ) VALUES (?,?,?,?,?,?,?,?)'
+            ) VALUES (?,?,?,?,?,?,?,?,?)'
         );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
@@ -329,6 +331,7 @@ sub add_batch_job {
                 $hash_id,
                 $test_params->{domain},
                 $batch_id,
+                $self->format_time( time() ),
                 $priority,
                 $queue_label,
                 $fingerprint,
@@ -359,12 +362,12 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < DATETIME('now', ?)
+            WHERE test_start_time < ?
             AND progress > 0
             AND progress < 100
             AND queue = ?" );
         $sth->execute(    #
-            sprintf( "-%d seconds", $test_run_timeout ),
+            $self->format_time( time() - $test_run_timeout ),
             $queue_label,
         );
         return $sth;
@@ -373,11 +376,11 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < DATETIME('now', ?)
+            WHERE test_start_time < ?
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
-            sprintf( "-%d seconds", $test_run_timeout ),
+            $self->format_time( time() - $test_run_timeout ),
         );
         return $sth;
     }
@@ -390,11 +393,12 @@ sub process_unfinished_tests_give_up {
         q[
             UPDATE test_results
             SET progress = 100,
-                test_end_time = DATETIME('now'),
+                test_end_time = DATETIME(?),
                 results = ?
             WHERE hash_id = ?
         ],
         undef,
+        $self->format_time( time() ),
         encode_json( $result ),
         $hash_id,
     );
@@ -405,11 +409,12 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
-            SELECT (julianday('now') - julianday(test_start_time)) * 3600 * 24
+            SELECT (julianday(?) - julianday(test_start_time)) * 3600 * 24
             FROM test_results
-            WHERE hash_id=?
+            WHERE hash_id = ?
         ],
         undef,
+        $self->format_time( time() ),
         $hash_id,
     );
 }

@@ -17,6 +17,7 @@ docs/upgrade/upgrade_zonemaster_backend_ver_8.0.0.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
+inc/Module/Install/External.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
@@ -24,7 +25,6 @@ inc/Module/Install/Scripts.pm
 inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
-inc/Module/Install/External.pm
 lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
 lib/Zonemaster/Backend/Config/DCPlugin.pm
@@ -53,7 +53,14 @@ share/cleanup-mysql.sql
 share/cleanup-postgres.sql
 share/create_db.pl
 share/freebsd-pwd.conf
-share/patch/README.txt
+share/GNUmakefile
+share/locale/da/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/es/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/fi/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
+share/Makefile
 share/patch/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
@@ -62,6 +69,7 @@ share/patch/patch_postgresql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch/patch_postgresql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch/patch_postgresql_db_zonemaster_backend_ver_8.0.0.pl
 share/patch/patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
+share/patch/README.txt
 share/tmpfiles.conf
 share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
@@ -70,14 +78,7 @@ share/zm-rpcapi.lsb
 share/zm-testagent.lsb
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
-share/locale/da/LC_MESSAGES/Zonemaster-Backend.mo
-share/locale/es/LC_MESSAGES/Zonemaster-Backend.mo
-share/locale/fi/LC_MESSAGES/Zonemaster-Backend.mo
-share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
-share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
-share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
-share/Makefile
-share/GNUmakefile
+t/00-load.t
 t/config.t
 t/db.t
 t/parameters_validation.t

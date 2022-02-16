@@ -18,7 +18,7 @@ msgid "Missing property"
 msgstr "Champ manquant"
 
 msgid ""
-"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
+"Warning: Zonemaster::LDNS not compiled with libidn2, cannot handle non-ASCII "
 "names correctly."
 msgstr ""
 

@@ -232,7 +232,7 @@ sub to_idn {
         return Zonemaster::LDNS::to_idn( $str );
     }
     else {
-        warn __( "Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII names correctly." );
+        warn __( "Warning: Zonemaster::LDNS not compiled with libidn2, cannot handle non-ASCII names correctly." );
         return $str;
     }
 }

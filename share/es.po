@@ -51,10 +51,10 @@ msgid "Missing property"
 msgstr "Propiedad no incluída"
 
 msgid ""
-"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
+"Warning: Zonemaster::LDNS not compiled with libidn2, cannot handle non-ASCII "
 "names correctly."
 msgstr ""
-"Advertencia: Zonemaster::LDNS no fue compilado con libidn, no se puede "
+"Advertencia: Zonemaster::LDNS no fue compilado con libidn2, no se puede "
 "manejar correctamente los nombres no-ASCII."
 
 msgid "The domain name contains a character or characters not supported"

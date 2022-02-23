@@ -3,6 +3,7 @@ use warnings;
 use 5.14.2;
 
 use Cwd;
+use Data::Dumper;
 use File::Temp qw[tempdir];
 use JSON::PP;
 use Test::Exception;
@@ -183,7 +184,12 @@ subtest 'API calls' => sub {
         ok( defined $res->{params}, 'Value "params" properly defined' );
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
         ok( defined $res->{results}, 'Value "results" properly defined' );
-        cmp_ok( scalar( @{ $res->{results} } ), '>', 1, 'The test has some results' );
+        if ( @{ $res->{results} } > 1 ) {
+            pass 'The test has some results';
+        }
+        else {
+            fail 'The test has some results: ' . Dumper( $res->{results} );
+        }
     };
 
     subtest 'get_test_params' => sub {

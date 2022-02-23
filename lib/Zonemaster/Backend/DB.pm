@@ -166,7 +166,8 @@ sub recent_test_hash_id {
             SELECT hash_id
             FROM test_results
             WHERE fingerprint = ?
-              AND test_start_time > ?
+              AND ( test_start_time IS NULL
+                 OR test_start_time >= ? )
         ],
         undef,
         $fingerprint,

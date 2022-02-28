@@ -195,16 +195,6 @@ sub parse {
             push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
         }
     }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
-        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
-
-        $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
-    }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
-        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
-
-        $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( $value );
-    }
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {

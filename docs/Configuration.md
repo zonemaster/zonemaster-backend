@@ -96,31 +96,6 @@ MySQL             | `MySQL`
 PostgreSQL        | `PostgreSQL`
 SQLite            | `SQLite`
 
-### user
-
-**Deprecated.** Use [MYSQL.user] or [POSTGRESQL.user] instead.
-
-The [MYSQL.user] and [POSTGRESQL.user] properties take precedence over this.
-
-### password
-
-**Deprecated.** Use [MYSQL.password] or [POSTGRESQL.password] instead.
-
-The [MYSQL.password] and [POSTGRESQL.password] properties take precedence over this.
-
-### database_host
-
-**Deprecated.** Use [MYSQL.host] or [POSTGRESQL.host] instead.
-
-The [MYSQL.host] and [POSTGRESQL.host] properties take precedence over this.
-
-### database_name
-
-**Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLITE.database_file] instead.
-
-The [MYSQL.database], [POSTGRESQL.database], [SQLITE.database_file] properties take precedence
-over this.
-
 ### polling_interval
 
 A strictly positive decimal number. Max 5 and 3 digits in the integer and fraction
@@ -140,8 +115,6 @@ An [LDH domain name] or IP address.
 
 The host name of the machine on which the MySQL server is running.
 
-If this property is unspecified, the value of [DB.database_host] is used instead.
-
 ### port
 
 The port the MySQL server is listening on.
@@ -158,8 +131,6 @@ Max length [80 characters][MariaDB identifier max lengths].
 
 The name of the user with sufficient permission to access the database.
 
-If this property is unspecified, the value of [DB.user] is used instead.
-
 ### password
 
 A string of [US ASCII printable characters].
@@ -168,16 +139,12 @@ Max length 100 characters.
 
 The password of the configured user.
 
-If this property is unspecified, the value of [DB.password] is used instead.
-
 ### database
 
 A US ASCII-only [MariaDB unquoted identifier].
 Max length [64 characters][MariaDB identifier max lengths].
 
 The name of the database to use.
-
-If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## POSTGRESQL section
@@ -190,8 +157,6 @@ An [LDH domain name] or IP address.
 
 The host name of the machine on which the PostgreSQL server is running.
 
-If this property is unspecified, the value of [DB.database_host] is used instead.
-
 ### port
 
 The port the PostgreSQL server is listening on.
@@ -203,8 +168,6 @@ A US ASCII-only [PostgreSQL identifier]. Max length 63 characters.
 
 The name of the user with sufficient permission to access the database.
 
-If this property is unspecified, the value of [DB.user] is used instead.
-
 ### password
 
 A string of [US ASCII printable characters].
@@ -213,15 +176,11 @@ Max length 100 characters.
 
 The password of the configured user.
 
-If this property is unspecified, the value of [DB.password] is used instead.
-
 ### database
 
 A US ASCII-only [PostgreSQL identifier]. Max length 63 characters.
 
 The name of the database to use.
-
-If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## SQLITE section
@@ -233,8 +192,6 @@ Available keys : `database_file`.
 An absolute path.
 
 The full path to the SQLite main database file.
-
-If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## LANGUAGE section
@@ -420,10 +377,6 @@ Otherwise a new test request is enqueued.
 
 
 [API documentation]:                  API.md
-[DB.database_host]:                   #database_host
-[DB.database_name]:                   #database_name
-[DB.password]:                        #password
-[DB.user]:                            #user
 [DBD::mysql documentation]:           https://metacpan.org/pod/DBD::mysql#host
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
 [File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT

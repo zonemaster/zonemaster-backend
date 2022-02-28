@@ -189,47 +189,7 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-    if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
 
-        $obj->_set_MYSQL_host( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_host( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-    }
-
-    if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
-
-        $obj->_set_MYSQL_user( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_user( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-    }
-
-    if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
-
-        $obj->_set_MYSQL_password( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_password( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-    }
-    if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
-
-        $obj->_set_MYSQL_database( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_database( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-
-        $obj->_set_SQLITE_database_file( $value )
-          if $obj->DB_engine eq 'SQLite';
-    }
     if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
         if ( $value eq "" ) {
             push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
@@ -334,33 +294,33 @@ sub parse {
 
     # Check required propertys (part 2/2)
     if ( $obj->DB_engine eq 'MySQL' ) {
-        die "config: missing required property MYSQL.host (required when DB.engine = MySQL and DB.database_host is unset)\n"
+        die "config: missing required property MYSQL.host (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_host;
 
-        die "config: missing required property MYSQL.user (required when DB.engine = MySQL and DB.user is unset)\n"
+        die "config: missing required property MYSQL.user (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_user;
 
-        die "config: missing required property MYSQL.password (required when DB.engine = MySQL and DB.password is unset)\n"
+        die "config: missing required property MYSQL.password (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_password;
 
-        die "config: missing required property MYSQL.database (required when DB.engine = MySQL and DB.database_name is unset)\n"
+        die "config: missing required property MYSQL.database (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_database;
     }
     elsif ( $obj->DB_engine eq 'PostgreSQL' ) {
-        die "config: missing required property POSTGRESQL.host (required when DB.engine = PostgreSQL and DB.database_host is unset)\n"
+        die "config: missing required property POSTGRESQL.host (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_host;
 
-        die "config: missing required property POSTGRESQL.user (required when DB.engine = PostgreSQL and DB.user is unset)\n"
+        die "config: missing required property POSTGRESQL.user (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_user;
 
-        die "config: missing required property POSTGRESQL.password (required when DB.engine = PostgreSQL and DB.password is unset)\n"
+        die "config: missing required property POSTGRESQL.password (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_password;
 
-        die "config: missing required property POSTGRESQL.database (required when DB.engine = PostgreSQL and DB.database_name is unset)\n"
+        die "config: missing required property POSTGRESQL.database (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_database;
     }
     elsif ( $obj->DB_engine eq 'SQLite' ) {
-        die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite and DB.database_name is unset)\n"
+        die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite)\n"
           if !defined $obj->SQLITE_database_file;
     }
 

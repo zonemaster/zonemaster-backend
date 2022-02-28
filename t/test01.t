@@ -118,22 +118,27 @@ my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", conf
 isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
 
 
-# add a new test to the db
-my $frontend_params_1 = {
-    client_id      => 'Unit Test',         # free string
-    client_version => '1.0',               # free version like string
-    domain         => 'afnic.fr',          # content of the domain text field
-    ipv4           => JSON::PP::true,                   # 0 or 1, is the ipv4 checkbox checked
-    ipv6           => JSON::PP::true,                   # 0 or 1, is the ipv6 checkbox checked
-    profile        => 'test_profile',    # the id if the Test profile listbox
+# define the default properties for the tests
+my $params = {
+    client_id      => 'Unit Test',
+    client_version => '1.0',
+    domain         => 'afnic.fr',
+    ipv4           => JSON::PP::true,
+    ipv6           => JSON::PP::true,
+    profile        => 'test_profile',
 
-    nameservers => [                       # list of the nameserves up to 32
-        { ns => 'ns1.nic.fr' },       # key values pairs representing nameserver => namesterver_ip
-        { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
+    nameservers => [
+        { ns => 'ns1.nic.fr' },
+        { ns => 'ns2.nic.fr', ip => '192.134.4.1' }
     ],
-    ds_info => [                                  # list of DS/Digest pairs up to 32
-        { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
-    ],
+    ds_info => [
+        {
+            keytag => 11627,
+            algorithm => 8,
+            digtype => 2,
+            digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448'
+        }
+    ]
 };
 
 my $hash_id;
@@ -141,7 +146,7 @@ my $hash_id;
 # This is the first test added to the DB, its 'id' is 1
 my $test_id = 1;
 subtest 'add a first test' => sub {
-    $hash_id = $backend->start_domain_test( $frontend_params_1 );
+    $hash_id = $backend->start_domain_test( $params );
 
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
@@ -183,14 +188,14 @@ subtest 'API calls' => sub {
 
     subtest 'get_test_params' => sub {
         my $res = $backend->get_test_params( { test_id => $hash_id } );
-        is( $res->{domain}, $frontend_params_1->{domain}, 'Retrieve the correct "domain" value' );
-        is( $res->{profile}, $frontend_params_1->{profile}, 'Retrieve the correct "profile" value' );
-        is( $res->{client_id}, $frontend_params_1->{client_id}, 'Retrieve the correct "client_id" value' );
-        is( $res->{client_version}, $frontend_params_1->{client_version}, 'Retrieve the correct "client_version" value' );
-        is( $res->{ipv4}, $frontend_params_1->{ipv4}, 'Retrieve the correct "ipv4" value' );
-        is( $res->{ipv6}, $frontend_params_1->{ipv6}, 'Retrieve the correct "ipv6" value' );
-        is_deeply( $res->{nameservers}, $frontend_params_1->{nameservers}, 'Retrieve the correct "nameservers" value' );
-        is_deeply( $res->{ds_info}, $frontend_params_1->{ds_info}, 'Retrieve the correct "ds_info" value' );
+        is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
+        is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
+        is( $res->{client_id}, $params->{client_id}, 'Retrieve the correct "client_id" value' );
+        is( $res->{client_version}, $params->{client_version}, 'Retrieve the correct "client_version" value' );
+        is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
+        is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
+        is_deeply( $res->{nameservers}, $params->{nameservers}, 'Retrieve the correct "nameservers" value' );
+        is_deeply( $res->{ds_info}, $params->{ds_info}, 'Retrieve the correct "ds_info" value' );
     };
 
     subtest 'add_api_user' => sub {
@@ -255,15 +260,15 @@ subtest 'API calls' => sub {
 };
 
 # start a second test with IPv6 disabled
-$frontend_params_1->{ipv6} = 0;
-$hash_id = $backend->start_domain_test( $frontend_params_1 );
+$params->{ipv6} = 0;
+$hash_id = $backend->start_domain_test( $params );
 diag "running the agent on test $hash_id";
 $agent->run($hash_id);
 
 subtest 'second test has IPv6 disabled' => sub {
     my $res = $backend->get_test_params( { test_id => $hash_id } );
-    is( $res->{ipv4}, $frontend_params_1->{ipv4}, 'Retrieve the correct "ipv4" value' );
-    is( $res->{ipv6}, $frontend_params_1->{ipv6}, 'Retrieve the correct "ipv6" value' );
+    is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
+    is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
     $res = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
     my @msg_basic = map { $_->{message} if $_->{module} eq 'BASIC' } @{ $res->{results} };
@@ -275,7 +280,7 @@ subtest 'get_test_history' => sub {
     my $offset = 0;
     my $limit  = 10;
     my $method_params = {
-        frontend_params => { domain => $frontend_params_1->{domain} },
+        frontend_params => { domain => $params->{domain} },
         offset => $offset,
         limit => $limit
     };
@@ -293,11 +298,11 @@ subtest 'get_test_history' => sub {
 
     subtest 'include finished tests only' => sub {
         # start a thirs test with IPv4 disabled
-        $frontend_params_1->{ipv6} = 1;
-        $frontend_params_1->{ipv4} = 0;
+        $params->{ipv6} = 1;
+        $params->{ipv4} = 0;
 
         # create the test, retrieve its id but we don't run it
-        $backend->start_domain_test( $frontend_params_1 );
+        $backend->start_domain_test( $params );
         $hash_id = $backend->{db}->get_test_request();
 
         $test_history = $backend->get_test_history( $method_params );
@@ -314,26 +319,26 @@ subtest 'get_test_history' => sub {
 };
 
 subtest 'mock another client (i.e. reuse a previous test)' => sub {
-    $frontend_params_1->{client_id} = 'Another Client';
-    $frontend_params_1->{client_version} = '0.1';
+    $params->{client_id} = 'Another Client';
+    $params->{client_version} = '0.1';
 
-    my $new_hash_id = $backend->start_domain_test( $frontend_params_1 );
+    my $new_hash_id = $backend->start_domain_test( $params );
 
     is( $new_hash_id, $hash_id, 'Has the same hash than previous test' );
 
     subtest 'check test_params values' => sub {
         my $res = $backend->get_test_params( { test_id => "$hash_id" } );
         # the following values are part of the fingerprint
-        is( $res->{domain}, $frontend_params_1->{domain}, 'Retrieve the correct "domain" value' );
-        is( $res->{profile}, $frontend_params_1->{profile}, 'Retrieve the correct "profile" value' );
-        is( $res->{ipv4}, $frontend_params_1->{ipv4}, 'Retrieve the correct "ipv4" value' );
-        is( $res->{ipv6}, $frontend_params_1->{ipv6}, 'Retrieve the correct "ipv6" value' );
-        is_deeply( $res->{nameservers}, $frontend_params_1->{nameservers}, 'Retrieve the correct "nameservers" value' );
-        is_deeply( $res->{ds_info}, $frontend_params_1->{ds_info}, 'Retrieve the correct "ds_info" value' );
+        is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
+        is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
+        is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
+        is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
+        is_deeply( $res->{nameservers}, $params->{nameservers}, 'Retrieve the correct "nameservers" value' );
+        is_deeply( $res->{ds_info}, $params->{ds_info}, 'Retrieve the correct "ds_info" value' );
 
         # both client_id and client_version are different since an old test has been reused
-        isnt( $res->{client_id}, $frontend_params_1->{client_id}, 'The "client_id" value is not the same (which is fine)' );
-        isnt( $res->{client_version}, $frontend_params_1->{client_version}, 'The "client_version" value is not the same (which is fine)' );
+        isnt( $res->{client_id}, $params->{client_id}, 'The "client_id" value is not the same (which is fine)' );
+        isnt( $res->{client_version}, $params->{client_version}, 'The "client_version" value is not the same (which is fine)' );
     };
 };
 

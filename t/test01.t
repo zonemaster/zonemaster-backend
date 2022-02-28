@@ -98,7 +98,12 @@ if ( $@ ) {
 
 isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
 
+my $dbh = $backend->{db}->dbh;
+
 # prepare the database
+$dbh->do( "DROP TABLE IF EXISTS test_results" );
+$dbh->do( "DROP TABLE IF EXISTS users" );
+$dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
 eval {
     ok( $backend->{db}->create_db(), "$db_backend database prepared");
 };
@@ -106,8 +111,6 @@ if ( $@ ) {
     diag explain( $@ );
     BAIL_OUT( 'Could not prepare the database' );
 }
-
-my $dbh = $backend->{db}->dbh;
 
 # Create the agent
 use_ok( 'Zonemaster::Backend::TestAgent' );
@@ -413,11 +416,6 @@ if ( $ENV{ZONEMASTER_RECORD} ) {
 }
 
 done_testing();
-
-# cleaning up
-$dbh->do( "DROP table test_results" );
-$dbh->do( "DROP table users" );
-$dbh->do( "DROP table batch_jobs" );
 
 if ( $db_backend eq 'SQLite' ) {
     my $dbfile = $dbh->sqlite_db_filename;

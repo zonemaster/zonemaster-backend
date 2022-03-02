@@ -149,11 +149,12 @@ sub main {
 
         my $fetch_test_timer = [ gettimeofday ];
 
-        my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
         $self->db->process_unfinished_tests(
             $self->config->ZONEMASTER_lock_on_queue,
             $self->config->ZONEMASTER_max_zonemaster_execution_time,
         );
+
+        my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
 
         Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
 

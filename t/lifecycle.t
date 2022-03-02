@@ -27,7 +27,7 @@ sub advance_time {
 }
 
 my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
-diag "database: $db_backend";
+note "database: $db_backend";
 
 my $tempdir = tempdir( CLEANUP => 1 );
 my $config = Zonemaster::Backend::Config->parse( <<EOF );

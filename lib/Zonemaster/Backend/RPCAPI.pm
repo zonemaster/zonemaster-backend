@@ -37,7 +37,6 @@ use Zonemaster::Backend::Errors;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 our %json_schemas;
-our %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {

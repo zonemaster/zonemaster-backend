@@ -12,6 +12,7 @@ use JSON::Validator::Joi;
 use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
 use Zonemaster::Engine::Net::IP;
+use Zonemaster::LDNS;
 
 our @EXPORT_OK = qw(
   untaint_abs_path

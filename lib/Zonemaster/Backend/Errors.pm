@@ -2,6 +2,7 @@ package Zonemaster::Backend::Error;
 use Moose;
 use Data::Dumper;
 
+use overload '""' => \&as_string;
 
 has 'message' => (
     is => 'ro',
@@ -52,6 +53,8 @@ sub _data_dump {
 
 package Zonemaster::Backend::Error::Internal;
 use Moose;
+
+use overload '""' => \&as_string;
 
 extends 'Zonemaster::Backend::Error';
 

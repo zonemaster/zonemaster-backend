@@ -56,7 +56,7 @@ sub from_config {
 }
 
 
-sub create_db {
+sub create_schema {
     my ( $self ) = @_;
 
     my $dbh = $self->dbh;
@@ -141,6 +141,8 @@ sub create_db {
         ) ENGINE=InnoDB;
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
+
+    return;
 }
 
 sub test_progress {

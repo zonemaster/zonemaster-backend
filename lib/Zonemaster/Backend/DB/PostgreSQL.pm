@@ -52,7 +52,7 @@ sub from_config {
     );
 }
 
-sub create_db {
+sub create_schema {
     my ( $self ) = @_;
 
     my $dbh = $self->dbh;
@@ -127,6 +127,7 @@ sub create_db {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
 
+    return;
 }
 
 sub test_progress {

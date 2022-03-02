@@ -105,13 +105,7 @@ my $dbh = $backend->{db}->dbh;
 $dbh->do( "DROP TABLE IF EXISTS test_results" );
 $dbh->do( "DROP TABLE IF EXISTS users" );
 $dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
-eval {
-    ok( $backend->{db}->create_db(), "$db_backend database prepared");
-};
-if ( $@ ) {
-    diag explain( $@ );
-    BAIL_OUT( 'Could not prepare the database' );
-}
+$backend->{db}->create_schema();
 
 # Create the agent
 use_ok( 'Zonemaster::Backend::TestAgent' );

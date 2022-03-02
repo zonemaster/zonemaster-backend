@@ -17,7 +17,7 @@ use Zonemaster::Backend::Errors;
 
 requires qw(
   add_batch_job
-  create_db
+  create_schema
   from_config
   get_test_history
   process_unfinished_tests_give_up

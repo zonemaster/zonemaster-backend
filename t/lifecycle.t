@@ -59,8 +59,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
         my $db      = $dbclass->from_config( $config );
 
         if ( $db_backend eq 'SQLite' ) {
-            $db->create_db()
-              or BAIL_OUT( "$db_backend database could not be created" );
+            $db->create_schema();
         }
 
         subtest 'Testid reuse' => sub {

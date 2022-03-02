@@ -47,7 +47,7 @@ sub DEMOLISH {
     $self->dbh->disconnect() if defined $self->dbhandle && $self->dbhandle->ping;
 }
 
-sub create_db {
+sub create_schema {
     my ( $self ) = @_;
 
     my $dbh = $self->dbh;
@@ -117,7 +117,7 @@ sub create_db {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
 
-    return 1;
+    return;
 }
 
 sub test_progress {

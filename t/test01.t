@@ -102,9 +102,7 @@ isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
 my $dbh = $backend->{db}->dbh;
 
 # prepare the database
-$dbh->do( "DROP TABLE IF EXISTS test_results" );
-$dbh->do( "DROP TABLE IF EXISTS users" );
-$dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
+$backend->{db}->drop_tables();
 $backend->{db}->create_schema();
 
 # Create the agent

@@ -85,6 +85,22 @@ sub dbh {
     return $self->dbhandle;
 }
 
+=head2 drop_tables
+
+Drop all the tables if they exist.
+
+=cut
+
+sub drop_tables {
+    my ( $self ) = @_;
+
+    $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+    $self->dbh->do( "DROP TABLE IF EXISTS users" );
+    $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
+
+    return;
+}
+
 sub user_exists {
     my ( $self, $user ) = @_;
 

@@ -57,10 +57,8 @@ subtest 'Everything but Test::NoWarnings' => sub {
     lives_ok {    # Make sure we get to print log messages in case of errors.
         my $dbclass = Zonemaster::Backend::DB->get_db_class( $db_backend );
         my $db      = $dbclass->from_config( $config );
-
-        if ( $db_backend eq 'SQLite' ) {
-            $db->create_schema();
-        }
+        $db->drop_tables();
+        $db->create_schema();
 
         subtest 'Testid reuse' => sub {
             my $testid1 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );

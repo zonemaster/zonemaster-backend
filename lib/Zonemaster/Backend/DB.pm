@@ -18,6 +18,7 @@ use Zonemaster::Backend::Errors;
 requires qw(
   add_batch_job
   create_schema
+  drop_tables
   from_config
   get_test_history
   process_unfinished_tests_give_up
@@ -83,22 +84,6 @@ sub dbh {
     }
 
     return $self->dbhandle;
-}
-
-=head2 drop_tables
-
-Drop all the tables if they exist.
-
-=cut
-
-sub drop_tables {
-    my ( $self ) = @_;
-
-    $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
-    $self->dbh->do( "DROP TABLE IF EXISTS users" );
-    $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
-
-    return;
 }
 
 sub user_exists {

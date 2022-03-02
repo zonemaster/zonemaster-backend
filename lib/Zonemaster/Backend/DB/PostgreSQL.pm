@@ -9,6 +9,7 @@ use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
+use Try::Tiny;
 
 use Zonemaster::Backend::DB;
 use Zonemaster::Backend::Errors;
@@ -126,6 +127,33 @@ sub create_schema {
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
+
+    return;
+}
+
+=head2 drop_tables
+
+Drop all the tables if they exist.
+
+=cut
+
+sub drop_tables {
+    my ( $self ) = @_;
+
+    # Temporarily set the message level just above "notice" to mute messages when the tables don't
+    # exist.
+    # Without setting this level we run the risk of tripping up Test::NoWarnings in unit tests.
+    my ( $old_client_min_messages ) = $self->dbh->selectrow_array( "SHOW client_min_messages" );
+    $self->dbh->do( "SET client_min_messages = warning" );
+
+    try {
+        $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+        $self->dbh->do( "DROP TABLE IF EXISTS users" );
+        $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
+    }
+    finally {
+        $self->dbh->do( "SET client_min_messages = ?", undef, $old_client_min_messages );
+    };
 
     return;
 }

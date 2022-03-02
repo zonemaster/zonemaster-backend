@@ -22,7 +22,7 @@ sub taint {
 
 sub compile_schema {
     my $jv = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data(@_);
-    $jv->schema->formats(Zonemaster::Backend::Validator::formats( undef ));
+    $jv->formats(Zonemaster::Backend::Validator::formats( undef ));
     return $jv;
 }
 

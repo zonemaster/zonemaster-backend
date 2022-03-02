@@ -644,7 +644,7 @@ sub validate_params {
         $method_schema = $method_schema->compile;
     }
     my $jv = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data($method_schema);
-    $jv->schema->formats(Zonemaster::Backend::Validator::formats( $self ));
+    $jv->formats(Zonemaster::Backend::Validator::formats( $self ));
     my @json_validation_error = $jv->validate( $params );
 
     # Customize error message from json validation

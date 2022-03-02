@@ -132,8 +132,7 @@ sub client_version {
 sub domain_name {
     return {
         type => 'string',
-        pattern => $RELAXED_DOMAIN_NAME_RE,
-        'x-error-message' => N__ 'The domain name contains a character or characters not supported'
+        format => 'domain',
     };
 }
 sub ds_info {
@@ -168,8 +167,7 @@ sub ds_info {
 sub ip_address {
     return {
         type => 'string',
-        pattern => $IPADDR_RE,
-        'x-error-message' => N__ 'Invalid IP address',
+        format => 'ip',
     };
 }
 sub nameserver {
@@ -178,9 +176,7 @@ sub nameserver {
         required => [ 'ns' ],
         additionalProperties => 0,
         properties => {
-            ns => {
-                type => 'string'
-            },
+            ns => domain_name,
             ip => ip_address
         }
     };
@@ -200,8 +196,7 @@ sub test_id {
 sub language_tag {
     return {
         type => 'string',
-        pattern => $LANGUAGE_RE,
-        'x-error-message' => N__ 'Invalid language tag format'
+        format => 'language_tag',
     };
 }
 sub username {
@@ -209,6 +204,87 @@ sub username {
 }
 sub jsonrpc_method {
     return joi->string->regex( $JSONRPC_METHOD_RE );
+}
+
+sub formats {
+    my ( $rpcapi ) = @_;
+    return {
+        domain => sub { Zonemaster::Backend::Validator::check_domain( $rpcapi, @_ ) },
+        language_tag => sub { Zonemaster::Backend::Validator::check_language_tag( $rpcapi, @_ ) },
+        ip => sub { Zonemaster::Backend::Validator::check_ip( $rpcapi, @_ ) },
+    };
+}
+
+sub check_domain {
+    my ( $rpcapi, $domain ) = @_;
+
+    if ( !defined( $domain ) ) {
+        return N__ 'Domain name required';
+    }
+
+    if ( $domain =~ m/[^[:ascii:]]+/ ) {
+        if ( Zonemaster::LDNS::has_idn() ) {
+            eval { $domain = Zonemaster::LDNS::to_idn( $domain ); };
+            if ( $@ ) {
+                return N__ 'The domain name is not a valid IDNA string and cannot be converted to an A-label';
+            }
+        }
+        else {
+            return N__ 'The domain name contains non-ascii characters and IDNA is not installed';
+        }
+    }
+
+    if ( $domain !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+        return  N__ 'The domain name character(s) are not supported';
+    }
+
+    my %levels = Zonemaster::Engine::Logger::Entry::levels();
+    my @res;
+    @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
+    @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
+    if ( @res != 0 ) {
+        return N__ 'The domain name or label is too long';
+    }
+
+    return undef;
+}
+
+sub check_language_tag {
+    my ( $rpcapi, $language ) = @_;
+    my @error;
+
+    my %locales = $rpcapi->{config}->LANGUAGE_locale;
+
+    if ( $language !~ $LANGUAGE_RE ) {
+        return N__ 'Invalid language tag format';
+    }
+
+    if ( length $language == 2 ) {
+        if ( !exists $locales{$language} ) {
+            return N__ "Unkown language string";
+        }
+        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
+            return N__ "Language string not unique";
+        }
+    }
+    else {
+        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
+            return N__ "Unkown language string";
+        }
+    }
+    return undef;
+}
+
+sub check_ip {
+    my ( undef, $ip ) = @_;
+
+    return N__ 'Invalid IP address' unless (
+        Zonemaster::Engine::Net::IP::ip_is_ipv4( $ip )
+        || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ip )
+    );
+
+    return undef
+
 }
 
 =head1 UNTAINT INTERFACE

@@ -12,6 +12,7 @@ use Daemon::Control;
 use Log::Any qw( $log );
 use Log::Any::Adapter;
 use Log::Dispatch;
+use Log::Dispatch::Vars qw( %CanonicalLevelNames );
 
 use English;
 use Pod::Usage;
@@ -60,7 +61,7 @@ $opt_outfile //= '/var/log/zonemaster/zonemaster_backend_testagent.out';
 $loglevel    //= 'info';
 $loglevel = lc $loglevel;
 
-$loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
+die "Error: Unrecognized --loglevel $loglevel\n" unless exists $CanonicalLevelNames{$loglevel};
 
 # Returns a Log::Dispatch object logging to STDOUT
 #
@@ -305,7 +306,7 @@ When FILE is -, the log is written to standard output.
 
 The location of the log level to use.
 
-The allowed values are specified at L<Log::Any/LOG-LEVELS>.
+The allowed values are specified at L<Log::Dispatch/LOG-LEVELS>.
 
 =item B<COMMAND>
 

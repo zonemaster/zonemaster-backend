@@ -47,7 +47,7 @@ sub DEMOLISH {
     $self->dbh->disconnect() if defined $self->dbhandle && $self->dbhandle->ping;
 }
 
-sub create_db {
+sub create_schema {
     my ( $self ) = @_;
 
     my $dbh = $self->dbh;
@@ -117,22 +117,23 @@ sub create_db {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
 
-    return 1;
+    return;
 }
 
-# Search for recent test result with the test same parameters, where
-# "age_reuse_previous_test" gives the time limit for how old test result that
-# is accepted.
-sub recent_test_hash_id {
-    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+=head2 drop_tables
 
-    my $dbh = $self->dbh;
-    my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > DATETIME('now', ?)",
-        undef, $fingerprint, "-$age_reuse_previous_test seconds"
-    );
+Drop all the tables if they exist.
 
-    return $recent_hash_id;
+=cut
+
+sub drop_tables {
+    my ( $self ) = @_;
+
+    $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+    $self->dbh->do( "DROP TABLE IF EXISTS users" );
+    $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
+
+    return;
 }
 
 sub test_progress {
@@ -140,11 +141,33 @@ sub test_progress {
 
     my $dbh = $self->dbh;
     if ( $progress ) {
-        if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=datetime('now') WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+        if ( $progress == 1 ) {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?,
+                        test_start_time = DATETIME(?)
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $self->format_time( time() ),
+                $test_id,
+            );
         }
         else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $test_id,
+            );
         }
     }
 
@@ -157,8 +180,20 @@ sub test_results {
     my ( $self, $test_id, $new_results ) = @_;
 
     if ( $new_results ) {
-        $self->dbh->do( qq[UPDATE test_results SET progress=100, test_end_time=datetime('now'), results = ? WHERE hash_id=? AND progress < 100],
-            undef, $new_results, $test_id );
+        $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = 100,
+                    test_end_time = datetime(?),
+                    results = ?
+                WHERE hash_id = ?
+                  AND progress < 100
+            ],
+            undef,
+            $self->format_time( time() ),
+            $new_results,
+            $test_id,
+        );
     }
 
     my $result;
@@ -266,7 +301,19 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
 
-        my $sth = $dbh->prepare( 'INSERT INTO test_results (hash_id, domain, batch_id, priority, queue, fingerprint, params, undelegated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' );
+        my $sth = $dbh->prepare( '
+            INSERT INTO test_results (
+                hash_id,
+                domain,
+                batch_id,
+                creation_time,
+                priority,
+                queue,
+                fingerprint,
+                params,
+                undelegated
+            ) VALUES (?,?,?,?,?,?,?,?,?)'
+        );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -275,7 +322,17 @@ sub add_batch_job {
             my $undelegated = $self->undelegated ( $test_params );
 
             my $hash_id = substr(md5_hex(time().rand()), 0, 16);
-            $sth->execute( $hash_id, $test_params->{domain}, $batch_id, $priority, $queue_label, $fingerprint, $encoded_params, $undelegated );
+            $sth->execute(
+                $hash_id,
+                $test_params->{domain},
+                $batch_id,
+                $self->format_time( time() ),
+                $priority,
+                $queue_label,
+                $fingerprint,
+                $encoded_params,
+                $undelegated,
+            );
         }
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
@@ -293,47 +350,37 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub select_unfinished_tests {
-    my ( $self, $queue_label, $test_run_timeout ) = @_;
-
-    if ( $queue_label ) {
-        my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results
-            FROM test_results
-            WHERE test_start_time < DATETIME('now', ?)
-            AND progress > 0
-            AND progress < 100
-            AND queue = ?" );
-        $sth->execute(    #
-            sprintf( "-%d seconds", $test_run_timeout ),
-            $queue_label,
-        );
-        return $sth;
-    }
-    else {
-        my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results
-            FROM test_results
-            WHERE test_start_time < DATETIME('now', ?)
-            AND progress > 0
-            AND progress < 100" );
-        $sth->execute(    #
-            sprintf( "-%d seconds", $test_run_timeout ),
-        );
-        return $sth;
-    }
-}
-
 sub process_unfinished_tests_give_up {
-     my ( $self, $result, $hash_id ) = @_;
+    my ( $self, $result, $hash_id ) = @_;
 
-     $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = DATETIME('now'), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                test_end_time = DATETIME(?),
+                results = ?
+            WHERE hash_id = ?
+        ],
+        undef,
+        $self->format_time( time() ),
+        encode_json( $result ),
+        $hash_id,
+    );
 }
 
 sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
 
-    return $self->dbh->selectrow_array("SELECT (julianday('now') - julianday(test_start_time)) * 3600 * 24 FROM test_results WHERE hash_id=?", undef, $hash_id);
+    return $self->dbh->selectrow_array(
+        q[
+            SELECT (julianday(?) - julianday(test_start_time)) * 3600 * 24
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $self->format_time( time() ),
+        $hash_id,
+    );
 }
 
 no Moose;

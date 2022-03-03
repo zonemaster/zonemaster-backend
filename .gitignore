@@ -21,3 +21,4 @@ inc
 # Ignore Emacs and other backup files
 *.bak
 *~
+.*.swp

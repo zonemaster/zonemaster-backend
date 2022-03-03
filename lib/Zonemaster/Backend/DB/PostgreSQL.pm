@@ -9,6 +9,7 @@ use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
+use Try::Tiny;
 
 use Zonemaster::Backend::DB;
 use Zonemaster::Backend::Errors;
@@ -52,7 +53,7 @@ sub from_config {
     );
 }
 
-sub create_db {
+sub create_schema {
     my ( $self ) = @_;
 
     my $dbh = $self->dbh;
@@ -127,18 +128,34 @@ sub create_db {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
 
+    return;
 }
 
-sub recent_test_hash_id {
-    my ( $self, $age_reuse_previous_test, $fingerprint ) = @_;
+=head2 drop_tables
 
-    my $dbh = $self->dbh;
-    my ( $recent_hash_id ) = $dbh->selectrow_array(
-        "SELECT hash_id FROM test_results WHERE fingerprint = ? AND creation_time > NOW() - ?::interval",
-        undef, $fingerprint, $age_reuse_previous_test
-    );
+Drop all the tables if they exist.
 
-    return $recent_hash_id;
+=cut
+
+sub drop_tables {
+    my ( $self ) = @_;
+
+    # Temporarily set the message level just above "notice" to mute messages when the tables don't
+    # exist.
+    # Without setting this level we run the risk of tripping up Test::NoWarnings in unit tests.
+    my ( $old_client_min_messages ) = $self->dbh->selectrow_array( "SHOW client_min_messages" );
+    $self->dbh->do( "SET client_min_messages = warning" );
+
+    try {
+        $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+        $self->dbh->do( "DROP TABLE IF EXISTS users" );
+        $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
+    }
+    finally {
+        $self->dbh->do( "SET client_min_messages = ?", undef, $old_client_min_messages );
+    };
+
+    return;
 }
 
 sub test_progress {
@@ -146,8 +163,20 @@ sub test_progress {
 
     my $dbh = $self->dbh;
     if ( $progress ) {
-        if ($progress == 1) {
-            $dbh->do( "UPDATE test_results SET progress=?, test_start_time=NOW() WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
+        if ( $progress == 1 ) {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?,
+                        test_start_time = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $self->format_time( time() ),
+                $test_id,
+            );
         }
         else {
             $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
@@ -163,9 +192,22 @@ sub test_results {
     my ( $self, $test_id, $results ) = @_;
 
     my $dbh = $self->dbh;
-    $dbh->do( "UPDATE test_results SET progress=100, test_end_time=NOW(), results = ? WHERE hash_id=? AND progress < 100",
-        undef, $results, $test_id )
-      if ( $results );
+    if ( $results ) {
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = 100,
+                    test_end_time = ?,
+                    results = ?
+                WHERE hash_id = ?
+                  AND progress < 100
+            ],
+            undef,
+            $self->format_time( time() ),
+            $results,
+            $test_id,
+        );
+    }
 
     my $result;
     my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
@@ -316,47 +358,37 @@ sub add_batch_job {
     return $batch_id;
 }
 
-sub select_unfinished_tests {
-    my ( $self, $queue_label, $test_run_timeout ) = @_;
-
-    if ( $queue_label ) {
-        my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results
-            FROM test_results
-            WHERE test_start_time < NOW() - ?::interval
-            AND progress > 0
-            AND progress < 100
-            AND queue = ?" );
-        $sth->execute(    #
-            sprintf( "%d seconds", $test_run_timeout ),
-            $queue_label,
-        );
-        return $sth;
-    }
-    else {
-        my $sth = $self->dbh->prepare( "
-            SELECT hash_id, results
-            FROM test_results
-            WHERE test_start_time < NOW() - ?::interval
-            AND progress > 0
-            AND progress < 100" );
-        $sth->execute(    #
-            sprintf( "%d seconds", $test_run_timeout ),
-        );
-        return $sth;
-    }
-}
-
 sub process_unfinished_tests_give_up {
     my ( $self, $result, $hash_id ) = @_;
 
-    $self->dbh->do("UPDATE test_results SET progress = 100, test_end_time = NOW(), results = ? WHERE hash_id=?", undef, encode_json($result), $hash_id);
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                test_end_time = ?,
+                results = ?
+            WHERE hash_id = ?
+        ],
+        undef,
+        $self->format_time( time() ),
+        encode_json($result),
+        $hash_id,
+    );
 }
 
 sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
 
-    return $self->dbh->selectrow_array("SELECT EXTRACT(EPOCH FROM now() - test_start_time) FROM test_results WHERE hash_id=?", undef, $hash_id);
+    return $self->dbh->selectrow_array(
+        q[
+            SELECT EXTRACT(EPOCH FROM ? - test_start_time)
+            FROM test_results
+            WHERE hash_id=?
+        ],
+        undef,
+        $self->format_time( time() ),
+        $hash_id,
+    );
 }
 
 no Moose;

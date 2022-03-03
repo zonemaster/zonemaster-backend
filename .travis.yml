@@ -118,4 +118,4 @@ before_script:
     - if [[ "$TARGET" == "MySQL" ]]; then cpanm DBD::mysql; fi
 
 script:
-    - perl Makefile.PL && make test
+    - perl Makefile.PL && make test TEST_VERBOSE=1

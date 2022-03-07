@@ -23,8 +23,8 @@ requires qw(
   get_test_history
   process_unfinished_tests_give_up
   set_dbh_specific_attributes
+  select_test_results
   test_progress
-  test_results
   get_relative_start_time
 );
 
@@ -208,6 +208,44 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
+}
+
+sub test_results {
+    my ( $self, $test_id, $new_results ) = @_;
+
+    if ( $new_results ) {
+        $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = 100,
+                    test_end_time = ?,
+                    results = ?
+                WHERE hash_id = ?
+                  AND progress < 100
+            ],
+            undef,
+            $self->format_time( time() ),
+            $new_results,
+            $test_id,
+        );
+    }
+
+    my $result = $self->select_test_results( $test_id );
+
+    eval {
+        $result->{params}  = decode_json( $result->{params} );
+
+        if (defined $result->{results}) {
+            $result->{results} = decode_json( $result->{results} );
+        } else {
+            $result->{results} = [];
+        }
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
+
+    return $result;
 }
 
 # Standard SQL, can be here

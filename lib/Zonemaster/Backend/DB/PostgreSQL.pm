@@ -37,18 +37,12 @@ sub from_config {
 
     my $data_source_name = "DBI:Pg:dbname=$database;host=$host;port=$port";
 
-    my $dbh = $class->_new_dbh(
-        $data_source_name,
-        $user,
-        $password,
-    );
-
     return $class->new(
         {
             data_source_name => $data_source_name,
             user             => $user,
             password         => $password,
-            dbhandle         => $dbh,
+            dbhandle         => undef,
         }
     );
 }

@@ -47,7 +47,7 @@ has 'password' => (
 
 has 'dbhandle' => (
     is       => 'rw',
-    isa      => 'DBI::db',
+    isa      => 'Maybe[DBI::db]',
     required => 1,
 );
 
@@ -73,7 +73,7 @@ sub get_db_class {
 sub dbh {
     my ( $self ) = @_;
 
-    if ( !$self->dbhandle->ping ) {
+    if ( !$self->dbhandle || !$self->dbhandle->ping ) {
         my $dbh = $self->_new_dbh(    #
             $self->data_source_name,
             $self->user,

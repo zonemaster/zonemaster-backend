@@ -316,11 +316,7 @@ sub get_test_params {
 
     my $result;
     eval {
-        if ( utf8::is_utf8( $params_json ) ) {
-            $result = decode_json( encode_utf8( $params_json ) );
-        } else {
-            $result = decode_json( $params_json );
-        }
+        $result = decode_json( $params_json );
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )

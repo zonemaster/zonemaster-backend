@@ -324,7 +324,22 @@ sub add_batch_job {
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(hash_id,domain ,batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
+        $dbh->do(
+            q[
+                COPY test_results (
+                    hash_id,
+                    domain,
+                    batch_id,
+                    priority,
+                    queue,
+                    fingerprint,
+                    params,
+                    undelegated
+                )
+                FROM STDIN
+            ]
+        );
+
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 

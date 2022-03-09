@@ -148,7 +148,7 @@ sub test_progress {
                 q[
                     UPDATE test_results
                     SET progress = ?,
-                        test_start_time = DATETIME(?)
+                        test_start_time = ?
                     WHERE hash_id = ?
                       AND progress <> 100
                 ],
@@ -186,7 +186,7 @@ sub test_results {
             q[
                 UPDATE test_results
                 SET progress = 100,
-                    test_end_time = datetime(?),
+                    test_end_time = ?,
                     results = ?
                 WHERE hash_id = ?
                   AND progress < 100
@@ -359,7 +359,7 @@ sub process_unfinished_tests_give_up {
         q[
             UPDATE test_results
             SET progress = 100,
-                test_end_time = DATETIME(?),
+                test_end_time = ?,
                 results = ?
             WHERE hash_id = ?
         ],

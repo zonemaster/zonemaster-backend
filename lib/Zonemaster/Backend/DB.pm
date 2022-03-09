@@ -144,6 +144,7 @@ sub create_new_test {
                 INSERT INTO test_results (
                     hash_id,
                     batch_id,
+                    creation_time,
                     priority,
                     queue,
                     fingerprint,
@@ -155,6 +156,7 @@ sub create_new_test {
             undef,
             $hash_id,
             $batch_id,
+            $self->format_time( time() ),
             $priority,
             $queue_label,
             $fingerprint,

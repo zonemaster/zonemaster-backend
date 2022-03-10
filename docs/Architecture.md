@@ -14,6 +14,8 @@ single *Database*, a single *Test Agent* and one or more *RPC API daemons*.
 The *Database* stores health check requests and results. The *Backend*
 architecture is oriented around a single central *Database*.
 
+All times in the database are stored in UTC.
+
 
 ### Test Agent
 

@@ -164,7 +164,7 @@ sub select_test_results {
             SELECT
                 id,
                 hash_id,
-                creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time,
+                creation_time,
                 params,
                 results
             FROM test_results
@@ -204,7 +204,7 @@ sub get_test_history {
             id,
             hash_id,
             undelegated,
-            creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
+            creation_time
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY id DESC

@@ -166,7 +166,7 @@ sub select_test_results {
             SELECT
                 id,
                 hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+                creation_time,
                 params,
                 results
             FROM test_results
@@ -202,7 +202,7 @@ sub get_test_history {
         SELECT
             id,
             hash_id,
-            CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+            creation_time,
             undelegated,
             results
         FROM test_results

@@ -63,7 +63,7 @@ sub create_schema {
                  hash_id VARCHAR(16) NOT NULL,
                  domain VARCHAR(255) NOT NULL,
                  batch_id integer NULL,
-                 creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                 creation_time DATETIME NOT NULL,
                  test_start_time DATETIME DEFAULT NULL,
                  test_end_time DATETIME DEFAULT NULL,
                  priority integer DEFAULT 10,
@@ -101,7 +101,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                  id integer PRIMARY KEY,
                  username character varying(50) NOT NULL,
-                 creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
+                 creation_time DATETIME NOT NULL
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'batch_jobs' table", data => $dbh->errstr() );

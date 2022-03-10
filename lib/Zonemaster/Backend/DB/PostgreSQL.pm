@@ -65,7 +65,7 @@ sub create_schema {
                 hash_id VARCHAR(16) NOT NULL,
                 domain VARCHAR(255) NOT NULL,
                 batch_id integer,
-                creation_time TIMESTAMP DEFAULT NOW() NOT NULL,
+                creation_time TIMESTAMP NOT NULL,
                 test_start_time TIMESTAMP DEFAULT NULL,
                 test_end_time TIMESTAMP DEFAULT NULL,
                 priority integer DEFAULT 10,
@@ -108,7 +108,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                 id serial PRIMARY KEY,
                 username varchar(50) NOT NULL,
-                creation_time TIMESTAMP DEFAULT NOW() NOT NULL
+                creation_time TIMESTAMP NOT NULL
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );

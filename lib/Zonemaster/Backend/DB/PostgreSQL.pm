@@ -316,6 +316,8 @@ sub add_batch_job {
         my $priority    = $test_params->{priority};
         my $queue_label = $test_params->{queue};
 
+        my $creation_time = $self->format_time( time() );
+
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
@@ -324,7 +326,23 @@ sub add_batch_job {
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated" );
 
-        $dbh->do( "COPY test_results(hash_id,domain ,batch_id, priority, queue, fingerprint, params, undelegated) FROM STDIN" );
+        $dbh->do(
+            q[
+                COPY test_results (
+                    hash_id,
+                    domain,
+                    batch_id,
+                    creation_time,
+                    priority,
+                    queue,
+                    fingerprint,
+                    params,
+                    undelegated
+                )
+                FROM STDIN
+            ]
+        );
+
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = $domain;
 
@@ -333,7 +351,9 @@ sub add_batch_job {
             my $undelegated = $self->undelegated ( $test_params );
 
             my $hash_id = substr(md5_hex(time().rand()), 0, 16);
-            $dbh->pg_putcopydata("$hash_id\t$test_params->{domain}\t$batch_id\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n");
+            $dbh->pg_putcopydata(
+                "$hash_id\t$test_params->{domain}\t$batch_id\t$creation_time\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n"
+            );
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );

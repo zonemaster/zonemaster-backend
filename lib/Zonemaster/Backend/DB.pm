@@ -140,10 +140,23 @@ sub create_new_test {
     else {
         $hash_id = substr(md5_hex($now.rand()), 0, 16);
         $dbh->do(
-            "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
+            q[
+                INSERT INTO test_results (
+                    hash_id,
+                    batch_id,
+                    creation_time,
+                    priority,
+                    queue,
+                    fingerprint,
+                    params,
+                    domain,
+                    undelegated
+                ) VALUES (?,?,?,?,?,?,?,?,?)
+            ],
             undef,
             $hash_id,
             $batch_id,
+            $self->format_time( time() ),
             $priority,
             $queue_label,
             $fingerprint,

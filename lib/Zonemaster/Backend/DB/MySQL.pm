@@ -67,9 +67,9 @@ sub create_schema {
             hash_id VARCHAR(16) NOT NULL,
             domain varchar(255) NOT NULL,
             batch_id integer NULL,
-            creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            test_start_time TIMESTAMP NULL DEFAULT NULL,
-            test_end_time TIMESTAMP NULL DEFAULT NULL,
+            creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            test_start_time DATETIME NULL DEFAULT NULL,
+            test_end_time DATETIME NULL DEFAULT NULL,
             priority integer DEFAULT 10,
             queue integer DEFAULT 0,
             progress integer DEFAULT 0,
@@ -121,7 +121,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
             id integer AUTO_INCREMENT PRIMARY KEY,
             username character varying(50) NOT NULL,
-            creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+            creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
         ) ENGINE=InnoDB;
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );

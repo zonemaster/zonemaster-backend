@@ -180,7 +180,7 @@ sub create_new_test {
             $queue_label,
             $fingerprint,
             $encoded_params,
-            $test_params->{domain},
+            encode_utf8( $test_params->{domain} ),
             $undelegated,
         );
     }

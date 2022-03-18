@@ -53,6 +53,11 @@ database_file = $tempdir/zonemaster.sqlite
 age_reuse_previous_test = 10
 EOF
 
+sub count_cancellation_messages {
+    my $results = shift;
+    return scalar grep { $_->{tag} eq 'UNABLE_TO_FINISH_TEST' } @{ $results->{results} };
+}
+
 subtest 'Everything but Test::NoWarnings' => sub {
     lives_ok {    # Make sure we get to print log messages in case of errors.
         my $dbclass = Zonemaster::Backend::DB->get_db_class( $db_backend );
@@ -92,6 +97,9 @@ subtest 'Everything but Test::NoWarnings' => sub {
 
             is $db->test_progress( $testid3 ), 1,   'leave test alone AT its timeout';
             is $db->test_progress( $testid2 ), 100, 'terminate test AFTER its timeout';
+
+            is count_cancellation_messages( $db->test_results( $testid3 ) ), 0, 'no canellation message present AT timeout';
+            is count_cancellation_messages( $db->test_results( $testid2 ) ), 1, 'one cancellation message present AFTER timeout';
         };
 
         subtest 'Termination of crashed tests' => sub {
@@ -101,6 +109,8 @@ subtest 'Everything but Test::NoWarnings' => sub {
             $db->process_dead_test( $testid4 );
 
             is $db->test_progress( $testid4 ), 100, 'terminates test';
+
+            is count_cancellation_messages( $db->test_results( $testid4 ) ), 1, 'one cancellation message present after crash';
         };
     };
 };

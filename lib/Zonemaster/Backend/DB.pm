@@ -426,12 +426,11 @@ sub _new_dbh {
         $user,
         $password,
         {
-            RaiseError => 1,
-            AutoCommit => 1,
+            RaiseError          => 1,
+            AutoCommit          => 1,
+            AutoInactiveDestroy => 1,
         }
     );
-
-    $dbh->{AutoInactiveDestroy} = 1;
 
     return $dbh;
 }

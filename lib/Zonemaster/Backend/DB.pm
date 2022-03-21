@@ -501,7 +501,7 @@ sub _project_params {
     return \%projection;
 }
 
-# Take a params object with text strings and return binary string
+# Take a params object with text strings and return an UTF-8 binary string
 sub _params_to_json_str {
     my ( $self, $params ) = @_;
 
@@ -518,8 +518,8 @@ sub _params_to_json_str {
 
 Encode the params object into a JSON string. First a projection of some
 parameters is performed then all additional properties are kept.
-Returns a binary string of the union of the given hash and its normalization
-using default values, see
+Returns an UTF-8  binary string of the union of the given hash and its
+normalization using default values, see
 L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
 
 =cut
@@ -536,8 +536,8 @@ sub encode_params {
 
 =head2 generate_fingerprint
 
-Returns a fingerprint (a binary string) of the hash passed in argument (which
-contain text string).
+Returns a fingerprint (an UTF-8 binary string) of the hash passed in argument
+(which contain text string).
 The fingerprint is computed after projecting the hash.
 Such fingerprint are usefull to find similar tests in the database.
 

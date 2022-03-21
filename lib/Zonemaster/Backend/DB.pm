@@ -22,6 +22,7 @@ requires qw(
   from_config
   get_test_history
   process_unfinished_tests_give_up
+  set_dbh_specific_attributes
   test_progress
   test_results
   get_relative_start_time
@@ -84,15 +85,19 @@ sub dbh {
         $log->noticef( "Connecting to database '%s'", $self->data_source_name );
     }
 
+    my $attr = {
+        RaiseError          => 1,
+        AutoCommit          => 1,
+        AutoInactiveDestroy => 1,
+    };
+
+    $self->set_dbh_specific_attributes( $attr );
+
     my $dbh = DBI->connect(
         $self->data_source_name,
         $self->user,
         $self->password,
-        {
-            RaiseError          => 1,
-            AutoCommit          => 1,
-            AutoInactiveDestroy => 1,
-        }
+        $attr
     );
 
     $self->dbhandle( $dbh );

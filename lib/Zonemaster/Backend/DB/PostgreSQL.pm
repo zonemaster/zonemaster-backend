@@ -47,6 +47,12 @@ sub from_config {
     );
 }
 
+sub set_dbh_specific_attributes {
+    my ( $class, $attr ) = @_;
+
+    $attr->{pg_enable_utf8} = 0;
+}
+
 sub create_schema {
     my ( $self ) = @_;
 

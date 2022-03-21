@@ -45,6 +45,10 @@ sub DEMOLISH {
     $self->dbh->disconnect() if defined $self->dbhandle && $self->dbhandle->ping;
 }
 
+sub set_dbh_specific_attributes {
+    my ( $class, $attr ) = @_;
+}
+
 sub create_schema {
     my ( $self ) = @_;
 

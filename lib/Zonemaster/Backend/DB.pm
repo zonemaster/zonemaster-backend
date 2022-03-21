@@ -73,15 +73,29 @@ sub get_db_class {
 sub dbh {
     my ( $self ) = @_;
 
-    if ( !$self->dbhandle || !$self->dbhandle->ping ) {
-        my $dbh = $self->_new_dbh(    #
-            $self->data_source_name,
-            $self->user,
-            $self->password,
-        );
-
-        $self->dbhandle( $dbh );
+    if ( $self->dbhandle && $self->dbhandle->ping ) {
+        return $self->dbhandle;
     }
+
+    if ( $self->user ) {
+        $log->noticef( "Connecting to database '%s' as user '%s'", $self->data_source_name, $self->user );
+    }
+    else {
+        $log->noticef( "Connecting to database '%s'", $self->data_source_name );
+    }
+
+    my $dbh = DBI->connect(
+        $self->data_source_name,
+        $self->user,
+        $self->password,
+        {
+            RaiseError          => 1,
+            AutoCommit          => 1,
+            AutoInactiveDestroy => 1,
+        }
+    );
+
+    $self->dbhandle( $dbh );
 
     return $self->dbhandle;
 }
@@ -407,32 +421,6 @@ sub process_dead_test {
     my ( $self, $hash_id ) = @_;
     my ( $results ) = $self->dbh->selectrow_array("SELECT results FROM test_results WHERE hash_id = ?", undef, $hash_id);
     $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
-}
-
-# A thin wrapper around DBI->connect to ensure similar behavior across database
-# engines.
-sub _new_dbh {
-    my ( $class, $data_source_name, $user, $password ) = @_;
-
-    if ( $user ) {
-        $log->noticef( "Connecting to database '%s' as user '%s'", $data_source_name, $user );
-    }
-    else {
-        $log->noticef( "Connecting to database '%s'", $data_source_name );
-    }
-
-    my $dbh = DBI->connect(
-        $data_source_name,
-        $user,
-        $password,
-        {
-            RaiseError          => 1,
-            AutoCommit          => 1,
-            AutoInactiveDestroy => 1,
-        }
-    );
-
-    return $dbh;
 }
 
 sub _project_params {

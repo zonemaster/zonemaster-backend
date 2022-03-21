@@ -49,8 +49,8 @@ sub from_config {
     );
 }
 
-sub set_dbh_specific_attributes {
-    my ( $class, $attr ) = @_;
+sub get_dbh_specific_attributes {
+    return {};
 }
 
 sub create_schema {

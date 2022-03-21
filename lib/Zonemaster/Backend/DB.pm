@@ -22,7 +22,7 @@ requires qw(
   from_config
   get_test_history
   process_unfinished_tests_give_up
-  set_dbh_specific_attributes
+  get_dbh_specific_attributes
   select_test_results
   test_progress
   get_relative_start_time
@@ -91,7 +91,7 @@ sub dbh {
         AutoInactiveDestroy => 1,
     };
 
-    $self->set_dbh_specific_attributes( $attr );
+    $attr = { %$attr, %{ $self->get_dbh_specific_attributes } };
 
     my $dbh = DBI->connect(
         $self->data_source_name,

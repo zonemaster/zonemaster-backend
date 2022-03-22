@@ -138,33 +138,6 @@ sub drop_tables {
     return;
 }
 
-sub select_test_results {
-    my ( $self, $test_id ) = @_;
-
-    my ( $hrefs ) = $self->dbh->selectall_hashref(
-        q[
-            SELECT
-                id,
-                hash_id,
-                creation_time,
-                params,
-                results
-            FROM test_results
-            WHERE hash_id = ?
-        ],
-        'hash_id',
-        undef,
-        $test_id
-    );
-
-    my $result = $hrefs->{$test_id};
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $result;
-
-    return $result;
-}
-
 sub get_test_history {
     my ( $self, $p ) = @_;
 

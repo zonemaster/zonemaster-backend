@@ -22,7 +22,6 @@ requires qw(
   from_config
   get_test_history
   get_dbh_specific_attributes
-  select_test_results
   get_relative_start_time
 );
 
@@ -244,6 +243,33 @@ sub test_progress {
     }
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
+
+    return $result;
+}
+
+sub select_test_results {
+    my ( $self, $test_id ) = @_;
+
+    my ( $hrefs ) = $self->dbh->selectall_hashref(
+        q[
+            SELECT
+                id,
+                hash_id,
+                creation_time,
+                params,
+                results
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        'hash_id',
+        undef,
+        $test_id
+    );
+
+    my $result = $hrefs->{$test_id};
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $result;
 
     return $result;
 }

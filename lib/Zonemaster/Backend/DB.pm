@@ -21,10 +21,8 @@ requires qw(
   drop_tables
   from_config
   get_test_history
-  process_unfinished_tests_give_up
   get_dbh_specific_attributes
   select_test_results
-  test_progress
   get_relative_start_time
 );
 
@@ -208,6 +206,46 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
+}
+
+sub test_progress {
+    my ( $self, $test_id, $progress ) = @_;
+
+    my $dbh = $self->dbh;
+    if ( $progress ) {
+        if ( $progress == 1 ) {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?,
+                        test_start_time = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $self->format_time( time() ),
+                $test_id,
+            );
+        }
+        else {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $test_id,
+            );
+        }
+    }
+
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
+
+    return $result;
 }
 
 sub test_results {
@@ -453,7 +491,20 @@ sub force_end_test {
         "tag"       => "UNABLE_TO_FINISH_TEST",
         "timestamp" => $timestamp,
         };
-    $self->process_unfinished_tests_give_up($result, $hash_id);
+
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                test_end_time = ?,
+                results = ?
+            WHERE hash_id = ?
+        ],
+        undef,
+        $self->format_time( time() ),
+        encode_json($result),
+        $hash_id,
+    );
 }
 
 sub process_dead_test {

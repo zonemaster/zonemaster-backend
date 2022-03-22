@@ -47,6 +47,10 @@ sub from_config {
     );
 }
 
+sub get_dbh_specific_attributes {
+    return { pg_enable_utf8 => 0 };
+}
+
 sub create_schema {
     my ( $self ) = @_;
 
@@ -182,58 +186,29 @@ sub test_progress {
     return $result;
 }
 
-sub test_results {
-    my ( $self, $test_id, $results ) = @_;
+sub select_test_results {
+    my ( $self, $test_id ) = @_;
 
-    my $dbh = $self->dbh;
-    if ( $results ) {
-        $dbh->do(
-            q[
-                UPDATE test_results
-                SET progress = 100,
-                    test_end_time = ?,
-                    results = ?
-                WHERE hash_id = ?
-                  AND progress < 100
-            ],
-            undef,
-            $self->format_time( time() ),
-            $results,
-            $test_id,
-        );
-    }
+    my ( $hrefs ) = $self->dbh->selectall_hashref(
+        q[
+            SELECT
+                id,
+                hash_id,
+                creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time,
+                params,
+                results
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        'hash_id',
+        undef,
+        $test_id
+    );
 
-    my $result;
-    my ( $hrefs ) = $dbh->selectall_hashref( "SELECT id, hash_id, creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
-    $result = $hrefs->{$test_id};
+    my $result = $hrefs->{$test_id};
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
         unless defined $result;
-
-    eval {
-        # This workaround is needed to properly handle all versions of perl and the DBD::Pg module
-        # More details in the zonemaster backend issue #570
-        if (utf8::is_utf8($result->{params}) ) {
-            $result->{params}  = decode_json( encode_utf8($result->{params}) );
-        }
-        else {
-            $result->{params}  = decode_json( $result->{params} );
-        }
-
-        if (defined $result->{results} ) {
-            if (utf8::is_utf8($result->{results} ) ) {
-                $result->{results}  = decode_json( encode_utf8($result->{results}) );
-            }
-            else {
-                $result->{results}  = decode_json( $result->{results} );
-            }
-        } else {
-            $result->{results} = [];
-        }
-    };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id })
-        if $@;
 
     return $result;
 }

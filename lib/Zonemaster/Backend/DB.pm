@@ -22,8 +22,9 @@ requires qw(
   from_config
   get_test_history
   process_unfinished_tests_give_up
+  get_dbh_specific_attributes
+  select_test_results
   test_progress
-  test_results
   get_relative_start_time
 );
 
@@ -73,15 +74,33 @@ sub get_db_class {
 sub dbh {
     my ( $self ) = @_;
 
-    if ( !$self->dbhandle || !$self->dbhandle->ping ) {
-        my $dbh = $self->_new_dbh(    #
-            $self->data_source_name,
-            $self->user,
-            $self->password,
-        );
-
-        $self->dbhandle( $dbh );
+    if ( $self->dbhandle && $self->dbhandle->ping ) {
+        return $self->dbhandle;
     }
+
+    if ( $self->user ) {
+        $log->noticef( "Connecting to database '%s' as user '%s'", $self->data_source_name, $self->user );
+    }
+    else {
+        $log->noticef( "Connecting to database '%s'", $self->data_source_name );
+    }
+
+    my $attr = {
+        RaiseError          => 1,
+        AutoCommit          => 1,
+        AutoInactiveDestroy => 1,
+    };
+
+    $attr = { %$attr, %{ $self->get_dbh_specific_attributes } };
+
+    my $dbh = DBI->connect(
+        $self->data_source_name,
+        $self->user,
+        $self->password,
+        $attr
+    );
+
+    $self->dbhandle( $dbh );
 
     return $self->dbhandle;
 }
@@ -161,7 +180,7 @@ sub create_new_test {
             $queue_label,
             $fingerprint,
             $encoded_params,
-            $test_params->{domain},
+            encode_utf8( $test_params->{domain} ),
             $undelegated,
         );
     }
@@ -189,6 +208,44 @@ sub recent_test_hash_id {
     );
 
     return $recent_hash_id;
+}
+
+sub test_results {
+    my ( $self, $test_id, $new_results ) = @_;
+
+    if ( $new_results ) {
+        $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = 100,
+                    test_end_time = ?,
+                    results = ?
+                WHERE hash_id = ?
+                  AND progress < 100
+            ],
+            undef,
+            $self->format_time( time() ),
+            $new_results,
+            $test_id,
+        );
+    }
+
+    my $result = $self->select_test_results( $test_id );
+
+    eval {
+        $result->{params}  = decode_json( $result->{params} );
+
+        if (defined $result->{results}) {
+            $result->{results} = decode_json( $result->{results} );
+        } else {
+            $result->{results} = [];
+        }
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
+
+    return $result;
 }
 
 # Standard SQL, can be here
@@ -297,11 +354,7 @@ sub get_test_params {
 
     my $result;
     eval {
-        if ( utf8::is_utf8( $params_json ) ) {
-            $result = decode_json( encode_utf8( $params_json ) );
-        } else {
-            $result = decode_json( $params_json );
-        }
+        $result = decode_json( $params_json );
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
@@ -409,33 +462,6 @@ sub process_dead_test {
     $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
 }
 
-# A thin wrapper around DBI->connect to ensure similar behavior across database
-# engines.
-sub _new_dbh {
-    my ( $class, $data_source_name, $user, $password ) = @_;
-
-    if ( $user ) {
-        $log->noticef( "Connecting to database '%s' as user '%s'", $data_source_name, $user );
-    }
-    else {
-        $log->noticef( "Connecting to database '%s'", $data_source_name );
-    }
-
-    my $dbh = DBI->connect(
-        $data_source_name,
-        $user,
-        $password,
-        {
-            RaiseError => 1,
-            AutoCommit => 1,
-        }
-    );
-
-    $dbh->{AutoInactiveDestroy} = 1;
-
-    return $dbh;
-}
-
 sub _project_params {
     my ( $self, $params ) = @_;
 
@@ -475,11 +501,13 @@ sub _project_params {
     return \%projection;
 }
 
+# Take a params object with text strings and return an UTF-8 binary string
 sub _params_to_json_str {
     my ( $self, $params ) = @_;
 
     my $js = JSON::PP->new;
     $js->canonical( 1 );
+    $js->utf8( 1 );
 
     my $encoded_params = $js->encode( $params );
 
@@ -490,7 +518,7 @@ sub _params_to_json_str {
 
 Encode the params object into a JSON string. First a projection of some
 parameters is performed then all additional properties are kept.
-Returns a JSON string of a the using a union of the given hash and its
+Returns an UTF-8  binary string of the union of the given hash and its
 normalization using default values, see
 L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
 
@@ -508,7 +536,8 @@ sub encode_params {
 
 =head2 generate_fingerprint
 
-Returns a fingerprint of the hash passed in argument.
+Returns a fingerprint (an UTF-8 binary string) of the hash passed in argument
+(which contain text string).
 The fingerprint is computed after projecting the hash.
 Such fingerprint are usefull to find similar tests in the database.
 
@@ -519,7 +548,7 @@ sub generate_fingerprint {
 
     my $projected_params = $self->_project_params( $params );
     my $encoded_params = $self->_params_to_json_str( $projected_params );
-    my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
+    my $fingerprint = md5_hex( $encoded_params );
 
     return $fingerprint;
 }

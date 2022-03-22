@@ -45,6 +45,10 @@ sub DEMOLISH {
     $self->dbh->disconnect() if defined $self->dbhandle && $self->dbhandle->ping;
 }
 
+sub get_dbh_specific_attributes {
+    return {};
+}
+
 sub create_schema {
     my ( $self ) = @_;
 
@@ -144,7 +148,7 @@ sub test_progress {
                 q[
                     UPDATE test_results
                     SET progress = ?,
-                        test_start_time = DATETIME(?)
+                        test_start_time = ?
                     WHERE hash_id = ?
                       AND progress <> 100
                 ],
@@ -174,45 +178,29 @@ sub test_progress {
     return $result;
 }
 
-sub test_results {
-    my ( $self, $test_id, $new_results ) = @_;
+sub select_test_results {
+    my ( $self, $test_id ) = @_;
 
-    if ( $new_results ) {
-        $self->dbh->do(
-            q[
-                UPDATE test_results
-                SET progress = 100,
-                    test_end_time = datetime(?),
-                    results = ?
-                WHERE hash_id = ?
-                  AND progress < 100
-            ],
-            undef,
-            $self->format_time( time() ),
-            $new_results,
-            $test_id,
-        );
-    }
+    my ( $hrefs ) = $self->dbh->selectall_hashref(
+        q[
+            SELECT
+                id,
+                hash_id,
+                creation_time,
+                params,
+                results
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        'hash_id',
+        undef,
+        $test_id
+    );
 
-    my $result;
-    my ( $hrefs ) = $self->dbh->selectall_hashref( "SELECT id, hash_id, creation_time, params, results FROM test_results WHERE hash_id=?", 'hash_id', undef, $test_id );
-    $result            = $hrefs->{$test_id};
+    my $result = $hrefs->{$test_id};
 
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
         unless defined $result;
-
-    eval {
-        $result->{params}  = decode_json( $result->{params} );
-
-        if (defined $result->{results}) {
-            $result->{results} = decode_json( $result->{results} );
-        } else {
-            $result->{results} = [];
-        }
-    };
-
-    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
-        if $@;
 
     return $result;
 }
@@ -355,7 +343,7 @@ sub process_unfinished_tests_give_up {
         q[
             UPDATE test_results
             SET progress = 100,
-                test_end_time = DATETIME(?),
+                test_end_time = ?,
                 results = ?
             WHERE hash_id = ?
         ],

@@ -253,8 +253,17 @@ subtest 'API calls' => sub {
     };
 
     # TODO add_batch_job
-    # TODO get_batch_job_result
+    subtest 'get_batch_job_result' => sub {
+        subtest 'unknown batch' => sub {
+            dies_ok {
+                $backend->get_batch_job_result( { batch_id => 10 } );
+            };
+            my $res = $@;
+            is( $res->{error}, "Zonemaster::Backend::Error::ResourceNotFound", 'Correct error type' );
+        };
 
+        # TODO get_batch_job_result with known batch
+    };
 };
 
 # start a second test with IPv6 disabled

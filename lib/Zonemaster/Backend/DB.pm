@@ -390,6 +390,9 @@ sub get_batch_job_result {
         }
     }
 
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batch_id } )
+        if ( $result{nb_running} == 0 and $result{nb_finished} == 0 );
+
     return \%result;
 }
 

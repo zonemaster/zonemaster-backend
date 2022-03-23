@@ -1433,9 +1433,21 @@ An object with the following properties:
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+If the `batch_id` is undefined the following error is returned:
+
+```json
+{
+  "id": 1,
+  "error": {
+    "data": {
+      "batch_id": "10"
+    },
+    "message": "Unknown batch",
+    "code": -32603
+  },
+  "jsonrpc": "2.0"
+}
+```
 
 ## API method: `get_test_params`
 

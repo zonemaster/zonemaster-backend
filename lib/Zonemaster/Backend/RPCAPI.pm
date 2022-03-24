@@ -590,7 +590,8 @@ $json_schemas{add_batch_job} = {
         domains => {
             type => "array",
             additionalItems => 0,
-            items => $zm_validator->domain_name
+            items => $zm_validator->domain_name,
+            minItems => 1
         },
         test_params => joi->object->strict->props(
             ipv4 => joi->boolean,

@@ -131,7 +131,6 @@ sub add_api_user {
     return $result;
 }
 
-# Standard SQL, can be here
 sub create_new_test {
     my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
 
@@ -248,7 +247,6 @@ sub test_results {
     return $result;
 }
 
-# Standard SQL, can be here
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
@@ -276,7 +274,6 @@ sub create_new_batch_job {
     return $new_batch_id;
 }
 
-# Standard SQL, can be here
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
 
@@ -290,7 +287,6 @@ sub user_exists_in_db {
     return $id;
 }
 
-# Standard SQL, can be here
 sub add_api_user_to_db {
     my ( $self, $user_name, $api_key  ) = @_;
 
@@ -305,7 +301,6 @@ sub add_api_user_to_db {
     return $nb_inserted;
 }
 
-# Standard SQL, can be here
 sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
@@ -333,7 +328,6 @@ sub batch_exists_in_db {
     return $id;
 }
 
-# Standard SQL, can be here
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
@@ -355,7 +349,6 @@ sub get_test_request {
     return $result_id;
 }
 
-# Standard SQL, can be here
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 

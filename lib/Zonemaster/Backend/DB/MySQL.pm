@@ -211,6 +211,7 @@ sub get_test_history {
             {
                 id               => $h->{hash_id},
                 creation_time    => $h->{creation_time},
+                created_at       => $self->to_iso8601( $h->{creation_time} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall,
             }

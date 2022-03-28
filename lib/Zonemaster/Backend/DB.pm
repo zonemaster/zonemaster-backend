@@ -261,6 +261,8 @@ sub select_test_results {
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
         unless defined $result;
 
+    $result->{created_at} = $self->to_iso8601( $result->{creation_time} );
+
     return $result;
 }
 
@@ -652,6 +654,12 @@ sub undelegated {
 sub format_time {
     my ( $class, $time ) = @_;
     return strftime "%Y-%m-%d %H:%M:%S", gmtime( $time );
+}
+
+sub to_iso8601 {
+    my ( $class, $time ) = @_;
+    $time =~ s/^([^ ]+) (.*)$/$1T$2Z/;
+    return $time;
 }
 
 no Moose::Role;

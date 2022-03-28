@@ -156,6 +156,7 @@ my $rpcapi_app = sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
+            local $log->context->{rpc_method} = $content->{method};
             $res = $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
             my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
             Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");

@@ -59,10 +59,6 @@ sub patch_db_postgresql {
         $dbh->do( 'ALTER TABLE test_results ALTER COLUMN creation_time DROP DEFAULT' );
         $dbh->do( 'ALTER TABLE batch_jobs ALTER COLUMN creation_time DROP DEFAULT' );
 
-        # change "creation_time" type from TIMESTAMP to DATETIME
-        $dbh->do( 'ALTER TABLE test_results ALTER COLUMN creation_time SET DATE TYPE TIMESTAMP' );
-        $dbh->do( 'ALTER TABLE batch_jobs ALTER COLUMN creation_time SET DATE TYPE TIMESTAMP' );
-
         $dbh->commit();
     } catch {
         print( "Could not upgrade database:  " . $_ );

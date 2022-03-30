@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use Try::Tiny;
+
 use Zonemaster::Backend::Config;
 
 my $config = Zonemaster::Backend::Config->load_config();
@@ -26,15 +28,22 @@ sub patch_db_mysql {
     my $db = Zonemaster::Backend::DB::MySQL->from_config( $config );
     my $dbh = $db->dbh;
 
-    # update columns data type from TIMESTAMP to DATETIME and default
-    eval {
+    $dbh->{AutoCommit} = 0;
+
+    try {
+        # update columns data type from TIMESTAMP to DATETIME and default
         $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN creation_time DATETIME NOT NULL' );
         $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN test_start_time DATETIME DEFAULT NULL' );
         $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN test_end_time DATETIME DEFAULT NULL' );
 
         $dbh->do( 'ALTER TABLE batch_jobs MODIFY COLUMN creation_time DATETIME DEFAULT NULL' );
+
+        $dbh->commit();
+    } catch {
+        print( "Could not upgrade database:  " . $_ );
+
+        eval { $dbh->rollback() };
     };
-    print( "Could not update column data type:  " . $@ ) if ($@);
 }
 
 sub patch_db_postgresql {
@@ -43,19 +52,23 @@ sub patch_db_postgresql {
     my $db = Zonemaster::Backend::DB::PostgreSQL->from_config( $config );
     my $dbh = $db->dbh;
 
-    # remove default value for "creation_time"
-    eval {
+    $dbh->{AutoCommit} = 0;
+
+    try {
+        # remove default value for "creation_time"
         $dbh->do( 'ALTER TABLE test_results ALTER COLUMN creation_time DROP DEFAULT' );
         $dbh->do( 'ALTER TABLE batch_jobs ALTER COLUMN creation_time DROP DEFAULT' );
-    };
-    print( "Error while droping column default:  " . $@ ) if ($@);
 
-    # change "creation_time" type from TIMESTAMP to DATETIME
-    eval {
+        # change "creation_time" type from TIMESTAMP to DATETIME
         $dbh->do( 'ALTER TABLE test_results ALTER COLUMN creation_time SET DATE TYPE TIMESTAMP' );
         $dbh->do( 'ALTER TABLE batch_jobs ALTER COLUMN creation_time SET DATE TYPE TIMESTAMP' );
+
+        $dbh->commit();
+    } catch {
+        print( "Could not upgrade database:  " . $_ );
+
+        eval { $dbh->rollback() };
     };
-    print( "Could not update column data type:  " . $@ ) if ($@);
 }
 
 sub patch_db_sqlite {
@@ -64,48 +77,43 @@ sub patch_db_sqlite {
     my $db = Zonemaster::Backend::DB::SQLite->from_config( $config );
     my $dbh = $db->dbh;
 
+    $dbh->{AutoCommit} = 0;
+
     # since we change the default value for a column, the whole table needs to
     # be recreated
-    #  1. rename the "test_results" table to "test_results_old"
-    #  2. create the new "test_results" table
-    #  3. populate it with the values from "test_results_old"
-    #  4. remove old table and indexes
+    #  1. rename the table to "<table>_old"
+    #  2. recreate a clean table schema
+    #  3. populate it with the values from "<table>_old"
+    #  4. remove "<table>_old" and indexes
     #  5. recreate the indexes
-    eval {
+    try {
         $dbh->do('ALTER TABLE test_results RENAME TO test_results_old');
+        $dbh->do('ALTER TABLE batch_jobs RENAME TO batch_jobs_old');
 
-        # create the table
+        # create the tables
         $db->create_schema();
 
-        # populate it
+        # populate the tables
         $dbh->do('
             INSERT INTO test_results
             SELECT * FROM test_results_old
         ');
-
-        $dbh->do('DROP TABLE test_results_old');
-
-        # recreate indexes
-        $db->create_schema();
-    };
-    print( "Error while updating the 'test_results' table schema:  " . $@ ) if ($@);
-
-    eval {
-        $dbh->do('ALTER TABLE batch_jobs RENAME TO batch_jobs_old');
-
-        # create the table
-        $db->create_schema();
-
-        # populate it
         $dbh->do('
             INSERT INTO batch_jobs
             SELECT * FROM batch_jobs_old
         ');
 
+        # delete old tables
+        $dbh->do('DROP TABLE test_results_old');
         $dbh->do('DROP TABLE batch_jobs_old');
 
         # recreate indexes
         $db->create_schema();
+
+        $dbh->commit();
+    } catch {
+        print( "Error while upgrading database:  " . $_ );
+
+        eval { $dbh->rollback() };
     };
-    print( "Error while updating the 'batch_jobs' table schema:  " . $@ ) if ($@);
 }

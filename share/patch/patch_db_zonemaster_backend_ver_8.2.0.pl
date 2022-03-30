@@ -5,14 +5,19 @@ use Zonemaster::Backend::Config;
 
 my $config = Zonemaster::Backend::Config->load_config();
 
-if ( $config->DB_engine eq 'MySQL' ) {
-    patch_db_mysql();
+my %patch = (
+    mysql       => \&patch_db_mysql,
+    postgresql  => \&patch_db_postgresql,
+    sqlite      => \&patch_db_sqlite,
+);
+
+my $db_engine = $config->DB_engine;
+
+if ( $db_engine =~ /^(MySQL|PostgreSQL|SQLite)$/ ) {
+    $patch{ lc $db_engine }();
 }
-if ( $config->DB_engine eq 'PostgreSQL' ) {
-    patch_db_postgresql();
-}
-if ( $config->DB_engine eq 'SQLite' ) {
-    patch_db_sqlite();
+else {
+    die "Unknown database engine configured: $db_engine\n";
 }
 
 sub patch_db_mysql {

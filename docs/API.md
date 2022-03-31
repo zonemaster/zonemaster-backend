@@ -985,7 +985,7 @@ There are two different results depending on the test creation method:
 
 In the case of a test created with `start_domain_test`:
 
-* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
+* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: A normalized version `"params"` object sent to
@@ -994,7 +994,7 @@ In the case of a test created with `start_domain_test`:
 
 
 In the case of a test created with `add_batch_job`:
-* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued.
+* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: A normalized version `"params"` object sent to `add_batch_job`
@@ -1089,7 +1089,7 @@ The value of "frontend_params" is an object with the following properties:
 An object with the following properties:
 
 * `"id"` A *test id*.
-* `"creation_time"`: A *timestamp*. Time when the Test was enqueued.
+* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
 * `"overall_result"`: A string. It reflects the most severe problem level among
   the test results for the test. It has one of the following values:
   * `"ok"`, if there are only messages with *severity level* `"INFO"` or

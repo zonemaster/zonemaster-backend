@@ -67,9 +67,9 @@ sub create_schema {
             hash_id VARCHAR(16) NOT NULL,
             domain varchar(255) NOT NULL,
             batch_id integer NULL,
-            creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            test_start_time TIMESTAMP NULL DEFAULT NULL,
-            test_end_time TIMESTAMP NULL DEFAULT NULL,
+            creation_time DATETIME NOT NULL,
+            test_start_time DATETIME DEFAULT NULL,
+            test_end_time DATETIME DEFAULT NULL,
             priority integer DEFAULT 10,
             queue integer DEFAULT 0,
             progress integer DEFAULT 0,
@@ -121,7 +121,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
             id integer AUTO_INCREMENT PRIMARY KEY,
             username character varying(50) NOT NULL,
-            creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+            creation_time DATETIME NOT NULL
         ) ENGINE=InnoDB;
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
@@ -158,73 +158,6 @@ sub drop_tables {
     return;
 }
 
-sub test_progress {
-    my ( $self, $test_id, $progress ) = @_;
-
-    my $dbh = $self->dbh;
-    if ( $progress ) {
-        if ( $progress == 1 ) {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?,
-                        test_start_time = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $self->format_time( time() ),
-                $test_id,
-            );
-        }
-        else {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $test_id,
-            );
-        }
-    }
-
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    return $result;
-}
-
-sub select_test_results {
-    my ( $self, $test_id ) = @_;
-
-    my ( $hrefs ) = $self->dbh->selectall_hashref(
-        q[
-            SELECT
-                id,
-                hash_id,
-                CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
-                params,
-                results
-            FROM test_results
-            WHERE hash_id = ?
-        ],
-        'hash_id',
-        undef,
-        $test_id
-    );
-
-    my $result = $hrefs->{$test_id};
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $result;
-
-    return $result;
-}
-
 sub get_test_history {
     my ( $self, $p ) = @_;
 
@@ -242,7 +175,7 @@ sub get_test_history {
         SELECT
             id,
             hash_id,
-            CONVERT_TZ(`creation_time`, @@session.time_zone, '+00:00') AS creation_time,
+            creation_time,
             undelegated,
             results
         FROM test_results
@@ -356,24 +289,6 @@ sub add_batch_job {
     }
 
     return $batch_id;
-}
-
-sub process_unfinished_tests_give_up {
-    my ( $self, $result, $hash_id ) = @_;
-
-    $self->dbh->do(
-        q[
-            UPDATE test_results
-            SET progress = 100,
-                test_end_time = ?,
-                results = ?
-            WHERE hash_id = ?
-        ],
-        undef,
-        $self->format_time( time() ),
-        encode_json( $result ),
-        $hash_id,
-    );
 }
 
 sub get_relative_start_time {

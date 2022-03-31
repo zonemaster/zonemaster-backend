@@ -7,7 +7,6 @@ use 5.14.2;
 
 use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
-use Encode;
 use JSON::PP;
 use Try::Tiny;
 
@@ -65,9 +64,9 @@ sub create_schema {
                 hash_id VARCHAR(16) NOT NULL,
                 domain VARCHAR(255) NOT NULL,
                 batch_id integer,
-                creation_time timestamp without time zone DEFAULT NOW() NOT NULL,
-                test_start_time timestamp without time zone DEFAULT NULL,
-                test_end_time timestamp without time zone DEFAULT NULL,
+                creation_time TIMESTAMP NOT NULL,
+                test_start_time TIMESTAMP DEFAULT NULL,
+                test_end_time TIMESTAMP DEFAULT NULL,
                 priority integer DEFAULT 10,
                 queue integer DEFAULT 0,
                 progress integer DEFAULT 0,
@@ -108,7 +107,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                 id serial PRIMARY KEY,
                 username varchar(50) NOT NULL,
-                creation_time timestamp without time zone DEFAULT NOW() NOT NULL
+                creation_time TIMESTAMP NOT NULL
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
@@ -156,63 +155,6 @@ sub drop_tables {
     return;
 }
 
-sub test_progress {
-    my ( $self, $test_id, $progress ) = @_;
-
-    my $dbh = $self->dbh;
-    if ( $progress ) {
-        if ( $progress == 1 ) {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?,
-                        test_start_time = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $self->format_time( time() ),
-                $test_id,
-            );
-        }
-        else {
-            $dbh->do( "UPDATE test_results SET progress=? WHERE hash_id=? AND progress <> 100", undef, $progress, $test_id );
-        }
-    }
-
-    my ( $result ) = $dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
-
-    return $result;
-}
-
-sub select_test_results {
-    my ( $self, $test_id ) = @_;
-
-    my ( $hrefs ) = $self->dbh->selectall_hashref(
-        q[
-            SELECT
-                id,
-                hash_id,
-                creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time,
-                params,
-                results
-            FROM test_results
-            WHERE hash_id = ?
-        ],
-        'hash_id',
-        undef,
-        $test_id
-    );
-
-    my $result = $hrefs->{$test_id};
-
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
-        unless defined $result;
-
-    return $result;
-}
-
 sub get_test_history {
     my ( $self, $p ) = @_;
 
@@ -234,7 +176,7 @@ sub get_test_history {
             id,
             hash_id,
             undelegated,
-            creation_time at time zone current_setting('TIMEZONE') at time zone 'UTC' as creation_time
+            creation_time
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY id DESC
@@ -345,24 +287,6 @@ sub add_batch_job {
     }
 
     return $batch_id;
-}
-
-sub process_unfinished_tests_give_up {
-    my ( $self, $result, $hash_id ) = @_;
-
-    $self->dbh->do(
-        q[
-            UPDATE test_results
-            SET progress = 100,
-                test_end_time = ?,
-                results = ?
-            WHERE hash_id = ?
-        ],
-        undef,
-        $self->format_time( time() ),
-        encode_json($result),
-        $hash_id,
-    );
 }
 
 sub get_relative_start_time {

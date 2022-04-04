@@ -268,7 +268,7 @@ sub _check_domain {
         }
     }
 
-    if ( $domain !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+    if ( $domain !~ m{^[a-z0-9_./-]+$}i ) {
         return (
             $domain,
             {

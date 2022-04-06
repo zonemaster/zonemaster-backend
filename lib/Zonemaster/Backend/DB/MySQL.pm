@@ -67,9 +67,9 @@ sub create_schema {
             hash_id VARCHAR(16) NOT NULL,
             domain varchar(255) NOT NULL,
             batch_id integer NULL,
-            creation_time DATETIME NOT NULL,
-            test_start_time DATETIME DEFAULT NULL,
-            test_end_time DATETIME DEFAULT NULL,
+            created_at DATETIME NOT NULL,
+            started_at DATETIME DEFAULT NULL,
+            ended_at DATETIME DEFAULT NULL,
             priority integer DEFAULT 10,
             queue integer DEFAULT 0,
             progress integer DEFAULT 0,
@@ -121,7 +121,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
             id integer AUTO_INCREMENT PRIMARY KEY,
             username character varying(50) NOT NULL,
-            creation_time DATETIME NOT NULL
+            created_at DATETIME NOT NULL
         ) ENGINE=InnoDB;
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
@@ -175,7 +175,7 @@ sub get_test_history {
         SELECT
             id,
             hash_id,
-            creation_time,
+            created_at,
             undelegated,
             results
         FROM test_results
@@ -210,8 +210,8 @@ sub get_test_history {
             @results,
             {
                 id               => $h->{hash_id},
-                creation_time    => $h->{creation_time},
-                created_at       => $self->to_iso8601( $h->{creation_time} ),
+                creation_time    => $h->{created_at},
+                created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall,
             }
@@ -247,7 +247,7 @@ sub add_batch_job {
                     hash_id,
                     domain,
                     batch_id,
-                    creation_time,
+                    created_at,
                     priority,
                     queue,
                     fingerprint,
@@ -276,7 +276,7 @@ sub add_batch_job {
                 $undelegated,
             );
         }
-        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
@@ -297,7 +297,7 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
-            SELECT ? - test_start_time
+            SELECT ? - started_at
             FROM test_results
             WHERE hash_id = ?
         ],

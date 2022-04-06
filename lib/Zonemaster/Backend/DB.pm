@@ -150,7 +150,7 @@ sub create_new_test {
                 INSERT INTO test_results (
                     hash_id,
                     batch_id,
-                    creation_time,
+                    created_at,
                     priority,
                     queue,
                     fingerprint,
@@ -186,8 +186,8 @@ sub recent_test_hash_id {
             SELECT hash_id
             FROM test_results
             WHERE fingerprint = ?
-              AND ( test_start_time IS NULL
-                 OR test_start_time >= ? )
+              AND ( started_at IS NULL
+                 OR started_at >= ? )
         ],
         undef,
         $fingerprint,
@@ -207,7 +207,7 @@ sub test_progress {
                 q[
                     UPDATE test_results
                     SET progress = ?,
-                        test_start_time = ?
+                        started_at = ?
                     WHERE hash_id = ?
                       AND progress <> 100
                 ],
@@ -245,7 +245,7 @@ sub select_test_results {
             SELECT
                 id,
                 hash_id,
-                creation_time,
+                created_at AS creation_time,
                 params,
                 results
             FROM test_results
@@ -274,7 +274,7 @@ sub test_results {
             q[
                 UPDATE test_results
                 SET progress = 100,
-                    test_end_time = ?,
+                    ended_at = ?,
                     results = ?
                 WHERE hash_id = ?
                   AND progress < 100
@@ -311,7 +311,7 @@ sub create_new_batch_job {
     my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
             SELECT
                 batch_id,
-                batch_jobs.creation_time AS batch_creation_time
+                batch_jobs.created_at AS batch_created_at
             FROM
                 test_results
             JOIN batch_jobs
@@ -479,7 +479,7 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < ?
+            WHERE started_at < ?
             AND progress > 0
             AND progress < 100
             AND queue = ?" );
@@ -493,7 +493,7 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < ?
+            WHERE started_at < ?
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
@@ -524,7 +524,7 @@ sub force_end_test {
         q[
             UPDATE test_results
             SET progress = 100,
-                test_end_time = ?,
+                ended_at = ?,
                 results = ?
             WHERE hash_id = ?
         ],

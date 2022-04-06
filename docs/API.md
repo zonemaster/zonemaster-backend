@@ -214,14 +214,14 @@ A string matching one of the following regular expression:
 * `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
 
 The set of valid *language tags* is further constrained by the
-[LANGUAGE.locale] property.
+[`LANGUAGE.locale`][Config LANGUAGE.locale] property.
 * If the *language tag* is a five character string, it needs to match a *locale
-  tag* in [LANGUAGE.locale].
+  tag* in [`LANGUAGE.locale`][Config LANGUAGE.locale].
 * If the *language tag* is a two-character string, it needs to match the
-  first two characters of exactly one *locale tag* in [LANGUAGE.locale].
+  first two characters of exactly one *locale tag* in [`LANGUAGE.locale`][Config LANGUAGE.locale].
   (So that it is unambiguous which *locale tag* is matched.)
 
-E.g. if [LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
+E.g. if [`LANGUAGE.locale`][Config LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
 The use of `language tags` that include the country code is *deprecated*.
@@ -730,7 +730,8 @@ An object with the following properties:
 Enqueues a new *test*.
 
 If an identical *test* was already enqueued and hasn't been started or was enqueued
-less than [`age_reuse_previous_test`] seconds earlier, no new *test* is enqueued.
+less than [`ZONEMASTER.age_reuse_previous_test`][Config ZONEMASTER.age_reuse_previous_test]
+seconds earlier, no new *test* is enqueued.
 Instead the id for the already enqueued or run test is returned.
 
 *Tests* enqueued using this method are assigned a [*priority*][Priority] of 10.
@@ -802,8 +803,8 @@ A [*test id*][Test id].
 If a test has been requested with the same parameters (as listed below) not more
 than "reuse time" ago, then a new request will not trigger a new test. Instead
 the `test id` of the previous test will be returned. The default value of
-"reuse time" is 600 seconds, and can be set by the [`age_reuse_previous_test`]
-key in the configuration file.
+"reuse time" is 600 seconds, and can be set by the [`ZONEMASTER.age_reuse_previous_test`][Config
+ZONEMASTER.age_reuse_previous_test] key in the configuration file.
 
 The parameters that are compared when to determine if two requests are to be
 considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
@@ -1116,8 +1117,8 @@ An object with the following properties:
 In order to use the [`add_batch_job`][API add_batch_job] method a
 [*username*][Username] and its [*api key*][Api key] must be added by this method.
 
-This method is not available if [`enable_add_api_user`] is disabled
-(disabled by default). This method is not available unless the connection to
+This method is not available if [`RPCAPI.enable_add_api_user`][Config RPCAPI.enable_add_api_user]
+is disabled (disabled by default). This method is not available unless the connection to
 RPCAPI is over localhost (*administrative* method).
 
 
@@ -1244,8 +1245,8 @@ Trying to add a user when the method is disabled:
 Add a new *batch test* composed by a set of [*domain name*][Domain name] and a *params* object.
 All the domains will be tested using identical parameters.
 
-This method is not available if [`RPCAPI.enable_add_batch_job`] is disabled
-(enabled by default).
+This method is not available if [`RPCAPI.enable_add_batch_job`][Config RPCAPI.enable_add_batch_job]
+is disabled (enabled by default).
 
 A [*username*][Username] and its [*api key*][Api key] can be added with the
 [`add_api_user`][API add_api_user] method. A [*username*][Username] can only have
@@ -1531,7 +1532,6 @@ The `"params"` object sent to [`start_domain_test`][API start_domain_test] or
 [ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
 [JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
 [JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
-[LANGUAGE.locale]:              Configuration.md#locale
 [Language tag]:                 #language-tag
 [Name server]:                  #name-server
 [Non-negative integer]:         #non-negative-integer
@@ -1549,8 +1549,10 @@ The `"params"` object sent to [`start_domain_test`][API start_domain_test] or
 [Timestamp]:                    #timestamp
 [Username]:                     #username
 [Validation error data]:        #validation-error-data
-[`RPCAPI.enable_add_api_user`]: Configuration.md#enable_add_api_user
-[`RPCAPI.enable_add_batch_job`]: Configuration.md#enable_add_batch_job
-[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
 [net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+
+[Config LANGUAGE.locale]:                    Configuration.md#locale
+[Config RPCAPI.enable_add_api_user]:         Configuration.md#enable_add_api_user
+[Config RPCAPI.enable_add_batch_job]:        Configuration.md#enable_add_batch_job
+[Config ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test

@@ -792,9 +792,6 @@ An object with the following properties:
 * `"language"`: A [*language tag*][Language tag], optional, used for validation error messages
   translation, if not provided messages will be untranslated.
 
-> TODO: Clarify the purpose of each `"params"` property.
->
-
 
 #### `"result"`
 

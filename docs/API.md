@@ -727,14 +727,7 @@ An object with the following properties:
 
 ## API method: `start_domain_test`
 
-Enqueues a new *test*.
-
-If an identical *test* was already enqueued and hasn't been started or was enqueued
-less than [`ZONEMASTER.age_reuse_previous_test`][ZONEMASTER.age_reuse_previous_test]
-seconds earlier, no new *test* is enqueued.
-Instead the id for the already enqueued or run test is returned.
-
-*Tests* enqueued using this method are assigned a [*priority*][Priority] of 10.
+Enqueues a new *test* and returns the [*test id*][Test id] of the *test*.
 
 Example request:
 ```json

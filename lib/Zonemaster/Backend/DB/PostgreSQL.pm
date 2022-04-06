@@ -73,7 +73,9 @@ sub create_schema {
                 fingerprint varchar(32),
                 params json NOT NULL,
                 undelegated integer NOT NULL DEFAULT 0,
-                results json
+                results json,
+
+                UNIQUE (hash_id)
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -120,7 +122,9 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY,
                 username VARCHAR(128),
-                api_key VARCHAR(512)
+                api_key VARCHAR(512),
+
+                UNIQUE (username)
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );

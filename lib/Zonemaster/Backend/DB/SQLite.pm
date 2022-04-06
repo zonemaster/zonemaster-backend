@@ -72,7 +72,9 @@ sub create_schema {
                  fingerprint character varying(32),
                  params text NOT NULL,
                  results text DEFAULT NULL,
-                 undelegated boolean NOT NULL DEFAULT false
+                 undelegated boolean NOT NULL DEFAULT false,
+
+                 UNIQUE (hash_id)
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -114,7 +116,9 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username varchar(128),
-                api_key varchar(512)
+                api_key varchar(512),
+
+                UNIQUE (username)
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );

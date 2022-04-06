@@ -214,14 +214,14 @@ A string matching one of the following regular expression:
 * `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
 
 The set of valid *language tags* is further constrained by the
-[`LANGUAGE.locale`][Config LANGUAGE.locale] property.
+[`LANGUAGE.locale`][LANGUAGE.locale] property.
 * If the *language tag* is a five character string, it needs to match a *locale
-  tag* in [`LANGUAGE.locale`][Config LANGUAGE.locale].
+  tag* in [`LANGUAGE.locale`][LANGUAGE.locale].
 * If the *language tag* is a two-character string, it needs to match the
-  first two characters of exactly one *locale tag* in [`LANGUAGE.locale`][Config LANGUAGE.locale].
+  first two characters of exactly one *locale tag* in [`LANGUAGE.locale`][LANGUAGE.locale].
   (So that it is unambiguous which *locale tag* is matched.)
 
-E.g. if [`LANGUAGE.locale`][Config LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
+E.g. if [`LANGUAGE.locale`][LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
 The use of `language tags` that include the country code is *deprecated*.
@@ -328,7 +328,7 @@ with this type, it returns the following error message:
 ```
 The error code is "009" (as above) if method [`start_domain_test`][API start_domain_test]
 was requested.
-Instead it will be "015" if method [`add_batch_job`][API add_batch_job] is requested.
+Instead it will be "015" if method [`add_batch_job`][add_batch_job] is requested.
 
 
 ### Progress percentage
@@ -730,7 +730,7 @@ An object with the following properties:
 Enqueues a new *test*.
 
 If an identical *test* was already enqueued and hasn't been started or was enqueued
-less than [`ZONEMASTER.age_reuse_previous_test`][Config ZONEMASTER.age_reuse_previous_test]
+less than [`ZONEMASTER.age_reuse_previous_test`][ZONEMASTER.age_reuse_previous_test]
 seconds earlier, no new *test* is enqueued.
 Instead the id for the already enqueued or run test is returned.
 
@@ -800,8 +800,9 @@ A [*test id*][Test id].
 If a test has been requested with the same parameters (as listed below) not more
 than "reuse time" ago, then a new request will not trigger a new test. Instead
 the `test id` of the previous test will be returned. The default value of
-"reuse time" is 600 seconds, and can be set by the [`ZONEMASTER.age_reuse_previous_test`][Config
-ZONEMASTER.age_reuse_previous_test] key in the configuration file.
+"reuse time" is 600 seconds, and can be set by the
+[`ZONEMASTER.age_reuse_previous_test`][ZONEMASTER.age_reuse_previous_test] key
+in the configuration file.
 
 The parameters that are compared when to determine if two requests are to be
 considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
@@ -915,8 +916,8 @@ Example request:
 }
 ```
 
-The `id` parameter must match the `result` in the response to a [`start_domain_test`][API
-start_domain_test] call, and that test must have been completed.
+The `id` parameter must match the `result` in the response to a [`start_domain_test`][start_domain_test]
+call, and that test must have been completed.
 
 Example response:
 ```json
@@ -988,17 +989,17 @@ An object with the following properties:
   `start_domain_test` when the *test* was started.
 * `"results"`: A list of [*test result*][Test result] objects.
 
-If the test was created by [`start_domain_test`][API start_domain_test] then `"params"`
-is a normalized version `"params"` object sent to [`start_domain_test`][API
-start_domain_test] when the *test* was created.
+If the test was created by [`start_domain_test`][start_domain_test] then `"params"`
+is a normalized version `"params"` object sent to [`start_domain_test`][start_domain_test]
+when the *test* was created.
 
-If the test was created with [`add_batch_job`][API add_batch_job] then `"params"`
+If the test was created with [`add_batch_job`][add_batch_job] then `"params"`
 is a normalized version of an object created from the following parts:
-* The keys from the`"test_params"` object sent to [`add_batch_job`][API add_batch_job]
+* The keys from the`"test_params"` object sent to [`add_batch_job`][add_batch_job]
   when the *test* was created as part of a batch.
 * The `"domain"` key holding the specific [*domain name*][Domain name] for this
   test result from the `"domains"` object included in the call to
-  [`add_batch_job`][API add_batch_job].
+  [`add_batch_job`][add_batch_job].
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -1065,7 +1066,7 @@ Example response:
 ### Undelegated and delegated
 
 A test is considered to be `"delegated"` below if the test was started, by
-[`start_domain_test`][API start_domain_test] or [`add_batch_job`][API add_batch_job]
+[`start_domain_test`][start_domain_test] or [`add_batch_job`][add_batch_job]
 without specifying neither `"nameserver"` nor `"ds_info"`. Else it is considered to
 be `"undelegated"`.
 
@@ -1111,10 +1112,10 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
-In order to use the [`add_batch_job`][API add_batch_job] method a
+In order to use the [`add_batch_job`][add_batch_job] method a
 [*username*][Username] and its [*api key*][Api key] must be added by this method.
 
-This method is not available if [`RPCAPI.enable_add_api_user`][Config RPCAPI.enable_add_api_user]
+This method is not available if [`RPCAPI.enable_add_api_user`][RPCAPI.enable_add_api_user]
 is disabled (disabled by default). This method is not available unless the connection to
 RPCAPI is over localhost (*administrative* method).
 
@@ -1242,11 +1243,11 @@ Trying to add a user when the method is disabled:
 Add a new *batch test* composed by a set of [*domain name*][Domain name] and a *params* object.
 All the domains will be tested using identical parameters.
 
-This method is not available if [`RPCAPI.enable_add_batch_job`][Config RPCAPI.enable_add_batch_job]
+This method is not available if [`RPCAPI.enable_add_batch_job`][RPCAPI.enable_add_batch_job]
 is disabled (enabled by default).
 
 A [*username*][Username] and its [*api key*][Api key] can be added with the
-[`add_api_user`][API add_api_user] method. A [*username*][Username] can only have
+[`add_api_user`][add_api_user] method. A [*username*][Username] can only have
 one un-finished *batch* at a time.
 
 *Tests* enqueud using this method are assigned a [*priority*][Priority] of 5.
@@ -1502,8 +1503,8 @@ An object with the property:
 
 #### `"result"`
 
-The `"params"` object sent to [`start_domain_test`][API start_domain_test] or
-[`add_batch_job`][API add_batch_job] when the *test* was started.
+The `"params"` object sent to [`start_domain_test`][start_domain_test] or
+[`add_batch_job`][add_batch_job] when the *test* was started.
 
 
 #### `"error"`
@@ -1512,44 +1513,42 @@ The `"params"` object sent to [`start_domain_test`][API start_domain_test] or
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[API add_batch_job]:            #api-method-add_batch_job
-[API add_api_user]:             #api-method-add_api_user
-[API start_domain_test]:        #api-method-start_domain_test
-
-[API key]:                      #api-key
-[Batch id]:                     #batch-id
-[Client id]:                    #client-id
-[Client version]:               #client-version
-[Domain name]:                  #domain-name
-[DS info]:                      #ds-info
-[Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
-[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
-[IP address]:                   #ip-address
-[ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-[ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
-[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
-[JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
-[Language tag]:                 #language-tag
-[Name server]:                  #name-server
-[Non-negative integer]:         #non-negative-integer
-[Priority]:                     #priority
-[Privilege levels]:             #privilege-levels
-[Profile name]:                 #profile-name
-[Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
-[Progress percentage]:          #progress-percentage
-[Queue]:                        #queue
-[RFC 5952]:                     https://datatracker.ietf.org/doc/html/rfc5952
-[Severity level]:               #severity-level
-[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
-[Test id]:                      #test-id
-[Test result]:                  #test-result
-[Timestamp]:                    #timestamp
-[Username]:                     #username
-[Validation error data]:        #validation-error-data
-[net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
-[net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
-
-[Config LANGUAGE.locale]:                    Configuration.md#locale
-[Config RPCAPI.enable_add_api_user]:         Configuration.md#enable_add_api_user
-[Config RPCAPI.enable_add_batch_job]:        Configuration.md#enable_add_batch_job
-[Config ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test
+[add_api_user]:                       #api-method-add_api_user
+[add_batch_job]:                      #api-method-add_batch_job
+[API key]:                            #api-key
+[Batch id]:                           #batch-id
+[Client id]:                          #client-id
+[Client version]:                     #client-version
+[Delegation Signer]:                  https://datatracker.ietf.org/doc/html/rfc4034#section-5
+[Domain name]:                        #domain-name
+[Dot-decimal notation]:               https://en.wikipedia.org/wiki/Dot-decimal_notation
+[DS info]:                            #ds-info
+[IP address]:                         #ip-address
+[ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[JSON Pointer]:                       https://datatracker.ietf.org/doc/html/rfc6901
+[JSON-RPC 2.0]:                       https://www.jsonrpc.org/specification
+[Language tag]:                       #language-tag
+[LANGUAGE.locale]:                    Configuration.md#locale
+[Name server]:                        #name-server
+[net.ipv4]:                           https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
+[net.ipv6]:                           https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+[Non-negative integer]:               #non-negative-integer
+[Priority]:                           #priority
+[Privilege levels]:                   #privilege-levels
+[Profile name]:                       #profile-name
+[Profile sections]:                   Configuration.md#public-profiles-and-private-profiles-sections
+[Progress percentage]:                #progress-percentage
+[Queue]:                              #queue
+[RFC 5952]:                           https://datatracker.ietf.org/doc/html/rfc5952
+[RPCAPI.enable_add_api_user]:         Configuration.md#enable_add_api_user
+[RPCAPI.enable_add_batch_job]:        Configuration.md#enable_add_batch_job
+[Severity Level Definitions]:         https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
+[Severity level]:                     #severity-level
+[start_domain_test]:                  #api-method-start_domain_test
+[Test id]:                            #test-id
+[Test result]:                        #test-result
+[Timestamp]:                          #timestamp
+[Username]:                           #username
+[Validation error data]:              #validation-error-data
+[ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test

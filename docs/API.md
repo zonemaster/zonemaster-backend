@@ -326,8 +326,9 @@ with this type, it returns the following error message:
     }
 }
 ```
-The error code is "009" (as above) if method [start_domain_test] was requested.
-Instead it will be "015" if method [add_batch_job] is requested.
+The error code is "009" (as above) if method [`start_domain_test`][API start_domain_test]
+was requested.
+Instead it will be "015" if method [`add_batch_job`][API add_batch_job] is requested.
 
 
 ### Progress percentage
@@ -916,8 +917,8 @@ Example request:
 }
 ```
 
-The `id` parameter must match the `result` in the response to a `start_domain_test` call,
-and that test must have been completed.
+The `id` parameter must match the `result` in the response to a [`start_domain_test`][API
+start_domain_test] call, and that test must have been completed.
 
 Example response:
 ```json
@@ -989,16 +990,17 @@ An object with the following properties:
   `start_domain_test` when the *test* was started.
 * `"results"`: A list of [*test result*][Test result] objects.
 
-If the test was created by `start_domain_test` then `"params"` is a normalized
-version `"params"` object sent to `start_domain_test` when the *test* was
-created.
+If the test was created by [`start_domain_test`][API start_domain_test] then `"params"`
+is a normalized version `"params"` object sent to [`start_domain_test`][API
+start_domain_test] when the *test* was created.
 
-If the test was created with `add_batch_job` then `"params"` is a normalized
-version of an object created from the following parts:
-* The keys from the`"test_params"` object sent to `add_batch_job` when the *test*
-  was created as part of a batch.
+If the test was created with [`add_batch_job`][API add_batch_job] then `"params"`
+is a normalized version of an object created from the following parts:
+* The keys from the`"test_params"` object sent to [`add_batch_job`][API add_batch_job]
+  when the *test* was created as part of a batch.
 * The `"domain"` key holding the specific [*domain name*][Domain name] for this
-  test result from the `"domains"` object included in the call to `add_batch_job`.
+  test result from the `"domains"` object included in the call to
+  [`add_batch_job`][API add_batch_job].
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -1065,8 +1067,9 @@ Example response:
 ### Undelegated and delegated
 
 A test is considered to be `"delegated"` below if the test was started, by
-`start_domain_test` or `add_batch_job` without specifying neither `"nameserver"`
-nor `"ds_info"`. Else it is considered to be `"undelegated"`.
+[`start_domain_test`][API start_domain_test] or [`add_batch_job`][API add_batch_job]
+without specifying neither `"nameserver"` nor `"ds_info"`. Else it is considered to
+be `"undelegated"`.
 
 #### `"params"`
 
@@ -1110,10 +1113,10 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
-In order to use the [`add_batch_job`](#API-method-add_batch_job) method a
+In order to use the [`add_batch_job`][API add_batch_job] method a
 [*username*][Username] and its [*api key*][Api key] must be added by this method.
 
-This method is not available if [`RPCAPI.enable_add_api_user`] is disabled
+This method is not available if [`enable_add_api_user`] is disabled
 (disabled by default). This method is not available unless the connection to
 RPCAPI is over localhost (*administrative* method).
 
@@ -1245,7 +1248,7 @@ This method is not available if [`RPCAPI.enable_add_batch_job`] is disabled
 (enabled by default).
 
 A [*username*][Username] and its [*api key*][Api key] can be added with the
-[`add_api_user`](#API-method-add_api_user) method. A [*username*][Username] can only have
+[`add_api_user`][API add_api_user] method. A [*username*][Username] can only have
 one un-finished *batch* at a time.
 
 *Tests* enqueud using this method are assigned a [*priority*][Priority] of 5.
@@ -1501,7 +1504,8 @@ An object with the property:
 
 #### `"result"`
 
-The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *test* was started.
+The `"params"` object sent to [`start_domain_test`][API start_domain_test] or
+[`add_batch_job`][API add_batch_job] when the *test* was started.
 
 
 #### `"error"`
@@ -1510,7 +1514,10 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Add_batch_job]:                #api-method-add_batch_job
+[API add_batch_job]:            #api-method-add_batch_job
+[API add_api_user]:             #api-method-add_api_user
+[API start_domain_test]:        #api-method-start_domain_test
+
 [API key]:                      #api-key
 [Batch id]:                     #batch-id
 [Client id]:                    #client-id
@@ -1537,7 +1544,6 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 [RFC 5952]:                     https://datatracker.ietf.org/doc/html/rfc5952
 [Severity level]:               #severity-level
 [Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
-[Start_domain_test]:            #api-method-start_domain_test
 [Test id]:                      #test-id
 [Test result]:                  #test-result
 [Timestamp]:                    #timestamp

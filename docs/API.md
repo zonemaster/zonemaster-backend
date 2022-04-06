@@ -981,26 +981,23 @@ An object with the following properties:
 
 #### `"result"`
 
-There are two different results depending on the test creation method:
-
-In the case of a test created with `start_domain_test`:
-
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
 * `"id"`: An integer.
 * `"hash_id"`: A *test id*. The *test* in question.
-* `"params"`: A normalized version `"params"` object sent to
+* `"params"`: See below.
   `start_domain_test` when the *test* was started.
 * `"results"`: A list of *test result* objects.
 
+If the test was created by `start_domain_test` then `"params"` is a normalized
+version `"params"` object sent to `start_domain_test` when the *test* was
+created.
 
-In the case of a test created with `add_batch_job`:
-* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
-* `"id"`: An integer.
-* `"hash_id"`: A *test id*. The *test* in question.
-* `"params"`: A normalized version `"params"` object sent to `add_batch_job`
-  when the *test* was started.
-* `"results"`: the result is a list of *test id* corresponding to each tested
-  domain.
+If the test was created with `add_batch_job` then `"params"` is normalized
+version of an object created from the following parts:
+* The keys from the`"test_params"` object sent to `add_batch_job` when the *test*
+  was created as part of a batch.
+* The `"domain"` key holding the specific domain name for this test result from
+  the `"domains"` object included in the call to `add_batch_job`.
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`

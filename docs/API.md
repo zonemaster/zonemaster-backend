@@ -690,7 +690,7 @@ Example response:
 An object with the properties:
 
 * `"domain"`: A [*domain name*][Domain name], required. The domain whose DNS records are requested.
-* `"language"`: A [Language Tag], optional, used for validation error messages
+* `"language"`: A [*language tag*][Language tag], optional, used for validation error messages
   translation, if not provided messages will be untranslated (in English).
 
 #### `"result"`
@@ -789,7 +789,7 @@ An object with the following properties:
 * `"client_version"`: A [*client version*][Client version], optional. (default: unset). Used to monitor which client use the API
 * `"priority"`: A [*priority*][Priority], optional. (default: `10`)
 * `"queue"`: A [*queue*][Queue], optional. (default: `0`)
-* `"language"`: A [Language Tag], optional, used for validation error messages
+* `"language"`: A [*language tag*][Language tag], optional, used for validation error messages
   translation, if not provided messages will be untranslated.
 
 > TODO: Clarify the purpose of each `"params"` property.

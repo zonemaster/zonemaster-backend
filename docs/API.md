@@ -342,7 +342,7 @@ An integer ranging from 0 (not started) to 100 (finished).
 
 Basic data type: number (integer)
 
-This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
+This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the [`ZONEMASTER.lock_on_queue`][ZONEMASTER.lock_on_queue] parameter of the backend_config.ini file.
 The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
 
 
@@ -1545,3 +1545,4 @@ The `"params"` object sent to [`start_domain_test`][start_domain_test] or
 [Username]:                           #username
 [Validation error data]:              #validation-error-data
 [ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test
+[ZONEMASTER.lock_on_queue]:           Configuration.md#lock_on_queue

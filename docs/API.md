@@ -1284,7 +1284,7 @@ An object with the following properties:
 
 * `"username"`: A *username*, required. The name of the account of an authorized user.
 * `"api_key"`: An *api key*, required. The api_key associated with the username.
-* `"domains"`: A list of *domain names*, required. The domains to be tested.
+* `"domains"`: A non-empty list of *domain names*, required. The domains to be tested.
 * `"test_params"`: As described below, optional. (default: `{}`)
 
 The value of `"test_params"` is an object with the following properties:
@@ -1343,6 +1343,25 @@ Trying to add a batch when wrong *username* or *api key* is used:
   },
   "id": 1,
   "jsonrpc": "2.0"
+}
+```
+
+Trying to add a batch with an empty list of domains:
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "error": {
+    "data": [
+      {
+        "message": "Not enough items: 0/1.",
+        "path": "/domains"
+      }
+    ],
+    "message": "Invalid method parameter(s).",
+    "code": "-32602"
+  }
 }
 ```
 
@@ -1411,9 +1430,21 @@ An object with the following properties:
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+If the `batch_id` is undefined the following error is returned:
+
+```json
+{
+  "id": 1,
+  "error": {
+    "data": {
+      "batch_id": "10"
+    },
+    "message": "Unknown batch",
+    "code": -32603
+  },
+  "jsonrpc": "2.0"
+}
+```
 
 ## API method: `get_test_params`
 

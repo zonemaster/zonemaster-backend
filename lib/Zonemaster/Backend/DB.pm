@@ -102,15 +102,6 @@ sub dbh {
     return $self->dbhandle;
 }
 
-sub user_exists {
-    my ( $self, $user ) = @_;
-
-    die Zonemaster::Backend::Error::Internal->new( reason => "username not provided to the method user_exists")
-        unless ( $user );
-
-    return $self->user_exists_in_db( $user );
-}
-
 sub add_api_user {
     my ( $self, $username, $api_key ) = @_;
 
@@ -118,7 +109,7 @@ sub add_api_user {
         unless ( $username && $api_key );
 
     die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
-        if ( $self->user_exists( $username ) );
+        if ( $self->user_exists_in_db( $username ) );
 
     my $result = $self->add_api_user_to_db( $username, $api_key );
 
@@ -128,7 +119,6 @@ sub add_api_user {
     return $result;
 }
 
-# Standard SQL, can be here
 sub create_new_test {
     my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
 
@@ -312,7 +302,6 @@ sub test_results {
     return $result;
 }
 
-# Standard SQL, can be here
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
@@ -340,7 +329,6 @@ sub create_new_batch_job {
     return $new_batch_id;
 }
 
-# Standard SQL, can be here
 sub user_exists_in_db {
     my ( $self, $user ) = @_;
 
@@ -354,7 +342,6 @@ sub user_exists_in_db {
     return $id;
 }
 
-# Standard SQL, can be here
 sub add_api_user_to_db {
     my ( $self, $user_name, $api_key  ) = @_;
 
@@ -369,7 +356,6 @@ sub add_api_user_to_db {
     return $nb_inserted;
 }
 
-# Standard SQL, can be here
 sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
@@ -384,7 +370,19 @@ sub user_authorized {
     return $id;
 }
 
-# Standard SQL, can be here
+sub batch_exists_in_db {
+    my ( $self, $batch_id ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        q[ SELECT id FROM batch_jobs WHERE id = ? ],
+        undef,
+        $batch_id
+    );
+
+    return $id;
+}
+
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
@@ -406,7 +404,6 @@ sub get_test_request {
     return $result_id;
 }
 
-# Standard SQL, can be here
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
@@ -430,6 +427,9 @@ sub get_test_params {
 # Standatd SQL, can be here
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batch_id } )
+        unless defined $self->batch_exists_in_db( $batch_id );
 
     my $dbh = $self->dbh;
 

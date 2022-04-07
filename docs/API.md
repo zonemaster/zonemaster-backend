@@ -6,43 +6,43 @@
 * [Protocol](#protocol)
   * [Deviations from JSON-RPC 2.0](#deviations-from-json-rpc-20)
   * [Notes on the JSON-RPC 2.0 implementation](#notes-on-the-json-rpc-20-implementation)
-* [Request handling](#Request-handling)
-* [Error reporting](#Error-reporting)
-* [Privilege levels](#Privilege-levels)
-* [Data types](#Data-types)
-  * [API key](#API-key)
-  * [Batch id](#Batch-id)
-  * [Client id](#Client-id)
-  * [Client version](#Client-version)
-  * [Domain name](#Domain-name)
-  * [DS info](#DS-info)
-  * [IP address](#IP-address)
-  * [Language tag](#Language-tag)
-  * [Name server](#Name-server)
-  * [Non-negative integer](#Non-negative-integer)
-  * [Priority](#Priority)
-  * [Profile name](#Profile-name)
-  * [Progress percentage](#Progress-percentage)
-  * [Queue](#Queue)
-  * [Severity level](#Severity-level)
-  * [Test id](#Test-id)
-  * [Test result](#Test-result)
-  * [Timestamp](#Timestamp)
-  * [Username](#Username)
-* [API method: version_info](#API-method-version_info)
-* [API method: profile_names](#API-method-profile_names)
-* [API method: get_language_tags](#API-method-get_language_tags)
-* [API method: get_host_by_name](#API-method-get_host_by_name)
-* [API method: get_data_from_parent_zone](#API-method-get_data_from_parent_zone)
-* [API method: start_domain_test](#API-method-start_domain_test)
-* [API method: test_progress](#API-method-test_progress)
-* [API method: get_test_results](#API-method-get_test_results)
-* [API method: get_test_history](#API-method-get_test_history)
+* [Request handling](#request-handling)
+* [Error reporting](#error-reporting)
+* [Privilege levels](#privilege-levels)
+* [Data types](#data-types)
+  * [API key](#api-key)
+  * [Batch id](#batch-id)
+  * [Client id](#client-id)
+  * [Client version](#client-version)
+  * [Domain name](#domain-name)
+  * [DS info](#dS-info)
+  * [IP address](#ip-address)
+  * [Language tag](#language-tag)
+  * [Name server](#name-server)
+  * [Non-negative integer](#non-negative-integer)
+  * [Priority](#priority)
+  * [Profile name](#profile-name)
+  * [Progress percentage](#progress-percentage)
+  * [Queue](#queue)
+  * [Severity level](#severity-level)
+  * [Test id](#test-id)
+  * [Test result](#test-result)
+  * [Timestamp](#timestamp)
+  * [Username](#username)
+* [API method: version_info](#api-method-version_info)
+* [API method: profile_names](#api-method-profile_names)
+* [API method: get_language_tags](#api-method-get_language_tags)
+* [API method: get_host_by_name](#api-method-get_host_by_name)
+* [API method: get_data_from_parent_zone](#api-method-get_data_from_parent_zone)
+* [API method: start_domain_test](#api-method-start_domain_test)
+* [API method: test_progress](#api-method-test_progress)
+* [API method: get_test_results](#api-method-get_test_results)
+* [API method: get_test_history](#api-method-get_test_history)
   * [Undelegated and delegated](#undelegated-and-delegated)
-* [API method: add_api_user](#API-method-add_api_user)
-* [API method: add_batch_job](#API-method-add_batch_job)
-* [API method: get_batch_job_result](#API-method-get_batch_job_result)
-* [API method: get_test_params](#API-method-get_test_params)
+* [API method: add_api_user](#api-method-add_api_user)
+* [API method: add_batch_job](#api-method-add_batch_job)
+* [API method: get_batch_job_result](#api-method-get_batch_job_result)
+* [API method: get_test_params](#api-method-get_test_params)
 
 
 ## Purpose
@@ -113,7 +113,7 @@ All error states that occur after the RPC method has been identified are reporte
 This API provides three classes of methods:
 
 * *Unrestricted* methods are available to anyone with access to the API.
-* *Authenticated* methods have parameters for *username* and *api key*
+* *Authenticated* methods have parameters for [*username*][Username] and [*api key*][API key]
   credentials.
 * *Administrative* methods require that the connection to the API is opened from
   localhost (`127.0.0.1` or `::1`).
@@ -214,14 +214,14 @@ A string matching one of the following regular expression:
 * `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
 
 The set of valid *language tags* is further constrained by the
-[LANGUAGE.locale] property.
+[`LANGUAGE.locale`][LANGUAGE.locale] property.
 * If the *language tag* is a five character string, it needs to match a *locale
-  tag* in [LANGUAGE.locale].
+  tag* in [`LANGUAGE.locale`][LANGUAGE.locale].
 * If the *language tag* is a two-character string, it needs to match the
-  first two characters of exactly one *locale tag* in [LANGUAGE.locale].
+  first two characters of exactly one *locale tag* in [`LANGUAGE.locale`][LANGUAGE.locale].
   (So that it is unambiguous which *locale tag* is matched.)
 
-E.g. if [LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
+E.g. if [`LANGUAGE.locale`][LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
 The use of `language tags` that include the country code is *deprecated*.
@@ -253,8 +253,8 @@ Basic data type: object
 
 Properties:
 
-* `"ns"`: A *domain name*, required.
-* `"ip"`: An *IP address* (IPv4 or IPv6), optional. (default: unset)
+* `"ns"`: A [*domain name*][Domain name], required.
+* `"ip"`: An [*IP address*][IP address] (IPv4 or IPv6), optional. (default: unset)
 
 
 ### Non-negative integer
@@ -270,7 +270,7 @@ Basic data type: number (integer)
 
 This parameter is any integer that will be used by The Zonemaster Test Agents to sort the test requests from highest to lowest priority.
 This parameter will typically be used in a setup where a GUI will send requests to the RPC API and would like to get response as soon as possible while at the same time using the idle time for background batch testing.
-The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few secods in a typical installation with up to 30 parallel zonemaster processes allowed)
+The drawback of this setup will be that the GUI will have to wait for at least one background processing slot to become free (would be a few seconds in a typical installation with up to 30 parallel zonemaster processes allowed)
 
 ### Profile name
 
@@ -326,8 +326,9 @@ with this type, it returns the following error message:
     }
 }
 ```
-The error code is "009" (as above) if method [start_domain_test] was requested.
-Instead it will be "015" if method [add_batch_job] is requested.
+The error code is "009" (as above) if method [`start_domain_test`][API start_domain_test]
+was requested.
+Instead it will be "015" if method [`add_batch_job`][add_batch_job] is requested.
 
 
 ### Progress percentage
@@ -341,7 +342,7 @@ An integer ranging from 0 (not started) to 100 (finished).
 
 Basic data type: number (integer)
 
-This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the *lock_on_queue* parameter of the [ZONEMASTER] section of the backend_config.ini file.
+This parameter allows an optional separation of testing in the same database. The default value for the queue is 0. It is closely related to the [`ZONEMASTER.lock_on_queue`][ZONEMASTER.lock_on_queue] parameter of the backend_config.ini file.
 The typical use case for this parameter would be a setup with several separate Test Agents running on separate physical or virtual machines each one dedicated to a specific task, for example queue 0 for frontend tests and queue 1 dedicated to batch testing. Running several Test Agents on the same machine is currently not supported.
 
 
@@ -383,11 +384,11 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 
 * `"module"`: a string. The *test module* that produced the result.
 * `"message"`: a string. A human-readable *message* describing that particular result.
-* `"level"`: a *severity level*. The severity of the message.
+* `"level"`: a [*severity level*][Severity level]. The severity of the message.
 
 Sometimes additional keys are present.
 
-* `"ns"`: a *domain name*. The name server used by the *test module*.
+* `"ns"`: a [*domain name*][Domain name]. The name server used by the *test module*.
 This key is added when the module name is `"NAMESERVER"`.
 
 
@@ -489,7 +490,7 @@ Example response:
 
 #### `"result"`
 
-An array of *Profile names* in lower case. `"default"` is always included.
+An array of [*Profile names*][Profile name] in lower case. `"default"` is always included.
 
 
 ## API method: `get_language_tags`
@@ -538,7 +539,7 @@ Example response:
 
 #### `"result"`
 
-An array of *language tags*. It is never empty.
+An array of [*language tags*][Language tag]. It is never empty.
 
 
 #### `"error"`
@@ -553,7 +554,7 @@ An array of *language tags*. It is never empty.
 
 ## API method: `get_host_by_name`
 
-Looks up the A and AAAA records for a hostname (*domain name*) on the public Internet.
+Looks up the A and AAAA records for a hostname ([*domain name*][Domain name]) on the public Internet.
 
 Example request:
 
@@ -588,14 +589,14 @@ Example response:
 
 An object with the property:
 
-* `"hostname"`: A *domain name*, required. The hostname whose IP addresses are to be resolved.
+* `"hostname"`: A [*domain name*][Domain name], required. The hostname whose IP addresses are to be resolved.
 
 
 #### `"result"`
 
 A list of one or two objects representing IP addresses (if 2 one is for IPv4 the
 other for IPv6). The objects each have a single key and value. The key is the
-*domain name* given as input. The value is an IP address for the name, or the
+[*domain name*][Domain name] given as input. The value is an IP address for the name, or the
 value `0.0.0.0` if the lookup returned no A or AAAA records.
 
 >
@@ -688,16 +689,16 @@ Example response:
 
 An object with the properties:
 
-* `"domain"`: A *domain name*, required. The domain whose DNS records are requested.
-* `"language"`: A [Language Tag], optional, used for validation error messages
+* `"domain"`: A [*domain name*][Domain name], required. The domain whose DNS records are requested.
+* `"language"`: A [*language tag*][Language tag], optional, used for validation error messages
   translation, if not provided messages will be untranslated (in English).
 
 #### `"result"`
 
 An object with the following properties:
 
-* `"ns_list"`: A list of [*name server*][Name server] objects representing the nameservers of the given *domain name*.
-* `"ds_list"`: A list of [*DS info*][DS info] objects representing delegation signer (DS record data) of the given *domain name*.
+* `"ns_list"`: A list of [*name server*][Name server] objects representing the nameservers of the given [*domain name*][Domain name].
+* `"ds_list"`: A list of [*DS info*][DS info] objects representing delegation signer (DS record data) of the given [*domain name*][Domain name].
 
 
 #### `"error"`
@@ -726,13 +727,7 @@ An object with the following properties:
 
 ## API method: `start_domain_test`
 
-Enqueues a new *test*.
-
-If an identical *test* was already enqueued and hasn't been started or was enqueued less than 10 minutes earlier,
-no new *test* is enqueued.
-Instead the id for the already enqueued or run test is returned.
-
-*Tests* enqueued using this method are assigned a *priority* of 10.
+Enqueues a new *test* and returns the [*test id*][Test id] of the *test*.
 
 Example request:
 ```json
@@ -776,33 +771,31 @@ Example response:
 
 An object with the following properties:
 
-* `"domain"`: A *domain name*, required. The zone to test.
+* `"domain"`: A [*domain name*][Domain name], required. The zone to test.
 * `"ipv6"`: A boolean, optional. (default: [`net.ipv4`][net.ipv4] profile value). Used to enable or disable testing over IPv4 transport protocol.
 * `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value). Used to enable or disable testing over IPv6 transport protocol.
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`). Used to perform un-delegated test.
 * `"profile"`: A [*profile name*][profile name], optional. (default:
   `"default"`). Run the tests using the given profile.
-* `"client_id"`: A *client id*, optional. (default: unset). Used to monitor which client uses the API.
-* `"client_version"`: A *client version*, optional. (default: unset). Used to monitor which client use the API
-* `"priority"`: A *priority*, optional. (default: `10`)
-* `"queue"`: A *queue*, optional. (default: `0`)
-* `"language"`: A [Language Tag], optional, used for validation error messages
+* `"client_id"`: A [*client id*][Client id], optional. (default: unset). Used to monitor which client uses the API.
+* `"client_version"`: A [*client version*][Client version], optional. (default: unset). Used to monitor which client use the API
+* `"priority"`: A [*priority*][Priority], optional. (default: `10`)
+* `"queue"`: A [*queue*][Queue], optional. (default: `0`)
+* `"language"`: A [*language tag*][Language tag], optional, used for validation error messages
   translation, if not provided messages will be untranslated.
-
-> TODO: Clarify the purpose of each `"params"` property.
->
 
 
 #### `"result"`
 
-A *test id*.
+A [*test id*][Test id].
 
 If a test has been requested with the same parameters (as listed below) not more
 than "reuse time" ago, then a new request will not trigger a new test. Instead
 the `test id` of the previous test will be returned. The default value of
-"reuse time" is 600 seconds, and can be set by the [`age_reuse_previous_test`]
-key in the configuration file.
+"reuse time" is 600 seconds, and can be set by the
+[`ZONEMASTER.age_reuse_previous_test`][ZONEMASTER.age_reuse_previous_test] key
+in the configuration file.
 
 The parameters that are compared when to determine if two requests are to be
 considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
@@ -883,12 +876,12 @@ Example response:
 
 An object with the property:
 
-`"test_id"`: A *test id*, required. The *test* to report on.
+`"test_id"`: A [*test id*][Test id], required. The *test* to report on.
 
 
 #### `"result"`
 
-A *progress percentage*.
+A [*progress percentage*][Progress percentage].
 
 
 #### `"error"`
@@ -900,8 +893,8 @@ A *progress percentage*.
 
 ## API method: `get_test_results`
 
-Return all *test result* objects of a *test*, with *messages* in the requested language as selected by the
-*language tag*.
+Return all [*test result*][Test result] objects of a *test*, with *messages* in the requested language as selected by the
+[*language tag*][Language tag].
 
 Example request:
 ```json
@@ -916,8 +909,8 @@ Example request:
 }
 ```
 
-The `id` parameter must match the `result` in the response to a `start_domain_test` call,
-and that test must have been completed.
+The `id` parameter must match the `result` in the response to a [`start_domain_test`][start_domain_test]
+call, and that test must have been completed.
 
 Example response:
 ```json
@@ -975,29 +968,31 @@ Example response:
 
 An object with the following properties:
 
-* `"id"`: A *test id*, required.
-* `"language"`: A *language tag*, required.
+* `"id"`: A [*test id*][Test id], required.
+* `"language"`: A [*language tag*][Language tag], required.
 
 
 #### `"result"`
 
-* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
+* `"creation_time"`: A [*timestamp*][Timestamp]. The time at which the *test*
+   was enqueued (in UTC).
 * `"id"`: **Deprecated** (will be removed in v2022.2). An integer.
-* `"hash_id"`: A *test id*. The *test* in question.
+* `"hash_id"`: A [*test id*][Test id]. The *test* in question.
 * `"params"`: See below.
   `start_domain_test` when the *test* was started.
-* `"results"`: A list of *test result* objects.
+* `"results"`: A list of [*test result*][Test result] objects.
 
-If the test was created by `start_domain_test` then `"params"` is a normalized
-version `"params"` object sent to `start_domain_test` when the *test* was
-created.
+If the test was created by [`start_domain_test`][start_domain_test] then `"params"`
+is a normalized version `"params"` object sent to [`start_domain_test`][start_domain_test]
+when the *test* was created.
 
-If the test was created with `add_batch_job` then `"params"` is normalized
-version of an object created from the following parts:
-* The keys from the`"test_params"` object sent to `add_batch_job` when the *test*
-  was created as part of a batch.
-* The `"domain"` key holding the specific domain name for this test result from
-  the `"domains"` object included in the call to `add_batch_job`.
+If the test was created with [`add_batch_job`][add_batch_job] then `"params"`
+is a normalized version of an object created from the following parts:
+* The keys from the`"test_params"` object sent to [`add_batch_job`][add_batch_job]
+  when the *test* was created as part of a batch.
+* The `"domain"` key holding the specific [*domain name*][Domain name] for this
+  test result from the `"domains"` object included in the call to
+  [`add_batch_job`][add_batch_job].
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -1064,21 +1059,22 @@ Example response:
 ### Undelegated and delegated
 
 A test is considered to be `"delegated"` below if the test was started, by
-`start_domain_test` or `add_batch_job` without specifying neither `"nameserver"`
-nor `"ds_info"`. Else it is considered to be `"undelegated"`.
+[`start_domain_test`][start_domain_test] or [`add_batch_job`][add_batch_job]
+without specifying neither `"nameserver"` nor `"ds_info"`. Else it is considered to
+be `"undelegated"`.
 
 #### `"params"`
 
 An object with the following properties:
 
-* `"offset"`: A *non-negative integer*, optional. (default: 0). Position of the first returned element from the database returned list.
-* `"limit"`: A *non-negative integer*, optional. (default: 200). Number of element returned from the *offset* element.
+* `"offset"`: A [*non-negative integer*][Non-negative integer], optional. (default: 0). Position of the first returned element from the database returned list.
+* `"limit"`: A [*non-negative integer*][Non-negative integer], optional. (default: 200). Number of element returned from the *offset* element.
 * `"filter"`: A string, one of `"all"`, `"delegated"` and `"undelegated"`, optional. (default: `"all"`)
 * `"frontend_params"`: An object, required.
 
 The value of "frontend_params" is an object with the following properties:
 
-* `"domain"`: A *domain name*, required.
+* `"domain"`: A [*domain name*][Domain name], required.
 
 
 #### `"result"`
@@ -1086,16 +1082,17 @@ The value of "frontend_params" is an object with the following properties:
 An object with the following properties:
 
 * `"id"` A *test id*.
-* `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
+* `"creation_time"`: A [*timestamp*][Timestamp]. The time at which the *test*
+  was enqueued (in UTC).
 * `"overall_result"`: A string. It reflects the most severe problem level among
   the test results for the test. It has one of the following values:
-  * `"ok"`, if there are only messages with *severity level* `"INFO"` or
+  * `"ok"`, if there are only messages with [*severity level*][Severity level] `"INFO"` or
     `"NOTICE"`.
-  * `"warning"`, if there is at least one message with *severity level*
+  * `"warning"`, if there is at least one message with [*severity level*][Severity level]
     `"WARNING"`, but none with `"ERROR"` or `"CRITICAL"`.
-  * `"error"`, if there is at least one message with *severity level*
+  * `"error"`, if there is at least one message with [*severity level*][Severity level]
     `"ERROR"`, but none with `"CRITICAL"`.
-  * `"critical"`, if there is at least one message with *severity level*
+  * `"critical"`, if there is at least one message with [*severity level*][Severity level]
     `"CRITICAL"`.
 * `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
 
@@ -1108,11 +1105,11 @@ An object with the following properties:
 
 ## API method: `add_api_user`
 
-In order to use the [`add_batch_job`](#API-method-add_batch_job) method a
-*username* and its *api key* must be added by this method.
+In order to use the [`add_batch_job`][add_batch_job] method a
+[*username*][Username] and its [*api key*][Api key] must be added by this method.
 
-This method is not available if [`RPCAPI.enable_add_api_user`] is disabled
-(disabled by default). This method is not available unless the connection to
+This method is not available if [`RPCAPI.enable_add_api_user`][RPCAPI.enable_add_api_user]
+is disabled (disabled by default). This method is not available unless the connection to
 RPCAPI is over localhost (*administrative* method).
 
 
@@ -1143,8 +1140,8 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A *username*, required. The *username* to be added.
-* `"api_key"`: An *api key*, required. The *api key* for the *username* to be
+* `"username"`: A [*username*][Username], required. The [*username*][Username] to be added.
+* `"api_key"`: An [*api key*][Api key], required. The [*api key*][Api key] for the [*username*][Username] to be
   added.
 
 
@@ -1236,17 +1233,17 @@ Trying to add a user when the method is disabled:
 
 ## API method: `add_batch_job`
 
-Add a new *batch test* composed by a set of *domain name* and a *params* object.
+Add a new *batch test* composed by a set of [*domain name*][Domain name] and a *params* object.
 All the domains will be tested using identical parameters.
 
-This method is not available if [`RPCAPI.enable_add_batch_job`] is disabled
-(enabled by default).
+This method is not available if [`RPCAPI.enable_add_batch_job`][RPCAPI.enable_add_batch_job]
+is disabled (enabled by default).
 
-A *username* and its *api key* can be added with the
-[`add_api_user`](#API-method-add_api_user) method. A *username* can only have
+A [*username*][Username] and its [*api key*][Api key] can be added with the
+[`add_api_user`][add_api_user] method. A [*username*][Username] can only have
 one un-finished *batch* at a time.
 
-*Tests* enqueud using this method are assigned a *priority* of 5.
+*Tests* enqueud using this method are assigned a [*priority*][Priority] of 5.
 
 
 Example request:
@@ -1282,38 +1279,38 @@ Example response:
 
 An object with the following properties:
 
-* `"username"`: A *username*, required. The name of the account of an authorized user.
-* `"api_key"`: An *api key*, required. The api_key associated with the username.
-* `"domains"`: A non-empty list of *domain names*, required. The domains to be tested.
+* `"username"`: A [*username*][Username], required. The name of the account of an authorized user.
+* `"api_key"`: An [*api key*][Api key], required. The api_key associated with the username.
+* `"domains"`: A list of [*domain names*][Domain names], required. The domains to be tested.
 * `"test_params"`: As described below, optional. (default: `{}`)
 
 The value of `"test_params"` is an object with the following properties:
 
-* `"client_id"`: A *client id*, optional. (default: unset)
+* `"client_id"`: A [*client id*][Client id], optional. (default: unset)
 * `"profile"`: A [*profile name*][profile name], optional (default:
   `"default"`). Run the tests using the given profile.
-* `"client_version"`: A *client version*, optional. (default: unset)
+* `"client_version"`: A [*client version*][Client version], optional. (default: unset)
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`)
 * `"ipv6"`: A boolean, optional. (default: [`net.ipv4`][net.ipv4] profile value).
 * `"ipv4"`: A boolean, optional. (default: [`net.ipv6`][net.ipv6] profile value).
-* `"priority"`: A *priority*, optional. (default: `5`)
-* `"queue"`: A *queue*, optional. (default: `0`)
+* `"priority"`: A [*priority*][Priority], optional. (default: `5`)
+* `"queue"`: A [*queue*][Queue], optional. (default: `0`)
 
 
 #### `"result"`
 
-A *batch id*.
+A [*batch id*][Batch id].
 
 
 #### `"error"`
 
 * You cannot create a new batch job if a *batch* with unfinished *tests* already
-  exists for this *username*.
+  exists for this [*username*][Username].
 * If the given `profile` is not among the [available profiles][Profile sections],
   a user error is returned, see the [profile name section][profile name].
 
-Trying to add a batch when a batch is still running for the *username* in the
+Trying to add a batch when a batch is still running for the [*username*][Username] in the
 request:
 ```json
 {
@@ -1331,7 +1328,7 @@ request:
 
 ```
 
-Trying to add a batch when wrong *username* or *api key* is used:
+Trying to add a batch when wrong [*username*][Username] or [*api key*][Api key] is used:
 ```json
 {
   "error": {
@@ -1378,7 +1375,7 @@ Trying to add a batch when the method has been disabled.
 
 ## API method: `get_batch_job_result`
 
-Return all *test id* objects of a *batch test*, with the number of finshed *test*.
+Return all [*test id*][Test id] objects of a *batch test*, with the number of finshed *test*.
 
 Example request:
 
@@ -1416,16 +1413,16 @@ Example response:
 
 An object with the property:
 
-* `"batch_id"`: A *batch id*, required.
+* `"batch_id"`: A [*batch id*][Batch id], required.
 
 
 #### `"result"`
 
 An object with the following properties:
 
-* `"nb_finished"`: a *non-negative integer*. The number of finished tests.
-* `"nb_running"`: a *non-negative integer*. The number of running tests.
-* `"finished_test_ids"`: a list of *test ids*. The set of finished *tests* in this *batch*.
+* `"nb_finished"`: a [*non-negative integer*][Non-negative integer]. The number of finished tests.
+* `"nb_running"`: a [*non-negative integer*][Non-negative integer]. The number of running tests.
+* `"finished_test_ids"`: a list of [*test ids*][Test id]. The set of finished *tests* in this *batch*.
 
 
 #### `"error"`
@@ -1494,12 +1491,13 @@ Example response:
 
 An object with the property:
 
-* `"test_id"`: A *test id*, required.
+* `"test_id"`: A [*test id*][Test id], required.
 
 
 #### `"result"`
 
-The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *test* was started.
+The `"params"` object sent to [`start_domain_test`][start_domain_test] or
+[`add_batch_job`][add_batch_job] when the *test* was started.
 
 
 #### `"error"`
@@ -1508,26 +1506,43 @@ The `"params"` object sent to `start_domain_test` or `add_batch_job` when the *t
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
 >
 
-[Add_batch_job]:                #api-method-add_batch_job
-[DS info]:                      #ds-info
-[Delegation Signer]:            https://datatracker.ietf.org/doc/html/rfc4034#section-5
-[Dot-decimal notation]:         https://en.wikipedia.org/wiki/Dot-decimal_notation
-[ISO 3166-1 alpha-2]:           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-[ISO 639-1]:                    https://en.wikipedia.org/wiki/ISO_639-1
-[JSON Pointer]:                 https://datatracker.ietf.org/doc/html/rfc6901
-[JSON-RPC 2.0]:                 https://www.jsonrpc.org/specification
-[LANGUAGE.locale]:              Configuration.md#locale
-[Language tag]:                 #language-tag
-[Name server]:                  #name-server
-[Privilege levels]:             #privilege-levels
-[Profile name]:                 #profile-name
-[Profile sections]:             Configuration.md#public-profiles-and-private-profiles-sections
-[RFC 5952]:                     https://datatracker.ietf.org/doc/html/rfc5952
-[Severity Level Definitions]:   https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
-[Start_domain_test]:            #api-method-start_domain_test
-[Validation error data]:        #validation-error-data
-[`RPCAPI.enable_add_api_user`]: Configuration.md#enable_add_api_user
-[`RPCAPI.enable_add_batch_job`]: Configuration.md#enable_add_batch_job
-[`age_reuse_previous_test`]:    Configuration.md#age_reuse_previous_test
-[net.ipv4]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
-[net.ipv6]:                     https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+[add_api_user]:                       #api-method-add_api_user
+[add_batch_job]:                      #api-method-add_batch_job
+[API key]:                            #api-key
+[Batch id]:                           #batch-id
+[Client id]:                          #client-id
+[Client version]:                     #client-version
+[Delegation Signer]:                  https://datatracker.ietf.org/doc/html/rfc4034#section-5
+[Domain name]:                        #domain-name
+[Dot-decimal notation]:               https://en.wikipedia.org/wiki/Dot-decimal_notation
+[DS info]:                            #ds-info
+[IP address]:                         #ip-address
+[ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+[ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[JSON Pointer]:                       https://datatracker.ietf.org/doc/html/rfc6901
+[JSON-RPC 2.0]:                       https://www.jsonrpc.org/specification
+[Language tag]:                       #language-tag
+[LANGUAGE.locale]:                    Configuration.md#locale
+[Name server]:                        #name-server
+[net.ipv4]:                           https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
+[net.ipv6]:                           https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
+[Non-negative integer]:               #non-negative-integer
+[Priority]:                           #priority
+[Privilege levels]:                   #privilege-levels
+[Profile name]:                       #profile-name
+[Profile sections]:                   Configuration.md#public-profiles-and-private-profiles-sections
+[Progress percentage]:                #progress-percentage
+[Queue]:                              #queue
+[RFC 5952]:                           https://datatracker.ietf.org/doc/html/rfc5952
+[RPCAPI.enable_add_api_user]:         Configuration.md#enable_add_api_user
+[RPCAPI.enable_add_batch_job]:        Configuration.md#enable_add_batch_job
+[Severity Level Definitions]:         https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
+[Severity level]:                     #severity-level
+[start_domain_test]:                  #api-method-start_domain_test
+[Test id]:                            #test-id
+[Test result]:                        #test-result
+[Timestamp]:                          #timestamp
+[Username]:                           #username
+[Validation error data]:              #validation-error-data
+[ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test
+[ZONEMASTER.lock_on_queue]:           Configuration.md#lock_on_queue

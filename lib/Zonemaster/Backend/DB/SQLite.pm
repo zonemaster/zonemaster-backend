@@ -9,6 +9,7 @@ use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
+
 use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
@@ -46,7 +47,7 @@ sub DEMOLISH {
 }
 
 sub get_dbh_specific_attributes {
-    return {};
+    return { sqlite_extended_result_codes => 1 };
 }
 
 sub create_schema {
@@ -293,7 +294,7 @@ sub is_duplicate {
     my ( $self ) = @_;
 
     # for the list of codes see: https://sqlite.org/rescode.html
-    return ( $self->dbh->err == 19 );
+    return ( $self->dbh->err == 2067 );
 }
 
 no Moose;

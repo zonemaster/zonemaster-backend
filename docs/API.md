@@ -987,9 +987,9 @@ An object with the following properties:
 #### `"result"`
 
 * `"creation_time"`: **Deprecated** (planned removal: v2022.2). A [*deprecated timestamp*][Timestamp deprecated].
-  The time at which the *test* was created (in UTC).
-* `"created_at"`: A [*timestamp*][Timestamp]. The time at which the *test* was created
-  (in UTC).
+  The time in UTC at which the *test* was created.
+* `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
+  was created.
 * `"id"`: **Deprecated** (planned removal: v2022.2). An integer.
 * `"hash_id"`: A [*test id*][Test id]. The *test* in question.
 * `"params"`: See below.
@@ -1099,9 +1099,9 @@ An object with the following properties:
 
 * `"id"` A *test id*.
 * `"creation_time"`: **Deprecated** (planned removal: v2022.2). A [*deprecated timestamp*][Timestamp deprecated].
-  The time at which the *test* was created (in UTC).
-* `"created_at"`: A [*timestamp*][Timestamp]. The time at which the *test* was created
-  (in UTC).
+  The time in UTC at which the *test* was created.
+* `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
+  was created.
 * `"overall_result"`: A string. It reflects the most severe problem level among
   the test results for the test. It has one of the following values:
   * `"ok"`, if there are only messages with [*severity level*][Severity level] `"INFO"` or

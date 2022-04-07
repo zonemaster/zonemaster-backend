@@ -7,6 +7,7 @@ use POSIX;
 use JSON::PP;
 use Log::Any::Adapter::Util ();
 use base qw(Log::Any::Adapter::Base);
+use Carp;
 
 my $trace_level = Log::Any::Adapter::Util::numeric_level('trace');
 
@@ -16,7 +17,7 @@ sub init {
     if ( exists $self->{log_level} && $self->{log_level} =~ /\D/ ) {
         my $numeric_level = Log::Any::Adapter::Util::numeric_level( $self->{log_level} );
         if ( !defined($numeric_level) ) {
-            die "Error: Unrecognized log level " . $self->{log_level} . "\n";
+            croak "Error: Unrecognized log level " . $self->{log_level} . "\n";
         }
         $self->{log_level} = $numeric_level;
     }

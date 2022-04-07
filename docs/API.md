@@ -982,7 +982,7 @@ An object with the following properties:
 #### `"result"`
 
 * `"creation_time"`: A *timestamp*. The time at which the *test* was enqueued (in UTC).
-* `"id"`: An integer.
+* `"id"`: **Deprecated** (will be removed in v2022.2). An integer.
 * `"hash_id"`: A *test id*. The *test* in question.
 * `"params"`: See below.
   `start_domain_test` when the *test* was started.

@@ -38,6 +38,10 @@ sub patch_db_mysql {
 
         $dbh->do( 'ALTER TABLE batch_jobs CHANGE COLUMN creation_time created_at DATETIME DEFAULT NULL' );
 
+        # add table constraints
+        $dbh->do( 'ALTER TABLE test_results ADD CONSTRAINT UNIQUE (hash_id)' );
+        $dbh->do( 'ALTER TABLE users ADD CONSTRAINT UNIQUE (username)' );
+
         $dbh->commit();
     } catch {
         print( "Could not upgrade database:  " . $_ );
@@ -65,6 +69,10 @@ sub patch_db_postgresql {
         $dbh->do( 'ALTER TABLE test_results RENAME COLUMN test_end_time TO ended_at' );
         $dbh->do( 'ALTER TABLE batch_jobs RENAME COLUMN creation_time TO created_at' );
 
+        # add table constraints
+        $dbh->do( 'ALTER TABLE test_results ADD UNIQUE (hash_id)' );
+        $dbh->do( 'ALTER TABLE users ADD UNIQUE (username)' );
+
         $dbh->commit();
     } catch {
         print( "Could not upgrade database:  " . $_ );
@@ -91,6 +99,7 @@ sub patch_db_sqlite {
     try {
         $dbh->do('ALTER TABLE test_results RENAME TO test_results_old');
         $dbh->do('ALTER TABLE batch_jobs RENAME TO batch_jobs_old');
+        $dbh->do('ALTER TABLE users RENAME TO users_old');
 
         # create the tables
         $db->create_schema();
@@ -131,6 +140,7 @@ sub patch_db_sqlite {
                 undelegated
             FROM test_results_old
         ');
+
         $dbh->do('
             INSERT INTO batch_jobs
             (
@@ -145,9 +155,24 @@ sub patch_db_sqlite {
             FROM batch_jobs_old
         ');
 
+        $dbh->do('
+            INSERT INTO users
+            (
+                id,
+                username,
+                api_key
+            )
+            SELECT
+                id,
+                username,
+                api_key
+            FROM users_old
+        ');
+
         # delete old tables
         $dbh->do('DROP TABLE test_results_old');
         $dbh->do('DROP TABLE batch_jobs_old');
+        $dbh->do('DROP TABLE users_old');
 
         # recreate indexes
         $db->create_schema();

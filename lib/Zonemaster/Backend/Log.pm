@@ -6,8 +6,11 @@ package Zonemaster::Backend::Log;
 use POSIX;
 use JSON::PP;
 use Log::Any::Adapter::Util ();
-use base qw(Log::Any::Adapter::Base);
 use Carp;
+use Data::Dumper;
+
+use base qw(Log::Any::Adapter::Base);
+
 
 my $trace_level = Log::Any::Adapter::Util::numeric_level('trace');
 
@@ -63,8 +66,15 @@ sub format_text {
     delete $log_params->{message};
     delete $log_params->{category};
 
-    return $msg
+    if ( keys %$log_params ) {
+        local $Data::Dumper::Indent = 0;
+        local $Data::Dumper::Terse = 1;
+        my $data = Dumper($log_params);
 
+        $msg .= " Extra parameters: $data";
+    }
+
+    return $msg
 }
 
 sub format_json {

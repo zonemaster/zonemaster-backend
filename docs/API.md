@@ -397,7 +397,7 @@ This key is added when the module name is `"NAMESERVER"`.
 
 Basic data type: string
 
-**Deprecated representation**
+**Deprecated representation** (planned removal: v2023.1).
 Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 
@@ -986,7 +986,7 @@ An object with the following properties:
 
 #### `"result"`
 
-* `"creation_time"`: **Deprecated** (planned removal: v2022.2). A [*deprecated timestamp*][Timestamp deprecated].
+* `"creation_time"`: **Deprecated** (planned removal: v2023.1). A [*deprecated timestamp*][Timestamp deprecated].
   The time in UTC at which the *test* was created.
 * `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
   was created.
@@ -1098,7 +1098,7 @@ The value of "frontend_params" is an object with the following properties:
 An object with the following properties:
 
 * `"id"` A *test id*.
-* `"creation_time"`: **Deprecated** (planned removal: v2022.2). A [*deprecated timestamp*][Timestamp deprecated].
+* `"creation_time"`: **Deprecated** (planned removal: v2023.1). A [*deprecated timestamp*][Timestamp deprecated].
   The time in UTC at which the *test* was created.
 * `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
   was created.

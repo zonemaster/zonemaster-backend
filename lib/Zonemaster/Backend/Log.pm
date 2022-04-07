@@ -92,9 +92,6 @@ sub structured {
 
     for my $item ( @items ) {
         if (ref($item) eq 'HASH') {
-            if (exists $item->{context}) {
-                $item = $item->{context};
-            }
             for my $key (keys %$item) {
                 $log_params{$key} = $item->{$key};
             }

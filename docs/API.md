@@ -986,11 +986,11 @@ An object with the following properties:
 
 #### `"result"`
 
-* `"creation_time"`: **Deprecated**. A [*deprecated timestamp*][Timestamp deprecated].
+* `"creation_time"`: **Deprecated** (planned removal: v2022.2). A [*deprecated timestamp*][Timestamp deprecated].
   The time at which the *test* was created (in UTC).
 * `"created_at"`: A [*timestamp*][Timestamp]. The time at which the *test* was created
   (in UTC).
-* `"id"`: **Deprecated** (will be removed in v2022.2). An integer.
+* `"id"`: **Deprecated** (planned removal: v2022.2). An integer.
 * `"hash_id"`: A [*test id*][Test id]. The *test* in question.
 * `"params"`: See below.
   `start_domain_test` when the *test* was started.
@@ -1098,7 +1098,7 @@ The value of "frontend_params" is an object with the following properties:
 An object with the following properties:
 
 * `"id"` A *test id*.
-* `"creation_time"`: **Deprecated**. A [*deprecated timestamp*][Timestamp deprecated].
+* `"creation_time"`: **Deprecated** (planned removal: v2022.2). A [*deprecated timestamp*][Timestamp deprecated].
   The time at which the *test* was created (in UTC).
 * `"created_at"`: A [*timestamp*][Timestamp]. The time at which the *test* was created
   (in UTC).

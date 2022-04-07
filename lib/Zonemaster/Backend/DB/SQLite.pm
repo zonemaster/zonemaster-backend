@@ -289,6 +289,13 @@ sub get_relative_start_time {
     );
 }
 
+sub is_duplicate {
+    my ( $self ) = @_;
+
+    # for the list of codes see: https://sqlite.org/rescode.html
+    return ( $self->dbh->err == 19 );
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

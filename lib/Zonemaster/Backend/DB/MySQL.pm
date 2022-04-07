@@ -311,6 +311,15 @@ sub get_relative_start_time {
     );
 }
 
+sub is_duplicate {
+    my ( $self ) = @_;
+
+    # for the list of codes see:
+    # https://mariadb.com/kb/en/mariadb-error-codes/
+    # https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
+    return ( $self->dbh->err == 1062 );
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

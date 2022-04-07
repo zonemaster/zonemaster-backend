@@ -11,6 +11,7 @@ use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
 use POSIX qw( strftime );
+use Try::Tiny;
 
 use Zonemaster::Engine::Profile;
 use Zonemaster::Backend::Errors;
@@ -23,6 +24,7 @@ requires qw(
   get_test_history
   get_dbh_specific_attributes
   get_relative_start_time
+  is_duplicate
 );
 
 has 'data_source_name' => (
@@ -108,12 +110,22 @@ sub add_api_user {
     die Zonemaster::Backend::Error::Internal->new( reason => "username or api_key not provided to the method add_api_user")
         unless ( $username && $api_key );
 
-    die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
-        if ( $self->user_exists_in_db( $username ) );
+    my $dbh = $self->dbh;
+    my $result;
 
-    my $result = $self->add_api_user_to_db( $username, $api_key );
+    try {
+        $result = $dbh->do(
+            "INSERT INTO users (username, api_key) VALUES (?,?)",
+            undef,
+            $username,
+            $api_key,
+        );
+    } catch {
+        die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
+            if ( $self->is_duplicate );
+    };
 
-    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user_to_db not successful")
+    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user not successful")
         unless ( $result );
 
     return $result;
@@ -329,33 +341,6 @@ sub create_new_batch_job {
     my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
 
     return $new_batch_id;
-}
-
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array(
-        "SELECT id FROM users WHERE username = ?",
-        undef,
-        $user
-    );
-
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key  ) = @_;
-
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do(
-        "INSERT INTO users (username, api_key) VALUES (?,?)",
-        undef,
-        $user_name,
-        $api_key,
-    );
-
-    return $nb_inserted;
 }
 
 sub user_authorized {

@@ -309,6 +309,14 @@ sub get_relative_start_time {
     );
 }
 
+sub is_duplicate {
+    my ( $self ) = @_;
+
+    # for the list of codes see:
+    # https://www.postgresql.org/docs/current/errcodes-appendix.html
+    return ( $self->dbh->state == 23505 );
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 

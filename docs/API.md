@@ -398,6 +398,7 @@ This key is added when the module name is `"NAMESERVER"`.
 Basic data type: string
 
 **Deprecated representation** (planned removal: v2023.1).
+
 Default database timestamp format: "Y-M-D H:M:S.ms".
 Example: "2017-12-18 07:56:17.156939"
 

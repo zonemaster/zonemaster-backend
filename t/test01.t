@@ -175,6 +175,7 @@ subtest 'API calls' => sub {
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{results}, 'Value "results" properly defined' );
         if ( @{ $res->{results} } > 1 ) {
             pass 'The test has some results';
@@ -300,6 +301,7 @@ subtest 'get_test_history' => sub {
         is( length($res->{id}), 16, 'Test has 16 characters length hash ID' );
         is( $res->{undelegated}, JSON::PP::true, 'Test is undelegated' );
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{overall_result}, 'Value "overall_result" properly defined' );
     }
 

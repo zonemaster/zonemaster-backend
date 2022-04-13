@@ -11,6 +11,7 @@ use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
 use POSIX qw( strftime );
+use Try::Tiny;
 
 use Zonemaster::Engine::Profile;
 use Zonemaster::Backend::Errors;
@@ -23,6 +24,7 @@ requires qw(
   get_test_history
   get_dbh_specific_attributes
   get_relative_start_time
+  is_duplicate
 );
 
 has 'data_source_name' => (
@@ -108,12 +110,22 @@ sub add_api_user {
     die Zonemaster::Backend::Error::Internal->new( reason => "username or api_key not provided to the method add_api_user")
         unless ( $username && $api_key );
 
-    die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
-        if ( $self->user_exists_in_db( $username ) );
+    my $dbh = $self->dbh;
+    my $result;
 
-    my $result = $self->add_api_user_to_db( $username, $api_key );
+    try {
+        $result = $dbh->do(
+            "INSERT INTO users (username, api_key) VALUES (?,?)",
+            undef,
+            $username,
+            $api_key,
+        );
+    } catch {
+        die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
+            if ( $self->is_duplicate );
+    };
 
-    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user_to_db not successful")
+    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user not successful")
         unless ( $result );
 
     return $result;
@@ -150,7 +162,7 @@ sub create_new_test {
                 INSERT INTO test_results (
                     hash_id,
                     batch_id,
-                    creation_time,
+                    created_at,
                     priority,
                     queue,
                     fingerprint,
@@ -186,8 +198,8 @@ sub recent_test_hash_id {
             SELECT hash_id
             FROM test_results
             WHERE fingerprint = ?
-              AND ( test_start_time IS NULL
-                 OR test_start_time >= ? )
+              AND ( started_at IS NULL
+                 OR started_at >= ? )
         ],
         undef,
         $fingerprint,
@@ -207,7 +219,7 @@ sub test_progress {
                 q[
                     UPDATE test_results
                     SET progress = ?,
-                        test_start_time = ?
+                        started_at = ?
                     WHERE hash_id = ?
                       AND progress <> 100
                 ],
@@ -245,7 +257,7 @@ sub select_test_results {
             SELECT
                 id,
                 hash_id,
-                creation_time,
+                created_at AS creation_time,
                 params,
                 results
             FROM test_results
@@ -274,7 +286,7 @@ sub test_results {
             q[
                 UPDATE test_results
                 SET progress = 100,
-                    test_end_time = ?,
+                    ended_at = ?,
                     results = ?
                 WHERE hash_id = ?
                   AND progress < 100
@@ -311,7 +323,7 @@ sub create_new_batch_job {
     my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
             SELECT
                 batch_id,
-                batch_jobs.creation_time AS batch_creation_time
+                batch_jobs.created_at AS batch_created_at
             FROM
                 test_results
             JOIN batch_jobs
@@ -329,33 +341,6 @@ sub create_new_batch_job {
     my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
 
     return $new_batch_id;
-}
-
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array(
-        "SELECT id FROM users WHERE username = ?",
-        undef,
-        $user
-    );
-
-    return $id;
-}
-
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key  ) = @_;
-
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do(
-        "INSERT INTO users (username, api_key) VALUES (?,?)",
-        undef,
-        $user_name,
-        $api_key,
-    );
-
-    return $nb_inserted;
 }
 
 sub user_authorized {
@@ -479,7 +464,7 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < ?
+            WHERE started_at < ?
             AND progress > 0
             AND progress < 100
             AND queue = ?" );
@@ -493,7 +478,7 @@ sub select_unfinished_tests {
         my $sth = $self->dbh->prepare( "
             SELECT hash_id, results
             FROM test_results
-            WHERE test_start_time < ?
+            WHERE started_at < ?
             AND progress > 0
             AND progress < 100" );
         $sth->execute(    #
@@ -524,7 +509,7 @@ sub force_end_test {
         q[
             UPDATE test_results
             SET progress = 100,
-                test_end_time = ?,
+                ended_at = ?,
                 results = ?
             WHERE hash_id = ?
         ],

@@ -9,6 +9,7 @@ use DBI qw(:utils :sql_types);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
+
 use Zonemaster::Backend::Errors;
 
 with 'Zonemaster::Backend::DB';
@@ -46,7 +47,7 @@ sub DEMOLISH {
 }
 
 sub get_dbh_specific_attributes {
-    return {};
+    return { sqlite_extended_result_codes => 1 };
 }
 
 sub create_schema {
@@ -63,16 +64,18 @@ sub create_schema {
                  hash_id VARCHAR(16) NOT NULL,
                  domain VARCHAR(255) NOT NULL,
                  batch_id integer NULL,
-                 creation_time DATETIME NOT NULL,
-                 test_start_time DATETIME DEFAULT NULL,
-                 test_end_time DATETIME DEFAULT NULL,
+                 created_at DATETIME NOT NULL,
+                 started_at DATETIME DEFAULT NULL,
+                 ended_at DATETIME DEFAULT NULL,
                  priority integer DEFAULT 10,
                  queue integer DEFAULT 0,
                  progress integer DEFAULT 0,
                  fingerprint character varying(32),
                  params text NOT NULL,
                  results text DEFAULT NULL,
-                 undelegated boolean NOT NULL DEFAULT false
+                 undelegated boolean NOT NULL DEFAULT false,
+
+                 UNIQUE (hash_id)
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -101,7 +104,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                  id integer PRIMARY KEY,
                  username character varying(50) NOT NULL,
-                 creation_time DATETIME NOT NULL
+                 created_at DATETIME NOT NULL
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'batch_jobs' table", data => $dbh->errstr() );
@@ -114,7 +117,9 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username varchar(128),
-                api_key varchar(512)
+                api_key varchar(512),
+
+                UNIQUE (username)
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
@@ -155,7 +160,7 @@ sub get_test_history {
         SELECT
             id,
             hash_id,
-            creation_time,
+            created_at,
             undelegated,
             results
         FROM test_results
@@ -189,8 +194,8 @@ sub get_test_history {
             @results,
             {
                 id               => $h->{hash_id},
-                creation_time    => $h->{creation_time},
-                created_at       => $self->to_iso8601( $h->{creation_time} ),
+                creation_time    => $h->{created_at},
+                created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall,
             }
@@ -226,7 +231,7 @@ sub add_batch_job {
                 hash_id,
                 domain,
                 batch_id,
-                creation_time,
+                created_at,
                 priority,
                 queue,
                 fingerprint,
@@ -254,7 +259,7 @@ sub add_batch_job {
                 $undelegated,
             );
         }
-        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
@@ -275,7 +280,7 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
-            SELECT (julianday(?) - julianday(test_start_time)) * 3600 * 24
+            SELECT (julianday(?) - julianday(started_at)) * 3600 * 24
             FROM test_results
             WHERE hash_id = ?
         ],
@@ -283,6 +288,13 @@ sub get_relative_start_time {
         $self->format_time( time() ),
         $hash_id,
     );
+}
+
+sub is_duplicate {
+    my ( $self ) = @_;
+
+    # for the list of codes see: https://sqlite.org/rescode.html
+    return ( $self->dbh->err == 2067 );
 }
 
 no Moose;

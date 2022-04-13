@@ -64,16 +64,18 @@ sub create_schema {
                 hash_id VARCHAR(16) NOT NULL,
                 domain VARCHAR(255) NOT NULL,
                 batch_id integer,
-                creation_time TIMESTAMP NOT NULL,
-                test_start_time TIMESTAMP DEFAULT NULL,
-                test_end_time TIMESTAMP DEFAULT NULL,
+                created_at TIMESTAMP NOT NULL,
+                started_at TIMESTAMP DEFAULT NULL,
+                ended_at TIMESTAMP DEFAULT NULL,
                 priority integer DEFAULT 10,
                 queue integer DEFAULT 0,
                 progress integer DEFAULT 0,
                 fingerprint varchar(32),
                 params json NOT NULL,
                 undelegated integer NOT NULL DEFAULT 0,
-                results json
+                results json,
+
+                UNIQUE (hash_id)
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -107,7 +109,7 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                 id serial PRIMARY KEY,
                 username varchar(50) NOT NULL,
-                creation_time TIMESTAMP NOT NULL
+                created_at TIMESTAMP NOT NULL
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'batch_jobs' table", data => $dbh->errstr() );
@@ -120,7 +122,9 @@ sub create_schema {
         'CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY,
                 username VARCHAR(128),
-                api_key VARCHAR(512)
+                api_key VARCHAR(512),
+
+                UNIQUE (username)
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
@@ -176,7 +180,7 @@ sub get_test_history {
             id,
             hash_id,
             undelegated,
-            creation_time
+            created_at
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY id DESC
@@ -209,8 +213,8 @@ sub get_test_history {
             @results,
             {
                 id               => $h->{hash_id},
-                creation_time    => $h->{creation_time},
-                created_at       => $self->to_iso8601( $h->{creation_time} ),
+                creation_time    => $h->{created_at},
+                created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall_result,
             }
@@ -250,7 +254,7 @@ sub add_batch_job {
                     hash_id,
                     domain,
                     batch_id,
-                    creation_time,
+                    created_at,
                     priority,
                     queue,
                     fingerprint,
@@ -275,7 +279,7 @@ sub add_batch_job {
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
-        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, creation_time)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
@@ -295,7 +299,7 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
-            SELECT EXTRACT(EPOCH FROM ? - test_start_time)
+            SELECT EXTRACT(EPOCH FROM ? - started_at)
             FROM test_results
             WHERE hash_id=?
         ],
@@ -303,6 +307,14 @@ sub get_relative_start_time {
         $self->format_time( time() ),
         $hash_id,
     );
+}
+
+sub is_duplicate {
+    my ( $self ) = @_;
+
+    # for the list of codes see:
+    # https://www.postgresql.org/docs/current/errcodes-appendix.html
+    return ( $self->dbh->state == 23505 );
 }
 
 no Moose;

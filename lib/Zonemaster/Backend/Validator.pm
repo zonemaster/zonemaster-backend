@@ -210,9 +210,9 @@ sub jsonrpc_method {
 sub formats {
     my ( $rpcapi ) = @_;
     return {
-        domain => sub { Zonemaster::Backend::Validator::check_domain( $rpcapi, @_ ) },
-        language_tag => sub { Zonemaster::Backend::Validator::check_language_tag( $rpcapi, @_ ) },
-        ip => sub { Zonemaster::Backend::Validator::check_ip( $rpcapi, @_ ) },
+        domain => sub { check_domain( $rpcapi, @_ ) },
+        language_tag => sub { check_language_tag( $rpcapi, @_ ) },
+        ip => sub { check_ip( $rpcapi, @_ ) },
     };
 }
 

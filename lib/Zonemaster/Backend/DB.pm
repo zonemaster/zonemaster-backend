@@ -533,10 +533,10 @@ sub _project_params {
 
     my %projection = ();
 
-    $projection{domain}   = lc $$params{domain} // "";
-    $projection{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
-    $projection{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
-    $projection{profile}  = $$params{profile}   // "default";
+    $projection{domain}   = lc $$params{domain}  // "";
+    $projection{ipv4}     = $$params{ipv4}       // $profile->get( 'net.ipv4' );
+    $projection{ipv6}     = $$params{ipv6}       // $profile->get( 'net.ipv6' );
+    $projection{profile}  = lc $$params{profile} // "default";
 
     my $array_ds_info = $$params{ds_info} // [];
     my @array_ds_info_sort = sort {

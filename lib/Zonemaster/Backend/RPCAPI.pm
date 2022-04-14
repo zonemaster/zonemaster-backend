@@ -551,7 +551,6 @@ sub _get_locale {
     my @error;
 
     my $language = $params->{language};
-    my %locales = $self->{config}->LANGUAGE_locale;
     my $locale;
 
     if ( !defined $language ) {
@@ -559,6 +558,7 @@ sub _get_locale {
     }
 
     if ( length $language == 2 ) {
+        my %locales = $self->{config}->LANGUAGE_locale;
         ( $locale ) = keys %{ $locales{$language} };
     }
     else {

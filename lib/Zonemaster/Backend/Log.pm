@@ -56,15 +56,14 @@ sub format_text {
     $msg .= sprintf "%s ", $log_params->{timestamp};
     delete $log_params->{timestamp};
     if (exists $log_params->{pid}) {
-        $msg .= sprintf "[%d] ", $log_params->{pid};
-        delete $log_params->{pid};
+        $msg .= sprintf "[%d] ", delete $log_params->{pid};
     }
     $msg .= sprintf "[%s] [%s] %s", uc $log_params->{level}, $log_params->{category}, $log_params->{message};
     delete $log_params->{level};
     delete $log_params->{message};
     delete $log_params->{category};
 
-    if ( keys %$log_params ) {
+    if ( %$log_params ) {
         local $Data::Dumper::Indent = 0;
         local $Data::Dumper::Terse = 1;
         my $data = Dumper($log_params);

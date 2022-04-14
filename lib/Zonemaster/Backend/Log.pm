@@ -3,6 +3,7 @@ use warnings;
 
 package Zonemaster::Backend::Log;
 
+use English qw( $PID );
 use POSIX;
 use JSON::PP;
 use Log::Any::Adapter::Util ();
@@ -55,13 +56,13 @@ sub format_text {
     my $msg;
     $msg .= sprintf "%s ", $log_params->{timestamp};
     delete $log_params->{timestamp};
-    if (exists $log_params->{pid}) {
-        $msg .= sprintf "[%d] ", delete $log_params->{pid};
-    }
-    $msg .= sprintf "[%s] [%s] %s", uc $log_params->{level}, $log_params->{category}, $log_params->{message};
-    delete $log_params->{level};
-    delete $log_params->{message};
-    delete $log_params->{category};
+    $msg .= sprintf(
+        "[%d] [%s] [%s] %s",
+        delete $log_params->{pid},
+        uc delete $log_params->{level},
+        delete $log_params->{category},
+        delete $log_params->{message}
+    );
 
     if ( %$log_params ) {
         local $Data::Dumper::Indent = 0;
@@ -95,7 +96,8 @@ sub structured {
         timestamp => strftime( "%FT%TZ", gmtime ),
         level => $level,
         category => $category,
-        message => $string
+        message => $string,
+        pid => $PID,
     );
 
     for my $item ( @items ) {

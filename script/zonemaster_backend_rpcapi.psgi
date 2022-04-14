@@ -34,7 +34,6 @@ Log::Any::Adapter->set(
     json => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
     stderr => 1
 );
-$log->context->{pid} = $PID;
 
 $SIG{__WARN__} = sub {
     $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);

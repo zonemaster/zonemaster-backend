@@ -25,22 +25,20 @@ sub init {
         $self->{log_level} = $numeric_level;
     }
 
-    if ( !defined $self->{log_level} ) {
-        $self->{log_level} = $trace_level;
-    }
+    $self->{log_level} //= $trace_level;
 
     my $fd;
     if ( !exists $self->{file} || $self->{file} eq '-') {
         if ( $self->{stderr} ) {
-            open( $fd, '>&', \*STDERR ) or die "Can't dup STDERR: $!";
+            open( $fd, '>&', \*STDERR ) or croak "Can't dup STDERR: $!";
         } else {
-            open( $fd, '>&', \*STDOUT ) or die "Can't dup STDOUT: $!";
+            open( $fd, '>&', \*STDOUT ) or croak "Can't dup STDOUT: $!";
         }
-        my $handle = IO::Handle->new_from_fd( $fd, "w" ) or die "Can't fdopen duplicated STDOUT: $!";
     } else {
-        open( $fd, '>>', $self->{file} ) or die "Can't open log file: $!";
+        open( $fd, '>>', $self->{file} ) or croak "Can't open log file: $!";
     }
-    $self->{handle} = IO::Handle->new_from_fd( $fd, "w" ) or die "Can't fdopen file: $!";
+
+    $self->{handle} = IO::Handle->new_from_fd( $fd, "w" ) or croak "Can't fdopen file: $!";
     $self->{handle}->autoflush(1);
 
     if ( !exists $self->{formatter} ) {

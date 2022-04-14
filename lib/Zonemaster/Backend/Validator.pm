@@ -186,7 +186,10 @@ sub priority {
     return joi->integer;
 }
 sub profile_name {
-    return joi->string->regex( $PROFILE_NAME_RE );
+    return {
+        type => 'string',
+        format => 'profile',
+    };
 }
 sub queue {
     return joi->integer;
@@ -213,6 +216,7 @@ sub formats {
         domain => sub { check_domain( $rpcapi, @_ ) },
         language_tag => sub { check_language_tag( $rpcapi, @_ ) },
         ip => sub { check_ip( $rpcapi, @_ ) },
+        profile => sub { check_profile( $rpcapi, @_ ) },
     };
 }
 
@@ -286,6 +290,20 @@ sub check_ip {
 
     return undef
 
+}
+
+sub check_profile  {
+    my ( $rpcapi, $profile ) = @_;
+
+    if ( $profile !~ $PROFILE_NAME_RE ) {
+        return N__ "Invalid profile format";
+    }
+
+    my %profiles = ( $rpcapi->{config}->PUBLIC_PROFILES, $rpcapi->{config}->PRIVATE_PROFILES );
+
+    if ( !exists $profiles{ lc($profile) } ) {
+        return N__ "Unknown profile";
+    }
 }
 
 =head1 UNTAINT INTERFACE

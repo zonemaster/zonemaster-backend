@@ -241,14 +241,13 @@ $json_schemas{start_domain_test} = {
             type => 'array',
             items => $zm_validator->ds_info
         },
-        profile => $zm_validator->profile_name->compile,
+        profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id->compile,
         client_version => $zm_validator->client_version->compile,
         config => joi->string->compile,
         priority => $zm_validator->priority->compile,
         queue => $zm_validator->queue->compile,
         language => $zm_validator->language_tag,
-
     }
 };
 sub start_domain_test {
@@ -487,22 +486,28 @@ $json_schemas{add_batch_job} = {
             additionalItems => 0,
             items => $zm_validator->domain_name
         },
-        test_params => joi->object->strict->props(
-            ipv4 => joi->boolean,
-            ipv6 => joi->boolean,
-            nameservers => joi->array->strict->items(
-                $zm_validator->nameserver
-            ),
-            ds_info => joi->array->strict->items(
-                $zm_validator->ds_info
-            ),
-            profile => $zm_validator->profile_name,
-            client_id => $zm_validator->client_id,
-            client_version => $zm_validator->client_version,
-            config => joi->string,
-            priority => $zm_validator->priority,
-            queue => $zm_validator->queue
-        )->compile
+        test_params => {
+            type => 'object',
+            additionalProperties => 0,
+            properties => {
+                ipv4 => joi->boolean->compile,
+                ipv6 => joi->boolean->compile,
+                nameservers => {
+                    type => 'array',
+                    items => $zm_validator->nameserver
+                },
+                ds_info => {
+                    type => 'array',
+                    items => $zm_validator->ds_info
+                },
+                profile => $zm_validator->profile_name,
+                client_id => $zm_validator->client_id->compile,
+                client_version => $zm_validator->client_version->compile,
+                config => joi->string->compile,
+                priority => $zm_validator->priority->compile,
+                queue => $zm_validator->queue->compile,
+            }
+        }
     }
 };
 sub add_batch_job {

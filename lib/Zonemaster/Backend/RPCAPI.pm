@@ -22,12 +22,7 @@ use POSIX qw (setlocale);
 use Encode;
 
 # Zonemaster Modules
-use Zonemaster::LDNS;
 use Zonemaster::Engine;
-use Zonemaster::Engine::DNSName;
-use Zonemaster::Engine::Logger::Entry;
-use Zonemaster::Engine::Nameserver;
-use Zonemaster::Engine::Net::IP;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;

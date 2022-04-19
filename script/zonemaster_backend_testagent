@@ -228,7 +228,7 @@ Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
 my $initial_config;
 
 # Make sure the environment is alright before forking (only on startup)
-if ( grep /start/, @ARGV ) {
+if ( grep /^foreground$|^restart$|^start$/, @ARGV ) {
     eval {
         $initial_config = preflight_checks();
     };

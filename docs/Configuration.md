@@ -387,15 +387,8 @@ Otherwise a new test request is enqueued.
 [LDH domain name]:                    https://datatracker.ietf.org/doc/html/rfc3696#section-2
 [MariaDB identifier max lengths]:     https://mariadb.com/kb/en/identifier-names/#maximum-length
 [MariaDB unquoted identifier]:        https://mariadb.com/kb/en/identifier-names/#unquoted
-[MYSQL.database]:                     #database
 [MYSQL.host]:                         #host
-[MYSQL.password]:                     #password-1
-[MYSQL.user]:                         #user
 [PostgreSQL identifier]:              https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
-[POSTGRESQL.database]:                #database-1
-[POSTGRESQL.host]:                    #host-1
-[POSTGRESQL.password]:                #password-1
-[POSTGRESQL.user]:                    #user-1
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile name section]:               API.md#profile-name
 [Profiles]:                           Architecture.md#profile

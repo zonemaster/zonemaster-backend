@@ -3,6 +3,7 @@ use warnings;
 use 5.14.2;
 
 use Cwd;
+use Data::Dumper;
 use File::Temp qw[tempdir];
 use JSON::PP;
 use Test::Exception;
@@ -101,16 +102,8 @@ isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
 my $dbh = $backend->{db}->dbh;
 
 # prepare the database
-$dbh->do( "DROP TABLE IF EXISTS test_results" );
-$dbh->do( "DROP TABLE IF EXISTS users" );
-$dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
-eval {
-    ok( $backend->{db}->create_db(), "$db_backend database prepared");
-};
-if ( $@ ) {
-    diag explain( $@ );
-    BAIL_OUT( 'Could not prepare the database' );
-}
+$backend->{db}->drop_tables();
+$backend->{db}->create_schema();
 
 # Create the agent
 use_ok( 'Zonemaster::Backend::TestAgent' );
@@ -182,8 +175,14 @@ subtest 'API calls' => sub {
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{results}, 'Value "results" properly defined' );
-        cmp_ok( scalar( @{ $res->{results} } ), '>', 1, 'The test has some results' );
+        if ( @{ $res->{results} } > 1 ) {
+            pass 'The test has some results';
+        }
+        else {
+            fail 'The test has some results: ' . Dumper( $res->{results} );
+        }
     };
 
     subtest 'get_test_params' => sub {
@@ -255,8 +254,17 @@ subtest 'API calls' => sub {
     };
 
     # TODO add_batch_job
-    # TODO get_batch_job_result
+    subtest 'get_batch_job_result' => sub {
+        subtest 'unknown batch' => sub {
+            dies_ok {
+                $backend->get_batch_job_result( { batch_id => 10 } );
+            };
+            my $res = $@;
+            is( $res->{error}, "Zonemaster::Backend::Error::ResourceNotFound", 'Correct error type' );
+        };
 
+        # TODO get_batch_job_result with known batch
+    };
 };
 
 # start a second test with IPv6 disabled
@@ -293,6 +301,7 @@ subtest 'get_test_history' => sub {
         is( length($res->{id}), 16, 'Test has 16 characters length hash ID' );
         is( $res->{undelegated}, JSON::PP::true, 'Test is undelegated' );
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{overall_result}, 'Value "overall_result" properly defined' );
     }
 

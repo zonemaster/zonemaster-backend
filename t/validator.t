@@ -79,13 +79,15 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'untaint_ldh_domain' => sub {
-        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',    'accept: localhost';
-        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',  'accept: example.com';
-        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.', 'accept: example.com.';
-        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',    'accept: 192.0.2.1';
-        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,          'reject: 192.0.2.1:3306';
-        is scalar untaint_ldh_domain( '1/26.2.0.192.in-addr.arpa' ), undef,          'reject: 1/26.2.0.192.in-addr.arpa';
-        is scalar untaint_ldh_domain( '_http.example.com' ),         undef,          'reject: _http.example.com';
+        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',                 'accept: localhost';
+        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',               'accept: example.com';
+        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.',              'accept: example.com.';
+        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',                 'accept: 192.0.2.1';
+        is scalar untaint_ldh_domain( '0/26.2.0.192.in-addr.arpa' ), '0/26.2.0.192.in-addr.arpa', 'accept: 0/26.2.0.192.in-addr.arpa';
+        is scalar untaint_ldh_domain( '_http._tcp.example.com' ),    '_http._tcp.example.com',    'accept: _http._tcp.example.com';
+        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,                       'reject: 192.0.2.1:3306';
+        is scalar untaint_ldh_domain( '1!26.2.0.192.in-addr.arpa' ), undef,                       'reject: 1!26.2.0.192.in-addr.arpa';
+        is scalar untaint_ldh_domain( '$http.example.com' ),         undef,                       'reject: $http.example.com';
         ok !tainted( untaint_ldh_domain( taint( 'localhost' ) ) ), 'launder taint';
     };
 

@@ -12,4 +12,4 @@ my $db_engine = $config->DB_engine;
 my $db_class = Zonemaster::Backend::DB->get_db_class( $db_engine );
 
 my $db = $db_class->from_config( $config );
-$db->create_db();
+$db->create_schema();

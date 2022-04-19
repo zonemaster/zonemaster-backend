@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use utf8;
+use Encode;
 use Test::More;    # see done_testing()
 
 use_ok( 'Zonemaster::Backend::DB' );
@@ -166,7 +168,18 @@ subtest 'encoding and fingerprint' => sub {
 
             isnt $fingerprint1, $fingerprint2, 'different IP protocols, different fingerprints';
         };
-    }
+    };
+
+    subtest 'IDN domain' => sub {
+        my $expected_encoded_params = encode_utf8( '{"domain":"café.example","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
+        my $expected_fingerprint = '8c64f7feaa3f13b77e769720991f2a79';
+
+        my %params = ( domain => "café.example" );
+
+        my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
+        is $encoded_params, $expected_encoded_params, 'IDN domain: the encoded strings should match';
+        is $fingerprint, $expected_fingerprint, 'IDN domain: correct fingerprint';
+    };
 };
 
 done_testing();

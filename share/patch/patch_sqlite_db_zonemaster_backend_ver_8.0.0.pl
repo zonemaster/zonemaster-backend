@@ -28,7 +28,7 @@ sub patch_db {
         $dbh->do('ALTER TABLE test_results RENAME TO test_results_old');
 
         # create the table
-        $db->create_db();
+        $db->create_schema();
 
         # populate it
         # - nb_retries is omitted as we remove this column
@@ -55,7 +55,7 @@ sub patch_db {
         $dbh->do('DROP TABLE test_results_old');
 
         # recreate indexes
-        $db->create_db();
+        $db->create_schema();
     };
     print( "Error while updating the 'test_results' table schema:  " . $@ ) if ($@);
 
@@ -82,7 +82,7 @@ sub patch_db {
         $dbh->do('ALTER TABLE users RENAME TO users_old');
 
         # create the table
-        $db->create_db();
+        $db->create_schema();
 
         # populate it
         $dbh->do('INSERT INTO users SELECT id, username, api_key FROM users_old');

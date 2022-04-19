@@ -82,7 +82,7 @@ Readonly my $API_KEY_RE                 => qr/^[a-z0-9-_]{1,512}$/i;
 Readonly my $CLIENT_ID_RE               => qr/^[a-z0-9-+~_.: ]{1,50}$/i;
 Readonly my $CLIENT_VERSION_RE          => qr/^[a-z0-9-+~_.: ]{1,50}$/i;
 Readonly my $DIGEST_RE                  => qr/^[a-f0-9]{40}$|^[a-f0-9]{64}$|^[a-f0-9]{96}$/i;
-Readonly my $ENGINE_TYPE_RE             => qr/^(?:mysql|postgresql|sqlite)$/i;
+Readonly my $ENGINE_TYPE_RE             => qr/^(?:mysql|postgresql|sqlite|clickhouse)$/i;
 Readonly my $IPADDR_RE                  => qr/^$|$IPV4_RE|$IPV6_RE/;
 Readonly my $JSONRPC_METHOD_RE          => qr/^[a-z0-9_-]*$/i;
 Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}$/;
@@ -389,7 +389,7 @@ sub untaint_abs_path {
 
 =head2 untaint_engine_type
 
-Accepts the strings C<"MySQL">, C<"PostgreSQL"> and C<"SQLite">,
+Accepts the strings C<"MySQL">, C<"PostgreSQL">, C<"SQLite"> and C<"Clickhouse">,
 case-insensitively.
 
 =cut

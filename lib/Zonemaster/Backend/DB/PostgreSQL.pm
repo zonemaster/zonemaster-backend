@@ -60,7 +60,7 @@ sub create_schema {
     ####################################################################
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
-                id serial PRIMARY KEY,
+                id BIGSERIAL PRIMARY KEY,
                 hash_id VARCHAR(16) NOT NULL,
                 domain VARCHAR(255) NOT NULL,
                 batch_id integer,

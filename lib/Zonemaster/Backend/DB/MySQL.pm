@@ -63,7 +63,7 @@ sub create_schema {
     ####################################################################
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS test_results (
-            id integer AUTO_INCREMENT PRIMARY KEY,
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
             domain varchar(255) NOT NULL,
             batch_id integer NULL,

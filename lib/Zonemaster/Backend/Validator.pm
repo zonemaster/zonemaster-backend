@@ -12,6 +12,7 @@ use JSON::Validator::Joi;
 use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
 use Zonemaster::Engine::Net::IP;
+use Zonemaster::Engine::Logger::Entry;
 use Zonemaster::LDNS;
 
 our @EXPORT_OK = qw(
@@ -211,17 +212,17 @@ sub jsonrpc_method {
 }
 
 sub formats {
-    my ( $rpcapi ) = @_;
+    my ( $config ) = @_;
     return {
-        domain => sub { check_domain( $rpcapi, @_ ) },
-        language_tag => sub { check_language_tag( $rpcapi, @_ ) },
-        ip => sub { check_ip( $rpcapi, @_ ) },
-        profile => sub { check_profile( $rpcapi, @_ ) },
+        domain => sub { check_domain( @_ ) },
+        language_tag => sub { check_language_tag( { $config->LANGUAGE_locale }, @_ ) },
+        ip => sub { check_ip( @_ ) },
+        profile => sub { check_profile( { $config->PUBLIC_PROFILES, $config->PRIVATE_PROFILES }, @_ ) },
     };
 }
 
 sub check_domain {
-    my ( $rpcapi, $domain ) = @_;
+    my ( $domain ) = @_;
 
     if ( !defined( $domain ) ) {
         return N__ 'Domain name required';
@@ -255,10 +256,10 @@ sub check_domain {
 }
 
 sub check_language_tag {
-    my ( $rpcapi, $language ) = @_;
-    my @error;
+    my ( $locales, $language ) = @_;
+    my %locales = %{$locales};
 
-    my %locales = $rpcapi->{config}->LANGUAGE_locale;
+    my @error;
 
     if ( $language !~ $LANGUAGE_RE ) {
         return N__ 'Invalid language tag format';
@@ -281,7 +282,7 @@ sub check_language_tag {
 }
 
 sub check_ip {
-    my ( undef, $ip ) = @_;
+    my ( $ip ) = @_;
 
     return N__ 'Invalid IP address' unless (
         Zonemaster::Engine::Net::IP::ip_is_ipv4( $ip )
@@ -293,13 +294,13 @@ sub check_ip {
 }
 
 sub check_profile  {
-    my ( $rpcapi, $profile ) = @_;
+    my ( $profiles, $profile ) = @_;
 
     if ( $profile !~ $PROFILE_NAME_RE ) {
         return N__ "Invalid profile format";
     }
 
-    my %profiles = ( $rpcapi->{config}->PUBLIC_PROFILES, $rpcapi->{config}->PRIVATE_PROFILES );
+    my %profiles = %{$profiles};
 
     if ( !exists $profiles{ lc($profile) } ) {
         return N__ "Unknown profile";

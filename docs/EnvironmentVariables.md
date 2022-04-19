@@ -14,5 +14,6 @@ environment variables.
   * `critical` (also accepted: `crit`, `fatal`)
   * `alert`
   * `emergency`
-* `ZM_BACKEND_RPCAPI_LOGJSON`: Setting it to any value will configure the
-  logger to log in JSON format, undefined by default.
+* `ZM_BACKEND_RPCAPI_LOGJSON`: Setting it to any thruthy value (non-empty
+  string or non-zero number) will configure the logger to log in JSON format,
+  undefined by default.

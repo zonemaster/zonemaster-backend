@@ -33,6 +33,10 @@ our @EXPORT_OK = qw(
   untaint_profile_name
   untaint_strictly_positive_int
   untaint_strictly_positive_millis
+  check_domain
+  check_ip
+  check_profile
+  check_language_tag
 );
 
 our %EXPORT_TAGS = (
@@ -57,6 +61,14 @@ our %EXPORT_TAGS = (
           untaint_strictly_positive_millis
           )
     ],
+    format => [
+        qw(
+            check_domain
+            check_ip
+            check_profile
+            check_language_tag
+        )
+    ]
 );
 
 # Does not check value ranges within the groups
@@ -211,15 +223,56 @@ sub jsonrpc_method {
     return joi->string->regex( $JSONRPC_METHOD_RE );
 }
 
+=head1 FORMAT INTERFACE
+
+This module contains a set of procedures for validating data types.
+The C<check_*> procedures take the value to validate and potential extra
+arguments and return either undef if the validation succeded or the reason of
+the failure.
+
+    use Zonemaster::Backend::Validator qw( :format );
+
+    # prints "invalid value: The domain name character(s) are not supported"
+    if ( defined ( my $error = check_domain( 'not a domain' ) ) ) {
+        print "invalid value: $error\n";
+    } else {
+        print "value is valid\n";
+    }
+
+    # prints "valud is valid"
+    if ( defined ( my $error = check_domain( 'zonemaster.net' ) ) ) {
+        print "invalid value: $error\n";
+    } else {
+        print "value is valid\n";
+    }
+
+=cut
+
+=head2 formats($config)
+
+Returns a hashref to be used with the L<"format" method in JSON::Validator|JSON::Validator::Schema/formats>.
+The keys are the names of the custom formats, supports: C<domain>,
+C<language_tag>, C<ip> and C<profile>.
+
+The method takes a L<Config|Zonemaster::Backend::Config> object as argument.
+
+=cut
+
 sub formats {
     my ( $config ) = @_;
     return {
-        domain => sub { check_domain( @_ ) },
-        language_tag => sub { check_language_tag( { $config->LANGUAGE_locale }, @_ ) },
-        ip => sub { check_ip( @_ ) },
-        profile => sub { check_profile( { $config->PUBLIC_PROFILES, $config->PRIVATE_PROFILES }, @_ ) },
+        domain => \&check_domain,
+        language_tag => sub { check_language_tag( @_, $config->LANGUAGE_locale ) },
+        ip => \&check_ip,
+        profile => sub { check_profile( @_, ( $config->PUBLIC_PROFILES, $config->PRIVATE_PROFILES ) ) },
     };
 }
+
+=head2 check_domain(%value)
+
+Validates a L<domain name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#domain-name>.
+
+=cut
 
 sub check_domain {
     my ( $domain ) = @_;
@@ -255,9 +308,22 @@ sub check_domain {
     return undef;
 }
 
+=head2 check_language_tag($value, %locales)
+
+Validates a L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#language-tag>.
+
+=over
+
+=item %locales
+
+Hash of accepted locales, using the same structure than the hash returned by L<PUBLIC_PROFILES|Zonemaster::Bakend::Config/PUBLIC_PROFILES>.
+
+=back
+
+=cut
+
 sub check_language_tag {
-    my ( $locales, $language ) = @_;
-    my %locales = %{$locales};
+    my ( $language, %locales ) = @_;
 
     my @error;
 
@@ -281,6 +347,12 @@ sub check_language_tag {
     return undef;
 }
 
+=head2 check_ip($value)
+
+Validates an L<IP address|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#ip-address>.
+
+=cut
+
 sub check_ip {
     my ( $ip ) = @_;
 
@@ -293,14 +365,26 @@ sub check_ip {
 
 }
 
+=head2 check_profile($value, %profiles)
+
+Validates a L<profile name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#profile-name>.
+
+=over
+
+=item %profiles
+
+Hash of accepted profiles, using the same structure than the hash returned by L<LANGUAGE_locale|Zonemaster::Bakend::Config/LANGUAGE_locale>.
+
+=back
+
+=cut
+
 sub check_profile  {
-    my ( $profiles, $profile ) = @_;
+    my ( $profile, %profiles ) = @_;
 
     if ( $profile !~ $PROFILE_NAME_RE ) {
         return N__ "Invalid profile format";
     }
-
-    my %profiles = %{$profiles};
 
     if ( !exists $profiles{ lc($profile) } ) {
         return N__ "Unknown profile";

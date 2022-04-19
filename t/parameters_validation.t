@@ -6,6 +6,7 @@ use utf8;
 use Test::More tests => 4;
 use Test::NoWarnings;
 
+use Cwd;
 use File::Temp qw[tempdir];
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::RPCAPI;
@@ -14,6 +15,7 @@ use JSON::PP;
 
 
 my $tempdir = tempdir( CLEANUP => 1 );
+my $cwd = cwd();
 
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
 [DB]
@@ -21,6 +23,9 @@ engine = SQLite
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
+
+[PUBLIC PROFILES]
+test = $cwd/t/test_profile.json
 EOF
 
 my $rpcapi = Zonemaster::Backend::RPCAPI->new(
@@ -169,6 +174,10 @@ subtest 'Test custom formats' => sub {
                 type => 'string',
                 format => 'domain',
             },
+            my_profile => {
+                type => 'string',
+                format => 'profile',
+            },
         }
     };
 
@@ -179,6 +188,7 @@ subtest 'Test custom formats' => sub {
                 my_ip => '192.0.2.1',
                 my_lang => 'en',
                 my_domain => 'zonemaster.net',
+                my_profile => 'test',
             },
             output => []
         },
@@ -211,7 +221,17 @@ subtest 'Test custom formats' => sub {
                 path => '/my_domain',
                 message => 'The domain name character(s) are not supported'
             }]
-        }
+        },
+        {
+            name => 'Bad profile',
+            input => {
+                my_profile => 'other_profile',
+            },
+            output => [{
+                path => '/my_profile',
+                message => 'Unknown profile'
+            }]
+        },
     ];
 
     test_validation 'test_extra_validator', $test_extra_validator_schema, $test_cases;

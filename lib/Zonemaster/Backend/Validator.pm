@@ -85,7 +85,7 @@ Readonly my $ENGINE_TYPE_RE             => qr/^(?:mysql|postgresql|sqlite)$/i;
 Readonly my $IPADDR_RE                  => qr/^$|$IPV4_RE|$IPV6_RE/;
 Readonly my $JSONRPC_METHOD_RE          => qr/^[a-z0-9_-]*$/i;
 Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}(_[A-Z]{2})?$/;
-Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9-.]{1,253}[.]?$}i;
+Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9_./-]{1,253}[.]?$}i;
 Readonly my $LDH_DOMAIN_RE2             => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
 Readonly my $LOCALE_TAG_RE              => qr/^[a-z]{2}_[A-Z]{2}$/;
 Readonly my $MARIADB_DATABASE_LENGTH_RE => qr/^.{1,64}$/;
@@ -293,7 +293,7 @@ sub check_domain {
         }
     }
 
-    if ( $domain !~ m/^[\-a-zA-Z0-9\.\_]+$/ ) {
+    if ( $domain !~ m{^[a-z0-9_./-]+$}i ) {
         return  N__ 'The domain name character(s) are not supported';
     }
 

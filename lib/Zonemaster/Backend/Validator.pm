@@ -356,10 +356,7 @@ Validates an L<IP address|https://github.com/zonemaster/zonemaster-backend/blob/
 sub check_ip {
     my ( $ip ) = @_;
 
-    return N__ 'Invalid IP address' unless (
-        Zonemaster::Engine::Net::IP::ip_is_ipv4( $ip )
-        || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ip )
-    );
+    return N__ 'Invalid IP address' unless untaint_ip_address($ip) ;
 
     return undef
 

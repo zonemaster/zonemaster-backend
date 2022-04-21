@@ -56,6 +56,9 @@ Repeating a key name in one section is forbidden.
 
 Each section in `backend_config.ini` is documented below.
 
+In addition to the configuration file, some settings can configured using
+[environement variables][Environement Variables].
+
 ## RPCAPI section
 
 Available keys: `enable_add_batch_job`, `enable_add_api_user`.
@@ -379,6 +382,7 @@ Otherwise a new test request is enqueued.
 [API documentation]:                  API.md
 [DBD::mysql documentation]:           https://metacpan.org/pod/DBD::mysql#host
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
+[Environement Variables]:             EnvironementVariables.md
 [File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1

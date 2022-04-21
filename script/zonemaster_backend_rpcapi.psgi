@@ -11,8 +11,6 @@ use JSON::PP;
 use JSON::RPC::Dispatch;
 use Log::Any qw( $log );
 use Log::Any::Adapter;
-use Log::Any::Adapter::Util qw( logging_methods logging_aliases );
-use Log::Dispatch;
 use POSIX;
 use Plack::Builder;
 use Plack::Response;
@@ -30,33 +28,11 @@ use Zonemaster::Backend::Metrics;
 
 local $| = 1;
 
-# Returns a Log::Any-compatible log level string, or throws an exception.
-sub get_loglevel {
-    my $value = $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL} || 'warning';
-    for my $method ( logging_methods(), logging_aliases() ) {
-        if ( $value eq $method ) {
-            return $method;
-        }
-    }
-    die "Error: Unrecognized ZM_BACKEND_RPCAPI_LOGLEVEL $value\n";
-}
-
 Log::Any::Adapter->set(
-    'Dispatch',
-    dispatcher => Log::Dispatch->new(
-        outputs => [
-            [
-                'Screen',
-                min_level => get_loglevel(),
-                stderr    => 1,
-                newline   => 1,
-                callbacks => sub {
-                    my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
-                },
-            ],
-        ]
-    ),
+    '+Zonemaster::Backend::Log',
+    log_level => lc $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
+    json => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
+    stderr => 1
 );
 
 $SIG{__WARN__} = sub {
@@ -179,6 +155,7 @@ my $rpcapi_app = sub {
           $res->body( encode_json($errors) );
           $res->finalize;
         } else {
+            local $log->context->{rpc_method} = $content->{method};
             $res = $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
             my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
             Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");

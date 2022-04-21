@@ -33,6 +33,7 @@ lib/Zonemaster/Backend/DB/MySQL.pm
 lib/Zonemaster/Backend/DB/PostgreSQL.pm
 lib/Zonemaster/Backend/DB/SQLite.pm
 lib/Zonemaster/Backend/Errors.pm
+lib/Zonemaster/Backend/Log.pm
 lib/Zonemaster/Backend/Metrics.pm
 lib/Zonemaster/Backend/RPCAPI.pm
 lib/Zonemaster/Backend/TestAgent.pm

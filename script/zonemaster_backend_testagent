@@ -11,7 +11,6 @@ use Parallel::ForkManager;
 use Daemon::Control;
 use Log::Any qw( $log );
 use Log::Any::Adapter;
-use Log::Dispatch;
 
 use English;
 use Pod::Usage;
@@ -40,6 +39,7 @@ my $user;
 my $group;
 my $logfile;
 my $loglevel;
+my $logjson;
 my $opt_outfile;
 my $opt_help;
 GetOptions(
@@ -49,6 +49,7 @@ GetOptions(
     'group=s'    => \$group,
     'logfile=s'  => \$logfile,
     'loglevel=s' => \$loglevel,
+    'logjson!'  => \$logjson,
     'outfile=s'  => \$opt_outfile,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
@@ -60,56 +61,13 @@ $opt_outfile //= '/var/log/zonemaster/zonemaster_backend_testagent.out';
 $loglevel    //= 'info';
 $loglevel = lc $loglevel;
 
-$loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
-
-# Returns a Log::Dispatch object logging to STDOUT
-#
-# This procedure duplicates the STDOUT file descriptor to make sure that it keeps
-# logging to the same place even if STDOUT is later redirected.
-sub log_dispatcher_dup_stdout {
-    my $min_level = shift;
-
-    open( my $fd, '>&', \*STDOUT ) or die "Can't dup STDOUT: $!";
-    my $handle = IO::Handle->new_from_fd( $fd, "w" ) or die "Can't fdopen duplicated STDOUT: $!";
-    $handle->autoflush(1);
-
-    return Log::Dispatch->new(
-        outputs => [
-            [
-                'Handle',
-                handle    => $handle,
-                min_level => $min_level,
-                newline   => 1,
-                callbacks => sub {
-                    my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
-                },
-            ],
-        ]
-    );
-}
-
-# Returns a Log::Dispatch object logging to a file
-sub log_dispatcher_file {
-    my $min_level = shift;
-    my $log_file  = shift;
-
-    return Log::Dispatch->new(
-        outputs => [
-            [
-                'File',
-                filename  => $log_file,
-                mode      => '>>',
-                min_level => $min_level,
-                newline   => 1,
-                callbacks => sub {
-                    my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
-                },
-            ],
-        ]
-    );
-}
+Log::Any::Adapter->set(
+    '+Zonemaster::Backend::Log',
+    log_level => $loglevel,
+    json => $logjson,
+    file => $logfile,
+);
+$log->context->{pid} = $PID;
 
 $SIG{__WARN__} = sub {
     $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
@@ -214,16 +172,6 @@ sub preflight_checks {
 }
 
 
-# Initialize logging
-my $dispatcher;
-if ( $logfile eq '-' ) {
-    $dispatcher = log_dispatcher_dup_stdout( $loglevel );
-}
-else {
-    $dispatcher = log_dispatcher_file( $loglevel, $logfile );
-    print STDERR "zonemaster-testagent logging to file $logfile\n";
-}
-Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
 
 my $initial_config;
 
@@ -311,6 +259,10 @@ When FILE is -, the log is written to standard output.
 The location of the log level to use.
 
 The allowed values are specified at L<Log::Any/LOG-LEVELS>.
+
+=item B<--logjson>
+
+Enable JSON logging when specified.
 
 =item B<COMMAND>
 

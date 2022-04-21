@@ -89,10 +89,13 @@ sub handle_exception {
         $exception = Zonemaster::Backend::Error::Internal->new( reason => $reason );
     }
 
+    my $log_extra = $exception->as_hash;
+    delete $log_extra->{message};
+
     if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
-        $log->error($exception->as_string);
+        $log->error($exception->as_string, $log_extra);
     } else {
-        $log->info($exception->as_string);
+        $log->info($exception->as_string, $log_extra);
     }
 
     die $exception->as_hash;

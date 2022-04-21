@@ -32,6 +32,7 @@ sub patch_db_mysql {
 
     try {
         # update columns names, data type and default value
+        $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN id BIGINT AUTO_INCREMENT' );
         $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN creation_time created_at DATETIME NOT NULL' );
         $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_start_time started_at DATETIME DEFAULT NULL' );
         $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_end_time ended_at DATETIME DEFAULT NULL' );
@@ -59,6 +60,10 @@ sub patch_db_postgresql {
     $dbh->{AutoCommit} = 0;
 
     try {
+        # update sequence data type to BIGINT
+        $dbh->do( 'ALTER SEQUENCE test_results_id_seq AS BIGINT' );
+        $dbh->do( 'ALTER TABLE test_results ALTER COLUMN id SET DATA TYPE BIGINT' );
+
         # remove default value for "creation_time"
         $dbh->do( 'ALTER TABLE test_results ALTER COLUMN creation_time DROP DEFAULT' );
         $dbh->do( 'ALTER TABLE batch_jobs ALTER COLUMN creation_time DROP DEFAULT' );

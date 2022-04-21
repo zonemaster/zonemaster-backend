@@ -172,8 +172,6 @@ sub run {
 
     $self->{_db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
 
-    $self->{_db}->test_progress( $test_id );
-
     return;
 } ## end sub run
 

@@ -16,14 +16,14 @@
 * [MYSQL section](#MYSQL-section)
   * [host](#host)
   * [port](#port)
-  * [user](#user-1)
-  * [password](#password-1)
+  * [user](#user)
+  * [password](#password)
   * [database](#database)
 * [POSTGRESQL section](#POSTGRESQL-section)
   * [host](#host-1)
   * [port](#port-1)
-  * [user](#user-2)
-  * [password](#password-2)
+  * [user](#user-1)
+  * [password](#password-1)
   * [database](#database-1)
 * [SQLITE section](#SQLITE-section)
   * [database_file](#database_file)
@@ -391,15 +391,8 @@ Otherwise a new test request is enqueued.
 [LDH domain name]:                    https://datatracker.ietf.org/doc/html/rfc3696#section-2
 [MariaDB identifier max lengths]:     https://mariadb.com/kb/en/identifier-names/#maximum-length
 [MariaDB unquoted identifier]:        https://mariadb.com/kb/en/identifier-names/#unquoted
-[MYSQL.database]:                     #database
 [MYSQL.host]:                         #host
-[MYSQL.password]:                     #password-1
-[MYSQL.user]:                         #user-1
 [PostgreSQL identifier]:              https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
-[POSTGRESQL.database]:                #database-1
-[POSTGRESQL.host]:                    #host-1
-[POSTGRESQL.password]:                #password-2
-[POSTGRESQL.user]:                    #user-2
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile name section]:               API.md#profile-name
 [Profiles]:                           Architecture.md#profile

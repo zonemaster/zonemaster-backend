@@ -285,11 +285,11 @@ sub check_domain {
         if ( Zonemaster::LDNS::has_idn() ) {
             eval { $domain = Zonemaster::LDNS::to_idn( $domain ); };
             if ( $@ ) {
-                return N__ 'The domain name is not a valid IDNA string and cannot be converted to an A-label';
+                return N__ 'The domain name is IDNA invalid';
             }
         }
         else {
-            return N__ 'The domain name contains non-ascii characters and IDNA is not installed';
+            return N__ 'The domain name contains non-ascii characters and IDNA support is not installed';
         }
     }
 

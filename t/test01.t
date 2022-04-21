@@ -154,7 +154,7 @@ subtest 'add a first test' => sub {
 };
 
 subtest 'get and run test' => sub {
-    my $hash_id_from_db = $backend->{db}->get_test_request();
+    my ( $hash_id_from_db ) = $backend->{db}->get_test_request();
     is( $hash_id_from_db, $hash_id, 'Get correct test to run' );
 
     my $progress = $backend->test_progress( { test_id => $hash_id } );
@@ -312,7 +312,7 @@ subtest 'get_test_history' => sub {
 
         # create the test, retrieve its id but we don't run it
         $backend->start_domain_test( $params );
-        $hash_id = $backend->{db}->get_test_request();
+        ( $hash_id ) = $backend->{db}->get_test_request();
 
         $test_history = $backend->get_test_history( $method_params );
         #diag explain( $test_history );

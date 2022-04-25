@@ -22,12 +22,7 @@ use POSIX qw (setlocale);
 use Encode;
 
 # Zonemaster Modules
-use Zonemaster::LDNS;
 use Zonemaster::Engine;
-use Zonemaster::Engine::DNSName;
-use Zonemaster::Engine::Logger::Entry;
-use Zonemaster::Engine::Nameserver;
-use Zonemaster::Engine::Net::IP;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
@@ -37,7 +32,6 @@ use Zonemaster::Backend::Errors;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 our %json_schemas;
-our %extra_validators;
 my $recursor = Zonemaster::Engine::Recursor->new;
 
 sub joi {
@@ -182,16 +176,6 @@ sub get_host_by_name {
     return \@adresses;
 }
 
-$extra_validators{get_data_from_parent_zone} = sub {
-    my ( $self, $syntax_input ) = @_;
-    my @errors;
-
-    if ( defined $syntax_input->{domain} ) {
-        my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
-        push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
-    }
-    return @errors;
-};
 $json_schemas{get_data_from_parent_zone} = {
     type => 'object',
     additionalProperties => 0,
@@ -239,100 +223,6 @@ sub get_data_from_parent_zone {
     }
 }
 
-
-sub _check_domain {
-    my ( $self, $domain ) = @_;
-
-    if ( !defined( $domain ) ) {
-        return ( $domain, { status => 'nok', message => N__ 'Domain name required' } );
-    }
-
-    if ( $domain =~ m/[^[:ascii:]]+/ ) {
-        if ( Zonemaster::LDNS::has_idn() ) {
-            eval { $domain = Zonemaster::LDNS::to_idn( $domain ); };
-            if ( $@ ) {
-                return (
-                    $domain,
-                    {
-                        status  => 'nok',
-                        message => N__ 'The domain name is not a valid IDNA string and cannot be converted to an A-label'
-                    }
-                );
-            }
-        }
-        else {
-            return (
-                $domain,
-                {
-                    status  => 'nok',
-                    message => N__ 'The domain name contains non-ascii characters and IDNA is not installed'
-                }
-            );
-        }
-    }
-
-    if ( $domain !~ m{^[a-z0-9_./-]+$}i ) {
-        return (
-            $domain,
-            {
-                status  => 'nok',
-                message => N__ 'The domain name character(s) are not supported'
-            }
-        );
-    }
-
-    my %levels = Zonemaster::Engine::Logger::Entry::levels();
-    my @res;
-    @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
-    @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
-    if ( @res != 0 ) {
-        return ( $domain, { status => 'nok', message => N__ 'The domain name or label is too long' } );
-    }
-
-    return ( $domain, { status => 'ok', message => 'Syntax ok' } );
-}
-
-$extra_validators{start_domain_test} = sub {
-    my ( $self, $syntax_input ) = @_;
-
-    my @errors = eval {
-        my @errors;
-
-        if ( defined $syntax_input->{profile} ) {
-            $syntax_input->{profile} = lc $syntax_input->{profile};
-            my %profiles = ( $self->{config}->PUBLIC_PROFILES, $self->{config}->PRIVATE_PROFILES );
-            if ( !exists $profiles{ $syntax_input->{profile} } ) {
-                push @errors, { path => '/profile', message => N__ 'Unknown profile' };
-            }
-        }
-
-        if ( defined $syntax_input->{domain} ) {
-            my ( undef, $dn_syntax ) = $self->_check_domain( $syntax_input->{domain} );
-            push @errors, { path => "/domain", message => $dn_syntax->{message} } if ( $dn_syntax->{status} eq 'nok' );
-        }
-
-        if ( defined $syntax_input->{nameservers} && ref $syntax_input->{nameservers} eq 'ARRAY' && @{ $syntax_input->{nameservers} } ) {
-            while (my ($index, $ns_ip) = each @{ $syntax_input->{nameservers} }) {
-                my ( $ns, $ns_syntax ) = $self->_check_domain( $ns_ip->{ns} );
-                push @errors, { path => "/nameservers/$index/ns", message => $ns_syntax->{message} } if ( $ns_syntax->{status} eq 'nok' );
-
-                push @errors, { path => "/nameservers/$index/ip", message => N__ 'Invalid IP address' }
-                unless ( !$ns_ip->{ip}
-                    || Zonemaster::Engine::Net::IP::ip_is_ipv4( $ns_ip->{ip} )
-                    || Zonemaster::Engine::Net::IP::ip_is_ipv6( $ns_ip->{ip} ) );
-            }
-        }
-
-        return @errors;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-    else {
-        return @errors;
-    }
-};
-
 $json_schemas{start_domain_test} = {
     type => 'object',
     additionalProperties => 0,
@@ -349,14 +239,13 @@ $json_schemas{start_domain_test} = {
             type => 'array',
             items => $zm_validator->ds_info
         },
-        profile => $zm_validator->profile_name->compile,
+        profile => $zm_validator->profile_name,
         client_id => $zm_validator->client_id->compile,
         client_version => $zm_validator->client_version->compile,
         config => joi->string->compile,
         priority => $zm_validator->priority->compile,
         queue => $zm_validator->queue->compile,
         language => $zm_validator->language_tag,
-
     }
 };
 sub start_domain_test {
@@ -431,8 +320,8 @@ sub get_test_results {
 
     my $result;
     eval{
-        # Already validated by json_validate
-        my ( $locale, undef ) = $self->_get_locale( $params );
+
+        my $locale = $self->_get_locale( $params );
 
         my $translator;
         $translator = Zonemaster::Backend::Translator->new;
@@ -596,22 +485,28 @@ $json_schemas{add_batch_job} = {
             items => $zm_validator->domain_name,
             minItems => 1
         },
-        test_params => joi->object->strict->props(
-            ipv4 => joi->boolean,
-            ipv6 => joi->boolean,
-            nameservers => joi->array->strict->items(
-                $zm_validator->nameserver
-            ),
-            ds_info => joi->array->strict->items(
-                $zm_validator->ds_info
-            ),
-            profile => $zm_validator->profile_name,
-            client_id => $zm_validator->client_id,
-            client_version => $zm_validator->client_version,
-            config => joi->string,
-            priority => $zm_validator->priority,
-            queue => $zm_validator->queue
-        )->compile
+        test_params => {
+            type => 'object',
+            additionalProperties => 0,
+            properties => {
+                ipv4 => joi->boolean->compile,
+                ipv6 => joi->boolean->compile,
+                nameservers => {
+                    type => 'array',
+                    items => $zm_validator->nameserver
+                },
+                ds_info => {
+                    type => 'array',
+                    items => $zm_validator->ds_info
+                },
+                profile => $zm_validator->profile_name,
+                client_id => $zm_validator->client_id->compile,
+                client_version => $zm_validator->client_version->compile,
+                config => joi->string->compile,
+                priority => $zm_validator->priority->compile,
+                queue => $zm_validator->queue->compile,
+            }
+        }
     }
 };
 sub add_batch_job {
@@ -655,53 +550,32 @@ sub _get_locale {
     my @error;
 
     my $language = $params->{language};
-    my %locales = $self->{config}->LANGUAGE_locale;
     my $locale;
 
     if ( !defined $language ) {
-        return $locale, \@error;
+        return undef;
     }
 
     if ( length $language == 2 ) {
-        if ( !exists $locales{$language} ) {
-            push @error, {
-                path => "/language",
-                message => N__ "Unkown language string"
-            };
-        }
-        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
-            push @error, {
-                path => "/language",
-                message => N__ "Language string not unique"
-            };
-        } else {
-            ( $locale ) = keys %{ $locales{$language} };
-        }
+        my %locales = $self->{config}->LANGUAGE_locale;
+        ( $locale ) = keys %{ $locales{$language} };
     }
     else {
-        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
-            push @error, {
-                path => "/language",
-                message => N__ "Unkown language string"
-            };
-        } else {
-            $locale = $language;
-        }
+        $locale = $language;
     }
 
     if (defined $locale) {
         $locale .= '.UTF-8';
     }
 
-    return $locale, \@error,
+    return $locale;
 }
 
 sub _set_error_message_locale {
     my ( $self, $params ) = @_;
 
     my @error_response = ();
-    my ($locale, $locale_error) = $self->_get_locale( $params );
-    push @error_response, @{$locale_error};
+    my $locale = $self->_get_locale( $params );
 
     if (not defined $locale or $locale eq "") {
         # Don't translate message if locale is not defined
@@ -746,8 +620,7 @@ sub jsonrpc_validate {
                 }
             };
         }
-        my $sub_validator = $extra_validators{$jsonrpc_request->{method}};
-        my @error_response = $self->validate_params($method_schema, $sub_validator, $jsonrpc_request->{params});
+        my @error_response = $self->validate_params($method_schema, $jsonrpc_request->{params});
 
         if ( scalar @error_response ) {
             return {
@@ -766,7 +639,7 @@ sub jsonrpc_validate {
 }
 
 sub validate_params {
-    my ( $self, $method_schema, $sub_validator, $params ) = @_;
+    my ( $self, $method_schema, $params ) = @_;
     my @error_response = ();
 
     push @error_response, $self->_set_error_message_locale( $params );
@@ -774,7 +647,9 @@ sub validate_params {
     if (blessed $method_schema) {
         $method_schema = $method_schema->compile;
     }
-    my @json_validation_error = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data($method_schema)->validate( $params );
+    my $jv = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data($method_schema);
+    $jv->formats(Zonemaster::Backend::Validator::formats( $self->{config} ));
+    my @json_validation_error = $jv->validate( $params );
 
     # Customize error message from json validation
     foreach my $err ( @json_validation_error ) {
@@ -783,7 +658,7 @@ sub validate_params {
 
         # Handle 'required' errors globally so it does not get overwritten
         if ($details[1] eq 'required') {
-            $message = decode_utf8(__ 'Missing property');
+            $message = N__ 'Missing property';
         } else {
             my @path = split '/', $err->path, -1;
             shift @path; # first item is an empty string
@@ -809,11 +684,6 @@ sub validate_params {
 
         push @error_response, { path => $err->path, message => $message };
 
-    }
-
-    # Add messages from extra validation function
-    if ( defined $sub_validator ) {
-        push @error_response, $self->$sub_validator($params);
     }
 
     # Translate messages

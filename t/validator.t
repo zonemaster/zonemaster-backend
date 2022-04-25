@@ -21,7 +21,9 @@ sub taint {
 }
 
 sub compile_schema {
-    return JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data(@_);
+    my $jv = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data(@_);
+    $jv->formats(Zonemaster::Backend::Validator::formats( undef ));
+    return $jv;
 }
 
 subtest 'Everything but NoWarnings' => sub {
@@ -29,7 +31,7 @@ subtest 'Everything but NoWarnings' => sub {
     use_ok( 'Zonemaster::Backend::Validator', ':untaint' );
 
     subtest 'ds_info' => sub {
-        my $v          = compile_schema Zonemaster::Backend::Validator->new->ds_info;
+        my $v          = compile_schema( Zonemaster::Backend::Validator->new->ds_info );
         my $ds_info_40 = { digest => '0' x 40, algorithm => 0, digtype => 0, keytag => 0 };
         my $ds_info_64 = { digest => '0' x 64, algorithm => 0, digtype => 0, keytag => 0 };
         eq_or_diff [ $v->validate( $ds_info_40 ) ], [], 'accept ds_info with 40-digit hash';
@@ -37,7 +39,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'ip_address' => sub {
-        my $v = compile_schema Zonemaster::Backend::Validator->new->ip_address;
+        my $v = compile_schema( Zonemaster::Backend::Validator->new->ip_address );
         eq_or_diff [ $v->validate( '192.168.0.2' ) ], [], 'accept: 192.168.0.2';
         eq_or_diff [ $v->validate( '2001:db8::1' ) ], [], 'accept: 2001:db8::1';
     };

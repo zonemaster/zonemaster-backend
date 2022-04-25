@@ -6,6 +6,7 @@ use utf8;
 use Test::More tests => 4;
 use Test::NoWarnings;
 
+use Cwd;
 use File::Temp qw[tempdir];
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::RPCAPI;
@@ -14,6 +15,7 @@ use JSON::PP;
 
 
 my $tempdir = tempdir( CLEANUP => 1 );
+my $cwd = cwd();
 
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
 [DB]
@@ -21,6 +23,9 @@ engine = SQLite
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
+
+[PUBLIC PROFILES]
+test = $cwd/t/test_profile.json
 EOF
 
 my $rpcapi = Zonemaster::Backend::RPCAPI->new(
@@ -31,12 +36,12 @@ my $rpcapi = Zonemaster::Backend::RPCAPI->new(
 );
 
 sub test_validation {
-    my ( $method_name, $method_schema, $sub_validator, $test_cases ) = @_;
+    my ( $method_name, $method_schema, $test_cases ) = @_;
 
     subtest "Method $method_name" => sub {
         for my $test_case (@$test_cases) {
             subtest 'Test case: ' . $test_case->{name} => sub {
-                my @res = $rpcapi->validate_params( $method_schema, $sub_validator, $test_case->{input});
+                my @res = $rpcapi->validate_params( $method_schema, $test_case->{input});
                 is_deeply(\@res, $test_case->{output}, 'Matched validation output' ) or diag( encode_json \@res);
             };
         }
@@ -88,8 +93,8 @@ subtest 'Test JSON schema' => sub {
         }
     ];
 
-    test_validation 'test_joi', $test_joi_schema, undef, $test_cases;
-    test_validation 'test_raw', $test_raw_schema, undef, $test_cases;
+    test_validation 'test_joi', $test_joi_schema, $test_cases;
+    test_validation 'test_raw', $test_raw_schema, $test_cases;
 };
 
 subtest 'Test custom error message' => sub {
@@ -150,26 +155,29 @@ subtest 'Test custom error message' => sub {
         }
     ];
 
-    test_validation 'test_custom_error', $test_custom_error_schema, undef, $test_cases;
+    test_validation 'test_custom_error', $test_custom_error_schema, $test_cases;
 };
 
-subtest 'Test extra validators' => sub {
-    my $test_extra_validator_sub = sub {
-        my ($self, $input) = @_;
-        my @errors;
-        if ( $input->{answer} != 42 ) {
-            push @errors, { path => '/answer', message => 'Not the expected answer' };
-        }
-
-        return @errors;
-    };
-
+subtest 'Test custom formats' => sub {
     my $test_extra_validator_schema = {
         type => 'object',
         properties => {
-            answer => {
-                type => 'number',
-            }
+            my_ip => {
+                type => 'string',
+                format => 'ip',
+            },
+            my_lang => {
+                type => 'string',
+                format => 'language_tag',
+            },
+            my_domain => {
+                type => 'string',
+                format => 'domain',
+            },
+            my_profile => {
+                type => 'string',
+                format => 'profile',
+            },
         }
     };
 
@@ -177,21 +185,54 @@ subtest 'Test extra validators' => sub {
         {
             name => 'Input ok',
             input => {
-                answer => 42,
+                my_ip => '192.0.2.1',
+                my_lang => 'en',
+                my_domain => 'zonemaster.net',
+                my_profile => 'test',
             },
             output => []
         },
         {
-            name => 'Bad input',
+            name => 'Bad ip',
             input => {
-                answer => 0,
+                my_ip => 'abc',
             },
             output => [{
-                path => '/answer',
-                message => 'Not the expected answer'
+                path => '/my_ip',
+                message => 'Invalid IP address'
             }]
-        }
+        },
+        {
+            name => 'Bad language format',
+            input => {
+                my_lang => 'abc',
+            },
+            output => [{
+                path => '/my_lang',
+                message => 'Invalid language tag format'
+            }]
+        },
+        {
+            name => 'Bad domain',
+            input => {
+                my_domain => 'not a domain',
+            },
+            output => [{
+                path => '/my_domain',
+                message => 'The domain name character(s) are not supported'
+            }]
+        },
+        {
+            name => 'Bad profile',
+            input => {
+                my_profile => 'other_profile',
+            },
+            output => [{
+                path => '/my_profile',
+                message => 'Unknown profile'
+            }]
+        },
     ];
 
-    test_validation 'test_extra_validator', $test_extra_validator_schema,  $test_extra_validator_sub, $test_cases;
+    test_validation 'test_extra_validator', $test_extra_validator_schema, $test_cases;
 };

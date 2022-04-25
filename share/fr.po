@@ -66,7 +66,7 @@ msgid "Invalid IP address"
 msgstr "Adresse IP invalide"
 
 msgid "Invalid profile format"
-msgstr "Format de profil invalid"
+msgstr "Format de profil invalide"
 
 msgid "Unknown profile"
 msgstr "Profil inconnu"

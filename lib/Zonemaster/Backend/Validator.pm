@@ -227,7 +227,7 @@ sub jsonrpc_method {
 
 This module contains a set of procedures for validating data types.
 The C<check_*> procedures take the value to validate and potential extra
-arguments and return either undef if the validation succeded or the reason of
+arguments and return either undef if the validation succeeded or the reason of
 the failure.
 
     use Zonemaster::Backend::Validator qw( :format );
@@ -239,7 +239,7 @@ the failure.
         print "value is valid\n";
     }
 
-    # prints "valud is valid"
+    # prints "value is valid"
     if ( defined ( my $error = check_domain( 'zonemaster.net' ) ) ) {
         print "invalid value: $error\n";
     } else {

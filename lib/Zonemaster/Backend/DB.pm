@@ -278,25 +278,28 @@ sub select_test_results {
     return $result;
 }
 
-sub test_results {
+# "$new_results" is JSON encoded
+sub store_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-    if ( $new_results ) {
-        $self->dbh->do(
-            q[
-                UPDATE test_results
-                SET progress = 100,
-                    ended_at = ?,
-                    results = ?
-                WHERE hash_id = ?
-                  AND progress < 100
-            ],
-            undef,
-            $self->format_time( time() ),
-            $new_results,
-            $test_id,
-        );
-    }
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                ended_at = ?,
+                results = ?
+            WHERE hash_id = ?
+              AND progress < 100
+        ],
+        undef,
+        $self->format_time( time() ),
+        $new_results,
+        $test_id,
+    );
+}
+
+sub test_results {
+    my ( $self, $test_id ) = @_;
 
     my $result = $self->select_test_results( $test_id );
 
@@ -504,19 +507,7 @@ sub force_end_test {
         "timestamp" => $timestamp,
         };
 
-    $self->dbh->do(
-        q[
-            UPDATE test_results
-            SET progress = 100,
-                ended_at = ?,
-                results = ?
-            WHERE hash_id = ?
-        ],
-        undef,
-        $self->format_time( time() ),
-        encode_json($result),
-        $hash_id,
-    );
+    $self->store_results( $hash_id, encode_json($result) );
 }
 
 sub process_dead_test {

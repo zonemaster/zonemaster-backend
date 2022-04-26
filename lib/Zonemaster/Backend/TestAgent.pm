@@ -170,7 +170,7 @@ sub run {
         }
     }
 
-    $self->{_db}->test_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
+    $self->{_db}->store_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
 
     return;
 } ## end sub run

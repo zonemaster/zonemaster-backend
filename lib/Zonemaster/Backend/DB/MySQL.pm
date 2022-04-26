@@ -115,6 +115,36 @@ sub create_schema {
         );
     }
 
+    ####################################################################
+    # RESULT ENTRIES
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS result_entries (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            hash_id VARCHAR(16) NOT NULL,
+            level VARCHAR(15) NOT NULL,
+            module VARCHAR(255) NOT NULL,
+            testcase VARCHAR(255) NOT NULL,
+            tag VARCHAR(255) NOT NULL,
+            timestamp REAL NOT NULL,
+            args BLOB NOT NULL
+        ) ENGINE=InnoDB
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'result_entries' table", data => $dbh->errstr() );
+
+    $indexes = $dbh->selectall_hashref( 'SHOW INDEXES FROM result_entries', 'Key_name' );
+    if ( not exists($indexes->{result_entries__hash_id}) ) {
+        $dbh->do(
+            'CREATE INDEX result_entries__hash_id ON result_entries (hash_id)'
+        );
+    }
+
+    if ( not exists($indexes->{result_entries__level}) ) {
+        $dbh->do(
+            'CREATE INDEX result_entries__level ON result_entries (level)'
+        );
+    }
+
 
     ####################################################################
     # BATCH JOBS

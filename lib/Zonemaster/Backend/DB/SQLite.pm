@@ -96,6 +96,30 @@ sub create_schema {
         'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'
     );
 
+    ####################################################################
+    # RESULT ENTRIES
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS result_entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hash_id VARCHAR(16) NOT NULL,
+            level VARCHAR(15) NOT NULL,
+            module VARCHAR(255) NOT NULL,
+            testcase VARCHAR(255) NOT NULL,
+            tag VARCHAR(255) NOT NULL,
+            timestamp REAL NOT NULL,
+            args BLOB NOT NULL
+        )
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'result_entries' table", data => $dbh->errstr() );
+
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS result_entries__hash_id ON result_entries (hash_id)'
+    );
+
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS result_entries__level ON result_entries (level)'
+    );
 
     ####################################################################
     # BATCH JOBS

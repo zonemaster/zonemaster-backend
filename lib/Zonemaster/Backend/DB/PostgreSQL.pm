@@ -101,6 +101,30 @@ sub create_schema {
         'CREATE INDEX IF NOT EXISTS test_results__progress_priority_id ON test_results (progress, priority DESC, id) WHERE (progress = 0)'
     );
 
+    ####################################################################
+    # RESULT ENTRIES
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS result_entries (
+            id BIGSERIAL PRIMARY KEY,
+            hash_id VARCHAR(16) NOT NULL,
+            level VARCHAR(15) NOT NULL,
+            module VARCHAR(255) NOT NULL,
+            testcase VARCHAR(255) NOT NULL,
+            tag VARCHAR(255) NOT NULL,
+            timestamp REAL NOT NULL,
+            args JSON NOT NULL
+        )
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'result_entries' table", data => $dbh->errstr() );
+
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS result_entries__hash_id ON result_entries (hash_id)'
+    );
+
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS result_entries__level ON result_entries (level)'
+    );
 
     ####################################################################
     # BATCH JOBS

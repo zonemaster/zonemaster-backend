@@ -37,7 +37,7 @@ sub patch_db_mysql {
         $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_start_time started_at DATETIME DEFAULT NULL' );
         $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_end_time ended_at DATETIME DEFAULT NULL' );
 
-        $dbh->do( 'ALTER TABLE batch_jobs CHANGE COLUMN creation_time created_at DATETIME DEFAULT NULL' );
+        $dbh->do( 'ALTER TABLE batch_jobs CHANGE COLUMN creation_time created_at DATETIME NOT NULL' );
 
         # add table constraints
         $dbh->do( 'ALTER TABLE test_results ADD CONSTRAINT UNIQUE (hash_id)' );

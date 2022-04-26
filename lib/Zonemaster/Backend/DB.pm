@@ -381,12 +381,12 @@ sub get_test_request {
     my $result_id;
     my $dbh = $self->dbh;
 
-    my ( $id, $hash_id, $batch_id );
+    my ( $hash_id, $batch_id );
     if ( defined $queue_label ) {
-        ( $id, $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
+        ( $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
     }
     else {
-        ( $id, $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
+        ( $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
     }
 
     if ( $hash_id ) {

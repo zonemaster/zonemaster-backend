@@ -258,6 +258,7 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
+
             SELECT EXTRACT(EPOCH FROM ? - started_at)
             FROM test_results
             WHERE hash_id=?

@@ -10,6 +10,7 @@ use JSON::PP;
 use Scalar::Util qw( blessed );
 use File::Slurp;
 use Locale::TextDomain qw[Zonemaster-Backend];
+use Log::Any qw( $log );
 
 use Zonemaster::LDNS;
 
@@ -18,6 +19,7 @@ use Zonemaster::Engine::Translator;
 use Zonemaster::Backend::Config;
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Util;
+use Zonemaster::Engine::Logger::Entry;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -62,6 +64,7 @@ sub run {
         die "Must give the name of a domain to test.\n";
     }
     $domain = $self->to_idn( $domain );
+    my %numeric = Zonemaster::Engine::Logger::Entry->levels();
 
     if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
         $self->add_fake_delegation( $domain, $params->{nameservers} );
@@ -110,6 +113,21 @@ sub run {
         Zonemaster::Engine->logger->callback(
             sub {
                 my ( $entry ) = @_;
+
+                # TODO: Make minimum level configurable
+                if ( $entry->numeric_level >= $numeric{INFO} ) {
+                    $log->debug("Adding result entry in database: " . $entry->string);
+
+                    $self->{_db}->add_result_entry( $test_id, {
+                        timestamp => $entry->timestamp,
+                        module    => $entry->module,
+                        testcase  => $entry->testcase,
+                        tag       => $entry->tag,
+                        level     => $entry->numeric_level,
+                        args      => $entry->args // {},
+                    });
+                }
+
                 if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
                     $nbr_testcases_finished++;
                     # limit to max 99%, 100% is reached when data is stored in database
@@ -132,7 +150,7 @@ sub run {
         }
     }
 
-    $self->{_db}->store_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
+    $self->{_db}->set_test_completed( $test_id );
 
     return;
 } ## end sub run

@@ -371,6 +371,34 @@ sub test_state {
     }
 }
 
+sub set_test_completed {
+    my ( $self, $test_id ) = @_;
+
+    my $current_state = $self->test_state( $test_id );
+
+    if ( $current_state ne $TEST_RUNNING ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to COMPLETED' );
+    }
+
+    my $rows_affected = $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                ended_at = ?
+            WHERE hash_id = ?
+              AND 0 < progress
+              AND progress < 100
+        ],
+        undef,
+        $self->format_time( time() ),
+        $test_id,
+    );
+
+    if ( $rows_affected == 0 ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "job not found or illegal transition" );
+    }
+}
+
 sub select_test_results {
     my ( $self, $test_id ) = @_;
 
@@ -379,8 +407,7 @@ sub select_test_results {
             SELECT
                 hash_id,
                 created_at,
-                params,
-                results
+                params
             FROM test_results
             WHERE hash_id = ?
         ],
@@ -431,14 +458,33 @@ sub test_results {
 
     my $result = $self->select_test_results( $test_id );
 
+    my @result_entries = $self->dbh->selectall_array(
+        q[
+            SELECT
+                level,
+                module,
+                testcase,
+                tag,
+                timestamp,
+                args
+            FROM result_entries
+            WHERE hash_id = ?
+        ],
+        { Slice => {} },
+        $test_id
+    );
+
     eval {
         $result->{params}  = decode_json( $result->{params} );
 
-        if (defined $result->{results}) {
-            $result->{results} = decode_json( $result->{results} );
-        } else {
-            $result->{results} = [];
-        }
+        @result_entries = map {
+            {
+                %$_,
+                args => decode_json( $_->{args} ),
+            }
+        } @result_entries;
+
+        $result->{results} = \@result_entries;
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
@@ -462,11 +508,13 @@ sub get_test_history {
     my @results;
     my $query = q[
         SELECT
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = 'CRITICAL') AS nb_critical,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = 'ERROR') AS nb_error,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = 'WARNING') AS nb_warning,
             id,
             hash_id,
             created_at,
-            undelegated,
-            results
+            undelegated
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY id DESC
@@ -484,16 +532,16 @@ sub get_test_history {
     $sth->execute();
 
     while ( my $h = $sth->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results}) if $h->{results};
-        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
-        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
-        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
-
-        # More important overwrites
-        my $overall = 'ok';
-        $overall = 'warning'  if $warning;
-        $overall = 'error'    if $error;
-        $overall = 'critical' if $critical;
+        my $overall_result = 'ok';
+        if ( $h->{nb_critical} ) {
+            $overall_result = 'critical';
+        }
+        elsif ( $h->{nb_error} ) {
+            $overall_result = 'error';
+        }
+        elsif ( $h->{nb_warning} ) {
+            $overall_result = 'warning';
+        }
 
         push(
             @results,
@@ -501,7 +549,7 @@ sub get_test_history {
                 id               => $h->{hash_id},
                 created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
-                overall_result   => $overall,
+                overall_result   => $overall_result,
             }
         );
     }
@@ -726,14 +774,15 @@ sub process_unfinished_tests {
     );
 
     my $msg = {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "UNABLE_TO_FINISH_TEST",
-        "args"      => { max_execution_time => $test_run_timeout },
-        "timestamp" => $test_run_timeout
+        level     => "CRITICAL",
+        module    => "BACKEND_TEST_AGENT",
+        testcase  => "",
+        tag       => "UNABLE_TO_FINISH_TEST",
+        args      => { max_execution_time => $test_run_timeout },
+        timestamp => $test_run_timeout
     };
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $self->force_end_test($h->{hash_id}, $h->{results}, $msg);
+        $self->force_end_test($h->{hash_id}, $msg);
     }
 }
 
@@ -775,44 +824,38 @@ sub select_unfinished_tests {
     }
 }
 
-=head2 force_end_test($hash_id, $results, $msg)
+=head2 force_end_test($hash_id, $msg)
 
-Append the $msg log entry to the $results arrayref and store the results into
-the database.
+Store the $msg log entry into the database and mark test with $hash_id as
+finished (progress to 100) in database.
 
 =cut
 
 sub force_end_test {
-    my ( $self, $hash_id, $results, $msg ) = @_;
-    my $result;
-    if ( defined $results && $results =~ /^\[/ ) {
-        $result = decode_json( $results );
-    }
-    else {
-        $result = [];
-    }
-    push @$result, $msg;
+    my ( $self, $hash_id, $msg ) = @_;
 
-    $self->store_results( $hash_id, encode_json($result) );
+    $self->add_result_entry( $hash_id, $msg );
+    $self->set_test_completed( $hash_id );
 }
 
 =head2 process_dead_test($hash_id)
 
-Append a new log entry C<BACKEND_TEST_AGENT:TEST_DIED> to the test with $hash_id.
-Then store the results in database.
+Store a new log entry C<BACKEND_TEST_AGENT:TEST_DIED> in database for the test
+with $hash_id.
 
 =cut
 
 sub process_dead_test {
     my ( $self, $hash_id ) = @_;
-    my ( $results ) = $self->dbh->selectrow_array("SELECT results FROM test_results WHERE hash_id = ?", undef, $hash_id);
     my $msg = {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "TEST_DIED",
-        "timestamp" => $self->get_relative_start_time($hash_id)
+        level     => "CRITICAL",
+        module    => "BACKEND_TEST_AGENT",
+        testcase  => "",
+        tag       => "TEST_DIED",
+        args      => {},
+        timestamp => $self->get_relative_start_time($hash_id)
     };
-    $self->force_end_test($hash_id, $results, $msg);
+    $self->force_end_test($hash_id, $msg);
 }
 
 # Converts the domain to lowercase and if the domain is not the root ('.')
@@ -943,6 +986,25 @@ sub to_iso8601 {
     my ( $class, $time ) = @_;
     $time =~ s/^([^ ]+) (.*)$/$1T$2Z/;
     return $time;
+}
+
+sub add_result_entry {
+    my ( $self, $hash_id, $entry ) = @_;
+
+    my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
+
+    my $nb_inserted = $self->dbh->do(
+        "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        undef,
+        $hash_id,
+        $entry->{level},
+        $entry->{module},
+        $entry->{testcase},
+        $entry->{tag},
+        $entry->{timestamp},
+        $json->encode( $entry->{args} ),
+    );
+    return $nb_inserted;
 }
 
 no Moose::Role;

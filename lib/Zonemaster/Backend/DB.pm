@@ -582,14 +582,14 @@ sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array(
-        "SELECT id FROM users WHERE username = ? AND api_key = ?",
+    my ( $count ) = $dbh->selectrow_array(
+        "SELECT count(*) FROM users WHERE username = ? AND api_key = ?",
         undef,
         $user,
         $api_key
     );
 
-    return $id;
+    return $count;
 }
 
 sub batch_exists_in_db {

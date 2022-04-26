@@ -222,7 +222,7 @@ sub add_batch_job {
 
     my $dbh = $self->dbh;
 
-    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
+    if ( 1 == $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};

@@ -242,6 +242,8 @@ sub test_progress {
                 $test_id,
             );
         }
+
+        return $progress;
     }
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );

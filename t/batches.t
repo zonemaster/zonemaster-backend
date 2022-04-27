@@ -189,23 +189,35 @@ subtest 'RPCAPI add_batch_job' => sub {
 subtest 'RPCAPI get_batch_job_result' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $backend = init_from_config( $db_backend, $config );
+    subtest 'batch job exists' => sub {
+        my @domains = ( 'afnic.fr' );
 
-    my @domains = ( 'afnic.fr' );
+        my $batch_id = $backend->add_batch_job(
+            {
+                %$user,
+                domains => \@domains,
+                test_params => $params
+            }
+        );
 
-    my $batch_id = $backend->add_batch_job(
-        {
-            %$user,
-            domains => \@domains,
-            test_params => $params
-        }
-    );
+        is( $batch_id, 1, 'correct batch job id returned' );
 
-    is( $batch_id, 1, 'correct batch job id returned' );
+        my $res = $backend->get_batch_job_result( { batch_id => $batch_id } );
 
-    my $res = $backend->get_batch_job_result( { batch_id => $batch_id } );
+        is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
+        is( $res->{nb_finished}, 0, 'correct number of finished tests' );
+    };
 
-    is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
-    is( $res->{nb_finished}, 0, 'correct number of finished tests' );
+    subtest 'unknown batch' => sub {
+        my $unknown_batch = 10;
+        dies_ok {
+            $backend->get_batch_job_result( { batch_id => $unknown_batch } );
+        };
+        my $res = $@;
+        is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
+        is( $res->{message}, 'Unknown batch', 'correct error message' );
+        is( $res->{data}->{batch_id}, $unknown_batch, 'correct data type returned' );
+    };
 };
 
 subtest 'batch with several domains' => sub {

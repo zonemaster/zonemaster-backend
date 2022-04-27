@@ -253,18 +253,6 @@ subtest 'API calls' => sub {
         is_deeply( $res->{ds_list}[0], $ds_value, 'Has correct DS values' );
     };
 
-    # TODO add_batch_job
-    subtest 'get_batch_job_result' => sub {
-        subtest 'unknown batch' => sub {
-            dies_ok {
-                $backend->get_batch_job_result( { batch_id => 10 } );
-            };
-            my $res = $@;
-            is( $res->{error}, "Zonemaster::Backend::Error::ResourceNotFound", 'Correct error type' );
-        };
-
-        # TODO get_batch_job_result with known batch
-    };
 };
 
 # start a second test with IPv6 disabled

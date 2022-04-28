@@ -102,7 +102,6 @@ before_install:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main status ; fi
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main restart ; fi
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main status ; fi
-  - if [[ "$TARGET" == "PostgreSQL" ]]; then systemctl status postgresql ; fi
 
 before_script:
   #- if [[ "$TARGET" == "PostgreSQL" ]]; then systemctl status postgresql || true ; fi

@@ -6,7 +6,7 @@ jobs:
   include:
   # Cover MySQL and PostgreSQL with the latest supported Perl version
   - perl: "5.32.0"
-    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini PGPORT=5433
+    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
     services: postgresql
 
 addons:
@@ -99,7 +99,7 @@ before_install:
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 
-  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main status ; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf; fi
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main restart ; fi
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main status ; fi
 

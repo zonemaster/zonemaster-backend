@@ -242,6 +242,8 @@ sub test_progress {
                 $test_id,
             );
         }
+
+        return $progress;
     }
 
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
@@ -278,25 +280,28 @@ sub select_test_results {
     return $result;
 }
 
-sub test_results {
+# "$new_results" is JSON encoded
+sub store_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-    if ( $new_results ) {
-        $self->dbh->do(
-            q[
-                UPDATE test_results
-                SET progress = 100,
-                    ended_at = ?,
-                    results = ?
-                WHERE hash_id = ?
-                  AND progress < 100
-            ],
-            undef,
-            $self->format_time( time() ),
-            $new_results,
-            $test_id,
-        );
-    }
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                ended_at = ?,
+                results = ?
+            WHERE hash_id = ?
+              AND progress < 100
+        ],
+        undef,
+        $self->format_time( time() ),
+        $new_results,
+        $test_id,
+    );
+}
+
+sub test_results {
+    my ( $self, $test_id ) = @_;
 
     my $result = $self->select_test_results( $test_id );
 
@@ -380,12 +385,12 @@ sub get_test_request {
     my $result_id;
     my $dbh = $self->dbh;
 
-    my ( $id, $hash_id, $batch_id );
+    my ( $hash_id, $batch_id );
     if ( defined $queue_label ) {
-        ( $id, $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
+        ( $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
     }
     else {
-        ( $id, $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
+        ( $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
     }
 
     if ( $hash_id ) {
@@ -508,19 +513,7 @@ sub force_end_test {
         "timestamp" => $timestamp,
         };
 
-    $self->dbh->do(
-        q[
-            UPDATE test_results
-            SET progress = 100,
-                ended_at = ?,
-                results = ?
-            WHERE hash_id = ?
-        ],
-        undef,
-        $self->format_time( time() ),
-        encode_json($result),
-        $hash_id,
-    );
+    $self->store_results( $hash_id, encode_json($result) );
 }
 
 sub process_dead_test {

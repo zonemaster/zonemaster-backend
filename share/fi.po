@@ -52,7 +52,7 @@ msgid "Missing property"
 msgstr "Kenttä puuttuu"
 
 msgid ""
-"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
+"Warning: Zonemaster::LDNS not compiled with libidn2, cannot handle non-ASCII "
 "names correctly."
 msgstr ""
 "Varoitus: Zonemaster :: LDNS ei ole käännetty libidnillä, eikä pysty "

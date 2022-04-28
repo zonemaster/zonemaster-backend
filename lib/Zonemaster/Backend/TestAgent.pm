@@ -131,37 +131,22 @@ sub run {
             sub {
                 my ( $entry ) = @_;
 
-                foreach my $trace ( reverse @{ $entry->trace } ) {
-                    foreach my $module_method ( @planned_methods ) {
-                        if ( index( $trace->[1], $module_method ) > -1 ) {
-                            my $percent_progress = 0;
-                            my ( $module ) = ( $module_method =~ /(.+::)[^:]+/ );
-                            if ( $previous_module eq $module ) {
-                                $counter_for_progress_indicator{executed}{$module_method}++;
-                            }
-                            elsif ( $previous_module ) {
-                                foreach my $planned_module_method ( @planned_methods ) {
-                                    if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq $previous_module ) {
-                                        $counter_for_progress_indicator{executed}{$planned_module_method}++;
-                                    }
-                                }
-                            }
-                            $previous_module = $module;
+                if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
+                    my $current_module = ucfirst( lc $entry->{_module} );
+                    my $current_testcase = $entry->{args}->{testcase};
+                    my $current_module_method = $current_module . "::" . $current_testcase;
 
-                            if ( $previous_method ne $module_method ) {
-                                $percent_progress = sprintf(
-                                    "%.0f",
-                                    99 * (
-                                        scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
-                                          scalar( @planned_methods )
-                                    )
-                                );
-                                $self->{_db}->test_progress( $test_id, $percent_progress );
+                    $counter_for_progress_indicator{executed}{$current_module_method}++;
 
-                                $previous_method = $module_method;
-                            }
-                        }
-                    }
+                    my $progress_percent = sprintf(
+                        "%.0f",
+                        99 * (
+                            scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
+                              scalar( @planned_methods )
+                        )
+                    );
+
+                    $self->{_db}->test_progress( $test_id, $progress_percent );
                 }
             }
         );

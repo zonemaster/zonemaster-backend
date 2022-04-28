@@ -61,7 +61,6 @@ sub new {
 sub run {
     my ( $self, $test_id, $show_progress ) = @_;
     my @accumulator;
-    my %counter;
     my %counter_for_progress_indicator;
 
     my $params;
@@ -164,8 +163,6 @@ sub run {
                         }
                     }
                 }
-
-                $counter{ uc $entry->level } += 1;
             }
         );
     }

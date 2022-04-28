@@ -106,16 +106,16 @@ sub run {
 
     # BASIC methods are always run
     $counter_for_progress_indicator{planned} = {
-        'Basic::basic00' => 'Basic::',
-        'Basic::basic01' => 'Basic::',
-        'Basic::basic02' => 'Basic::',
-        'Basic::basic03' => 'Basic::',
-        'Basic::basic04' => 'Basic::',
+        'Basic::basic00' => 1,
+        'Basic::basic01' => 1,
+        'Basic::basic02' => 1,
+        'Basic::basic03' => 1,
+        'Basic::basic04' => 1,
     };
     foreach my $module ( keys %methods ) {
         foreach my $method ( @{ $methods{$module} } ) {
             if ( Zonemaster::Engine::Util::should_run_test( $method ) ) {
-                $counter_for_progress_indicator{planned}{ $module . '::' . $method } = $module . '::';
+                $counter_for_progress_indicator{planned}{ $module . '::' . $method } = 1;
             }
         }
     }

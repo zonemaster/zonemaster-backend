@@ -63,6 +63,8 @@ addons:
     - libtest-nowarnings-perl
     - libtry-tiny-perl
     - starman
+    - postgresql
+    - libdbd-pg-perl
 
 before_install:
     # Help Perl find modules installed from OS packages

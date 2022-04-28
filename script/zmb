@@ -218,12 +218,11 @@ sub cmd_start_domain_test {
         my @nameserver_objects;
         for my $domain_ip_pair ( @opt_nameserver ) {
             my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
-            $ip //= "";
-            push @nameserver_objects,
-              {
-                ns => $domain,
-                ip => $ip,
-              };
+            if ($ip) {
+                push @nameserver_objects, { ns => $domain, ip => $ip };
+            } else {
+                push @nameserver_objects, { ns => $domain };
+            }
         }
         $params{nameservers} = \@nameserver_objects;
     }

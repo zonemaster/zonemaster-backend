@@ -1,7 +1,11 @@
 # Environment variables
 
-The PSGI server (`zonemaster_backend_rpcapi.psgi`) support the following
-environment variables.
+## Variable used by both RPCAPI daemon and Test Agent daemon
+
+* `ZONEMASTER_BACKEND_CONFIG_FILE`: Set a custom path for the backend
+  configuration file.
+
+## Variables used by RPCAPI daemon only
 
 * `ZM_BACKEND_RPCAPI_LOGLEVEL`: Configure the log level, `trace` by default.
   Accepted values are:

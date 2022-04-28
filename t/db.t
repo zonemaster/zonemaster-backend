@@ -180,6 +180,41 @@ subtest 'encoding and fingerprint' => sub {
         is $encoded_params, $expected_encoded_params, 'IDN domain: the encoded strings should match';
         is $fingerprint, $expected_fingerprint, 'IDN domain: correct fingerprint';
     };
+
+    subtest 'final dots' => sub {
+        subtest 'in domain' => sub {
+            my %params1 = ( domain => "example.com" );
+            my %params2 = ( domain => "example.com." );
+            my $expected_encoded_params = encode_utf8( '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
+
+            my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+            is $fingerprint1, $fingerprint2, 'same fingerprint';
+            is $encoded_params1, $expected_encoded_params, 'the encoded strings should match';
+
+        };
+
+        subtest 'in nameserver' => sub {
+            my %params1 = ( domain => "example.com", nameservers => [ { ns => "ns1.example.com." } ] );
+            my %params2 = ( domain => "example.com", nameservers => [ { ns => "ns1.example.com" } ] );
+            my $expected_encoded_params = encode_utf8( '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[{"ns":"ns1.example.com"}],"profile":"default"}' );
+
+            my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
+            my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
+            is $fingerprint1, $fingerprint2, 'same fingerprint';
+            is $encoded_params1, $expected_encoded_params, 'the encoded strings should match';
+
+        };
+
+        subtest 'root is not modified' => sub {
+            my %params = ( domain => "." );
+            my $expected_encoded_params = encode_utf8( '{"domain":".","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
+
+            my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
+            is $encoded_params, $expected_encoded_params, 'the encoded strings should match';
+
+        };
+    };
 };
 
 done_testing();

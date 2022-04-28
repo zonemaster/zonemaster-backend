@@ -16,6 +16,7 @@ use Zonemaster::Engine;
 use Zonemaster::Engine::Translator;
 use Zonemaster::Backend::Config;
 use Zonemaster::Engine::Profile;
+use Zonemaster::Engine::Util;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -67,11 +68,24 @@ sub run {
 
     $params = $self->{_db}->get_test_params( $test_id );
 
+    # If the profile parameter has been set in the API, then load a profile
+    if ( $params->{profile} ) {
+        $params->{profile} = lc($params->{profile});
+        if ( defined $self->{_profiles}{ $params->{profile} } ) {
+            Zonemaster::Engine::Profile->effective->merge( $self->{_profiles}{ $params->{profile} } );
+        }
+        else {
+            die "The profile [$params->{profile}] is not defined in the backend_config ini file";
+        }
+    }
+
     my %methods = Zonemaster::Engine->all_methods;
 
     foreach my $module ( keys %methods ) {
         foreach my $method ( @{ $methods{$module} } ) {
-            $counter_for_progress_indicator{planned}{ $module . '::' . $method } = $module . '::';
+            if ( Zonemaster::Engine::Util::should_run_test( $method ) ) {
+                $counter_for_progress_indicator{planned}{ $module . '::' . $method } = $module . '::';
+            }
         }
     }
 
@@ -136,17 +150,6 @@ sub run {
         $self->add_fake_ds( $domain, $params->{ds_info} );
     }
 
-
-    # If the profile parameter has been set in the API, then load a profile
-    if ( $params->{profile} ) {
-        $params->{profile} = lc($params->{profile});
-        if ( defined $self->{_profiles}{ $params->{profile} } ) {
-            Zonemaster::Engine::Profile->effective->merge( $self->{_profiles}{ $params->{profile} } );
-        }
-        else {
-            die "The profile [$params->{profile}] is not defined in the backend_config ini file";
-        }
-    }
 
     # If IPv4 or IPv6 transport has been explicitly disabled or enabled, then load it after
     # any explicitly set profile has been loaded.

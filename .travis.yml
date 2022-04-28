@@ -9,7 +9,7 @@ jobs:
     env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
     services: mysql
   - perl: "5.32.0"
-    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini PGPORT=5433
     services: postgresql
   # Cover supported Perl versions with SQLite
   - perl: "5.32.0"
@@ -113,8 +113,9 @@ before_install:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then systemctl status postgresql ; fi
 
 before_script:
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -h 127.0.0.1 -p 5433 -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -h 127.0.0.1 -p 5433 -U travis -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then systemctl status postgresql || true ; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then cpanm DBD::Pg; fi
 
     - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';"; fi

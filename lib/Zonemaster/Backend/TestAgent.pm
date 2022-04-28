@@ -113,6 +113,7 @@ sub run {
         }
     }
 
+    my @planned_methods = sort keys %{ $counter_for_progress_indicator{planned} };
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
@@ -124,7 +125,7 @@ sub run {
                 my ( $entry ) = @_;
 
                 foreach my $trace ( reverse @{ $entry->trace } ) {
-                    foreach my $module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
+                    foreach my $module_method ( @planned_methods ) {
                         if ( index( $trace->[1], $module_method ) > -1 ) {
                             my $percent_progress = 0;
                             my ( $module ) = ( $module_method =~ /(.+::)[^:]+/ );
@@ -132,7 +133,7 @@ sub run {
                                 $counter_for_progress_indicator{executed}{$module_method}++;
                             }
                             elsif ( $previous_module ) {
-                                foreach my $planned_module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
+                                foreach my $planned_module_method ( @planned_methods ) {
                                     if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq $previous_module ) {
                                         $counter_for_progress_indicator{executed}{$planned_module_method}++;
                                     }
@@ -145,7 +146,7 @@ sub run {
                                     "%.0f",
                                     99 * (
                                         scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
-                                          scalar( keys %{ $counter_for_progress_indicator{planned} } )
+                                          scalar( @planned_methods )
                                     )
                                 );
                                 $self->{_db}->test_progress( $test_id, $percent_progress );

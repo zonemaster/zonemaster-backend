@@ -6,20 +6,8 @@ jobs:
   include:
   # Cover MySQL and PostgreSQL with the latest supported Perl version
   - perl: "5.32.0"
-    env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
-    services: mysql
-  - perl: "5.32.0"
     env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini PGPORT=5433
     services: postgresql
-  # Cover supported Perl versions with SQLite
-  - perl: "5.32.0"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.30"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.28"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.26"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
   apt:

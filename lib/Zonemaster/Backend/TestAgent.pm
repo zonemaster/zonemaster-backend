@@ -68,6 +68,20 @@ sub run {
 
     $params = $self->{_db}->get_test_params( $test_id );
 
+    my ( $domain ) = $params->{domain};
+    if ( !$domain ) {
+        die "Must give the name of a domain to test.\n";
+    }
+    $domain = $self->to_idn( $domain );
+
+    if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
+        $self->add_fake_delegation( $domain, $params->{nameservers} );
+    }
+
+    if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
+        $self->add_fake_ds( $domain, $params->{ds_info} );
+    }
+
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
         $params->{profile} = lc($params->{profile});
@@ -77,6 +91,16 @@ sub run {
         else {
             die "The profile [$params->{profile}] is not defined in the backend_config ini file";
         }
+    }
+
+    # If IPv4 or IPv6 transport has been explicitly disabled or enabled, then load it after
+    # any explicitly set profile has been loaded.
+    if (defined $params->{ipv4}) {
+        Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
+    }
+
+    if (defined $params->{ipv6}) {
+        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
 
     my %methods = Zonemaster::Engine->all_methods;
@@ -89,11 +113,6 @@ sub run {
         }
     }
 
-    my ( $domain ) = $params->{domain};
-    if ( !$domain ) {
-        die "Must give the name of a domain to test.\n";
-    }
-    $domain = $self->to_idn( $domain );
 
     # used for progress indicator
     my ( $previous_module, $previous_method ) = ( '', '' );
@@ -114,9 +133,9 @@ sub run {
                             }
                             elsif ( $previous_module ) {
                                 foreach my $planned_module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
-                                    $counter_for_progress_indicator{executed}{$planned_module_method}++
-                                      if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq
-                                        $previous_module );
+                                    if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq $previous_module ) {
+                                        $counter_for_progress_indicator{executed}{$planned_module_method}++;
+                                    }
                                 }
                             }
                             $previous_module = $module;
@@ -140,25 +159,6 @@ sub run {
                 $counter{ uc $entry->level } += 1;
             }
         );
-    }
-
-    if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
-        $self->add_fake_delegation( $domain, $params->{nameservers} );
-    }
-
-    if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
-        $self->add_fake_ds( $domain, $params->{ds_info} );
-    }
-
-
-    # If IPv4 or IPv6 transport has been explicitly disabled or enabled, then load it after
-    # any explicitly set profile has been loaded.
-    if (defined $params->{ipv4}) {
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv4}, ( $params->{ipv4} ) ? ( 1 ) : ( 0 ) );
-    }
-
-    if (defined $params->{ipv6}) {
-        Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
 
     # Actually run tests!

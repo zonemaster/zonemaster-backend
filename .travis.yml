@@ -109,8 +109,10 @@ before_install:
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo systemctl restart postgresql; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then systemctl status postgresql ; fi
+
 before_script:
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then systemctl status postgresql || sudo systemctl start postgresql; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -h 127.0.0.1 -p 5433 -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -h 127.0.0.1 -p 5433 -U travis -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then cpanm DBD::Pg; fi

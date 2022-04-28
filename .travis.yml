@@ -75,6 +75,7 @@ addons:
     - libtest-nowarnings-perl
     - libtry-tiny-perl
     - starman
+    - postgresql
 
 before_install:
     # Help Perl find modules installed from OS packages
@@ -109,9 +110,13 @@ before_install:
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 
+    # Change default PostgreSQL 12 port to 5432
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main restart; fi
+
 before_script:
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U postgres -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U postgres -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
+    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
     - if [[ "$TARGET" == "PostgreSQL" ]]; then cpanm DBD::Pg; fi
 
     - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';"; fi

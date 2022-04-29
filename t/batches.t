@@ -26,16 +26,6 @@ diag "database: $db_backend";
 
 my $tempdir = tempdir( CLEANUP => 1 );
 
-my $datafile = q{t/batches.data};
-if ( not $ENV{ZONEMASTER_RECORD} ) {
-    die q{Stored data file missing} if not -r $datafile;
-    Zonemaster::Engine->preload_cache( $datafile );
-    Zonemaster::Engine->profile->set( q{no_network}, 1 );
-    diag "not recording";
-} else {
-    diag "recording";
-}
-
 # Require Zonemaster::Backend::RPCAPI.pm test
 use_ok( 'Zonemaster::Backend::RPCAPI' );
 
@@ -327,9 +317,5 @@ subtest 'batch job still running' => sub {
 #use_ok( 'Zonemaster::Backend::TestAgent' );
 #my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
 #isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
-
-if ( $ENV{ZONEMASTER_RECORD} ) {
-    Zonemaster::Engine->save_cache( $datafile );
-}
 
 done_testing();

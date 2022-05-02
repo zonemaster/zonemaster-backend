@@ -21,3 +21,15 @@
 * `ZM_BACKEND_RPCAPI_LOGJSON`: Setting it to any thruthy value (non-empty
   string or non-zero number) will configure the logger to log in JSON format,
   undefined by default.
+
+## Variables used by unit test scripts
+
+* `TARGET`: Set the database to use. If empty or undefined, "SQLite" will be
+  assumed. Accepted values are:
+  * `SQLite`
+  * `PostgreSQL`
+  * `MySQL`
+
+* `ZONEMASTER_RECORD`: Setting it to any thruthy value (non-empty string or
+  non-zero number) will record the data from the test to a file. Otherwise the
+  data is loaded from a file.

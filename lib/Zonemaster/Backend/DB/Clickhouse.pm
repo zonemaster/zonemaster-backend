@@ -461,7 +461,7 @@ sub get_relative_start_time {
 
     return $self->dbh->selectrow_array(
         q[
-            SELECT ? - started_at
+            SELECT date_diff( 'second', started_at, toDateTime( ?, 'UTC' ) )
             FROM test_results
             WHERE hash_id = ?
         ],

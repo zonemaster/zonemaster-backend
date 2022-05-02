@@ -90,15 +90,15 @@ my $params = {
 my $hash_id;
 
 # This is the first test added to the DB, its 'id' is 1
-my $test_id = 1;
 subtest 'add a first test' => sub {
     $hash_id = $rpcapi->start_domain_test( $params );
 
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
 
-    my ( $test_id_db, $hash_id_db ) = $dbh->selectrow_array( "SELECT id, hash_id FROM test_results WHERE id=?", undef, $test_id );
-    is( $test_id_db, $test_id , 'API start_domain_test -> Test inserted in the DB' );
+    my ( $count ) = $dbh->selectrow_array( "SELECT count(*) FROM test_results" );
+    is( $count, 1, 'Only one test in database' );
+    my ( $hash_id_db ) = $dbh->selectrow_array( "SELECT hash_id FROM test_results" );
     is( $hash_id_db, $hash_id , 'Correct hash_id in database' );
 
     # test test_progress API
@@ -155,14 +155,19 @@ subtest 'API calls' => sub {
     };
 
     subtest 'add_api_user' => sub {
+        my $user = { username => "zonemaster_test", api_key => "zonemaster_test's api key" };
         my $res;
         eval {
-            $res = $rpcapi->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } );
+            $res = $rpcapi->add_api_user( $user );
         };
         is( $res, 1, 'API add_api_user success');
 
-        my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-        is( scalar( $dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
+        my ( $count ) = $dbh->selectrow_array( "SELECT count(*) FROM users" );
+        is( $count, 1 ,'only one user created' );
+
+        my ( $username, $api_key ) = $dbh->selectrow_array( "SELECT username, api_key FROM users" );
+        is( $username, $user->{username}, 'correct username created' );
+        is( $api_key, $user->{api_key}, 'correct api_key created' );
     };
 
     subtest 'version_info' => sub {
@@ -350,7 +355,8 @@ subtest 'check historic tests' => sub {
           or BAIL_OUT( "test needs to be claimed before calling run()" );
         diag "running the agent on test $testid";
         $agent->run( $testid );
-        is( $rpcapi->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
+        my $res_progress = $rpcapi->test_progress( { test_id => $testid } );
+        is( $res_progress, 100 , 'API test_progress -> Test finished' );
     };
 
     my $test_history_delegated = $rpcapi->get_test_history(

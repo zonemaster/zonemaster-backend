@@ -5,7 +5,7 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use DBI qw(:utils :sql_types);
+use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 use Try::Tiny;
@@ -157,71 +157,6 @@ sub drop_tables {
     };
 
     return;
-}
-
-sub get_test_history {
-    my ( $self, $p ) = @_;
-
-    my $dbh = $self->dbh;
-
-    my $undelegated = undef;
-    if ($p->{filter} eq "undelegated") {
-        $undelegated = 1;
-    } elsif ($p->{filter} eq "delegated") {
-        $undelegated = 0;
-    }
-
-    my @results;
-    my $query = q[
-        SELECT
-            (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='CRITICAL') AS nb_critical,
-            (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='ERROR') AS nb_error,
-            (SELECT count(*) FROM (SELECT json_array_elements(results) AS result) AS t1 WHERE result->>'level'='WARNING') AS nb_warning,
-            id,
-            hash_id,
-            undelegated,
-            created_at
-        FROM test_results
-        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
-        ORDER BY id DESC
-        LIMIT ?
-        OFFSET ?];
-
-    my $sth1 = $dbh->prepare( $query );
-
-    $sth1->bind_param( 1, $p->{frontend_params}{domain} );
-    $sth1->bind_param( 2, $undelegated, SQL_INTEGER );
-    $sth1->bind_param( 3, $undelegated, SQL_INTEGER );
-    $sth1->bind_param( 4, $p->{limit} );
-    $sth1->bind_param( 5, $p->{offset} );
-
-    $sth1->execute();
-
-    while ( my $h = $sth1->fetchrow_hashref ) {
-        my $overall_result = 'ok';
-        if ( $h->{nb_critical} ) {
-            $overall_result = 'critical';
-        }
-        elsif ( $h->{nb_error} ) {
-            $overall_result = 'error';
-        }
-        elsif ( $h->{nb_warning} ) {
-            $overall_result = 'warning';
-        }
-
-        push(
-            @results,
-            {
-                id               => $h->{hash_id},
-                creation_time    => $h->{created_at},
-                created_at       => $self->to_iso8601( $h->{created_at} ),
-                undelegated      => $h->{undelegated},
-                overall_result   => $overall_result,
-            }
-        );
-    }
-
-    return \@results;
 }
 
 sub add_batch_job {

@@ -5,7 +5,7 @@ our $VERSION = '1.1.0';
 use Moose;
 use 5.14.2;
 
-use DBI qw(:utils :sql_types);
+use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use JSON::PP;
 
@@ -160,69 +160,6 @@ sub drop_tables {
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
 
     return;
-}
-
-sub get_test_history {
-    my ( $self, $p ) = @_;
-
-    my $dbh = $self->dbh;
-
-    my $undelegated = undef;
-    if ($p->{filter} eq "undelegated") {
-        $undelegated = 1;
-    } elsif ($p->{filter} eq "delegated") {
-        $undelegated = 0;
-    }
-
-    my @results;
-    my $query = q[
-        SELECT
-            id,
-            hash_id,
-            created_at,
-            undelegated,
-            results
-        FROM test_results
-        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
-        ORDER BY id DESC
-        LIMIT ?
-        OFFSET ?];
-
-    my $sth = $dbh->prepare( $query );
-
-    $sth->bind_param( 1, $p->{frontend_params}{domain} );
-    $sth->bind_param( 2, $undelegated, SQL_INTEGER );
-    $sth->bind_param( 3, $undelegated, SQL_INTEGER );
-    $sth->bind_param( 4, $p->{limit} );
-    $sth->bind_param( 5, $p->{offset} );
-
-    $sth->execute();
-
-    while ( my $h = $sth->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results}) if $h->{results};
-        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
-        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
-        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
-
-        # More important overwrites
-        my $overall = 'ok';
-        $overall = 'warning'  if $warning;
-        $overall = 'error'    if $error;
-        $overall = 'critical' if $critical;
-
-        push(
-            @results,
-            {
-                id               => $h->{hash_id},
-                creation_time    => $h->{created_at},
-                created_at       => $self->to_iso8601( $h->{created_at} ),
-                undelegated      => $h->{undelegated},
-                overall_result   => $overall,
-            }
-        );
-    }
-
-    return \@results;
 }
 
 sub add_batch_job {

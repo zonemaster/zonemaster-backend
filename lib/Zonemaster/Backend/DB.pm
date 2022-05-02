@@ -551,7 +551,7 @@ sub _project_params {
             delete $$nameserver{ip};
         }
         $$nameserver{ns} = lc $$nameserver{ns};
-        $$nameserver{ns} =~ s/\.$//;
+        $$nameserver{ns} =~ s/\.$// unless $$nameserver{ns} eq '.';
     }
     my @array_nameservers_sort = sort {
         $a->{ns} cmp $b->{ns} or

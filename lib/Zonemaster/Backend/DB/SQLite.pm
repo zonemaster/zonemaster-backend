@@ -161,6 +161,7 @@ sub drop_tables {
     my ( $self ) = @_;
 
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+    $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
 

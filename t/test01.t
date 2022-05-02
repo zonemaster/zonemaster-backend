@@ -10,6 +10,7 @@ use Test::Exception;
 use Test::More;    # see done_testing()
 
 use Zonemaster::Engine;
+use Zonemaster::Backend::Config;
 
 =head1 ENVIRONMENT
 
@@ -28,14 +29,8 @@ loaded from a file.
 
 # Use the TARGET environment variable to set the database to use
 # default to SQLite
-my $db_backend = $ENV{TARGET};
-if ( not $db_backend ) {
-    $db_backend = 'SQLite';
-} elsif ( $db_backend !~ /^(?:SQLite|MySQL|PostgreSQL)$/ ) {
-    BAIL_OUT( "Unsupported database backend: $db_backend" );
-}
-
-diag "database: $db_backend";
+my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
+note "database: $db_backend";
 
 my $tempdir = tempdir( CLEANUP => 1 );
 
@@ -253,18 +248,6 @@ subtest 'API calls' => sub {
         is_deeply( $res->{ds_list}[0], $ds_value, 'Has correct DS values' );
     };
 
-    # TODO add_batch_job
-    subtest 'get_batch_job_result' => sub {
-        subtest 'unknown batch' => sub {
-            dies_ok {
-                $backend->get_batch_job_result( { batch_id => 10 } );
-            };
-            my $res = $@;
-            is( $res->{error}, "Zonemaster::Backend::Error::ResourceNotFound", 'Correct error type' );
-        };
-
-        # TODO get_batch_job_result with known batch
-    };
 };
 
 # start a second test with IPv6 disabled

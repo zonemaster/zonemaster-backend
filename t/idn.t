@@ -14,14 +14,8 @@ use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::TestAgent;
 
-my $db_backend = $ENV{TARGET};
-if ( not $db_backend ) {
-    $db_backend = 'SQLite';
-} elsif ( $db_backend !~ /^(?:SQLite|MySQL|PostgreSQL)$/ ) {
-    BAIL_OUT( "Unsupported database backend: $db_backend" );
-}
-
-diag "database: $db_backend";
+my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
+note "database: $db_backend";
 
 my $tempdir = tempdir( CLEANUP => 1 );
 

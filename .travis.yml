@@ -53,6 +53,7 @@ addons:
     - libtext-csv-perl
     - libtool
     - m4
+
       # From Zonemaster Backend installation instruction
     - libclass-method-modifiers-perl
     - libconfig-inifiles-perl
@@ -68,15 +69,15 @@ addons:
     - liblog-any-adapter-dispatch-perl
     - liblog-any-perl
     - liblog-dispatch-perl
-    - libplack-perl
     - libplack-middleware-debug-perl
+    - libplack-perl
     - librole-tiny-perl
     - librouter-simple-perl
     - libstring-shellquote-perl
     - libtest-nowarnings-perl
     - libtry-tiny-perl
-    - starman
     - postgresql
+    - starman
 
 before_install:
     # Help Perl find modules installed from OS packages

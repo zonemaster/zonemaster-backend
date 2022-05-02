@@ -255,7 +255,7 @@ sub start_domain_test {
     eval {
         $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
 
-        die "No domain in parameters\n" unless ( $params->{domain} );
+        die "No domain in parameters\n" unless ( defined $params->{domain} && length($params->{domain}) );
 
         $params->{priority}  //= 10;
         $params->{queue}     //= 0;

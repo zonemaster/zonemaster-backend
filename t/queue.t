@@ -44,6 +44,12 @@ database = travis_zonemaster
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite
 
+[CLICKHOUSE]
+host     = 127.0.0.1
+user     = zonemaster_testing
+password = zonemaster
+database = zonemaster_testing
+
 [ZONEMASTER]
 age_reuse_previous_test = 10
 EOF

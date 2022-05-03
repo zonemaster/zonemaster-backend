@@ -67,7 +67,6 @@ Log::Any::Adapter->set(
     json => $logjson,
     file => $logfile,
 );
-$log->context->{pid} = $PID;
 
 $SIG{__WARN__} = sub {
     $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);

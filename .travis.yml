@@ -15,12 +15,12 @@ env:
 
 jobs:
   exclude:
-    - env: TARGET=PostgreSQL
-    - env: TARGET=MySQL
-    - env: TARGET=SQLite
+    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+    - env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
       perl: "5.32"
       dist: bionic
-    - env: TARGET=SQLite
+    - env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
       perl: "5.16"
       dist: focal
         #  include:

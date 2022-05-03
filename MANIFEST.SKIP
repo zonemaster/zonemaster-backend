@@ -70,6 +70,3 @@
 # Avoid MYMETA files
 ^MYMETA\.
 #!end included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
-
-# exclude lib/auto
-\blib/auto/

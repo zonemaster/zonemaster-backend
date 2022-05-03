@@ -61,7 +61,6 @@ sub new {
 sub run {
     my ( $self, $test_id, $show_progress ) = @_;
     my @accumulator;
-    my %counter_for_progress_indicator;
 
     my $params;
 
@@ -104,46 +103,29 @@ sub run {
 
     my %methods = Zonemaster::Engine->all_methods;
 
-    # BASIC methods are always run
-    $counter_for_progress_indicator{planned} = {
-        'Basic::basic00' => 1,
-        'Basic::basic01' => 1,
-        'Basic::basic02' => 1,
-        'Basic::basic03' => 1,
-        'Basic::basic04' => 1,
-    };
+    # BASIC methods are always run: Basic0{0..4}
+    my $nbr_testcases_planned = 5;
+    my $nbr_testcases_finished = 0;
+
     foreach my $module ( keys %methods ) {
         foreach my $method ( @{ $methods{$module} } ) {
             if ( Zonemaster::Engine::Util::should_run_test( $method ) ) {
-                $counter_for_progress_indicator{planned}{ $module . '::' . $method } = 1;
+                $nbr_testcases_planned++;
             }
         }
     }
 
-    my @planned_methods = sort keys %{ $counter_for_progress_indicator{planned} };
-
-    # used for progress indicator
-    my ( $previous_module, $previous_method ) = ( '', '' );
 
     if ( $show_progress ) {
         # Callback defined here so it closes over the setup above.
         Zonemaster::Engine->logger->callback(
             sub {
                 my ( $entry ) = @_;
-
                 if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
-                    my $current_module = ucfirst( lc $entry->{_module} );
-                    my $current_testcase = $entry->{args}->{testcase};
-                    my $current_module_method = $current_module . "::" . $current_testcase;
-
-                    $counter_for_progress_indicator{executed}{$current_module_method}++;
-
+                    $nbr_testcases_finished++;
                     my $progress_percent = sprintf(
                         "%.0f",
-                        99 * (
-                            scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
-                              scalar( @planned_methods )
-                        )
+                        99 * $nbr_testcases_finished /  $nbr_testcases_planned
                     );
 
                     $self->{_db}->test_progress( $test_id, $progress_percent );

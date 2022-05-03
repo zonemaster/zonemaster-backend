@@ -101,22 +101,21 @@ sub run {
         Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
     }
 
-    my %methods = Zonemaster::Engine->all_methods;
+    if ( $show_progress ) {
+        my %methods = Zonemaster::Engine->all_methods;
 
-    # BASIC methods are always run: Basic0{0..4}
-    my $nbr_testcases_planned = 5;
-    my $nbr_testcases_finished = 0;
+        # BASIC methods are always run: Basic0{0..4}
+        my $nbr_testcases_planned = 5;
+        my $nbr_testcases_finished = 0;
 
-    foreach my $module ( keys %methods ) {
-        foreach my $method ( @{ $methods{$module} } ) {
-            if ( Zonemaster::Engine::Util::should_run_test( $method ) ) {
-                $nbr_testcases_planned++;
+        foreach my $module ( keys %methods ) {
+            foreach my $method ( @{ $methods{$module} } ) {
+                if ( Zonemaster::Engine::Util::should_run_test( $method ) ) {
+                    $nbr_testcases_planned++;
+                }
             }
         }
-    }
 
-
-    if ( $show_progress ) {
         Zonemaster::Engine->logger->callback(
             sub {
                 my ( $entry ) = @_;

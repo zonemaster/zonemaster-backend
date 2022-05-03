@@ -114,5 +114,5 @@ before_script:
     - if [[ "$TARGET" == "MySQL" ]]; then cpanm DBD::mysql; fi
 
 script:
-  #- perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
+    - perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
     - perl Makefile.PL && make test TEST_VERBOSE=1

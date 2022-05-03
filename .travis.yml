@@ -1,24 +1,20 @@
-dist: focal
-
 language: perl
+
+  #dist:
+  #  - focal
+  #  - bionic
+  #
+  #perl:
+  #  - "5.32"
+  #  - "5.16"
 
 jobs:
   include:
-  # Cover MySQL and PostgreSQL with the latest supported Perl version
-  - perl: "5.32.0"
-    env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
-    services: mysql
-  - perl: "5.32.0"
-    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
-    services: postgresql
-  # Cover supported Perl versions with SQLite
-  - perl: "5.32.0"
+  - perl: "5.32"
+    dist: focal
     env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.30"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.28"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.26"
+  - perl: "5.16"
+    dist: bionic
     env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
@@ -52,6 +48,7 @@ addons:
     - libtext-csv-perl
     - libtool
     - m4
+
       # From Zonemaster Backend installation instruction
     - libclass-method-modifiers-perl
     - libconfig-inifiles-perl
@@ -75,7 +72,6 @@ addons:
     - libtest-nowarnings-perl
     - libtry-tiny-perl
     - starman
-    - postgresql
 
 before_install:
     # Help Perl find modules installed from OS packages
@@ -125,4 +121,5 @@ before_script:
     - if [[ "$TARGET" == "MySQL" ]]; then cpanm DBD::mysql; fi
 
 script:
+  #- perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; exit 1; fi
     - perl Makefile.PL && make test TEST_VERBOSE=1

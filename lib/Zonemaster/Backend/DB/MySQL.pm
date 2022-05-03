@@ -89,9 +89,9 @@ sub create_schema {
     # retrieve all indexes by key name
     my $indexes = $dbh->selectall_hashref( 'SHOW INDEXES FROM test_results', 'Key_name' );
 
-    if ( not exists($indexes->{test_results__hash_id}) ) {
+    if ( not exists($indexes->{test_results__hash_id_created_at}) ) {
         $dbh->do(
-            'CREATE INDEX test_results__hash_id ON test_results (hash_id)'
+            'CREATE INDEX test_results__hash_id_created_at ON test_results (hash_id, created_at)'
         );
     }
     if ( not exists($indexes->{test_results__fingerprint}) ) {
@@ -257,7 +257,7 @@ sub add_batch_job {
         my $queue_label = $test_params->{queue};
 
         $dbh->{AutoCommit} = 0;
-        eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
+        eval {$dbh->do( "DROP INDEX test_results__hash_id_created_at ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__fingerprint ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__batch_id_progress ON test_results" );};
         eval {$dbh->do( "DROP INDEX test_results__progress ON test_results" );};
@@ -298,7 +298,7 @@ sub add_batch_job {
                 $undelegated,
             );
         }
-        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id_created_at ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );

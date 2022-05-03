@@ -81,7 +81,7 @@ sub create_schema {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
 
     $dbh->do(
-        'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
+        'CREATE INDEX IF NOT EXISTS test_results__hash_id_created_at ON test_results (hash_id, created_at)'
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (fingerprint)'
@@ -234,7 +234,7 @@ sub add_batch_job {
 
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
-        $dbh->do( "DROP INDEX IF EXISTS test_results__hash_id" );
+        $dbh->do( "DROP INDEX IF EXISTS test_results__hash_id_created_at" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress" );
         $dbh->do( "DROP INDEX IF EXISTS test_results__progress" );
@@ -271,7 +271,7 @@ sub add_batch_job {
         }
         $dbh->pg_putcopyend();
         $dbh->do( "ALTER TABLE test_results ADD PRIMARY KEY (id)" );
-        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id_created_at ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );

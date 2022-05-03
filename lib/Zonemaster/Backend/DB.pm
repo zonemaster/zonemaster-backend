@@ -519,7 +519,7 @@ sub get_test_history {
             undelegated
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
-        ORDER BY id DESC
+        ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?];
 
@@ -642,7 +642,7 @@ sub get_test_request {
                     WHERE progress = 0
                       AND queue = ?
                     ORDER BY priority DESC,
-                             id ASC
+                             created_at ASC
                     LIMIT 1
                 ],
                 undef,
@@ -657,7 +657,7 @@ sub get_test_request {
                     FROM test_results
                     WHERE progress = 0
                     ORDER BY priority DESC,
-                             id ASC
+                             created_at ASC
                     LIMIT 1
                 ],
             );

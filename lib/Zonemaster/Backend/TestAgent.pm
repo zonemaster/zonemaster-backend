@@ -123,11 +123,7 @@ sub run {
                 my ( $entry ) = @_;
                 if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
                     $nbr_testcases_finished++;
-                    my $progress_percent = sprintf(
-                        "%.0f",
-                        99 * $nbr_testcases_finished /  $nbr_testcases_planned
-                    );
-
+                    my $progress_percent = 99 * $nbr_testcases_finished /  $nbr_testcases_planned;
                     $self->{_db}->test_progress( $test_id, $progress_percent );
                 }
             }

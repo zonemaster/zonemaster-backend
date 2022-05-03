@@ -511,9 +511,9 @@ sub get_test_history {
     my @results;
     my $query = q[
         SELECT
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_critical,
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_error,
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_warning,
+            (SELECT count(*) FROM result_entries JOIN test_results ON result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_critical,
+            (SELECT count(*) FROM result_entries JOIN test_results ON result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_error,
+            (SELECT count(*) FROM result_entries JOIN test_results ON result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_warning,
             hash_id,
             created_at,
             undelegated

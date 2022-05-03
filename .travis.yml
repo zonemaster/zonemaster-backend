@@ -2,6 +2,8 @@ dist: focal
 
 language: perl
 
+perl: "5.32"
+
 stages:
   - manifest
   - test
@@ -12,19 +14,14 @@ script:
 
 jobs:
   include:
-    - stage: test
-      perl: "5.32"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - perl: "5.16"
-      dist: bionic
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-
-jobs:
-  include:
     - stage: manifest
-      perl: "5.32"
       script:
         - perl Makefile.PL
         - touch unknown.file
         - if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
+    - stage: test
+      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - perl: "5.16"
+      dist: bionic
+      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 

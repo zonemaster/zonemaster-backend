@@ -117,7 +117,6 @@ sub run {
 
 
     if ( $show_progress ) {
-        # Callback defined here so it closes over the setup above.
         Zonemaster::Engine->logger->callback(
             sub {
                 my ( $entry ) = @_;

@@ -16,7 +16,7 @@ jobs:
     - stage: manifest
       before_script:
         - rm lib/auto/share/dist/Zonemaster-Backend
-        - rmdir -p lib/auto/share/dist
+          #- rmdir -p lib/auto/share/dist
       script:
         - perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
     - stage: test

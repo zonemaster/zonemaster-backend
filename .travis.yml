@@ -17,7 +17,7 @@ jobs:
     - stage: manifest
       script:
         - perl Makefile.PL
-          #- touch unknown.file
+        - touch unknown.file
         - if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
     - stage: test
       env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini

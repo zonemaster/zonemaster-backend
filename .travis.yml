@@ -14,6 +14,9 @@ script:
 jobs:
   include:
     - stage: manifest
+      before_script:
+        # Remove share files' link
+        - rm lib/auto/share/dist/Zonemaster-Backend
       script:
         - perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
 

@@ -255,11 +255,35 @@ sub add_batch_job {
         my $priority    = $test_params->{priority};
         my $queue_label = $test_params->{queue};
 
-        #$dbh->{AutoCommit} = 0;
-        # FIXME: use PostgreSQL logic with TSV
+        my @values;
 
+        foreach my $domain ( @{$params->{domains}} ) {
+            $test_params->{domain} = _normalize_domain( $domain );
+
+            my $fingerprint = $self->generate_fingerprint( $test_params );
+            my $encoded_params = $self->encode_params( $test_params );
+            my $undelegated = $self->undelegated ( $test_params );
+
+            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+
+            my $v = [
+                $hash_id,
+                $test_params->{domain},
+                $batch_id,
+                $self->format_time( time() ),
+                $priority,
+                $queue_label,
+                $fingerprint,
+                $encoded_params,
+                $undelegated,
+            ];
+
+            push @values, $v;
+        }
+
+        my $query_values = join ", ", ("(?,?,?,?,?,?,?,?,?)") x @values;
         my $sth = $dbh->prepare(
-            q[
+            "
                 INSERT INTO test_results (
                     hash_id,
                     domain,
@@ -270,32 +294,10 @@ sub add_batch_job {
                     fingerprint,
                     params,
                     undelegated
-                ) VALUES (?,?,?,?,?,?,?,?,?)
-            ],
+                ) VALUES $query_values
+            "
         );
-        foreach my $domain ( @{$params->{domains}} ) {
-            $test_params->{domain} = _normalize_domain( $domain );
-
-            my $fingerprint = $self->generate_fingerprint( $test_params );
-            my $encoded_params = $self->encode_params( $test_params );
-            my $undelegated = $self->undelegated ( $test_params );
-
-            my $hash_id = substr(md5_hex(time().rand()), 0, 16);
-            $sth->execute(
-                $hash_id,
-                $test_params->{domain},
-                $batch_id,
-                $self->format_time( time() ),
-                $priority,
-                $queue_label,
-                $fingerprint,
-                $encoded_params,
-                $undelegated,
-            );
-        }
-
-        #$dbh->commit();
-        #$dbh->{AutoCommit} = 1;
+        $sth->execute(map { @$_ } @values);
     }
     else {
         die Zonemaster::Backend::Error::PermissionDenied->new( message => 'User not authorized to use batch mode', data => { username => $params->{username}} );

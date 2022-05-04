@@ -209,6 +209,16 @@ sub recent_test_hash_id {
     return $recent_hash_id;
 }
 
+=head2 test_progress($test_id, $progress)
+
+Takes a test_id and returns the current progress value for the associated test.
+If progress is set, update the progress value of the test.
+If the progress value is 1, set the C<started_at> field to the current time in UTC.
+
+The progress value is an integer in the range 0-100.
+
+=cut
+
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 

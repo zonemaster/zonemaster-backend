@@ -61,6 +61,16 @@ subtest 'Everything but NoWarnings' => sub {
         is( scalar @res, 0 );
     };
 
+    subtest 'consecutive dots' => sub {
+        my @res = start_domain_validate_params(
+            {
+                %$frontend_params, domain => 'afnic..fr'
+            }
+        );
+
+        is( scalar @res, 1 );
+    };
+
     subtest encode_utf8( 'idn domain=[é]' ) => sub {
         my @res = start_domain_validate_params(
             {

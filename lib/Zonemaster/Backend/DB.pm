@@ -593,6 +593,7 @@ sub _project_params {
     my %projection = ();
 
     $projection{domain}   = lc( $$params{domain}  // "" );
+    $projection{domain}   =~ s/\.$// unless $projection{domain} eq '.';
     $projection{ipv4}     = $$params{ipv4}       // $profile->get( 'net.ipv4' );
     $projection{ipv6}     = $$params{ipv6}       // $profile->get( 'net.ipv6' );
     $projection{profile}  = lc( $$params{profile} // "default" );
@@ -613,6 +614,7 @@ sub _project_params {
             delete $$nameserver{ip};
         }
         $$nameserver{ns} = lc $$nameserver{ns};
+        $$nameserver{ns} =~ s/\.$// unless $$nameserver{ns} eq '.';
     }
     my @array_nameservers_sort = sort {
         $a->{ns} cmp $b->{ns} or

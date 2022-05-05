@@ -297,6 +297,10 @@ sub check_domain {
         return  N__ 'The domain name character(s) are not supported';
     }
 
+    if ( $domain =~ m/\.\./i ) {
+        return  N__ 'The domain name contains consecutive dots';
+    }
+
     my %levels = Zonemaster::Engine::Logger::Entry::levels();
     my @res;
     @res = Zonemaster::Engine::Test::Basic->basic00( $domain );

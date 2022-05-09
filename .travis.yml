@@ -9,7 +9,7 @@ stages:
   - test
 
 script:
-    - perl Makefile.PL && make test TEST_VERBOSE=1
+    - false
 
 jobs:
   include:
@@ -21,19 +21,19 @@ jobs:
         - perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
 
     - stage: test
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
-      services: mysql
-    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
-      services: postgresql
-    # Cover supported Perl versions with SQLite
-    - perl: "5.30.2"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - perl: "5.26"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - perl: "5.16"
-      dist: bionic
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+#      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+#    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+#      services: mysql
+#    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+#      services: postgresql
+#    # Cover supported Perl versions with SQLite
+#    - perl: "5.30.2"
+#      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+#    - perl: "5.26"
+#      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+#    - perl: "5.16"
+#      dist: bionic
+#      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
   apt:

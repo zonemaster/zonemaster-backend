@@ -5,7 +5,6 @@ language: perl
 perl: "5.32"
 
 stages:
-  - manifest
   - test
 
 script:
@@ -13,13 +12,6 @@ script:
 
 jobs:
   include:
-    - stage: manifest
-      before_script:
-        # Remove share files' link
-        - rm lib/auto/share/dist/Zonemaster-Backend
-      script:
-        - perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
-
     - stage: test
       env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini

@@ -18,11 +18,13 @@ jobs:
         # Remove share files' link
         - rm lib/auto/share/dist/Zonemaster-Backend
       script:
+        - ls -a
         - git diff
         - git clean -dfx
         - git diff
         - git status
         - git log --oneline --all --graph -5
+        - ls -a
         - grep --version
         - perl Makefile.PL
         - make all

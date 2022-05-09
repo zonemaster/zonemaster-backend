@@ -19,6 +19,7 @@ jobs:
         - rm lib/auto/share/dist/Zonemaster-Backend
       script:
         - perl Makefile.PL
+        - make all
         - make distcheck |& grep -i "Not in MANIFEST" && false || true
 
     - stage: test

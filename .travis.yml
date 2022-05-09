@@ -18,8 +18,10 @@ jobs:
         # Remove share files' link
         - rm lib/auto/share/dist/Zonemaster-Backend
       script:
+        - grep --version
         - perl Makefile.PL
         - make all
+        - make distcheck
         - make distcheck |& grep -i "Not in MANIFEST" && false || true
 
     - stage: test

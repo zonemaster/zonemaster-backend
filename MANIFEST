@@ -3,6 +3,7 @@ CONTRIBUTING.md
 docs/API.md
 docs/Architecture.md
 docs/Configuration.md
+docs/EnvironmentVariables.md
 docs/files-description.md
 docs/GettingStarted.md
 docs/Installation.md
@@ -14,6 +15,7 @@ docs/upgrade/upgrade_zonemaster_backend_ver_1.1.0.md
 docs/upgrade/upgrade_zonemaster_backend_ver_5.0.0.md
 docs/upgrade/upgrade_zonemaster_backend_ver_5.0.2.md
 docs/upgrade/upgrade_zonemaster_backend_ver_8.0.0.md
+docs/upgrade/upgrade_zonemaster_backend_ver_8.2.0.md
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -62,6 +64,7 @@ share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
 share/Makefile
+share/patch/patch_db_zonemaster_backend_ver_8.2.0.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
@@ -83,8 +86,12 @@ t/00-load.t
 t/batches.t
 t/config.t
 t/db.t
+t/idn.data
+t/idn.t
+t/lifecycle.t
 t/parameters_validation.t
 t/test01.data
 t/test01.t
+t/test_profile.json
 t/test_validate_syntax.t
 t/validator.t

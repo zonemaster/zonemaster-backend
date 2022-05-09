@@ -14,12 +14,12 @@ script:
 jobs:
   include:
     - stage: manifest
-      before_install:
-        - skip
       before_script:
         # Remove share files' link
         - rm lib/auto/share/dist/Zonemaster-Backend
       script:
+        - git diff
+        - git reset --hard FETCH_HEAD
         - grep --version
         - perl Makefile.PL
         - make all

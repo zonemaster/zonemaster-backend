@@ -14,6 +14,8 @@ script:
 jobs:
   include:
     - stage: manifest
+      before_install:
+        - skip
       before_script:
         # Remove share files' link
         - rm lib/auto/share/dist/Zonemaster-Backend

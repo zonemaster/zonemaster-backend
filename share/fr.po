@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-28 15:58+0200\n"
+"POT-Creation-Date: 2022-05-02 14:21+0200\n"
 "PO-Revision-Date: 2021-10-14 11:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: Zonemaster project\n"
@@ -51,6 +51,9 @@ msgstr ""
 
 msgid "The domain name character(s) are not supported"
 msgstr "Les caractères du nom de domaine ne sont pas supportés"
+
+msgid "The domain name contains consecutive dots"
+msgstr "Le nom de domaine contient plusieurs points consécutifs"
 
 msgid "The domain name or label is too long"
 msgstr "Le nom de domaine ou les labels sont trop longs"

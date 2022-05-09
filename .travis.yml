@@ -19,7 +19,10 @@ jobs:
         - rm lib/auto/share/dist/Zonemaster-Backend
       script:
         - git diff
-        - git reset --hard FETCH_HEAD
+        - git clean -dfx
+        - git diff
+        - git status
+        - git log --oneline --all --graph -5
         - grep --version
         - perl Makefile.PL
         - make all

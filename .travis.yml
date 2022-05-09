@@ -24,7 +24,7 @@ jobs:
         - make distcheck
         - make distcheck |& grep -i "Not in MANIFEST" && false || true
         - output=$(make distcheck |& grep -i "Not in MANIFEST")
-        - [ -n "$output" ] && echo "$output" || false
+        - test -n "$output" && echo "$output" || false
 
     - stage: test
 #      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini

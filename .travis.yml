@@ -9,7 +9,7 @@ stages:
   - test
 
 script:
-    - false
+    - perl Makefile.PL && make test TEST_VERBOSE=1
 
 jobs:
   include:
@@ -18,7 +18,8 @@ jobs:
         # Remove share files' link
         - rm lib/auto/share/dist/Zonemaster-Backend
       script:
-        - perl Makefile.PL && if make distcheck |& grep -i "Not in MANIFEST"; then exit 1; fi
+        - perl Makefile.PL
+        - make distcheck |& grep -i "Not in MANIFEST" && false || true
 
     - stage: test
 #      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini

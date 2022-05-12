@@ -407,6 +407,27 @@ subtest 'check historic tests' => sub {
     is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
 };
 
+subtest 'normalize "domain" column' => sub {
+    my %domains_to_test = (
+        "aFnIc.Fr"  => "afnic.fr",
+        "afnic.fr." => "afnic.fr",
+        "aFnic.Fr." => "afnic.fr"
+    );
+
+    my $test_params = {
+        client_id      => 'Unit Test',
+        client_version => '1.0',
+    };
+
+    while ( my ($domain, $expected) = each (%domains_to_test) ) {
+        $test_params->{domain} = $domain;
+
+        $hash_id = $backend->start_domain_test( $test_params );
+        my ( $db_domain ) = $dbh->selectrow_array( "SELECT domain FROM test_results WHERE hash_id=?", undef, $hash_id );
+        is( $db_domain, $expected, 'stored domain name is normalized' );
+    }
+};
+
 if ( $ENV{ZONEMASTER_RECORD} ) {
     Zonemaster::Engine->save_cache( $datafile );
 }

@@ -405,6 +405,26 @@ subtest 'check historic tests' => sub {
     is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
     # diag explain( $test_history_undelegated );
     is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
+
+    subtest 'domain is case and trailing dot insensitive' => sub {
+        my $test_history_delegated = $backend->get_test_history(
+            {
+                filter => 'delegated',
+                frontend_params => {
+                    domain => $domain . '.',
+                }
+            } );
+        my $test_history_undelegated = $backend->get_test_history(
+            {
+                filter => 'undelegated',
+                frontend_params => {
+                    domain => ucfirst( $domain ),
+                }
+            } );
+
+        is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
+        is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
+    };
 };
 
 subtest 'normalize "domain" column' => sub {

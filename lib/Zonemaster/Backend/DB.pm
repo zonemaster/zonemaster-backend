@@ -349,7 +349,7 @@ sub get_test_history {
 
     my $sth = $dbh->prepare( $query );
 
-    $sth->bind_param( 1, $p->{frontend_params}{domain} );
+    $sth->bind_param( 1, _normalize_domain( $p->{frontend_params}{domain} ) );
     $sth->bind_param( 2, $undelegated, SQL_INTEGER );
     $sth->bind_param( 3, $undelegated, SQL_INTEGER );
     $sth->bind_param( 4, $p->{limit} );

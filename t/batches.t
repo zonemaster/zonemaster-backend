@@ -306,6 +306,19 @@ subtest 'batch job still running' => sub {
     };
 };
 
+subtest 'duplicate user should fail' => sub {
+    my $config = Zonemaster::Backend::Config->parse( $config );
+    my $backend = init_from_config( $db_backend, $config );
+
+    dies_ok {
+        $backend->add_api_user( { username => $user->{username}, api_key => "another api key" } );
+    };
+    my $res = $@;
+    is( $res->{error}, 'Zonemaster::Backend::Error::Conflict', 'correct error type' );
+    is( $res->{message}, 'User already exists', 'correct error message' );
+    is( $res->{data}->{username}, $user->{username}, 'correct data type returned' );
+};
+
 # TODO: create an agent and run batch tests
 
 ## Create the agent

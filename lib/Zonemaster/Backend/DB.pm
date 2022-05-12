@@ -585,6 +585,17 @@ sub process_dead_test {
     $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
 }
 
+# Converts the domain to lowercase and if the domain is not the root ('.')
+# removes any trailing dot
+sub _normalize_domain {
+    my ( $domain ) = @_;
+
+    $domain = lc( $domain );
+    $domain =~ s/\.$// unless $domain eq '.';
+
+    return $domain;
+}
+
 sub _project_params {
     my ( $self, $params ) = @_;
 
@@ -592,8 +603,7 @@ sub _project_params {
 
     my %projection = ();
 
-    $projection{domain}   = lc( $$params{domain}  // "" );
-    $projection{domain}   =~ s/\.$// unless $projection{domain} eq '.';
+    $projection{domain}   = _normalize_domain( $$params{domain} // "" );
     $projection{ipv4}     = $$params{ipv4}       // $profile->get( 'net.ipv4' );
     $projection{ipv6}     = $$params{ipv6}       // $profile->get( 'net.ipv6' );
     $projection{profile}  = lc( $$params{profile} // "default" );
@@ -613,8 +623,7 @@ sub _project_params {
         if ( defined $$nameserver{ip} and $$nameserver{ip} eq "" ) {
             delete $$nameserver{ip};
         }
-        $$nameserver{ns} = lc $$nameserver{ns};
-        $$nameserver{ns} =~ s/\.$// unless $$nameserver{ns} eq '.';
+        $$nameserver{ns} = _normalize_domain( $$nameserver{ns} );
     }
     my @array_nameservers_sort = sort {
         $a->{ns} cmp $b->{ns} or

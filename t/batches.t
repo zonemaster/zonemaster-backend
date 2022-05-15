@@ -11,20 +11,20 @@ use Time::Local qw( timelocal_modern );
 use Test::Exception;
 use Test::More;    # see done_testing()
 
-use Zonemaster::Engine;
+my $t_path;
+BEGIN {
+    use File::Spec::Functions qw( rel2abs );
+    use File::Basename qw( dirname );
+    $t_path = dirname( rel2abs( $0 ) );
+}
+use lib $t_path;
+use TestUtil;
+
 use Zonemaster::Backend::Config;
 
-# Use the TARGET environment variable to set the database to use
-# default to SQLite
-my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
-note "database: $db_backend";
+my $db_backend = TestUtil::db_backend();
 
 my $tempdir = tempdir( CLEANUP => 1 );
-
-# Require Zonemaster::Backend::RPCAPI.pm test
-use_ok( 'Zonemaster::Backend::RPCAPI' );
-
-use_ok( 'Zonemaster::Backend::Config' );
 
 my $cwd = cwd();
 
@@ -69,31 +69,15 @@ my $params = {
 };
 
 # Create Zonemaster::Backend::RPCAPI object
-sub init_from_config {
-    my ( $db_backend, $config ) = @_;
+sub init_backend {
+    my ( $config ) = @_;
 
-    my $backend;
-    eval {
-        $backend = Zonemaster::Backend::RPCAPI->new(
-            {
-                dbtype => $db_backend,
-                config => $config,
-            }
-        );
-    };
-    if ( $@ ) {
-        diag explain( $@ );
-        BAIL_OUT( 'Could not connect to database' );
-    }
-
-    # prepare the database
-    $backend->{db}->drop_tables();
-    $backend->{db}->create_schema();
+    my $rpcapi = TestUtil::create_rpcapi( $config );
 
     # create a user
-    $backend->add_api_user( $user );
+    $rpcapi->add_api_user( $user );
 
-    return $backend;
+    return $rpcapi;
 }
 
 sub to_timestamp {
@@ -117,12 +101,12 @@ sub check_tolerance {
 
 subtest 'RPCAPI add_batch_job' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
-    my $backend = init_from_config( $db_backend, $config );
-    my $dbh = $backend->{db}->dbh;
+    my $rpcapi = init_backend( $config );
+    my $dbh = $rpcapi->{db}->dbh;
 
     my @domains = ( 'afnic.fr' );
 
-    my $res = $backend->add_batch_job(
+    my $res = $rpcapi->add_batch_job(
         {
             %$user,
             domains => \@domains,
@@ -173,11 +157,11 @@ subtest 'RPCAPI add_batch_job' => sub {
 
 subtest 'RPCAPI get_batch_job_result' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
-    my $backend = init_from_config( $db_backend, $config );
+    my $rpcapi = init_backend( $config );
     subtest 'batch job exists' => sub {
         my @domains = ( 'afnic.fr' );
 
-        my $batch_id = $backend->add_batch_job(
+        my $batch_id = $rpcapi->add_batch_job(
             {
                 %$user,
                 domains => \@domains,
@@ -187,7 +171,7 @@ subtest 'RPCAPI get_batch_job_result' => sub {
 
         is( $batch_id, 1, 'correct batch job id returned' );
 
-        my $res = $backend->get_batch_job_result( { batch_id => $batch_id } );
+        my $res = $rpcapi->get_batch_job_result( { batch_id => $batch_id } );
 
         is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
         is( $res->{nb_finished}, 0, 'correct number of finished tests' );
@@ -196,7 +180,7 @@ subtest 'RPCAPI get_batch_job_result' => sub {
     subtest 'unknown batch' => sub {
         my $unknown_batch = 10;
         dies_ok {
-            $backend->get_batch_job_result( { batch_id => $unknown_batch } );
+            $rpcapi->get_batch_job_result( { batch_id => $unknown_batch } );
         };
         my $res = $@;
         is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
@@ -207,12 +191,12 @@ subtest 'RPCAPI get_batch_job_result' => sub {
 
 subtest 'batch with several domains' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
-    my $backend = init_from_config( $db_backend, $config );
-    my $dbh = $backend->{db}->dbh;
+    my $rpcapi = init_backend( $config );
+    my $dbh = $rpcapi->{db}->dbh;
 
     my @domains = sort( 'afnic.fr', 'iis.se' );
 
-    my $res = $backend->add_batch_job(
+    my $res = $rpcapi->add_batch_job(
         {
             %$user,
             domains => \@domains,
@@ -222,7 +206,7 @@ subtest 'batch with several domains' => sub {
 
     is( $res, 1, 'correct batch job id returned' );
 
-    $res = $backend->get_batch_job_result( { batch_id => 1 } );
+    $res = $rpcapi->get_batch_job_result( { batch_id => 1 } );
 
     is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
     is( $res->{nb_finished}, 0, 'correct number of finished tests' );
@@ -262,12 +246,12 @@ subtest 'batch with several domains' => sub {
 
 subtest 'batch job still running' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
-    my $backend = init_from_config( $db_backend, $config );
-    my $dbh = $backend->{db}->dbh;
+    my $rpcapi = init_backend( $config );
+    my $dbh = $rpcapi->{db}->dbh;
 
     my @domains = ( 'afnic.fr' );
 
-    my $batch_id = $backend->add_batch_job(
+    my $batch_id = $rpcapi->add_batch_job(
         {
             %$user,
             domains => \@domains,
@@ -278,7 +262,7 @@ subtest 'batch job still running' => sub {
     is( $batch_id, 1, 'correct batch job id returned' );
 
     dies_ok {
-        my $new_batch_id = $backend->add_batch_job(
+        my $new_batch_id = $rpcapi->add_batch_job(
             {
                 %$user,
                 domains => \@domains,
@@ -293,8 +277,8 @@ subtest 'batch job still running' => sub {
 
     subtest 'use another user' => sub {
         my $another_user = { username => 'another', api_key => 'token' };
-        $backend->add_api_user( $another_user );
-        my $batch_id = $backend->add_batch_job(
+        $rpcapi->add_api_user( $another_user );
+        my $batch_id = $rpcapi->add_batch_job(
             {
                 %$another_user,
                 domains => \@domains,
@@ -308,10 +292,10 @@ subtest 'batch job still running' => sub {
 
 subtest 'duplicate user should fail' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
-    my $backend = init_from_config( $db_backend, $config );
+    my $rpcapi = init_backend( $config );
 
     dies_ok {
-        $backend->add_api_user( { username => $user->{username}, api_key => "another api key" } );
+        $rpcapi->add_api_user( { username => $user->{username}, api_key => "another api key" } );
     };
     my $res = $@;
     is( $res->{error}, 'Zonemaster::Backend::Error::Conflict', 'correct error type' );
@@ -321,8 +305,8 @@ subtest 'duplicate user should fail' => sub {
 
 subtest 'normalize "domain" column' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
-    my $backend = init_from_config( $db_backend, $config );
-    my $dbh = $backend->{db}->dbh;
+    my $rpcapi = init_backend( $config );
+    my $dbh = $rpcapi->{db}->dbh;
 
     my %domains_to_test = (
         "aFnIc.Fr"  => "afnic.fr",
@@ -331,7 +315,7 @@ subtest 'normalize "domain" column' => sub {
     );
     my @domains = keys %domains_to_test;
 
-    my $batch_id = $backend->add_batch_job(
+    my $batch_id = $rpcapi->add_batch_job(
         {
             %$user,
             domains => \@domains,

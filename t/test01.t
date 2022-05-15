@@ -453,10 +453,3 @@ if ( $ENV{ZONEMASTER_RECORD} ) {
 }
 
 done_testing();
-
-if ( $db_backend eq 'SQLite' ) {
-    my $dbfile = $dbh->sqlite_db_filename;
-    if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
-        unlink $dbfile;
-    }
-}

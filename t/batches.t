@@ -5,7 +5,6 @@ use 5.14.2;
 use Cwd;
 use Data::Dumper;
 use File::Temp qw[tempdir];
-use JSON::PP;
 use POSIX qw( strftime );
 use Time::Local qw( timelocal_modern );
 use Test::Exception;

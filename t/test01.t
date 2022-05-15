@@ -14,27 +14,11 @@ use TestUtil;
 use Cwd;
 use Data::Dumper;
 use File::Temp qw[tempdir];
-use JSON::PP;
 use Test::Exception;
 use Test::More;    # see done_testing()
 
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
-
-=head1 ENVIRONMENT
-
-=head2 TARGET
-
-Set the database to use.
-Can be C<SQLite>, C<MySQL> or C<PostgreSQL>.
-Default to C<SQLite>.
-
-=head2 ZONEMASTER_RECORD
-
-If set, the data from the test is recorded to a file. Otherwise the data is
-loaded from a file.
-
-=cut
 
 my $db_backend = TestUtil::db_backend();
 

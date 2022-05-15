@@ -13,7 +13,6 @@ use Zonemaster::Backend::RPCAPI;
 use JSON::Validator::Joi "joi";
 use JSON::PP;
 
-
 my $tempdir = tempdir( CLEANUP => 1 );
 my $cwd = cwd();
 

@@ -13,7 +13,6 @@ BEGIN {
     *CORE::GLOBAL::time = sub { $TIME };
 }
 
-use JSON::PP;
 use File::ShareDir qw[dist_file];
 use File::Temp qw[tempdir];
 

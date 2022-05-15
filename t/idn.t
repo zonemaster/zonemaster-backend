@@ -5,7 +5,6 @@ use 5.14.2;
 use Cwd;
 use Data::Dumper;
 use File::Temp qw[tempdir];
-use JSON::PP;
 use Test::Exception;
 use Test::More;    # see done_testing()
 use utf8;

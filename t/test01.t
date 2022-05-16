@@ -11,7 +11,6 @@ BEGIN {
 use lib $t_path;
 use TestUtil;
 
-use Cwd;
 use Data::Dumper;
 use File::Temp qw[tempdir];
 use Test::Exception;
@@ -22,13 +21,10 @@ use Zonemaster::Backend::Config;
 
 my $db_backend = TestUtil::db_backend();
 
-my $tempdir = tempdir( CLEANUP => 1 );
-
-my $datafile = q{t/test01.data};
+my $datafile = "$t_path/test01.data";
 TestUtil::restore_datafile( $datafile );
 
-my $cwd = cwd();
-
+my $tempdir = tempdir( CLEANUP => 1 );
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
 [DB]
 engine = $db_backend
@@ -52,7 +48,7 @@ database_file = $tempdir/zonemaster.sqlite
 locale = en_US
 
 [PUBLIC PROFILES]
-test_profile=$cwd/t/test_profile.json
+test_profile=$t_path/test_profile.json
 EOF
 
 my $rpcapi = TestUtil::create_rpcapi( $config );

@@ -2,7 +2,6 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use Cwd;
 use Data::Dumper;
 use File::Temp qw[tempdir];
 use POSIX qw( strftime );
@@ -24,9 +23,6 @@ use Zonemaster::Backend::Config;
 my $db_backend = TestUtil::db_backend();
 
 my $tempdir = tempdir( CLEANUP => 1 );
-
-my $cwd = cwd();
-
 my $config = <<EOF;
 [DB]
 engine = $db_backend
@@ -50,7 +46,7 @@ database_file = $tempdir/zonemaster.sqlite
 locale = en_US
 
 [PUBLIC PROFILES]
-test_profile=$cwd/t/test_profile.json
+test_profile=$t_path/test_profile.json
 EOF
 
 my $user = {

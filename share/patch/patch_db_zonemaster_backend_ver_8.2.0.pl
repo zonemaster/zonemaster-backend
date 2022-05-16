@@ -43,6 +43,22 @@ sub patch_db_mysql {
         $dbh->do( 'ALTER TABLE test_results ADD CONSTRAINT UNIQUE (hash_id)' );
         $dbh->do( 'ALTER TABLE users ADD CONSTRAINT UNIQUE (username)' );
 
+        # normalize "domain" column
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = LOWER(domain)
+                WHERE CAST(domain AS BINARY) RLIKE '[A-Z]'
+            ]
+        );
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = TRIM( TRAILING '.' FROM domain )
+                WHERE domain != '.' AND domain LIKE '%.'
+            ]
+        );
+
         $dbh->commit();
     } catch {
         print( "Could not upgrade database:  " . $_ );
@@ -78,6 +94,22 @@ sub patch_db_postgresql {
         $dbh->do( 'ALTER TABLE test_results ADD UNIQUE (hash_id)' );
         $dbh->do( 'ALTER TABLE users ADD UNIQUE (username)' );
 
+        # normalize "domain" column
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = LOWER(domain)
+                WHERE domain != LOWER(domain)
+            ]
+        );
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = RTRIM('.', domain)
+                WHERE domain != '.' AND domain LIKE '%.'
+            ]
+        );
+
         $dbh->commit();
     } catch {
         print( "Could not upgrade database:  " . $_ );
@@ -110,41 +142,47 @@ sub patch_db_sqlite {
         $db->create_schema();
 
         # populate the tables
-        $dbh->do('
-            INSERT INTO test_results
-            (
-                id,
-                hash_id,
-                domain,
-                batch_id,
-                created_at,
-                started_at,
-                ended_at,
-                priority,
-                queue,
-                progress,
-                fingerprint,
-                params,
-                results,
-                undelegated
-            )
-            SELECT
-                id,
-                hash_id,
-                domain,
-                batch_id,
-                creation_time,
-                test_start_time,
-                test_end_time,
-                priority,
-                queue,
-                progress,
-                fingerprint,
-                params,
-                results,
-                undelegated
-            FROM test_results_old
-        ');
+        $dbh->do(
+            q[
+                INSERT INTO test_results
+                (
+                    id,
+                    hash_id,
+                    domain,
+                    batch_id,
+                    created_at,
+                    started_at,
+                    ended_at,
+                    priority,
+                    queue,
+                    progress,
+                    fingerprint,
+                    params,
+                    results,
+                    undelegated
+                )
+                SELECT
+                    id,
+                    hash_id,
+                    CASE
+                        WHEN (domain != '.' AND domain LIKE '%.')
+                        THEN rtrim(lower(domain), '.')
+                        ELSE lower(domain)
+                        END,
+                    batch_id,
+                    creation_time,
+                    test_start_time,
+                    test_end_time,
+                    priority,
+                    queue,
+                    progress,
+                    fingerprint,
+                    params,
+                    results,
+                    undelegated
+                FROM test_results_old
+            ]
+        );
 
         $dbh->do('
             INSERT INTO batch_jobs

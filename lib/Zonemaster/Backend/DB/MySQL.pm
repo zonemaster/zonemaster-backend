@@ -198,7 +198,7 @@ sub add_batch_job {
             ],
         );
         foreach my $domain ( @{$params->{domains}} ) {
-            $test_params->{domain} = $domain;
+            $test_params->{domain} = _normalize_domain( $domain );
 
             my $fingerprint = $self->generate_fingerprint( $test_params );
             my $encoded_params = $self->encode_params( $test_params );

@@ -319,6 +319,35 @@ subtest 'duplicate user should fail' => sub {
     is( $res->{data}->{username}, $user->{username}, 'correct data type returned' );
 };
 
+subtest 'normalize "domain" column' => sub {
+    my $config = Zonemaster::Backend::Config->parse( $config );
+    my $backend = init_from_config( $db_backend, $config );
+    my $dbh = $backend->{db}->dbh;
+
+    my %domains_to_test = (
+        "aFnIc.Fr"  => "afnic.fr",
+        "afnic.fr." => "afnic.fr",
+        "aFnic.Fr." => "afnic.fr"
+    );
+    my @domains = keys %domains_to_test;
+
+    my $batch_id = $backend->add_batch_job(
+        {
+            %$user,
+            domains => \@domains,
+            test_params => $params
+        }
+    );
+
+    my @db_domain = map { $$_[0] } $dbh->selectall_array( "SELECT domain FROM test_results WHERE batch_id=?", undef, $batch_id );
+
+    # FIXME: batch jobs do not reuse tests yet,
+    #        hence 3 exactly identical tests are created
+    is( @db_domain, 3, '3 tests created' );
+    my @expected = values %domains_to_test;
+    is_deeply( \@db_domain, \@expected, 'domains are normalized' );
+};
+
 # TODO: create an agent and run batch tests
 
 ## Create the agent

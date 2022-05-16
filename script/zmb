@@ -152,6 +152,7 @@ sub cmd_get_language_tags {
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
     --profile PROFILE_NAME
+    --queue QUEUE
     --language LANGUAGE
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
@@ -174,6 +175,7 @@ sub cmd_start_domain_test {
     my $opt_ipv4;
     my $opt_ipv6;
     my $opt_profile;
+    my $opt_queue;
     my $opt_language;
     GetOptionsFromArray(
         \@opts,
@@ -185,6 +187,7 @@ sub cmd_start_domain_test {
         'ipv4=s'           => \$opt_ipv4,
         'ipv6=s'           => \$opt_ipv6,
         'profile=s'        => \$opt_profile,
+        'queue=s'          => \$opt_queue,
         'language=s'       => \$opt_language,
     ) or pod2usage( 2 );
 
@@ -237,6 +240,10 @@ sub cmd_start_domain_test {
 
     if ( $opt_profile ) {
         $params{profile} = $opt_profile;
+    }
+
+    if ( $opt_queue ) {
+        $params{queue} = $opt_queue;
     }
 
     if ( $opt_language ) {

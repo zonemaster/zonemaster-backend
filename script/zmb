@@ -452,6 +452,7 @@ sub cmd_add_api_user {
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
     --profile PROFILE_NAME
+    --queue QUEUE
 
  "--domain" is repeated for each domain to be tested.
  "--nameserver" can be repeated for each name server.
@@ -479,6 +480,7 @@ sub cmd_add_batch_job {
     my $opt_ipv4;
     my $opt_ipv6;
     my $opt_profile;
+    my $opt_queue;
     GetOptionsFromArray(
         \@opts,
         'username|u=s'     => \$opt_username,
@@ -491,6 +493,7 @@ sub cmd_add_batch_job {
         'ipv4=s'           => \$opt_ipv4,
         'ipv6=s'           => \$opt_ipv6,
         'profile=s'        => \$opt_profile,
+        'queue=s'          => \$opt_queue,
     ) or pod2usage( 2 );
 
 
@@ -547,6 +550,10 @@ sub cmd_add_batch_job {
 
     if ( $opt_profile ) {
         $params{test_params}{profile} = $opt_profile;
+    }
+
+    if ( $opt_queue ) {
+        $params{test_params}{queue} = $opt_queue;
     }
 
     return to_jsonrpc(

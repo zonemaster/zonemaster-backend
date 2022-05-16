@@ -101,7 +101,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
             is $db->test_progress( $testid3 ), 1,   'leave test alone AT its timeout';
             is $db->test_progress( $testid2 ), 100, 'terminate test AFTER its timeout';
 
-            is count_cancellation_messages( $db->test_results( $testid3 ) ), 0, 'no canellation message present AT timeout';
+            is count_cancellation_messages( $db->test_results( $testid3 ) ), 0, 'no cancellation message present AT timeout';
             is count_cancellation_messages( $db->test_results( $testid2 ) ), 1, 'one cancellation message present AFTER timeout';
         };
 

@@ -199,6 +199,49 @@ sub drop_tables {
     return;
 }
 
+sub _user_exists {
+    my ( $self, $username ) = @_;
+
+    my $dbh = $self->dbh;
+
+    my ( $count ) = $dbh->selectrow_array(
+        "SELECT count(*) FROM users WHERE username = ?",
+        undef,
+        $username
+    );
+
+    return $count;
+}
+
+sub add_api_user {
+    my ( $self, $username, $api_key ) = @_;
+
+    die Zonemaster::Backend::Error::Internal->new( reason => "username or api_key not provided to the method add_api_user")
+        unless ( $username && $api_key );
+
+    my $dbh = $self->dbh;
+    my $result;
+
+    # FIXME a race condition could occur
+    if ( 1 == $self->_user_exists( $username ) ) {
+        die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
+    }
+
+    eval {
+        $result = $dbh->do(
+            "INSERT INTO users (username, api_key) VALUES (?,?)",
+            undef,
+            $username,
+            $api_key,
+        );
+    };
+
+    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user not successful")
+        unless ( $result );
+
+    return $result;
+}
+
 sub add_batch_job {
     my ( $self, $params ) = @_;
     my $batch_id;

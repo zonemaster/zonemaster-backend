@@ -198,6 +198,7 @@ sub recent_test_hash_id {
             SELECT hash_id
             FROM test_results
             WHERE fingerprint = ?
+              AND batch_id IS NULL
               AND ( started_at IS NULL
                  OR started_at >= ? )
         ],

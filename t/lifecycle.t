@@ -112,6 +112,50 @@ subtest 'Everything but Test::NoWarnings' => sub {
 
             is count_cancellation_messages( $db->test_results( $testid4 ) ), 1, 'one cancellation message present after crash';
         };
+
+        subtest 'Do not reuse batch tests' => sub {
+            my %user = (
+                username => "user",
+                api_key  => "key"
+            );
+            my @domains = ( 'zone1.rpcapi.example', 'zone5.rpcapi.example' );
+            my $params = {
+                %user,
+                domains => \@domains,
+                test_params => {
+                    priority => 5,
+                    queue   => 0
+                }
+            };
+            $db->add_api_user( $user{username}, $user{api_key} );
+            my $batch_id = $db->add_batch_job( $params );
+
+            my @batch_test_ids = $db->dbh->selectall_array(
+                q[
+                    SELECT hash_id
+                    FROM test_results
+                    WHERE batch_id = ?
+                ],
+                undef,
+                $batch_id
+            );
+            @batch_test_ids = map { $$_[0] } @batch_test_ids;
+
+            if ( @batch_test_ids != 2 ) {
+                BAIL_OUT( 'There should be 2 tests in database for this batch_id' );
+            }
+
+            my ( $count_zone1 ) = $db->dbh->selectrow_array(
+                q[
+                    SELECT count(*)
+                    FROM test_results
+                    WHERE domain = 'zone1.rpcapi.example'
+                ]
+            );
+            is( $count_zone1, 3, '3 tests for domain "zone1.rpcapi.example' );
+            my $test_id = $db->create_new_test( 'zone5.rpcapi.example', {}, 10 );
+            ok( ! grep(/$test_id/, @batch_test_ids), 'new single test should not reuse batch tests' );
+        };
     };
 };
 

@@ -9,7 +9,7 @@ BEGIN {
     $t_path = dirname( rel2abs( $0 ) );
 }
 use lib $t_path;
-use TestUtil;
+use TestUtil qw( RPCAPI TestAgent );
 
 use Data::Dumper;
 use File::Temp qw[tempdir];

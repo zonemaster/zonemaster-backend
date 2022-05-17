@@ -16,7 +16,7 @@ BEGIN {
     $t_path = dirname( rel2abs( $0 ) );
 }
 use lib $t_path;
-use TestUtil;
+use TestUtil qw( RPCAPI );
 
 use Zonemaster::Backend::Config;
 

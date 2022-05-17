@@ -7,14 +7,12 @@ use Test::More;
 
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
-use Zonemaster::Backend::RPCAPI;
-use Zonemaster::Backend::TestAgent;
 
 =head1 NAME
 
 TestUtil - a set of methods to ease Zonemaster::Backend unit testing
 
-=head1 HOW TO IMPORT
+=head1 SYNOPSIS
 
 Because this package lies in the testing folder C<t/> and that folder is
 unknown to the include path @INC, it can be including using the following code:
@@ -27,6 +25,11 @@ unknown to the include path @INC, it can be including using the following code:
     }
     use lib $t_path;
     use TestUtil;
+
+Explicitely load any dependencies to Zonemaster::Backend::RPCAPI or
+Zonemaster::Backend::TestAgent modules with
+
+  use TestUtil qw( RPCAPI TestAgent );
 
 =head1 ENVIRONMENT
 
@@ -47,6 +50,18 @@ loaded from a file.
 # default to SQLite
 my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
 note "database: $db_backend";
+
+sub import {
+    my ( $class, @args ) = @_;
+    if ( grep { $_ eq 'RPCAPI' } @args ) {
+        require Zonemaster::Backend::RPCAPI;
+        Zonemaster::Backend::RPCAPI->import();
+    }
+    if ( grep { $_ eq 'TestAgent' } @args ) {
+        require Zonemaster::Backend::TestAgent;
+        Zonemaster::Backend::TestAgent->import();
+    }
+}
 
 sub db_backend {
     return $db_backend;

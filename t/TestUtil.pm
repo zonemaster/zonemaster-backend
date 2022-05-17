@@ -108,7 +108,9 @@ sub create_rpcapi {
         BAIL_OUT( 'Could not connect to database' );
     }
 
-    isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
+    if ( not $backend->isa('Zonemaster::Backend::RPCAPI' ) ) {
+        BAIL_OUT( 'Not a Zonemaster::Backend::RPCAPI object' );
+    }
 
     prepare_db( $backend->{db} );
 
@@ -124,7 +126,11 @@ sub create_testagent {
             config => $config
         }
     );
-    isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
+
+    if ( not $agent->isa('Zonemaster::Backend::TestAgent' ) ) {
+        BAIL_OUT( 'Not a Zonemaster::Backend::TestAgent object' );
+    }
+
     return $agent;
 }
 

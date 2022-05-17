@@ -141,7 +141,9 @@ subtest 'Everything but Test::NoWarnings' => sub {
             );
             @batch_test_ids = map { $$_[0] } @batch_test_ids;
 
-            is( @batch_test_ids, 2, 'two test created in batch' );
+            if ( @batch_test_ids != 2 ) {
+                BAIL_OUT( 'There should be 2 tests in database for this batch_id' );
+            }
 
             my ( $count_zone1 ) = $db->dbh->selectrow_array(
                 q[

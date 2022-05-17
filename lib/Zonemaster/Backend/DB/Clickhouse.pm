@@ -281,23 +281,37 @@ sub add_batch_job {
             push @values, $v;
         }
 
-        my $query_values = join ", ", ("(?,?,?,?,?,?,?,?,?)") x @values;
-        my $sth = $dbh->prepare(
-            "
-                INSERT INTO test_results (
-                    hash_id,
-                    domain,
-                    batch_id,
-                    created_at,
-                    priority,
-                    queue,
-                    fingerprint,
-                    params,
-                    undelegated
-                ) VALUES $query_values
-            "
-        );
-        $sth->execute(map { @$_ } @values);
+        # in case there are a lot of domains in the batch,
+        # they are inserted as bundles of $bundle_size
+        my $bundle_size = 100000;
+        my $nbr_bundle = int( @values / $bundle_size ) + ( !! (@values % $bundle_size) );
+
+        my $i = 0;
+        while ( $i < $nbr_bundle ) {
+            my $lower_bound = $i * $bundle_size;
+            my $upper_bound = ($i + 1) * $bundle_size;
+            $upper_bound = ( $upper_bound < $#values ) ? $upper_bound : $#values;
+            my @slice = @values[ $lower_bound..$upper_bound ];
+
+            my $query_values = join ", ", ("(?,?,?,?,?,?,?,?,?)") x @slice;
+            my $sth = $dbh->prepare(
+                "
+                    INSERT INTO test_results (
+                        hash_id,
+                        domain,
+                        batch_id,
+                        created_at,
+                        priority,
+                        queue,
+                        fingerprint,
+                        params,
+                        undelegated
+                    ) VALUES $query_values
+                "
+            );
+            $sth->execute(map { @$_ } @slice);
+            $i++;
+        }
     }
     else {
         die Zonemaster::Backend::Error::PermissionDenied->new( message => 'User not authorized to use batch mode', data => { username => $params->{username}} );

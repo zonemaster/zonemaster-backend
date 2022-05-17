@@ -18,7 +18,8 @@ my $trace_level = Log::Any::Adapter::Util::numeric_level('trace');
 sub init {
     my ($self) = @_;
 
-    if ( exists $self->{log_level} && $self->{log_level} =~ /\D/ ) {
+    if ( defined $self->{log_level} && $self->{log_level} =~ /\D/ ) {
+        $self->{log_level} = lc $self->{log_level};
         my $numeric_level = Log::Any::Adapter::Util::numeric_level( $self->{log_level} );
         if ( !defined($numeric_level) ) {
             croak "Error: Unrecognized log level " . $self->{log_level} . "\n";

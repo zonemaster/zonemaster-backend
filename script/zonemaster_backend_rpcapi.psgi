@@ -30,7 +30,7 @@ local $| = 1;
 
 Log::Any::Adapter->set(
     '+Zonemaster::Backend::Log',
-    log_level => lc $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
+    log_level => $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
     json => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
     stderr => 1
 );

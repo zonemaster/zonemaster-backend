@@ -215,7 +215,7 @@ Takes a test_id and returns the current progress value for the associated test.
 If progress is set, update the progress value of the test.
 If the progress value is 1, set the C<started_at> field to the current time in UTC.
 
-The progress value is an integer in the range 0-100.
+The C<$progress> value is an integer in the range 1-99.
 
 =cut
 
@@ -224,6 +224,8 @@ sub test_progress {
 
     my $dbh = $self->dbh;
     if ( $progress ) {
+        $progress = $progress < 1 ? 1 :
+                    $progress > 99 ? 99 : $progress;
         if ( $progress == 1 ) {
             $dbh->do(
                 q[

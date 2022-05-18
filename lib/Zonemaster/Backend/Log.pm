@@ -6,6 +6,7 @@ package Zonemaster::Backend::Log;
 use English qw( $PID );
 use POSIX;
 use JSON::PP;
+use IO::Handle;
 use Log::Any::Adapter::Util ();
 use Carp;
 use Data::Dumper;
@@ -32,9 +33,9 @@ sub init {
     my $fd;
     if ( !exists $self->{file} || $self->{file} eq '-') {
         if ( $self->{stderr} ) {
-            open( $fd, '>&', \*STDERR ) or croak "Can't dup STDERR: $!";
+            $fd = fileno(STDERR);
         } else {
-            open( $fd, '>&', \*STDOUT ) or croak "Can't dup STDOUT: $!";
+            $fd = fileno(STDOUT);
         }
     } else {
         open( $fd, '>>', $self->{file} ) or croak "Can't open log file: $!";

@@ -16,6 +16,7 @@ use Zonemaster::Engine;
 use Zonemaster::Engine::Translator;
 use Zonemaster::Backend::Config;
 use Zonemaster::Engine::Profile;
+use Zonemaster::Engine::Util;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -60,73 +61,16 @@ sub new {
 sub run {
     my ( $self, $test_id, $show_progress ) = @_;
     my @accumulator;
-    my %counter;
-    my %counter_for_progress_indicator;
 
     my $params;
 
     $params = $self->{_db}->get_test_params( $test_id );
-
-    my %methods = Zonemaster::Engine->all_methods;
-
-    foreach my $module ( keys %methods ) {
-        foreach my $method ( @{ $methods{$module} } ) {
-            $counter_for_progress_indicator{planned}{ $module . '::' . $method } = $module . '::';
-        }
-    }
 
     my ( $domain ) = $params->{domain};
     if ( !$domain ) {
         die "Must give the name of a domain to test.\n";
     }
     $domain = $self->to_idn( $domain );
-
-    # used for progress indicator
-    my ( $previous_module, $previous_method ) = ( '', '' );
-
-    if ( $show_progress ) {
-        # Callback defined here so it closes over the setup above.
-        Zonemaster::Engine->logger->callback(
-            sub {
-                my ( $entry ) = @_;
-
-                foreach my $trace ( reverse @{ $entry->trace } ) {
-                    foreach my $module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
-                        if ( index( $trace->[1], $module_method ) > -1 ) {
-                            my $percent_progress = 0;
-                            my ( $module ) = ( $module_method =~ /(.+::)[^:]+/ );
-                            if ( $previous_module eq $module ) {
-                                $counter_for_progress_indicator{executed}{$module_method}++;
-                            }
-                            elsif ( $previous_module ) {
-                                foreach my $planned_module_method ( keys %{ $counter_for_progress_indicator{planned} } ) {
-                                    $counter_for_progress_indicator{executed}{$planned_module_method}++
-                                      if ( $counter_for_progress_indicator{planned}{$planned_module_method} eq
-                                        $previous_module );
-                                }
-                            }
-                            $previous_module = $module;
-
-                            if ( $previous_method ne $module_method ) {
-                                $percent_progress = sprintf(
-                                    "%.0f",
-                                    99 * (
-                                        scalar( keys %{ $counter_for_progress_indicator{executed} } ) /
-                                          scalar( keys %{ $counter_for_progress_indicator{planned} } )
-                                    )
-                                );
-                                $self->{_db}->test_progress( $test_id, $percent_progress );
-
-                                $previous_method = $module_method;
-                            }
-                        }
-                    }
-                }
-
-                $counter{ uc $entry->level } += 1;
-            }
-        );
-    }
 
     if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
         $self->add_fake_delegation( $domain, $params->{nameservers} );
@@ -135,7 +79,6 @@ sub run {
     if ( $params->{ds_info} && @{ $params->{ds_info} } > 0 ) {
         $self->add_fake_ds( $domain, $params->{ds_info} );
     }
-
 
     # If the profile parameter has been set in the API, then load a profile
     if ( $params->{profile} ) {
@@ -156,6 +99,34 @@ sub run {
 
     if (defined $params->{ipv6}) {
         Zonemaster::Engine::Profile->effective->set( q{net.ipv6}, ( $params->{ipv6} ) ? ( 1 ) : ( 0 ) );
+    }
+
+    if ( $show_progress ) {
+        my %methods = Zonemaster::Engine->all_methods;
+
+        # BASIC methods are always run: Basic0{0..4}
+        my $nbr_testcases_planned = 5;
+        my $nbr_testcases_finished = 0;
+
+        foreach my $module ( keys %methods ) {
+            foreach my $method ( @{ $methods{$module} } ) {
+                if ( Zonemaster::Engine::Util::should_run_test( $method ) ) {
+                    $nbr_testcases_planned++;
+                }
+            }
+        }
+
+        Zonemaster::Engine->logger->callback(
+            sub {
+                my ( $entry ) = @_;
+                if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
+                    $nbr_testcases_finished++;
+                    # limit to max 99%, 100% is reached when data is stored in database
+                    my $progress_percent = int( 99 * $nbr_testcases_finished /  $nbr_testcases_planned );
+                    $self->{_db}->test_progress( $test_id, $progress_percent );
+                }
+            }
+        );
     }
 
     # Actually run tests!

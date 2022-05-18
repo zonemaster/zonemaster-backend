@@ -14,7 +14,7 @@ use Data::Dumper;
 use base qw(Log::Any::Adapter::Base);
 
 
-my $trace_level = Log::Any::Adapter::Util::numeric_level('trace');
+my $default_level = Log::Any::Adapter::Util::numeric_level('info');
 
 sub init {
     my ($self) = @_;
@@ -28,7 +28,7 @@ sub init {
         $self->{log_level} = $numeric_level;
     }
 
-    $self->{log_level} //= $trace_level;
+    $self->{log_level} //= $default_level;
 
     my $fd;
     if ( !exists $self->{file} || $self->{file} eq '-') {

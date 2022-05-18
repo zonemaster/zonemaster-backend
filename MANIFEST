@@ -82,6 +82,7 @@ share/zm-rpcapi.lsb
 share/zm-testagent.lsb
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
+t/TestUtil.pm
 t/00-load.t
 t/batches.t
 t/config.t

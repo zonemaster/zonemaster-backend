@@ -2,55 +2,29 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use Cwd;
+my $t_path;
+BEGIN {
+    use File::Spec::Functions qw( rel2abs );
+    use File::Basename qw( dirname );
+    $t_path = dirname( rel2abs( $0 ) );
+}
+use lib $t_path;
+use TestUtil qw( RPCAPI TestAgent );
+
 use Data::Dumper;
 use File::Temp qw[tempdir];
-use JSON::PP;
 use Test::Exception;
 use Test::More;    # see done_testing()
 
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
 
-=head1 ENVIRONMENT
+my $db_backend = TestUtil::db_backend();
 
-=head2 TARGET
-
-Set the database to use.
-Can be C<SQLite>, C<MySQL> or C<PostgreSQL>.
-Default to C<SQLite>.
-
-=head2 ZONEMASTER_RECORD
-
-If set, the data from the test is recorded to a file. Otherwise the data is
-loaded from a file.
-
-=cut
-
-# Use the TARGET environment variable to set the database to use
-# default to SQLite
-my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
-note "database: $db_backend";
+my $datafile = "$t_path/test01.data";
+TestUtil::restore_datafile( $datafile );
 
 my $tempdir = tempdir( CLEANUP => 1 );
-
-my $datafile = q{t/test01.data};
-if ( not $ENV{ZONEMASTER_RECORD} ) {
-    die q{Stored data file missing} if not -r $datafile;
-    Zonemaster::Engine->preload_cache( $datafile );
-    Zonemaster::Engine->profile->set( q{no_network}, 1 );
-    diag "not recording";
-} else {
-    diag "recording";
-}
-
-# Require Zonemaster::Backend::RPCAPI.pm test
-use_ok( 'Zonemaster::Backend::RPCAPI' );
-
-use_ok( 'Zonemaster::Backend::Config' );
-
-my $cwd = cwd();
-
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
 [DB]
 engine = $db_backend
@@ -74,37 +48,15 @@ database_file = $tempdir/zonemaster.sqlite
 locale = en_US
 
 [PUBLIC PROFILES]
-test_profile=$cwd/t/test_profile.json
+test_profile=$t_path/test_profile.json
 EOF
 
-# Create Zonemaster::Backend::RPCAPI object
-my $backend;
-eval {
-    $backend = Zonemaster::Backend::RPCAPI->new(
-        {
-            dbtype => $db_backend,
-            config => $config,
-        }
-    );
-};
-if ( $@ ) {
-    diag explain( $@ );
-    BAIL_OUT( 'Could not connect to database' );
-}
+my $rpcapi = TestUtil::create_rpcapi( $config );
 
-isa_ok( $backend, 'Zonemaster::Backend::RPCAPI' );
-
-my $dbh = $backend->{db}->dbh;
-
-# prepare the database
-$backend->{db}->drop_tables();
-$backend->{db}->create_schema();
+my $dbh = $rpcapi->{db}->dbh;
 
 # Create the agent
-use_ok( 'Zonemaster::Backend::TestAgent' );
-my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
-isa_ok($agent, 'Zonemaster::Backend::TestAgent', 'agent');
-
+my $agent = TestUtil::create_testagent( $config );
 
 # define the default properties for the tests
 my $params = {
@@ -134,7 +86,7 @@ my $hash_id;
 # This is the first test added to the DB, its 'id' is 1
 my $test_id = 1;
 subtest 'add a first test' => sub {
-    $hash_id = $backend->start_domain_test( $params );
+    $hash_id = $rpcapi->start_domain_test( $params );
 
     ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
@@ -144,28 +96,28 @@ subtest 'add a first test' => sub {
     is( $hash_id_db, $hash_id , 'Correct hash_id in database' );
 
     # test test_progress API
-    my $progress = $backend->test_progress( { test_id => $hash_id } );
+    my $progress = $rpcapi->test_progress( { test_id => $hash_id } );
     is( $progress, 0 , 'Test has been created, its progress is 0' );
 };
 
 subtest 'get and run test' => sub {
-    my ( $hash_id_from_db ) = $backend->{db}->get_test_request();
+    my ( $hash_id_from_db ) = $rpcapi->{db}->get_test_request();
     is( $hash_id_from_db, $hash_id, 'Get correct test to run' );
 
-    my $progress = $backend->test_progress( { test_id => $hash_id } );
+    my $progress = $rpcapi->test_progress( { test_id => $hash_id } );
     is( $progress, 1, 'Test has been picked, its progress is 1' );
 
     diag "running the agent on test $hash_id";
     $agent->run( $hash_id ); # blocking call
 
-    $progress = $backend->test_progress( { test_id => $hash_id } );
+    $progress = $rpcapi->test_progress( { test_id => $hash_id } );
     is( $progress, 100 , 'Test has finished, its progress is 100' );
 };
 
 subtest 'API calls' => sub {
 
     subtest 'get_test_results' => sub {
-        my $res = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
+        my $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en_US' } );
         is( $res->{id}, $test_id, 'Retrieve the correct "id"' );
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );
@@ -181,7 +133,7 @@ subtest 'API calls' => sub {
     };
 
     subtest 'get_test_params' => sub {
-        my $res = $backend->get_test_params( { test_id => $hash_id } );
+        my $res = $rpcapi->get_test_params( { test_id => $hash_id } );
         is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
         is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
         is( $res->{client_id}, $params->{client_id}, 'Retrieve the correct "client_id" value' );
@@ -195,7 +147,7 @@ subtest 'API calls' => sub {
     subtest 'add_api_user' => sub {
         my $res;
         eval {
-            $res = $backend->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } );
+            $res = $rpcapi->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } );
         };
         is( $res, 1, 'API add_api_user success');
 
@@ -204,20 +156,20 @@ subtest 'API calls' => sub {
     };
 
     subtest 'version_info' => sub {
-        my $res = $backend->version_info();
+        my $res = $rpcapi->version_info();
         ok( defined( $res->{zonemaster_engine} ), 'Has a "zonemaster_engine" key' );
         ok( defined( $res->{zonemaster_backend} ), 'Has a "zonemaster_backend" key' );
     };
 
     subtest 'profile_names' => sub {
-        my $res = $backend->profile_names();
+        my $res = $rpcapi->profile_names();
         is( scalar( @$res ), 2, 'There are exactly 2 public profiles' );
         ok( grep( /default/, @$res ), 'The profile "default" is defined' );
         ok( grep( /test_profile/, @$res ), 'The profile "test_profile" is defined' );
     };
 
     subtest 'get_data_from_parent_zone' => sub {
-        my $res = $backend->get_data_from_parent_zone( { domain => "fr" } );
+        my $res = $rpcapi->get_data_from_parent_zone( { domain => "fr" } );
         #diag explain( $res );
         ok( defined( $res->{ns_list} ), 'Has a list of nameservers' );
         ok( defined( $res->{ds_list} ), 'Has a list of DS records' );
@@ -252,16 +204,16 @@ subtest 'API calls' => sub {
 
 # start a second test with IPv6 disabled
 $params->{ipv6} = 0;
-$hash_id = $backend->start_domain_test( $params );
+$hash_id = $rpcapi->start_domain_test( $params );
 diag "running the agent on test $hash_id";
 $agent->run($hash_id);
 
 subtest 'second test has IPv6 disabled' => sub {
-    my $res = $backend->get_test_params( { test_id => $hash_id } );
+    my $res = $rpcapi->get_test_params( { test_id => $hash_id } );
     is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
     is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
-    $res = $backend->get_test_results( { id => $hash_id, language => 'en_US' } );
+    $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en_US' } );
     my @msg_basic = map { $_->{message} if $_->{module} eq 'BASIC' } @{ $res->{results} };
     ok( grep( /IPv6 is disabled/, @msg_basic ), 'Results contain an "IPv6 is disabled" message' );
 };
@@ -276,7 +228,7 @@ subtest 'get_test_history' => sub {
         limit => $limit
     };
 
-    $test_history = $backend->get_test_history( $method_params );
+    $test_history = $rpcapi->get_test_history( $method_params );
     #diag explain( $test_history );
     is( scalar( @$test_history ), 2, 'Two tests created' );
 
@@ -294,10 +246,10 @@ subtest 'get_test_history' => sub {
         $params->{ipv4} = 0;
 
         # create the test, retrieve its id but we don't run it
-        $backend->start_domain_test( $params );
-        ( $hash_id ) = $backend->{db}->get_test_request();
+        $rpcapi->start_domain_test( $params );
+        ( $hash_id ) = $rpcapi->{db}->get_test_request();
 
-        $test_history = $backend->get_test_history( $method_params );
+        $test_history = $rpcapi->get_test_history( $method_params );
         #diag explain( $test_history );
         is( scalar( @$test_history ), 2, 'Only 2 tests should be retrieved' );
 
@@ -305,7 +257,7 @@ subtest 'get_test_history' => sub {
         diag "running the agent on test $hash_id";
         $agent->run( $hash_id );
 
-        $test_history = $backend->get_test_history( $method_params );
+        $test_history = $rpcapi->get_test_history( $method_params );
         is( scalar( @$test_history ), 3, 'Now 3 tests should be retrieved' );
     }
 };
@@ -314,12 +266,12 @@ subtest 'mock another client (i.e. reuse a previous test)' => sub {
     $params->{client_id} = 'Another Client';
     $params->{client_version} = '0.1';
 
-    my $new_hash_id = $backend->start_domain_test( $params );
+    my $new_hash_id = $rpcapi->start_domain_test( $params );
 
     is( $new_hash_id, $hash_id, 'Has the same hash than previous test' );
 
     subtest 'check test_params values' => sub {
-        my $res = $backend->get_test_params( { test_id => "$hash_id" } );
+        my $res = $rpcapi->get_test_params( { test_id => "$hash_id" } );
         # the following values are part of the fingerprint
         is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
         is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
@@ -379,21 +331,21 @@ subtest 'check historic tests' => sub {
     # The batch jobs, $params_ub1, $params_ub2 and $params_db1, cannot be run from here due to limitation in the API. See issue #827.
 
     foreach my $param ($params_un1, $params_un2, $params_dn1) {
-        my $testid = $backend->start_domain_test( $param );
+        my $testid = $rpcapi->start_domain_test( $param );
         ok( $testid, "API start_domain_test ID OK" );
         diag "running the agent on test $testid";
         $agent->run( $testid );
-        is( $backend->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
+        is( $rpcapi->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
     };
 
-    my $test_history_delegated = $backend->get_test_history(
+    my $test_history_delegated = $rpcapi->get_test_history(
         {
             filter => 'delegated',
             frontend_params => {
                 domain => $domain,
             }
         } );
-    my $test_history_undelegated = $backend->get_test_history(
+    my $test_history_undelegated = $rpcapi->get_test_history(
         {
             filter => 'undelegated',
             frontend_params => {
@@ -407,14 +359,14 @@ subtest 'check historic tests' => sub {
     is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
 
     subtest 'domain is case and trailing dot insensitive' => sub {
-        my $test_history_delegated = $backend->get_test_history(
+        my $test_history_delegated = $rpcapi->get_test_history(
             {
                 filter => 'delegated',
                 frontend_params => {
                     domain => $domain . '.',
                 }
             } );
-        my $test_history_undelegated = $backend->get_test_history(
+        my $test_history_undelegated = $rpcapi->get_test_history(
             {
                 filter => 'undelegated',
                 frontend_params => {
@@ -442,21 +394,12 @@ subtest 'normalize "domain" column' => sub {
     while ( my ($domain, $expected) = each (%domains_to_test) ) {
         $test_params->{domain} = $domain;
 
-        $hash_id = $backend->start_domain_test( $test_params );
+        $hash_id = $rpcapi->start_domain_test( $test_params );
         my ( $db_domain ) = $dbh->selectrow_array( "SELECT domain FROM test_results WHERE hash_id=?", undef, $hash_id );
         is( $db_domain, $expected, 'stored domain name is normalized' );
     }
 };
 
-if ( $ENV{ZONEMASTER_RECORD} ) {
-    Zonemaster::Engine->save_cache( $datafile );
-}
+TestUtil::save_datafile( $datafile );
 
 done_testing();
-
-if ( $db_backend eq 'SQLite' ) {
-    my $dbfile = $dbh->sqlite_db_filename;
-    if ( -e $dbfile and -M $dbfile < 0 and -o $dbfile ) {
-        unlink $dbfile;
-    }
-}

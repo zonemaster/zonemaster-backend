@@ -6,7 +6,6 @@ use Encode;
 use Test::More;    # see done_testing()
 
 use_ok( 'Zonemaster::Backend::DB' );
-use_ok( 'JSON::PP' );
 
 sub encode_and_fingerprint {
     my $params = shift;

@@ -2,35 +2,29 @@ use strict;
 use warnings;
 use 5.14.2;
 
-use Cwd;
 use Data::Dumper;
 use File::Temp qw[tempdir];
-use JSON::PP;
 use Test::Exception;
 use Test::More;    # see done_testing()
 use utf8;
 
-use Zonemaster::Engine;
-use Zonemaster::Backend::Config;
-use Zonemaster::Backend::TestAgent;
+my $t_path;
+BEGIN {
+    use File::Spec::Functions qw( rel2abs );
+    use File::Basename qw( dirname );
+    $t_path = dirname( rel2abs( $0 ) );
+}
+use lib $t_path;
+use TestUtil qw( TestAgent );
 
-my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
-note "database: $db_backend";
+use Zonemaster::Backend::Config;
+
+my $db_backend = TestUtil::db_backend();
+
+my $datafile = "$t_path/idn.data";
+TestUtil::restore_datafile( $datafile );
 
 my $tempdir = tempdir( CLEANUP => 1 );
-
-my $datafile = q{t/idn.data};
-if ( not $ENV{ZONEMASTER_RECORD} ) {
-    die q{Stored data file missing} if not -r $datafile;
-    Zonemaster::Engine->preload_cache( $datafile );
-    Zonemaster::Engine->profile->set( q{no_network}, 1 );
-    diag "not recording";
-} else {
-    diag "recording";
-}
-
-my $cwd = cwd();
-
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
 [DB]
 engine = $db_backend
@@ -54,18 +48,11 @@ database_file = $tempdir/zonemaster.sqlite
 locale = en_US
 
 [PUBLIC PROFILES]
-test_profile=$cwd/t/test_profile.json
+test_profile=$t_path/test_profile.json
 EOF
 
-my $dbclass = Zonemaster::Backend::DB->get_db_class( $db_backend );
-my $db      = $dbclass->from_config( $config );
-
-# prepare the database
-$db->drop_tables();
-$db->create_schema();
-
-# Create the agent
-my $agent = Zonemaster::Backend::TestAgent->new( { dbtype => "$db_backend", config => $config } );
+my $db = TestUtil::init_db( $config );
+my $agent = TestUtil::create_testagent( $config );
 
 # define the default properties for the tests
 my $params = {
@@ -116,8 +103,6 @@ subtest 'test IDN nameserver' => sub {
     };
 };
 
-if ( $ENV{ZONEMASTER_RECORD} ) {
-    Zonemaster::Engine->save_cache( $datafile );
-}
+TestUtil::save_datafile( $datafile );
 
 done_testing();

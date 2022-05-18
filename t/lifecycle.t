@@ -13,21 +13,27 @@ BEGIN {
     *CORE::GLOBAL::time = sub { $TIME };
 }
 
-use JSON::PP;
 use File::ShareDir qw[dist_file];
 use File::Temp qw[tempdir];
 
+my $t_path;
+BEGIN {
+    use File::Spec::Functions qw( rel2abs );
+    use File::Basename qw( dirname );
+    $t_path = dirname( rel2abs( $0 ) );
+}
+use lib $t_path;
+use TestUtil;
+
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
-use Zonemaster::Backend::RPCAPI;
 
 sub advance_time {
     my ( $delta ) = @_;
     $TIME += $delta;
 }
 
-my $db_backend = Zonemaster::Backend::Config->check_db( $ENV{TARGET} || 'SQLite' );
-note "database: $db_backend";
+my $db_backend = TestUtil::db_backend();
 
 my $tempdir = tempdir( CLEANUP => 1 );
 my $config = Zonemaster::Backend::Config->parse( <<EOF );
@@ -60,10 +66,7 @@ sub count_cancellation_messages {
 
 subtest 'Everything but Test::NoWarnings' => sub {
     lives_ok {    # Make sure we get to print log messages in case of errors.
-        my $dbclass = Zonemaster::Backend::DB->get_db_class( $db_backend );
-        my $db      = $dbclass->from_config( $config );
-        $db->drop_tables();
-        $db->create_schema();
+        my $db = TestUtil::init_db( $config );
 
         subtest 'Testid reuse' => sub {
             my $testid1 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
@@ -98,7 +101,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
             is $db->test_progress( $testid3 ), 1,   'leave test alone AT its timeout';
             is $db->test_progress( $testid2 ), 100, 'terminate test AFTER its timeout';
 
-            is count_cancellation_messages( $db->test_results( $testid3 ) ), 0, 'no canellation message present AT timeout';
+            is count_cancellation_messages( $db->test_results( $testid3 ) ), 0, 'no cancellation message present AT timeout';
             is count_cancellation_messages( $db->test_results( $testid2 ) ), 1, 'one cancellation message present AFTER timeout';
         };
 

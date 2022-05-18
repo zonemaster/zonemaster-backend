@@ -289,6 +289,10 @@ subtest 'duplicate user should fail' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $rpcapi = init_backend( $config );
 
+    # do not output any error message
+    my $printerror_before = $rpcapi->{db}->dbh->{PrintError};
+    $rpcapi->{db}->dbh->{PrintError} = 0;
+
     dies_ok {
         $rpcapi->add_api_user( { username => $user->{username}, api_key => "another api key" } );
     };
@@ -296,6 +300,9 @@ subtest 'duplicate user should fail' => sub {
     is( $res->{error}, 'Zonemaster::Backend::Error::Conflict', 'correct error type' );
     is( $res->{message}, 'User already exists', 'correct error message' );
     is( $res->{data}->{username}, $user->{username}, 'correct data type returned' );
+
+    # reset attribute value
+    $rpcapi->{db}->dbh->{PrintError} = $printerror_before;
 };
 
 subtest 'normalize "domain" column' => sub {

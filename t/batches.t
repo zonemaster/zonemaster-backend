@@ -327,8 +327,6 @@ subtest 'normalize "domain" column' => sub {
 
     my @db_domain = map { $$_[0] } $dbh->selectall_array( "SELECT domain FROM test_results WHERE batch_id=?", undef, $batch_id );
 
-    # FIXME: batch jobs do not reuse tests yet,
-    #        hence 3 exactly identical tests are created
     is( @db_domain, 3, '3 tests created' );
     my @expected = values %domains_to_test;
     is_deeply( \@db_domain, \@expected, 'domains are normalized' );

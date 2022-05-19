@@ -176,7 +176,7 @@ subtest 'RPCAPI get_batch_job_result' => sub {
         my $unknown_batch = 10;
         dies_ok {
             $rpcapi->get_batch_job_result( { batch_id => $unknown_batch } );
-        };
+        } 'getting results for an unknown batch_id should die';
         my $res = $@;
         is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
         is( $res->{message}, 'Unknown batch', 'correct error message' );
@@ -295,7 +295,7 @@ subtest 'duplicate user should fail' => sub {
 
     dies_ok {
         $rpcapi->add_api_user( { username => $user->{username}, api_key => "another api key" } );
-    };
+    } 'a user with the same username already exists, add_api_user should die';
     my $res = $@;
     is( $res->{error}, 'Zonemaster::Backend::Error::Conflict', 'correct error type' );
     is( $res->{message}, 'User already exists', 'correct error message' );

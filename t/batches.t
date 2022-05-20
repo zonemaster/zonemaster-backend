@@ -176,7 +176,7 @@ subtest 'RPCAPI get_batch_job_result' => sub {
         my $unknown_batch = 10;
         dies_ok {
             $rpcapi->get_batch_job_result( { batch_id => $unknown_batch } );
-        };
+        } 'getting results for an unknown batch_id should die';
         my $res = $@;
         is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
         is( $res->{message}, 'Unknown batch', 'correct error message' );
@@ -289,13 +289,20 @@ subtest 'duplicate user should fail' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $rpcapi = init_backend( $config );
 
+    # do not output any error message
+    my $printerror_before = $rpcapi->{db}->dbh->{PrintError};
+    $rpcapi->{db}->dbh->{PrintError} = 0;
+
     dies_ok {
         $rpcapi->add_api_user( { username => $user->{username}, api_key => "another api key" } );
-    };
+    } 'a user with the same username already exists, add_api_user should die';
     my $res = $@;
     is( $res->{error}, 'Zonemaster::Backend::Error::Conflict', 'correct error type' );
     is( $res->{message}, 'User already exists', 'correct error message' );
     is( $res->{data}->{username}, $user->{username}, 'correct data type returned' );
+
+    # reset attribute value
+    $rpcapi->{db}->dbh->{PrintError} = $printerror_before;
 };
 
 subtest 'normalize "domain" column' => sub {
@@ -320,8 +327,6 @@ subtest 'normalize "domain" column' => sub {
 
     my @db_domain = map { $$_[0] } $dbh->selectall_array( "SELECT domain FROM test_results WHERE batch_id=?", undef, $batch_id );
 
-    # FIXME: batch jobs do not reuse tests yet,
-    #        hence 3 exactly identical tests are created
     is( @db_domain, 3, '3 tests created' );
     my @expected = values %domains_to_test;
     is_deeply( \@db_domain, \@expected, 'domains are normalized' );

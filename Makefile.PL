@@ -12,7 +12,7 @@ bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 requires
   'Class::Method::Modifiers'    => 1.09,
   'Config::IniFiles'            => 0,
-  'DBI'                         => 1.616,
+  'DBI'                         => 1.635,
   'Daemon::Control'             => 0.001007,
   'File::ShareDir'              => 0,
   'File::Slurp'                 => 0,
@@ -39,7 +39,7 @@ requires
   'Locale::TextDomain'          => 1.20,
   ;
 
-test_requires 'DBD::SQLite';
+test_requires 'DBD::SQLite' => 1.4702;
 test_requires 'Test::NoWarnings';
 test_requires 'Test::Exception';
 test_requires 'Test::Differences';

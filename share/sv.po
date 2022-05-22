@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-17 08:57+0100\n"
+"POT-Creation-Date: 2022-05-22 15:30+0000\n"
 "PO-Revision-Date: 2021-11-17 17:32+0100\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
@@ -11,54 +11,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Domain name required"
-msgstr "Domännamn är obligatoriskt"
-
-msgid ""
-"The domain name is not a valid IDNA string and cannot be converted to an A-"
-"label"
-msgstr ""
-"Domännamnet är inte ett giltigt IDN-namn och kan inte konverteras till A-"
-"label-format"
-
-msgid "The domain name contains non-ascii characters and IDNA is not installed"
-msgstr ""
-"Domännamnet innehåller icke-ASCII-tecken, men stöd för IDN är inte "
-"installerat"
-
-msgid "The domain name character(s) are not supported"
-msgstr "Domännamnstecken stöds inte"
-
-msgid "The domain name or label is too long"
-msgstr "Domännamnet eller en domännamnsdel är för långt"
-
-msgid "Unknown profile"
-msgstr "Okänd profil"
-
-msgid "Invalid IP address"
-msgstr "Ogiltig IP-adress"
-
-msgid "Unkown language string"
-msgstr "Okänd språksträng"
-
-msgid "Language string not unique"
-msgstr "Språksträngen är inte unik"
-
 msgid "Invalid method parameter(s)."
 msgstr "Ogiltig metodparameter."
 
 msgid "Missing property"
 msgstr "Värde saknas"
 
+#, fuzzy
 msgid ""
-"Warning: Zonemaster::LDNS not compiled with libidn2, cannot handle non-ASCII "
-"names correctly."
+"Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
+"ASCII names correctly."
 msgstr ""
 "Varning: Zonemaster::LDNS har inte kompilerats med libidn2 vilket gör att "
 "icke-ASCII-strängar inte kan hanteras korrekt"
-
-msgid "The domain name contains a character or characters not supported"
-msgstr "Domännamnet innehåller ett eller flera tecken som inte stöds"
 
 msgid "Invalid digest format"
 msgstr "Ogiltigt format på DS-digest"
@@ -72,5 +37,53 @@ msgstr "Digest-typ måste vara ett positivt heltal"
 msgid "Keytag must be a positive integer"
 msgstr "Keytag måste vara ett positivt heltal"
 
+msgid "Domain name required"
+msgstr "Domännamn är obligatoriskt"
+
+#, fuzzy
+msgid "The domain name is IDNA invalid"
+msgstr "Domännamnet eller en domännamnsdel är för långt"
+
+#, fuzzy
+msgid ""
+"The domain name contains non-ascii characters and IDNA support is not "
+"installed"
+msgstr ""
+"Domännamnet innehåller icke-ASCII-tecken, men stöd för IDN är inte "
+"installerat"
+
+msgid "The domain name character(s) are not supported"
+msgstr "Domännamnstecken stöds inte"
+
+#, fuzzy
+msgid "The domain name contains consecutive dots"
+msgstr "Domännamnet innehåller ett eller flera tecken som inte stöds"
+
+msgid "The domain name or label is too long"
+msgstr "Domännamnet eller en domännamnsdel är för långt"
+
 msgid "Invalid language tag format"
 msgstr "Ogiltigt format på språkkoden"
+
+msgid "Unkown language string"
+msgstr "Okänd språksträng"
+
+msgid "Language string not unique"
+msgstr "Språksträngen är inte unik"
+
+msgid "Invalid IP address"
+msgstr "Ogiltig IP-adress"
+
+#, fuzzy
+msgid "Invalid profile format"
+msgstr "Ogiltigt format på DS-digest"
+
+msgid "Unknown profile"
+msgstr "Okänd profil"
+
+#~ msgid ""
+#~ "The domain name is not a valid IDNA string and cannot be converted to an "
+#~ "A-label"
+#~ msgstr ""
+#~ "Domännamnet är inte ett giltigt IDN-namn och kan inte konverteras till A-"
+#~ "label-format"

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-22 15:30+0000\n"
-"PO-Revision-Date: 2021-11-17 17:32+0100\n"
+"POT-Creation-Date: 2022-05-22 15:34+0000\n"
+"PO-Revision-Date: 2022-05-22 15:23+0000\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
 "Language: sv\n"
@@ -15,15 +15,14 @@ msgid "Invalid method parameter(s)."
 msgstr "Ogiltig metodparameter."
 
 msgid "Missing property"
-msgstr "Värde saknas"
+msgstr "Attribut saknas"
 
-#, fuzzy
 msgid ""
 "Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
 "ASCII names correctly."
 msgstr ""
-"Varning: Zonemaster::LDNS har inte kompilerats med libidn2 vilket gör att "
-"icke-ASCII-strängar inte kan hanteras korrekt"
+"Varning: Zonemaster::LDNS är inte kompilerad med IDNA-stöd, så enbart ASCII-"
+"namn kan hanteras."
 
 msgid "Invalid digest format"
 msgstr "Ogiltigt format på DS-digest"
@@ -40,11 +39,9 @@ msgstr "Keytag måste vara ett positivt heltal"
 msgid "Domain name required"
 msgstr "Domännamn är obligatoriskt"
 
-#, fuzzy
 msgid "The domain name is IDNA invalid"
-msgstr "Domännamnet eller en domännamnsdel är för långt"
+msgstr "Domännamnet är ogiltigt enligt IDN-standarden"
 
-#, fuzzy
 msgid ""
 "The domain name contains non-ascii characters and IDNA support is not "
 "installed"
@@ -55,9 +52,8 @@ msgstr ""
 msgid "The domain name character(s) are not supported"
 msgstr "Domännamnstecken stöds inte"
 
-#, fuzzy
 msgid "The domain name contains consecutive dots"
-msgstr "Domännamnet innehåller ett eller flera tecken som inte stöds"
+msgstr "Domännamnet innehåller flera punkter i följd"
 
 msgid "The domain name or label is too long"
 msgstr "Domännamnet eller en domännamnsdel är för långt"
@@ -74,16 +70,8 @@ msgstr "Språksträngen är inte unik"
 msgid "Invalid IP address"
 msgstr "Ogiltig IP-adress"
 
-#, fuzzy
 msgid "Invalid profile format"
-msgstr "Ogiltigt format på DS-digest"
+msgstr "Ogiltigt profilformat"
 
 msgid "Unknown profile"
 msgstr "Okänd profil"
-
-#~ msgid ""
-#~ "The domain name is not a valid IDNA string and cannot be converted to an "
-#~ "A-label"
-#~ msgstr ""
-#~ "Domännamnet är inte ett giltigt IDN-namn och kan inte konverteras till A-"
-#~ "label-format"

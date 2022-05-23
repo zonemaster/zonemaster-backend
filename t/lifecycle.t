@@ -8,8 +8,10 @@ use Test::NoWarnings;
 use Log::Any::Test;
 use Log::Any qw( $log );
 
-my $TIME = CORE::time();
+my $TIME;
 BEGIN {
+    $TIME = CORE::time();
+
     *CORE::GLOBAL::time = sub { $TIME };
 }
 

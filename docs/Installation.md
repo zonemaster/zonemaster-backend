@@ -213,11 +213,6 @@ sudo apt install jq libclass-method-modifiers-perl libconfig-inifiles-perl libdb
 > **Note**: libio-stringy-perl is listed here even though it's not a direct
 > dependency. It's an undeclared dependency of libconfig-inifiles-perl.
 
-* On Ubuntu, install the following dependency from CPAN:
-  ```
-  sudo cpanm JSON::Validator
-  ```
-
 Install Zonemaster::Backend:
 
 ```sh

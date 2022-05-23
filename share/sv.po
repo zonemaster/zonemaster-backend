@@ -25,7 +25,7 @@ msgstr ""
 "namn kan hanteras."
 
 msgid "Invalid digest format"
-msgstr "Ogiltigt format på DS-digest"
+msgstr "Ogiltigt format på digest-data"
 
 msgid "Algorithm must be a positive integer"
 msgstr "Algoritm måste vara ett positivt heltal"

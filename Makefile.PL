@@ -41,6 +41,8 @@ requires
 
 test_requires 'DBD::SQLite';
 test_requires 'Test::NoWarnings';
+test_requires 'Test::Exception';
+test_requires 'Test::Differences';
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';

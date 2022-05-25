@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-25 13:44+0000\n"
-"PO-Revision-Date: 2021-11-29 17:07+0100\n"
+"POT-Creation-Date: 2022-05-25 13:57+0000\n"
+"PO-Revision-Date: 2022-05-25 13:56+0000\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
 "Language: fi\n"
@@ -18,12 +18,11 @@ msgstr "Virheelliset asetukset"
 msgid "Missing property"
 msgstr "Kenttä puuttuu"
 
-#, fuzzy
 msgid ""
 "Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
 "ASCII names correctly."
 msgstr ""
-"Varoitus: Zonemaster :: LDNS ei ole käännetty libidnillä, eikä pysty "
+"Varoitus: Zonemaster::LDNS ei ole käännetty IDN tuella, joten se ei pysty "
 "käsittelemään ei-ASCII-nimiä oikein."
 
 msgid "Invalid digest format"
@@ -41,24 +40,21 @@ msgstr "Tunnisteen (Keytag) on oltava positiivinen kokonaisluku"
 msgid "Domain name required"
 msgstr "Vaaditaan verkkotunnus"
 
-#, fuzzy
 msgid "The domain name is IDNA invalid"
-msgstr "Verkkotunnus tai sen tunnisteet ovat liian pitkiä"
+msgstr "Verkkotunnus on IDNA virheellinen"
 
-#, fuzzy
 msgid ""
 "The domain name contains non-ascii characters and IDNA support is not "
 "installed"
 msgstr ""
-"Verkkotunnuksen nimi sisältää muita kuin ascii-merkkejä, mutta IDNA:ta ei "
-"ole asennettu"
+"Verkkotunnuksen nimi sisältää muita kuin ascii-merkkejä, eikä IDNA tukea ole "
+"asennettu"
 
 msgid "The domain name character(s) are not supported"
 msgstr "Verkkotunnuksen sisältämiä merkkejä ei tueta"
 
-#, fuzzy
 msgid "The domain name contains consecutive dots"
-msgstr "Verkkotunnus sisältää merkin tai merkkejä joita ei tueta"
+msgstr "Verkkotunnus sisältää peräkkäisiä pisteitä"
 
 msgid "The domain name or label is too long"
 msgstr "Verkkotunnus tai sen tunnisteet ovat liian pitkiä"
@@ -75,9 +71,8 @@ msgstr "Kielitunniste ei ole yksilöivä"
 msgid "Invalid IP address"
 msgstr "Virheellinen IP-osoite"
 
-#, fuzzy
 msgid "Invalid profile format"
-msgstr "Virheellinen tiivisteen muoto"
+msgstr "Virheellinen profiilin muoto"
 
 msgid "Unknown profile"
 msgstr "Tuntematon profiili"

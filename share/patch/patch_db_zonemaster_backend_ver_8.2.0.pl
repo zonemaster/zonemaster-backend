@@ -28,21 +28,21 @@ sub patch_db_mysql {
     my $db = Zonemaster::Backend::DB::MySQL->from_config( $config );
     my $dbh = $db->dbh;
 
+    # add table constraints
+    $dbh->do( 'ALTER TABLE users ADD CONSTRAINT UNIQUE (username)' );
+    $dbh->do( 'ALTER TABLE test_results ADD CONSTRAINT UNIQUE (hash_id)' );
+
+    # update columns names, data type and default value
+    $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN id BIGINT AUTO_INCREMENT' );
+    $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN creation_time created_at DATETIME NOT NULL' );
+    $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_start_time started_at DATETIME DEFAULT NULL' );
+    $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_end_time ended_at DATETIME DEFAULT NULL' );
+
+    $dbh->do( 'ALTER TABLE batch_jobs CHANGE COLUMN creation_time created_at DATETIME NOT NULL' );
+
     $dbh->{AutoCommit} = 0;
 
     try {
-        # update columns names, data type and default value
-        $dbh->do( 'ALTER TABLE test_results MODIFY COLUMN id BIGINT AUTO_INCREMENT' );
-        $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN creation_time created_at DATETIME NOT NULL' );
-        $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_start_time started_at DATETIME DEFAULT NULL' );
-        $dbh->do( 'ALTER TABLE test_results CHANGE COLUMN test_end_time ended_at DATETIME DEFAULT NULL' );
-
-        $dbh->do( 'ALTER TABLE batch_jobs CHANGE COLUMN creation_time created_at DATETIME NOT NULL' );
-
-        # add table constraints
-        $dbh->do( 'ALTER TABLE test_results ADD CONSTRAINT UNIQUE (hash_id)' );
-        $dbh->do( 'ALTER TABLE users ADD CONSTRAINT UNIQUE (username)' );
-
         # normalize "domain" column
         $dbh->do(
             q[

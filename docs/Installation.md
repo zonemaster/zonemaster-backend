@@ -22,23 +22,24 @@
   * [5.3 Database configuration (FreeBSD)](#53-database-configuration-freebsd)
   * [5.4 Service startup (FreeBSD)](#54-service-startup-freebsd)
   * [5.5 Post-installation (FreeBSD)](#55-post-installation-freebsd)
-* [6. Post-installation](#6-post-installation)
-  * [6.1 Smoke test](#61-smoke-test)
-  * [6.2 What to do next?](#62-what-to-do-next)
-* [7. Installation with MariaDB](#7-installation-with-mariadb)
-  * [7.1 MariaDB (Rocky Linux)](#71-mariadb-rocky-linux)
-  * [7.2. MariaDB (Debian/Ubuntu)](#72-mariadb-debianubuntu)
-  * [7.3. MySQL (FreeBSD)](#73-mysql-freebsd)
-* [8. Installation with PostgreSQL](#8-installation-with-postgresql)
-  * [8.1. PostgreSQL (Rocky Linux)](#81-postgresql-rocky-linux)
-  * [8.2. PostgreSQL (Debian/Ubuntu)](#82-postgresql-debianubuntu)
-  * [8.3. PostgreSQL (FreeBSD)](#83-postgresql-freebsd)
-* [9. Cleaning up the database](#9-cleaning-up-the-database)
-  * [9.1. MariaDB and MySQL](#91-mariadb-and-mysql)
-  * [9.2. PostgreSQL](#92-postgresql)
-  * [9.3. SQLite](#93-sqlite)
-* [10. Optional features](#10-optional-features)
-  * [10.1. Metrics](#101-metrics)
+* [6. Installation on CentOS Linux 7](#6-installation-on-centos-linux-7)
+* [7. Post-installation](#7-post-installation)
+  * [7.1 Smoke test](#71-smoke-test)
+  * [7.2 What to do next?](#72-what-to-do-next)
+* [8. Installation with MariaDB](#8-installation-with-mariadb)
+  * [8.1 MariaDB (Rocky Linux)](#81-mariadb-rocky-linux)
+  * [8.2. MariaDB (Debian/Ubuntu)](#82-mariadb-debianubuntu)
+  * [8.3. MySQL (FreeBSD)](#83-mysql-freebsd)
+* [9. Installation with PostgreSQL](#9-installation-with-postgresql)
+  * [9.1. PostgreSQL (Rocky Linux)](#91-postgresql-rocky-linux)
+  * [9.2. PostgreSQL (Debian/Ubuntu)](#92-postgresql-debianubuntu)
+  * [9.3. PostgreSQL (FreeBSD)](#93-postgresql-freebsd)
+* [10. Cleaning up the database](#10-cleaning-up-the-database)
+  * [10.1. MariaDB and MySQL](#101-mariadb-and-mysql)
+  * [10.2. PostgreSQL](#102-postgresql)
+  * [10.3. SQLite](#103-sqlite)
+* [11. Optional features](#11-optional-features)
+  * [11.1. Metrics](#111-metrics)
 
 ## 1. Overview
 
@@ -419,9 +420,18 @@ service zm_testagent status
 See the [post-installation] section for post-installation matters.
 
 
-## 6. Post-installation
+## 6. Installation on CentOS Linux 7
 
-### 6.1 Smoke test
+Follow the instructions for [Rocky Linux](#3-installation-on-rocky-linux) and
+use `yum` instead of `dnf`.
+
+Note that there is no official support for PostgreSQL on Zonemaster on CentOS
+Linux 7.
+
+
+## 7. Post-installation
+
+### 7.1 Smoke test
 
 If you have followed the installation instructions for Zonemaster::Backend above,
 you should be able to use the API on localhost port 5000 as below.
@@ -435,19 +445,19 @@ followed by a percentage ticking up from 0% to 100%.
 Once the number reaches 100% a JSON object is printed and zmtest terminates.
 
 
-### 6.2. What to do next?
+### 7.2. What to do next?
 
 * For a web interface, follow the [Zonemaster::GUI installation] instructions.
 * For a command line interface, follow the [Zonemaster::CLI installation] instruction.
 * For a JSON-RPC API, see the Zonemaster::Backend [JSON-RPC API] documentation.
 
 
-## 7. Installation with MariaDB
+## 8. Installation with MariaDB
 
 First follow the installation instructions for the OS in question, and then go
 to this section to install MariaDB.
 
-### 7.1. MariaDB (Rocky Linux)
+### 8.1. MariaDB (Rocky Linux)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -486,7 +496,7 @@ Now go back to "[Database configuration](#33-database-configuration-rocky-linux)
 to create the database tables and then continue with the steps after that.
 
 
-### 7.2. MariaDB (Debian/Ubuntu)
+### 8.2. MariaDB (Debian/Ubuntu)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -523,7 +533,7 @@ Now go back to "[Database configuration](#43-database-configuration-debianubuntu
 to create the database tables and then continue with the steps after that.
 
 
-### 7.3. MySQL (FreeBSD)
+### 8.3. MySQL (FreeBSD)
 
 > MariaDB is not compatible with Zonemaster on FreeBSD. MySQL is used instead.
 
@@ -576,12 +586,12 @@ Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
 
 
-## 8. Installation with PostgreSQL
+## 9. Installation with PostgreSQL
 
 First follow the installation instructions for the OS in question, and then go
 to this section to install PostgreSQL.
 
-### 8.1. PostgreSQL (Rocky Linux)
+### 9.1. PostgreSQL (Rocky Linux)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -622,7 +632,7 @@ Now go back to "[Database configuration](#33-database-configuration-rocky-linux)
 to create the database tables and then continue with the steps after that.
 
 
-### 8.2. PostgreSQL (Debian/Ubuntu)
+### 9.2. PostgreSQL (Debian/Ubuntu)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -658,7 +668,7 @@ Now go back to "[Database configuration](#43-database-configuration-debianubuntu
 to create the database tables and then continue with the steps after that.
 
 
-### 8.3. PostgreSQL (FreeBSD)
+### 9.3. PostgreSQL (FreeBSD)
 
 Configure Zonemaster::Backend to use the correct database engine:
 
@@ -711,7 +721,7 @@ Now go back to "[Database configuration](#53-database-configuration-freebsd)"
 to create the database tables and then continue with the steps after that.
 
 
-## 9. Cleaning up the database
+## 10. Cleaning up the database
 
 If, at some point, you want to delete all traces of Zonemaster in the database,
 you can run the file `cleanup-mysql.sql` or file `cleanup-postgres.sql`
@@ -721,7 +731,7 @@ database (obviously taking all data with it).
 
 > Each script uses default values, you may need to adapt them to your setup.
 
-### 9.1. MariaDB and MySQL
+### 10.1. MariaDB and MySQL
 
 Rocky Linux, Debian and Ubuntu:
 
@@ -735,7 +745,7 @@ FreeBSD (you will get prompted for MySQL password):
 mysql --user=root -p < `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-mysql.sql
 ```
 
-### 9.2. PostgreSQL
+### 10.2. PostgreSQL
 
 Rocky Linux, Debian and Ubuntu:
 
@@ -749,13 +759,13 @@ FreeBSD (as root):
 psql -U postgres -f `perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")'`/cleanup-postgres.sql
 ```
 
-### 9.3. SQLite
+### 10.3. SQLite
 
 Remove the database file and recreate it following the installation instructions above.
 
-## 10. Optional features
+## 11. Optional features
 
-### 10.1 Metrics
+### 11.1 Metrics
 
 Statsd metrics are available, to enable the feature install the additional
 `Net::Statsd` module. See the [configuration][Backend configuration] to
@@ -763,20 +773,20 @@ configure the receiver.
 
 The list of metrics is available in the [Telemetry document][metrics].
 
-### 10.1.1 Installation on Rocky Linux
+### 11.1.1 Installation on Rocky Linux
 
 ```sh
 sudo cpanm Net::Statsd
 ```
 
-### 10.1.2 Installation on Debian / Ubuntu
+### 11.1.2 Installation on Debian / Ubuntu
 
 
 ```sh
 sudo apt install libnet-statsd-perl
 ```
 
-### 10.1.3 Installation on Freebsd
+### 11.1.3 Installation on Freebsd
 
 ```sh
 cpanm Net::Statsd
@@ -788,15 +798,15 @@ cpanm Net::Statsd
 [Declaration of prerequisites]:       https://github.com/zonemaster/zonemaster#prerequisites
 [JSON-RPC API]:                       API.md
 [Main Zonemaster repository]:         https://github.com/zonemaster/zonemaster/blob/master/README.md
-[MariaDB instructions Rocky Linux]:        #71-mariadb-rocky-linux
-[MariaDB instructions Debian]:        #72-mariadb-debianubuntu
-[MariaDB instructions FreeBSD]:       #73-mysql-freebsd
+[MariaDB instructions Rocky Linux]:   #81-mariadb-rocky-linux
+[MariaDB instructions Debian]:        #82-mariadb-debianubuntu
+[MariaDB instructions FreeBSD]:       #83-mysql-freebsd
 [metrics]:                            Telemetry.md#metrics
-[Post-installation]:                  #6-post-installation
-[PostgreSQL instructions Rocky Linux]:     #81-postgresql-rocky-linux
-[PostgreSQL instructions Debian]:     #82-postgresql-debianubuntu
-[PostgreSQL instructions FreeBSD]:    #83-postgresql-freebsd
-[Removing database]:                  #9-cleaning-up-the-database
+[Post-installation]:                  #7-post-installation
+[PostgreSQL instructions Rocky Linux]:#91-postgresql-rocky-linux
+[PostgreSQL instructions Debian]:     #92-postgresql-debianubuntu
+[PostgreSQL instructions FreeBSD]:    #93-postgresql-freebsd
+[Removing database]:                  #10-cleaning-up-the-database
 [Upgrade document]:                   Upgrade.md
 [Zonemaster::CLI installation]:       https://github.com/zonemaster/zonemaster-cli/blob/master/docs/Installation.md
 [Zonemaster::Engine installation]:    https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md

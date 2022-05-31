@@ -105,7 +105,7 @@ sub patch_db_postgresql {
         $dbh->do(
             q[
                 UPDATE test_results
-                SET domain = RTRIM('.', domain)
+                SET domain = RTRIM(domain, '.')
                 WHERE domain != '.' AND domain LIKE '%.'
             ]
         );

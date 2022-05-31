@@ -425,7 +425,8 @@ See the [post-installation] section for post-installation matters.
 Follow the instructions for [Rocky Linux](#3-installation-on-rocky-linux) and
 use `yum` instead of `dnf`.
 
-Note that there is no official support for PostgreSQL on CentOS Linux 7.
+Note that there is no official support for PostgreSQL on Zonemaster on CentOS
+Linux 7.
 
 
 ## 7. Post-installation

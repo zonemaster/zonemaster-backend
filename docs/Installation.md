@@ -22,7 +22,7 @@
   * [5.3 Database configuration (FreeBSD)](#53-database-configuration-freebsd)
   * [5.4 Service startup (FreeBSD)](#54-service-startup-freebsd)
   * [5.5 Post-installation (FreeBSD)](#55-post-installation-freebsd)
-* [6. Installation on CentOS 7](#6-installation-on-centos-7)
+* [6. Installation on CentOS Linux 7](#6-installation-on-centos-linux-7)
 * [7. Post-installation](#7-post-installation)
   * [7.1 Smoke test](#71-smoke-test)
   * [7.2 What to do next?](#72-what-to-do-next)
@@ -420,12 +420,12 @@ service zm_testagent status
 See the [post-installation] section for post-installation matters.
 
 
-## 6. Installation on CentOS 7
+## 6. Installation on CentOS Linux 7
 
 Follow the instructions for [Rocky Linux](#3-installation-on-rocky-linux) and
 use `yum` instead of `dnf`.
 
-Note that there is no official support for PostgreSQL on CentOS 7.
+Note that there is no official support for PostgreSQL on CentOS Linux 7.
 
 
 ## 7. Post-installation

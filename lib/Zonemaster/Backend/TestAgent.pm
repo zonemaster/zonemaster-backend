@@ -9,6 +9,7 @@ use DBI qw(:utils);
 use JSON::PP;
 use Scalar::Util qw( blessed );
 use File::Slurp;
+use Locale::TextDomain qw[Zonemaster-Backend];
 
 use Zonemaster::LDNS;
 

@@ -54,6 +54,13 @@ sub patch_db_mysql {
         $dbh->do(
             q[
                 UPDATE test_results
+                SET domain = '.'
+                WHERE domain = '..' OR domain = '...' OR domain = '....'
+            ]
+        );
+        $dbh->do(
+            q[
+                UPDATE test_results
                 SET domain = TRIM( TRAILING '.' FROM domain )
                 WHERE domain != '.' AND domain LIKE '%.'
             ]
@@ -100,6 +107,13 @@ sub patch_db_postgresql {
                 UPDATE test_results
                 SET domain = LOWER(domain)
                 WHERE domain != LOWER(domain)
+            ]
+        );
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = '.'
+                WHERE domain = '..' OR domain = '...' OR domain = '....'
             ]
         );
         $dbh->do(
@@ -164,11 +178,7 @@ sub patch_db_sqlite {
                 SELECT
                     id,
                     hash_id,
-                    CASE
-                        WHEN (domain != '.' AND domain LIKE '%.')
-                        THEN rtrim(lower(domain), '.')
-                        ELSE lower(domain)
-                        END,
+                    lower(domain),
                     batch_id,
                     creation_time,
                     test_start_time,
@@ -181,6 +191,20 @@ sub patch_db_sqlite {
                     results,
                     undelegated
                 FROM test_results_old
+            ]
+        );
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = '.'
+                WHERE domain = '..' OR domain = '...' OR domain = '....'
+            ]
+        );
+        $dbh->do(
+            q[
+                UPDATE test_results
+                SET domain = RTRIM(domain, '.')
+                WHERE domain != '.' AND domain LIKE '%.'
             ]
         );
 

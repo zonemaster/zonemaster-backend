@@ -50,8 +50,8 @@ Current Zonemaster::Backend version | Link to instructions | Comments
  1.1.0 ≤ version < 5.0.0            | [Upgrade to 5.0.0]   |
  5.0.0 ≤ version < 5.0.2            | [Upgrade to 5.0.2]   | For MySQL/MariaDB only
  5.0.2 ≤ version < 8.0.0            | [Upgrade to 8.0.0]   |
- 8.0.0 ≤ version < 8.2.0            | [Upgrade to 8.2.0]   |
- 8.2.0 ≤ version                    | -                    | No special steps needed for upgrade
+ 8.0.0 ≤ version < 9.0.0            | [Upgrade to 9.0.0]   |
+ 9.0.0 ≤ version                    | -                    | No special steps needed for upgrade
 
 ## 4. Find current version
 
@@ -70,5 +70,5 @@ perl -E 'use Zonemaster::Backend; say $Zonemaster::Backend::VERSION;'
 [Upgrade to 5.0.0]:  upgrade/upgrade_zonemaster_backend_ver_5.0.0.md
 [Upgrade to 5.0.2]:  upgrade/upgrade_zonemaster_backend_ver_5.0.2.md
 [Upgrade to 8.0.0]:  upgrade/upgrade_zonemaster_backend_ver_8.0.0.md
-[Upgrade to 8.2.0]:  upgrade/upgrade_zonemaster_backend_ver_8.2.0.md
+[Upgrade to 9.0.0]:  upgrade/upgrade_zonemaster_backend_ver_9.0.0.md
 [Zonemaster::Engine installation]: https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Installation.md

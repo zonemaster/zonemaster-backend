@@ -1,6 +1,6 @@
 Release history for Zonemaster component Zonemaster-Backend
 
-v8.2.0 2021-12-20 (public fix release)
+v8.2.0 2021-12-20 (public release release)
 
  [Deprecation]
  - The use of language tags that includes country code is
@@ -22,26 +22,26 @@ v8.2.0 2021-12-20 (public fix release)
  - Removes deprecated configuration options (#954)
 
  [Breaking changes]
- - Domain names cannot be entered with consecutive tailing
+ - Domain names cannot be entered with consecutive trailing
    dots (#983)
 
  [Features]
  - Adds support for CentOS Linux 7 again - to be removed again
    with release v2023.1 (#1027)
  - Updates zmb for "start_domain_test" and "add_batch_job" to include
-   support for "queue"(#1006, #1002)
+   support for "queue" (#1006, #1002)
  - Makes "/" valid character in domain names and fixes handling of
    "_" in domain names (#969)
 
  [Fixes]
- - Adds migration script and instruction for database for
-   this version (#031, #1030,
+ - Adds migration script and instructions for database for
+   this version (#1031, #1030)
  - Fixes libraries and dependencies (#1029, #1022, #991, #990)
  - Updates language translations (#1028, #1019, #1024, #1020,
    #1025, #1018, #1016)
  - Updates installation instructions (#1021, #1023)
- - Improvs logging (#1014, #1013, #1004, #996, #966)
- - Improves test progress computation(#988)
+ - Improves logging (#1014, #1013, #1004, #996, #966)
+ - Improves test progress computation (#988)
  - Improves reuse of previous test (#1010, #979)
  - Makes sure domain names are stored without trailing dot even if
    submitted with trailing dot (#1005)
@@ -49,9 +49,9 @@ v8.2.0 2021-12-20 (public fix release)
  - Fixes handling of trailing dots in domain names and name server
    names. Consecutive dots are not permitted. Name server name with
    trailing dot will not crash. (#983)
- - Fixes bug that prevented domain "0" to be tested (#988)
+ - Fixes bug that prevented domain "0" to be tested (#998)
  - Improves code (#997, #981, #980, #957, #919, #975, #973, #972,
-   #964, #962, #958, #942, #888)
+   #964, #962, #958, #942, #888, #769)
  - Updates messages (#986)
  - Uses libidn2 instead of libidn (#984)
  - Updates zmb (#985, #920)
@@ -61,7 +61,7 @@ v8.2.0 2021-12-20 (public fix release)
  - Makes call for non-existing batch ID return error (#965, #860)
  - Improves IDN support (#963)
  - Makes Testagent survive database connection failure (#955, #878)
- - Improves error handling in TestAgent(#956, #933)
+ - Improves error handling in TestAgent (#956, #933)
  - Cleans up determination of config file default path (#937)
  - Fixes unstoppable Testagent daemon (#943, #905)
 

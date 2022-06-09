@@ -1,6 +1,6 @@
 Release history for Zonemaster component Zonemaster-Backend
 
-v8.2.0 2022-06-09 (public release release)
+v9.0.0 2022-06-09 (public release release)
 
  [Deprecation]
  - The use of language tags that includes country code is
@@ -35,7 +35,7 @@ v8.2.0 2022-06-09 (public release release)
 
  [Fixes]
  - Adds migration script and instructions for database for
-   this version (#1031, #1030)
+   this version (#1031, #1030, 1037)
  - Fixes libraries and dependencies (#1029, #1022, #991, #990)
  - Updates language translations (#1028, #1019, #1024, #1020,
    #1025, #1018, #1016)

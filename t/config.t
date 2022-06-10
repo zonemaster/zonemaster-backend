@@ -113,66 +113,6 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
     };
 
-    subtest 'Deprecated values and fallbacks when DB.engine = MySQL' => sub {
-        $log->clear();
-        my $text = q{
-            [DB]
-            engine        = MySQL
-            database_host = db-host
-            user          = db_user
-            password      = db_password
-            database_name = db_database
-        };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
-        $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
-        $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
-        $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
-        is $config->MYSQL_host,     'db-host',     'fallback: MYSQL.host';
-        is $config->MYSQL_user,     'db_user',     'fallback: MYSQL.user';
-        is $config->MYSQL_password, 'db_password', 'fallback: MYSQL.password';
-        is $config->MYSQL_database, 'db_database', 'fallback: MYSQL.database';
-    };
-
-    subtest 'Deprecated values and fallbacks when DB.engine = PostgreSQL' => sub {
-        $log->clear();
-        my $text = q{
-            [DB]
-            engine        = PostgreSQL
-            database_host = db-host
-            user          = db_user
-            password      = db_password
-            database_name = db_database
-        };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
-        $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
-        $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
-        $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
-        is $config->POSTGRESQL_host,     'db-host',     'fallback: POSTGRESQL.host';
-        is $config->POSTGRESQL_user,     'db_user',     'fallback: POSTGRESQL.user';
-        is $config->POSTGRESQL_password, 'db_password', 'fallback: POSTGRESQL.password';
-        is $config->POSTGRESQL_database, 'db_database', 'fallback: POSTGRESQL.database';
-    };
-
-    subtest 'Deprecated values and fallbacks when DB.engine = SQLite' => sub {
-        $log->clear();
-        my $text = q{
-            [DB]
-            engine        = SQLite
-            database_host = db-host
-            user          = db_user
-            password      = db_password
-            database_name = /var/db/zonemaster.sqlite
-        };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*DB\.database_host/, 'deprecated: DB.database_host' );
-        $log->contains_ok( qr/deprecated.*DB\.user/,          'deprecated: DB.user' );
-        $log->contains_ok( qr/deprecated.*DB\.password/,      'deprecated: DB.password' );
-        $log->contains_ok( qr/deprecated.*DB\.database_name/, 'deprecated: DB.database_name' );
-        is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'fallback: SQLITE.database_file';
-    };
-
     subtest 'Deprecated values and fallbacks that are unconditional' => sub {
         $log->clear();
         my $text = q{
@@ -182,16 +122,9 @@ subtest 'Everything but NoWarnings' => sub {
             database_file = /var/db/zonemaster.sqlite
             [LANGUAGE]
             locale =
-            [ZONEMASTER]
-            number_of_professes_for_frontend_testing = 21
-            number_of_professes_for_batch_testing    = 22
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_frontend_testing/, 'deprecated: ZONEMASTER.number_of_professes_for_frontend_testing' );
-        $log->contains_ok( qr/deprecated.*ZONEMASTER\.number_of_professes_for_batch_testing/,    'deprecated: ZONEMASTER.number_of_professes_for_batch_testing' );
-        $log->contains_ok( qr/deprecated.*LANGUAGE\.locale/,                                     'deprecated empty LANGUAGE.locale' );
-        is $config->ZONEMASTER_number_of_processes_for_frontend_testing, '21', 'fallback: ZONEMASTER.number_of_processes_for_frontend_testing';
-        is $config->ZONEMASTER_number_of_processes_for_batch_testing,    '22', 'fallback: ZONEMASTER.number_of_processes_for_batch_testing';
+        $log->contains_ok( qr/deprecated.*LANGUAGE\.locale/, 'deprecated empty LANGUAGE.locale' );
     };
 
     subtest 'Warnings' => sub {

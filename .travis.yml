@@ -1,85 +1,97 @@
+dist: focal
+
 language: perl
+
+perl: "5.32"
+
+stages:
+  - test
+
+script:
+    - perl Makefile.PL && make test TEST_VERBOSE=1
 
 jobs:
   include:
-  # Cover MySQL and PostgreSQL with the latest supported Perl version
-  - perl: "5.32.0"
-    env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
-    services: mysql
-  - perl: "5.32.0"
-    env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
-    services: postgresql
-  # Cover supported Perl versions with SQLite
-  - perl: "5.32.0"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.30"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.28"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-  - perl: "5.26"
-    env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - stage: test
+      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+      services: mysql
+    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+      services: postgresql
+    # Cover supported Perl versions with SQLite
+    - perl: "5.30.2"
+      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - perl: "5.26"
+      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - perl: "5.16"
+      dist: bionic
+      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
   apt:
     packages:
       # From Zonemaster Engine installation instruction
-    - autoconf
-    - automake
-    - build-essential
-    - cpanminus
-    - libclone-perl
-    - libfile-sharedir-perl
-    - libfile-slurp-perl
-    - libidn11-dev
-    - libintl-perl
-    - libio-socket-inet6-perl
-    - libjson-pp-perl
-    - liblist-moreutils-perl
-    - liblocale-msgfmt-perl
-    - libmail-rfc822-address-perl
-    - libmodule-find-perl
-    - libnet-ip-perl
-    - libpod-coverage-perl
-    - libreadonly-perl
-    - libreadonly-xs-perl
-    - libssl-dev
-    - libtest-differences-perl
-    - libtest-exception-perl
-    - libtest-fatal-perl
-    - libtest-pod-perl
-    - libtext-csv-perl
-    - libtool
-    - m4
+      - autoconf
+      - automake
+      - build-essential
+      - cpanminus
+      - libclone-perl
+      - libfile-sharedir-perl
+      - libfile-slurp-perl
+      - libidn2-dev
+      - libintl-perl
+      - libio-socket-inet6-perl
+      - libjson-pp-perl
+      - liblist-moreutils-perl
+      - liblocale-msgfmt-perl
+      - libmail-rfc822-address-perl
+      - libmodule-find-perl
+      - libnet-ip-perl
+      - libpod-coverage-perl
+      - libreadonly-perl
+      - libreadonly-xs-perl
+      - libssl-dev
+      - libtest-differences-perl
+      - libtest-exception-perl
+      - libtest-fatal-perl
+      - libtest-pod-perl
+      - libtext-csv-perl
+      - libtool
+      - m4
+
       # From Zonemaster Backend installation instruction
-    - libclass-method-modifiers-perl
-    - libconfig-inifiles-perl
-    - libdbd-sqlite3-perl
-    - libdbi-perl
-    - libfile-sharedir-perl
-    - libfile-slurp-perl
-    - libhtml-parser-perl
-    - libio-captureoutput-perl
-    - libio-stringy-perl
-    - libjson-pp-perl
-    - libjson-rpc-perl
-    - liblog-any-adapter-dispatch-perl
-    - liblog-any-perl
-    - liblog-dispatch-perl
-    - libplack-perl
-    - libplack-middleware-debug-perl
-    - librole-tiny-perl
-    - librouter-simple-perl
-    - libstring-shellquote-perl
-    - libtest-nowarnings-perl
-    - libtry-tiny-perl
-    - starman
+      - libclass-method-modifiers-perl
+      - libconfig-inifiles-perl
+      - libdbd-sqlite3-perl
+      - libdbi-perl
+      - libfile-sharedir-perl
+      - libfile-slurp-perl
+      - libhtml-parser-perl
+      - libio-captureoutput-perl
+      - libio-stringy-perl
+      - libjson-pp-perl
+      - libjson-rpc-perl
+      - liblog-any-adapter-dispatch-perl
+      - liblog-any-perl
+      - liblog-dispatch-perl
+      - libplack-middleware-debug-perl
+      - libplack-perl
+      - librole-tiny-perl
+      - librouter-simple-perl
+      - libstring-shellquote-perl
+      - libtest-nowarnings-perl
+      - libtry-tiny-perl
+      - postgresql
+      - starman
 
 before_install:
     # Help Perl find modules installed from OS packages
   - export PERL5LIB=/usr/share/perl5
 
     # Provide cpanm helper
-  - eval $(curl https://travis-perl.github.io/init) --auto
+    # quoting preserves newlines in the script and then avoid error when
+    # the script contains comments
+  - eval "$(curl https://travis-perl.github.io/init)" --auto
 
     # Zonemaster LDNS needs a newer version of Module::Install
   - cpan-install Module::Install Module::Install::XSUtil
@@ -105,16 +117,16 @@ before_install:
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 
+    # Change default PostgreSQL 12 port to 5432
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main restart; fi
+
 before_script:
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U postgres -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U postgres -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
-    - if [[ "$TARGET" == "PostgreSQL" ]]; then cpanm DBD::Pg; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then cpanm DBD::Pg; fi
 
-    - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';"; fi
-    - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "CREATE DATABASE travis_zonemaster CHARACTER SET utf8 COLLATE utf8_bin;"; fi
-    - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'localhost';"; fi
-    - if [[ "$TARGET" == "MySQL" ]]; then cpanm DBD::mysql; fi
-
-script:
-    - perl -I./lib ./share/create_db.pl
-    - perl Makefile.PL && make test
+  - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "CREATE USER 'travis_zm'@'localhost' IDENTIFIED BY 'travis_zonemaster';"; fi
+  - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "CREATE DATABASE travis_zonemaster CHARACTER SET utf8 COLLATE utf8_bin;"; fi
+  - if [[ "$TARGET" == "MySQL" ]]; then mysql -u root -e "GRANT ALL ON travis_zonemaster.* TO 'travis_zm'@'localhost';"; fi
+  - if [[ "$TARGET" == "MySQL" ]]; then cpanm DBD::mysql; fi

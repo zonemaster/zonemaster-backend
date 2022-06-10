@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-17 08:57+0100\n"
-"PO-Revision-Date: 2021-11-17 17:32+0100\n"
+"POT-Creation-Date: 2022-05-22 15:34+0000\n"
+"PO-Revision-Date: 2022-05-22 15:23+0000\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
 "Language: sv\n"
@@ -11,57 +11,21 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Domain name required"
-msgstr "Domännamn är obligatoriskt"
-
-msgid ""
-"The domain name is not a valid IDNA string and cannot be converted to an A-"
-"label"
-msgstr ""
-"Domännamnet är inte ett giltigt IDN-namn och kan inte konverteras till A-"
-"label-format"
-
-msgid "The domain name contains non-ascii characters and IDNA is not installed"
-msgstr ""
-"Domännamnet innehåller icke-ASCII-tecken, men stöd för IDN är inte "
-"installerat"
-
-msgid "The domain name character(s) are not supported"
-msgstr "Domännamnstecken stöds inte"
-
-msgid "The domain name or label is too long"
-msgstr "Domännamnet eller en domännamnsdel är för långt"
-
-msgid "Unknown profile"
-msgstr "Okänd profil"
-
-msgid "Invalid IP address"
-msgstr "Ogiltig IP-adress"
-
-msgid "Unkown language string"
-msgstr "Okänd språksträng"
-
-msgid "Language string not unique"
-msgstr "Språksträngen är inte unik"
-
 msgid "Invalid method parameter(s)."
 msgstr "Ogiltig metodparameter."
 
 msgid "Missing property"
-msgstr "Värde saknas"
+msgstr "Attribut saknas"
 
 msgid ""
-"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
-"names correctly."
+"Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
+"ASCII names correctly."
 msgstr ""
-"Varning: Zonemaster::LDNS har inte kompilerats med libidn vilket gör att "
-"icke-ASCII-strängar inte kan hanteras korrekt"
-
-msgid "The domain name contains a character or characters not supported"
-msgstr "Domännamnet innehåller ett eller flera tecken som inte stöds"
+"Varning: Zonemaster::LDNS är inte kompilerad med IDNA-stöd, så enbart ASCII-"
+"namn kan hanteras."
 
 msgid "Invalid digest format"
-msgstr "Ogiltigt format på DS-digest"
+msgstr "Ogiltigt format på digest-data"
 
 msgid "Algorithm must be a positive integer"
 msgstr "Algoritm måste vara ett positivt heltal"
@@ -72,5 +36,42 @@ msgstr "Digest-typ måste vara ett positivt heltal"
 msgid "Keytag must be a positive integer"
 msgstr "Keytag måste vara ett positivt heltal"
 
+msgid "Domain name required"
+msgstr "Domännamn är obligatoriskt"
+
+msgid "The domain name is IDNA invalid"
+msgstr "Domännamnet är ogiltigt enligt IDN-standarden"
+
+msgid ""
+"The domain name contains non-ascii characters and IDNA support is not "
+"installed"
+msgstr ""
+"Domännamnet innehåller icke-ASCII-tecken, men stöd för IDN är inte "
+"installerat"
+
+msgid "The domain name character(s) are not supported"
+msgstr "Domännamnstecken stöds inte"
+
+msgid "The domain name contains consecutive dots"
+msgstr "Domännamnet innehåller flera punkter i följd"
+
+msgid "The domain name or label is too long"
+msgstr "Domännamnet eller en domännamnsdel är för långt"
+
 msgid "Invalid language tag format"
 msgstr "Ogiltigt format på språkkoden"
+
+msgid "Unkown language string"
+msgstr "Okänd språksträng"
+
+msgid "Language string not unique"
+msgstr "Språksträngen är inte unik"
+
+msgid "Invalid IP address"
+msgstr "Ogiltig IP-adress"
+
+msgid "Invalid profile format"
+msgstr "Ogiltigt profilformat"
+
+msgid "Unknown profile"
+msgstr "Okänd profil"

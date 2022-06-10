@@ -5,7 +5,7 @@ use 5.14.2;
 
 our $VERSION = '1.1.0';
 
-use Carp qw( confess );
+use Carp qw( confess croak );
 use Config::IniFiles;
 use Config;
 use File::ShareDir qw[dist_file];
@@ -15,27 +15,53 @@ use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
 use Zonemaster::Backend::DB;
 
-our $path;
-
-if ($ENV{ZONEMASTER_BACKEND_CONFIG_FILE}) {
-    $path = $ENV{ZONEMASTER_BACKEND_CONFIG_FILE};
-}
-else {
-    my @search_paths = (
-        '/etc/zonemaster/backend_config.ini',
-        '/usr/local/etc/zonemaster/backend_config.ini',
-        dist_file('Zonemaster-Backend', "backend_config.ini")
-    );
-
-    for my $default_path (@search_paths) {
-        if ( -e $default_path ) {
-            $path = $default_path;
-            last;
-        }
-    }
-}
-
 Readonly my @SIG_NAME => split ' ', $Config{sig_name};
+
+=head1 STATIC METHODS
+
+=head2 get_default_path
+
+Determine the path for the default backend_config.ini file.
+A list of values and locations are checked and the first match is returned.
+If all places are checked and no file is found, an exception is thrown.
+
+This procedure is idempotent - i.e. if you call this procedure multiple times
+the same value is returned no matter if environment variables or the file system
+have changed.
+
+The following checks are made in order:
+
+=over 4
+
+=item $ZONEMASTER_BACKEND_CONFIG_FILE
+
+If this environment variable is set ot a truthy value, that path is returned.
+
+=item /etc/zonemaster/backend_config.ini
+
+If a file exists at this path, it is returned.
+
+=item /usr/local/etc/zonemaster/backend_config.ini
+
+If a file exists at such a path, it is returned.
+
+=item DIST_DIR/backend_config.ini
+
+If a file exists at this path, it is returned.
+DIST_DIR is wherever File::ShareDir installs the Zonemaster-Backend dist.
+
+=back
+
+=cut
+
+sub get_default_path {
+    state $path =
+        $ENV{ZONEMASTER_BACKEND_CONFIG_FILE}              ? $ENV{ZONEMASTER_BACKEND_CONFIG_FILE}
+      : -e '/etc/zonemaster/backend_config.ini'           ? '/etc/zonemaster/backend_config.ini'
+      : -e '/usr/local/etc/zonemaster/backend_config.ini' ? '/usr/local/etc/zonemaster/backend_config.ini'
+      :                                                     eval { dist_file( 'Zonemaster-Backend', 'backend_config.ini' ) };
+    return $path // croak "File not found: backend_config.ini\n";
+}
 
 =head1 CONSTRUCTORS
 
@@ -52,6 +78,7 @@ See L<parse> for details on additional parsing-related error modes.
 sub load_config {
     my ( $class ) = @_;
 
+    my $path = get_default_path();
     $log->notice( "Loading config: $path" );
     my $text = read_file $path;
 
@@ -162,61 +189,11 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-    if ( defined( my $value = $get_and_clear->( 'DB', 'database_host' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.database_host. Use MYSQL.host or POSTGRESQL.host instead.";
 
-        $obj->_set_MYSQL_host( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_host( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-    }
-
-    if ( defined( my $value = $get_and_clear->( 'DB', 'user' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.user. Use MYSQL.user or POSTGRESQL.user instead.";
-
-        $obj->_set_MYSQL_user( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_user( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-    }
-
-    if ( defined( my $value = $get_and_clear->( 'DB', 'password' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.password. Use MYSQL.password or POSTGRESQL.password instead.";
-
-        $obj->_set_MYSQL_password( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_password( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-    }
-    if ( defined( my $value = $get_and_clear->( 'DB', 'database_name' ) ) ) {
-        push @warnings, "Use of deprecated config property DB.database_name. Use MYSQL.database, POSTGRESQL.database or SQLITE.database_file instead.";
-
-        $obj->_set_MYSQL_database( $value )
-          if $obj->DB_engine eq 'MySQL';
-
-        $obj->_set_POSTGRESQL_database( $value )
-          if $obj->DB_engine eq 'PostgreSQL';
-
-        $obj->_set_SQLITE_database_file( $value )
-          if $obj->DB_engine eq 'SQLite';
-    }
     if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
         if ( $value eq "" ) {
             push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
         }
-    }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_frontend_testing' ) ) ) {
-        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_frontend_testing. Use ZONEMASTER.number_of_processes_for_frontend_testing instead.";
-
-        $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( $value );
-    }
-    if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'number_of_professes_for_batch_testing' ) ) ) {
-        push @warnings, "Use of deprecated config property ZONEMASTER.number_of_professes_for_batch_testing. Use ZONEMASTER.number_of_processes_for_batch_testing instead.";
-
-        $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( $value );
     }
 
     # Assign property values (part 2/2)
@@ -307,33 +284,33 @@ sub parse {
 
     # Check required propertys (part 2/2)
     if ( $obj->DB_engine eq 'MySQL' ) {
-        die "config: missing required property MYSQL.host (required when DB.engine = MySQL and DB.database_host is unset)\n"
+        die "config: missing required property MYSQL.host (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_host;
 
-        die "config: missing required property MYSQL.user (required when DB.engine = MySQL and DB.user is unset)\n"
+        die "config: missing required property MYSQL.user (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_user;
 
-        die "config: missing required property MYSQL.password (required when DB.engine = MySQL and DB.password is unset)\n"
+        die "config: missing required property MYSQL.password (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_password;
 
-        die "config: missing required property MYSQL.database (required when DB.engine = MySQL and DB.database_name is unset)\n"
+        die "config: missing required property MYSQL.database (required when DB.engine = MySQL)\n"
           if !defined $obj->MYSQL_database;
     }
     elsif ( $obj->DB_engine eq 'PostgreSQL' ) {
-        die "config: missing required property POSTGRESQL.host (required when DB.engine = PostgreSQL and DB.database_host is unset)\n"
+        die "config: missing required property POSTGRESQL.host (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_host;
 
-        die "config: missing required property POSTGRESQL.user (required when DB.engine = PostgreSQL and DB.user is unset)\n"
+        die "config: missing required property POSTGRESQL.user (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_user;
 
-        die "config: missing required property POSTGRESQL.password (required when DB.engine = PostgreSQL and DB.password is unset)\n"
+        die "config: missing required property POSTGRESQL.password (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_password;
 
-        die "config: missing required property POSTGRESQL.database (required when DB.engine = PostgreSQL and DB.database_name is unset)\n"
+        die "config: missing required property POSTGRESQL.database (required when DB.engine = PostgreSQL)\n"
           if !defined $obj->POSTGRESQL_database;
     }
     elsif ( $obj->DB_engine eq 'SQLite' ) {
-        die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite and DB.database_name is unset)\n"
+        die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite)\n"
           if !defined $obj->SQLITE_database_file;
     }
 
@@ -434,14 +411,14 @@ Returns a number.
 
 =head2 MYSQL_password
 
-Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
+Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>.
 
 Returns a string.
 
 
 =head2 MYSQL_user
 
-Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
+Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>.
 
 Returns a string.
 
@@ -470,14 +447,14 @@ Returns a number.
 
 =head2 POSTGRESQL_password
 
-Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>.
+Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_user
 
-Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>.
+Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
 
 Returns a string.
 

@@ -11,7 +11,6 @@ use Parallel::ForkManager;
 use Daemon::Control;
 use Log::Any qw( $log );
 use Log::Any::Adapter;
-use Log::Dispatch;
 
 use English;
 use Pod::Usage;
@@ -25,7 +24,8 @@ use sigtrap qw(die normal-signals);
 ###
 
 BEGIN {
-	$ENV{PERL_JSON_BACKEND} = 'JSON::PP';
+    $ENV{PERL_JSON_BACKEND} = 'JSON::PP';
+    undef $ENV{LANGUAGE};
 }
 
 # Enable immediate flush to stdout and stderr
@@ -40,6 +40,7 @@ my $user;
 my $group;
 my $logfile;
 my $loglevel;
+my $logjson;
 my $opt_outfile;
 my $opt_help;
 GetOptions(
@@ -49,6 +50,7 @@ GetOptions(
     'group=s'    => \$group,
     'logfile=s'  => \$logfile,
     'loglevel=s' => \$loglevel,
+    'logjson!'  => \$logjson,
     'outfile=s'  => \$opt_outfile,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
@@ -60,56 +62,12 @@ $opt_outfile //= '/var/log/zonemaster/zonemaster_backend_testagent.out';
 $loglevel    //= 'info';
 $loglevel = lc $loglevel;
 
-$loglevel =~ /^(?:trace|debug|info|inform|notice|warning|warn|error|err|critical|crit|fatal|alert|emergency)$/ or die "Error: Unrecognized --loglevel $loglevel\n";
-
-# Returns a Log::Dispatch object logging to STDOUT
-#
-# This procedure duplicates the STDOUT file descriptor to make sure that it keeps
-# logging to the same place even if STDOUT is later redirected.
-sub log_dispatcher_dup_stdout {
-    my $min_level = shift;
-
-    open( my $fd, '>&', \*STDOUT ) or die "Can't dup STDOUT: $!";
-    my $handle = IO::Handle->new_from_fd( $fd, "w" ) or die "Can't fdopen duplicated STDOUT: $!";
-    $handle->autoflush(1);
-
-    return Log::Dispatch->new(
-        outputs => [
-            [
-                'Handle',
-                handle    => $handle,
-                min_level => $min_level,
-                newline   => 1,
-                callbacks => sub {
-                    my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
-                },
-            ],
-        ]
-    );
-}
-
-# Returns a Log::Dispatch object logging to a file
-sub log_dispatcher_file {
-    my $min_level = shift;
-    my $log_file  = shift;
-
-    return Log::Dispatch->new(
-        outputs => [
-            [
-                'File',
-                filename  => $log_file,
-                mode      => '>>',
-                min_level => $min_level,
-                newline   => 1,
-                callbacks => sub {
-                    my %args = @_;
-                    $args{message} = sprintf "%s [%d] %s - %s", strftime( "%FT%TZ", gmtime ), $PID, uc $args{level}, $args{message};
-                },
-            ],
-        ]
-    );
-}
+Log::Any::Adapter->set(
+    '+Zonemaster::Backend::Log',
+    log_level => $loglevel,
+    json => $logjson,
+    file => $logfile,
+);
 
 $SIG{__WARN__} = sub {
     $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
@@ -133,8 +91,6 @@ sub main {
     local $SIG{TERM} = $catch_sigterm;
 
     my $agent = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
-    # Disconnect from database in parent to avoid sharing the connection between children
-    $agent->{_db}->dbh->disconnect;
 
     while ( !$caught_sigterm ) {
         my $cleanup_timer = [ gettimeofday ];
@@ -149,30 +105,39 @@ sub main {
 
         my $fetch_test_timer = [ gettimeofday ];
 
-        my $id = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
-        $self->db->process_unfinished_tests(
-            $self->config->ZONEMASTER_lock_on_queue,
-            $self->config->ZONEMASTER_max_zonemaster_execution_time,
-        );
+        my ( $test_id, $batch_id );
+        eval {
+            $self->db->process_unfinished_tests(
+                $self->config->ZONEMASTER_lock_on_queue,
+                $self->config->ZONEMASTER_max_zonemaster_execution_time,
+            );
 
-        Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
+            ( $test_id, $batch_id ) = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
 
-        if ( $id ) {
-            $log->info( "Test found: $id" );
-            if ( $self->pm->start( $id ) == 0 ) {    # Forks off child process
-                $log->info( "Test starting: $id" );
+            Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
+        };
+        if ( $@ ) {
+            $log->error( $@ );
+        }
+
+        my $show_progress = defined $batch_id ? 0 : 1;
+
+        if ( $test_id ) {
+            $log->infof( "Test found: %s", $test_id );
+            if ( $self->pm->start( $test_id ) == 0 ) {    # Forks off child process
+                $log->infof( "Test starting: %s", $test_id );
                 Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
                 my $start_time = [ gettimeofday ];
-                eval { $agent->run( $id ) };
+                eval { $agent->run( $test_id, $show_progress ) };
                 if ( $@ ) {
                     chomp $@;
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");
-                    $log->error( "Test died: $id: $@" );
-                    $self->db->process_dead_test( $id )
+                    $log->errorf( "Test died: %s: %s", $test_id, $@ );
+                    $self->db->process_dead_test( $test_id )
                 }
                 else {
                     Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");
-                    $log->info( "Test completed: $id" );
+                    $log->infof( "Test completed: %s", $test_id );
                 }
                 Zonemaster::Backend::Metrics::timing("zonemaster.testagent.tests_duration_seconds", tv_interval($start_time) * 1000);
                 $agent->reset();
@@ -191,24 +156,10 @@ sub main {
     return;
 }
 
-
-# Initialize logging
-my $dispatcher;
-if ( $logfile eq '-' ) {
-    $dispatcher = log_dispatcher_dup_stdout( $loglevel );
-}
-else {
-    $dispatcher = log_dispatcher_file( $loglevel, $logfile );
-    print STDERR "zonemaster-testagent logging to file $logfile\n";
-}
-Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
-
-# Make sure the environment is alright before forking
-my $initial_config;
-eval {
+sub preflight_checks {
     # Make sure we can load the configuration file
     $log->debug("Starting pre-flight check");
-    $initial_config = Zonemaster::Backend::Config->load_config();
+    my $initial_config = Zonemaster::Backend::Config->load_config();
 
     Zonemaster::Backend::Metrics->setup($initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port);
 
@@ -218,11 +169,24 @@ eval {
     # Connect to the database
     $initial_config->new_DB();
     $log->debug("Completed pre-flight check");
-};
-if ( $@ ) {
-    $log->critical( "Aborting startup: $@" );
-    print STDERR "Aborting startup: $@";
-    exit 1;
+
+    return $initial_config;
+}
+
+
+
+my $initial_config;
+
+# Make sure the environment is alright before forking (only on startup)
+if ( grep /^foreground$|^restart$|^start$/, @ARGV ) {
+    eval {
+        $initial_config = preflight_checks();
+    };
+    if ( $@ ) {
+        $log->critical( "Aborting startup: $@" );
+        print STDERR "Aborting startup: $@";
+        exit 1;
+    }
 }
 
 ###
@@ -297,6 +261,10 @@ When FILE is -, the log is written to standard output.
 The location of the log level to use.
 
 The allowed values are specified at L<Log::Any/LOG-LEVELS>.
+
+=item B<--logjson>
+
+Enable JSON logging when specified.
 
 =item B<COMMAND>
 

@@ -2,6 +2,7 @@ package Zonemaster::Backend::Error;
 use Moose;
 use Data::Dumper;
 
+use overload '""' => \&as_string;
 
 has 'message' => (
     is => 'ro',
@@ -53,6 +54,8 @@ sub _data_dump {
 package Zonemaster::Backend::Error::Internal;
 use Moose;
 
+use overload '""' => \&as_string;
+
 extends 'Zonemaster::Backend::Error';
 
 has '+message' => (
@@ -88,26 +91,28 @@ sub _build_method {
     return $c[3];
 }
 
-around 'BUILDARGS', sub {
-    my ($orig, $class, %args) = @_;
-
-    if(exists $args{reason}) {
-        # trim new lines
-        $args{reason} =~ s/\n/ /g;
-        $args{reason} =~ s/^\s+|\s+$//g;
-    }
-
-    $class->$orig(%args);
-};
-
 sub as_string {
     my $self = shift;
-    my $str = sprintf "Caught %s in the `%s` method: %s", ref($self), $self->method, $self->reason;
+
+    my $reason = $self->reason;
+    $reason =~ s/\s+/ /g;
+    $reason =~ s/^\s+|\s+$//g;
+
+    my $str = sprintf "Caught %s in the `%s` method: %s", ref($self), $self->method, $reason;
     if (defined $self->data) {
         $str .= sprintf " Context: %s", $self->_data_dump;
     }
     return $str;
 }
+
+around as_hash => sub {
+    my ($orig, $self) = @_;
+
+    my $hash = $self->$orig;
+    $hash->{reason} = $self->reason;
+    $hash->{method} = $self->method;
+    return $hash;
+};
 
 
 package Zonemaster::Backend::Error::ResourceNotFound;

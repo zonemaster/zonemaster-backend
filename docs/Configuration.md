@@ -16,14 +16,14 @@
 * [MYSQL section](#MYSQL-section)
   * [host](#host)
   * [port](#port)
-  * [user](#user-1)
-  * [password](#password-1)
+  * [user](#user)
+  * [password](#password)
   * [database](#database)
 * [POSTGRESQL section](#POSTGRESQL-section)
   * [host](#host-1)
   * [port](#port-1)
-  * [user](#user-2)
-  * [password](#password-2)
+  * [user](#user-1)
+  * [password](#password-1)
   * [database](#database-1)
 * [SQLITE section](#SQLITE-section)
   * [database_file](#database_file)
@@ -55,6 +55,9 @@ described in detail [here][File format].
 Repeating a key name in one section is forbidden.
 
 Each section in `backend_config.ini` is documented below.
+
+In addition to the configuration file, some settings can configured using
+[environement variables][Environement Variables].
 
 ## RPCAPI section
 
@@ -96,31 +99,6 @@ MySQL             | `MySQL`
 PostgreSQL        | `PostgreSQL`
 SQLite            | `SQLite`
 
-### user
-
-**Deprecated.** Use [MYSQL.user] or [POSTGRESQL.user] instead.
-
-The [MYSQL.user] and [POSTGRESQL.user] properties take precedence over this.
-
-### password
-
-**Deprecated.** Use [MYSQL.password] or [POSTGRESQL.password] instead.
-
-The [MYSQL.password] and [POSTGRESQL.password] properties take precedence over this.
-
-### database_host
-
-**Deprecated.** Use [MYSQL.host] or [POSTGRESQL.host] instead.
-
-The [MYSQL.host] and [POSTGRESQL.host] properties take precedence over this.
-
-### database_name
-
-**Deprecated.** Use [MYSQL.database], [POSTGRESQL.database] or [SQLITE.database_file] instead.
-
-The [MYSQL.database], [POSTGRESQL.database], [SQLITE.database_file] properties take precedence
-over this.
-
 ### polling_interval
 
 A strictly positive decimal number. Max 5 and 3 digits in the integer and fraction
@@ -140,8 +118,6 @@ An [LDH domain name] or IP address.
 
 The host name of the machine on which the MySQL server is running.
 
-If this property is unspecified, the value of [DB.database_host] is used instead.
-
 ### port
 
 The port the MySQL server is listening on.
@@ -158,8 +134,6 @@ Max length [80 characters][MariaDB identifier max lengths].
 
 The name of the user with sufficient permission to access the database.
 
-If this property is unspecified, the value of [DB.user] is used instead.
-
 ### password
 
 A string of [US ASCII printable characters].
@@ -168,16 +142,12 @@ Max length 100 characters.
 
 The password of the configured user.
 
-If this property is unspecified, the value of [DB.password] is used instead.
-
 ### database
 
 A US ASCII-only [MariaDB unquoted identifier].
 Max length [64 characters][MariaDB identifier max lengths].
 
 The name of the database to use.
-
-If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## POSTGRESQL section
@@ -190,8 +160,6 @@ An [LDH domain name] or IP address.
 
 The host name of the machine on which the PostgreSQL server is running.
 
-If this property is unspecified, the value of [DB.database_host] is used instead.
-
 ### port
 
 The port the PostgreSQL server is listening on.
@@ -203,8 +171,6 @@ A US ASCII-only [PostgreSQL identifier]. Max length 63 characters.
 
 The name of the user with sufficient permission to access the database.
 
-If this property is unspecified, the value of [DB.user] is used instead.
-
 ### password
 
 A string of [US ASCII printable characters].
@@ -213,15 +179,11 @@ Max length 100 characters.
 
 The password of the configured user.
 
-If this property is unspecified, the value of [DB.password] is used instead.
-
 ### database
 
 A US ASCII-only [PostgreSQL identifier]. Max length 63 characters.
 
 The name of the database to use.
-
-If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## SQLITE section
@@ -233,8 +195,6 @@ Available keys : `database_file`.
 An absolute path.
 
 The full path to the SQLite main database file.
-
-If this property is unspecified, the value of [DB.database_name] is used instead.
 
 
 ## LANGUAGE section
@@ -420,12 +380,9 @@ Otherwise a new test request is enqueued.
 
 
 [API documentation]:                  API.md
-[DB.database_host]:                   #database_host
-[DB.database_name]:                   #database_name
-[DB.password]:                        #password
-[DB.user]:                            #user
 [DBD::mysql documentation]:           https://metacpan.org/pod/DBD::mysql#host
 [Default JSON profile file]:          https://github.com/zonemaster/zonemaster-engine/blob/master/share/profile.json
+[Environement Variables]:             EnvironementVariables.md
 [File format]:                        https://metacpan.org/pod/Config::IniFiles#FILE-FORMAT
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
@@ -434,15 +391,8 @@ Otherwise a new test request is enqueued.
 [LDH domain name]:                    https://datatracker.ietf.org/doc/html/rfc3696#section-2
 [MariaDB identifier max lengths]:     https://mariadb.com/kb/en/identifier-names/#maximum-length
 [MariaDB unquoted identifier]:        https://mariadb.com/kb/en/identifier-names/#unquoted
-[MYSQL.database]:                     #database
 [MYSQL.host]:                         #host
-[MYSQL.password]:                     #password-1
-[MYSQL.user]:                         #user-1
 [PostgreSQL identifier]:              https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
-[POSTGRESQL.database]:                #database-1
-[POSTGRESQL.host]:                    #host-1
-[POSTGRESQL.password]:                #password-2
-[POSTGRESQL.user]:                    #user-2
 [Profile JSON files]:                 https://github.com/zonemaster/zonemaster-engine/blob/master/docs/Profiles.md
 [Profile name section]:               API.md#profile-name
 [Profiles]:                           Architecture.md#profile

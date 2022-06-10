@@ -21,7 +21,9 @@ sub taint {
 }
 
 sub compile_schema {
-    return JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data(@_);
+    my $jv = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data(@_);
+    $jv->formats(Zonemaster::Backend::Validator::formats( undef ));
+    return $jv;
 }
 
 subtest 'Everything but NoWarnings' => sub {
@@ -29,7 +31,7 @@ subtest 'Everything but NoWarnings' => sub {
     use_ok( 'Zonemaster::Backend::Validator', ':untaint' );
 
     subtest 'ds_info' => sub {
-        my $v          = compile_schema Zonemaster::Backend::Validator->new->ds_info;
+        my $v          = compile_schema( Zonemaster::Backend::Validator->new->ds_info );
         my $ds_info_40 = { digest => '0' x 40, algorithm => 0, digtype => 0, keytag => 0 };
         my $ds_info_64 = { digest => '0' x 64, algorithm => 0, digtype => 0, keytag => 0 };
         eq_or_diff [ $v->validate( $ds_info_40 ) ], [], 'accept ds_info with 40-digit hash';
@@ -37,7 +39,7 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'ip_address' => sub {
-        my $v = compile_schema Zonemaster::Backend::Validator->new->ip_address;
+        my $v = compile_schema( Zonemaster::Backend::Validator->new->ip_address );
         eq_or_diff [ $v->validate( '192.168.0.2' ) ], [], 'accept: 192.168.0.2';
         eq_or_diff [ $v->validate( '2001:db8::1' ) ], [], 'accept: 2001:db8::1';
     };
@@ -77,13 +79,15 @@ subtest 'Everything but NoWarnings' => sub {
     };
 
     subtest 'untaint_ldh_domain' => sub {
-        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',    'accept: localhost';
-        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',  'accept: example.com';
-        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.', 'accept: example.com.';
-        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',    'accept: 192.0.2.1';
-        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,          'reject: 192.0.2.1:3306';
-        is scalar untaint_ldh_domain( '1/26.2.0.192.in-addr.arpa' ), undef,          'reject: 1/26.2.0.192.in-addr.arpa';
-        is scalar untaint_ldh_domain( '_http.example.com' ),         undef,          'reject: _http.example.com';
+        is scalar untaint_ldh_domain( 'localhost' ),                 'localhost',                 'accept: localhost';
+        is scalar untaint_ldh_domain( 'example.com' ),               'example.com',               'accept: example.com';
+        is scalar untaint_ldh_domain( 'example.com.' ),              'example.com.',              'accept: example.com.';
+        is scalar untaint_ldh_domain( '192.0.2.1' ),                 '192.0.2.1',                 'accept: 192.0.2.1';
+        is scalar untaint_ldh_domain( '0/26.2.0.192.in-addr.arpa' ), '0/26.2.0.192.in-addr.arpa', 'accept: 0/26.2.0.192.in-addr.arpa';
+        is scalar untaint_ldh_domain( '_http._tcp.example.com' ),    '_http._tcp.example.com',    'accept: _http._tcp.example.com';
+        is scalar untaint_ldh_domain( '192.0.2.1:3306' ),            undef,                       'reject: 192.0.2.1:3306';
+        is scalar untaint_ldh_domain( '1!26.2.0.192.in-addr.arpa' ), undef,                       'reject: 1!26.2.0.192.in-addr.arpa';
+        is scalar untaint_ldh_domain( '$http.example.com' ),         undef,                       'reject: $http.example.com';
         ok !tainted( untaint_ldh_domain( taint( 'localhost' ) ) ), 'launder taint';
     };
 

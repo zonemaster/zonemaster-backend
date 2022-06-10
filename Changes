@@ -1,5 +1,70 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v9.0.0 2022-06-09 (public release release)
+
+ [Deprecation]
+ - The use of language tags that includes country code is
+   deprecated. See "docs/API.md#language-tag". Such
+   language codes will be made illegal in the v2022.2 release.
+   Use language codes without country code instead.
+ - The use of an empty string in the "LANGUAGE.locale"
+   setting is deprecated and will be made illegal in the
+   v2022.2 release. See "docs/Configuration.md#language-section".
+ - The API methods "get_test_results" and "get_test_history"
+   returns two keys with the same timestamp in different
+   formats. The "creation_time" key is deprecated and will
+   be removed with release v2023.1. Use the "created_at"
+   key instead. See "docs/API.md#api-method-get_test_results"
+   and "docs/API.md#api-method-get_test_history".
+ - API method "get_test_results" returns key "id", which is now
+   deprecated and will be removed in v2022.2 release. See
+   "docs/API.md#api-method-get_test_results". (#949)
+ - Removes deprecated configuration options (#954)
+
+ [Breaking changes]
+ - Domain names cannot be entered with consecutive trailing
+   dots (#983)
+
+ [Features]
+ - Adds support for CentOS Linux 7 again - to be removed again
+   with release v2023.1 (#1027)
+ - Updates zmb for "start_domain_test" and "add_batch_job" to include
+   support for "queue" (#1006, #1002)
+ - Makes "/" valid character in domain names and fixes handling of
+   "_" in domain names (#969)
+
+ [Fixes]
+ - Adds migration script and instructions for database for
+   this version (#1031, #1030, 1037)
+ - Fixes libraries and dependencies (#1029, #1022, #991, #990)
+ - Updates language translations (#1028, #1019, #1024, #1020,
+   #1025, #1018, #1016)
+ - Updates installation instructions (#1021, #1023)
+ - Improves logging (#1014, #1013, #1004, #996, #966)
+ - Improves test progress computation (#988)
+ - Improves reuse of previous test (#1010, #979)
+ - Makes sure domain names are stored without trailing dot even if
+   submitted with trailing dot (#1005)
+ - Improved documentation (#1007, #993, #737, #974, #976, #968, #950)
+ - Fixes handling of trailing dots in domain names and name server
+   names. Consecutive dots are not permitted. Name server name with
+   trailing dot will not crash. (#983)
+ - Fixes bug that prevented domain "0" to be tested (#998)
+ - Improves code (#997, #981, #980, #957, #919, #975, #973, #972,
+   #964, #962, #958, #942, #888, #769)
+ - Updates messages (#986)
+ - Uses libidn2 instead of libidn (#984)
+ - Updates zmb (#985, #920)
+ - Makes batch tests no longer update progress while running (#944, #274)
+ - Improved database schema (#977, #970)
+ - Uses ISO 8601 format on all datetimes (#967)
+ - Makes call for non-existing batch ID return error (#965, #860)
+ - Improves IDN support (#963)
+ - Makes Testagent survive database connection failure (#955, #878)
+ - Improves error handling in TestAgent (#956, #933)
+ - Cleans up determination of config file default path (#937)
+ - Fixes unstoppable Testagent daemon (#943, #905)
+
 
 v8.1.0 2021-12-20 (public fix release)
 

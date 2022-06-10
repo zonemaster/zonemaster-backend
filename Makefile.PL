@@ -9,12 +9,10 @@ bugtracker 'https://github.com/zonemaster/zonemaster-backend/issues';
 # "2.1.0" could be declared as "2.001" but not as "2.1"
 # (see Zonemaster::LDNS below)
 
-configure_requires 'Locale::Msgfmt' => 0.15;
-
 requires
   'Class::Method::Modifiers'    => 1.09,
   'Config::IniFiles'            => 0,
-  'DBI'                         => 1.616,
+  'DBI'                         => 1.635,
   'Daemon::Control'             => 0.001007,
   'File::ShareDir'              => 0,
   'File::Slurp'                 => 0,
@@ -35,14 +33,17 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.12,
-  'Zonemaster::Engine'          => 4.004,
-  'Zonemaster::LDNS'            => 2.002,
+  'Zonemaster::Engine'          => 4.005,
+  'Zonemaster::LDNS'            => 2.002002,
   'Plack::Middleware::ReverseProxy' => 0,
   'Locale::TextDomain'          => 1.20,
   ;
 
-test_requires 'DBD::SQLite';
+test_requires 'DBD::SQLite' => 1.4702;
 test_requires 'Test::NoWarnings';
+test_requires 'Test::Exception';
+test_requires 'Test::Differences';
+test_requires 'Time::Local' => 1.26;
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';

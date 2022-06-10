@@ -152,6 +152,8 @@ sub cmd_get_language_tags {
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
     --profile PROFILE_NAME
+    --queue QUEUE
+    --language LANGUAGE
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
@@ -173,6 +175,8 @@ sub cmd_start_domain_test {
     my $opt_ipv4;
     my $opt_ipv6;
     my $opt_profile;
+    my $opt_queue;
+    my $opt_language;
     GetOptionsFromArray(
         \@opts,
         'domain|d=s'       => \$opt_domain,
@@ -183,6 +187,8 @@ sub cmd_start_domain_test {
         'ipv4=s'           => \$opt_ipv4,
         'ipv6=s'           => \$opt_ipv6,
         'profile=s'        => \$opt_profile,
+        'queue=s'          => \$opt_queue,
+        'language=s'       => \$opt_language,
     ) or pod2usage( 2 );
 
     my %params = ( domain => $opt_domain, );
@@ -215,12 +221,11 @@ sub cmd_start_domain_test {
         my @nameserver_objects;
         for my $domain_ip_pair ( @opt_nameserver ) {
             my ( $domain, $ip ) = split /:/, $domain_ip_pair, 2;
-            $ip //= "";
-            push @nameserver_objects,
-              {
-                ns => $domain,
-                ip => $ip,
-              };
+            if ($ip) {
+                push @nameserver_objects, { ns => $domain, ip => $ip };
+            } else {
+                push @nameserver_objects, { ns => $domain };
+            }
         }
         $params{nameservers} = \@nameserver_objects;
     }
@@ -235,6 +240,14 @@ sub cmd_start_domain_test {
 
     if ( $opt_profile ) {
         $params{profile} = $opt_profile;
+    }
+
+    if ( $opt_queue ) {
+        $params{queue} = $opt_queue;
+    }
+
+    if ( $opt_language ) {
+        $params{language} = $opt_language;
     }
 
     return to_jsonrpc(
@@ -259,7 +272,6 @@ sub cmd_start_domain_test {
 sub cmd_test_progress {
     my @opts = @_;
 
-    my $opt_lang;
     my $opt_test_id;
     GetOptionsFromArray(
         \@opts,
@@ -440,6 +452,7 @@ sub cmd_add_api_user {
     --client-id CLIENT_ID
     --client-version CLIENT_VERSION
     --profile PROFILE_NAME
+    --queue QUEUE
 
  "--domain" is repeated for each domain to be tested.
  "--nameserver" can be repeated for each name server.
@@ -467,6 +480,7 @@ sub cmd_add_batch_job {
     my $opt_ipv4;
     my $opt_ipv6;
     my $opt_profile;
+    my $opt_queue;
     GetOptionsFromArray(
         \@opts,
         'username|u=s'     => \$opt_username,
@@ -479,6 +493,7 @@ sub cmd_add_batch_job {
         'ipv4=s'           => \$opt_ipv4,
         'ipv6=s'           => \$opt_ipv6,
         'profile=s'        => \$opt_profile,
+        'queue=s'          => \$opt_queue,
     ) or pod2usage( 2 );
 
 
@@ -535,6 +550,10 @@ sub cmd_add_batch_job {
 
     if ( $opt_profile ) {
         $params{test_params}{profile} = $opt_profile;
+    }
+
+    if ( $opt_queue ) {
+        $params{test_params}{queue} = $opt_queue;
     }
 
     return to_jsonrpc(

@@ -12,6 +12,8 @@ use JSON::Validator::Joi;
 use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
 use Zonemaster::Engine::Net::IP;
+use Zonemaster::Engine::Logger::Entry;
+use Zonemaster::LDNS;
 
 our @EXPORT_OK = qw(
   untaint_abs_path
@@ -31,6 +33,10 @@ our @EXPORT_OK = qw(
   untaint_profile_name
   untaint_strictly_positive_int
   untaint_strictly_positive_millis
+  check_domain
+  check_ip
+  check_profile
+  check_language_tag
 );
 
 our %EXPORT_TAGS = (
@@ -55,6 +61,14 @@ our %EXPORT_TAGS = (
           untaint_strictly_positive_millis
           )
     ],
+    format => [
+        qw(
+            check_domain
+            check_ip
+            check_profile
+            check_language_tag
+        )
+    ]
 );
 
 # Does not check value ranges within the groups
@@ -71,7 +85,7 @@ Readonly my $ENGINE_TYPE_RE             => qr/^(?:mysql|postgresql|sqlite)$/i;
 Readonly my $IPADDR_RE                  => qr/^$|$IPV4_RE|$IPV6_RE/;
 Readonly my $JSONRPC_METHOD_RE          => qr/^[a-z0-9_-]*$/i;
 Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}(_[A-Z]{2})?$/;
-Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9-.]{1,253}[.]?$}i;
+Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9_./-]{1,253}[.]?$}i;
 Readonly my $LDH_DOMAIN_RE2             => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
 Readonly my $LOCALE_TAG_RE              => qr/^[a-z]{2}_[A-Z]{2}$/;
 Readonly my $MARIADB_DATABASE_LENGTH_RE => qr/^.{1,64}$/;
@@ -132,8 +146,7 @@ sub client_version {
 sub domain_name {
     return {
         type => 'string',
-        pattern => $RELAXED_DOMAIN_NAME_RE,
-        'x-error-message' => N__ 'The domain name contains a character or characters not supported'
+        format => 'domain',
     };
 }
 sub ds_info {
@@ -168,8 +181,7 @@ sub ds_info {
 sub ip_address {
     return {
         type => 'string',
-        pattern => $IPADDR_RE,
-        'x-error-message' => N__ 'Invalid IP address',
+        format => 'ip',
     };
 }
 sub nameserver {
@@ -178,9 +190,7 @@ sub nameserver {
         required => [ 'ns' ],
         additionalProperties => 0,
         properties => {
-            ns => {
-                type => 'string'
-            },
+            ns => domain_name,
             ip => ip_address
         }
     };
@@ -189,7 +199,10 @@ sub priority {
     return joi->integer;
 }
 sub profile_name {
-    return joi->string->regex( $PROFILE_NAME_RE );
+    return {
+        type => 'string',
+        format => 'profile',
+    };
 }
 sub queue {
     return joi->integer;
@@ -200,8 +213,7 @@ sub test_id {
 sub language_tag {
     return {
         type => 'string',
-        pattern => $LANGUAGE_RE,
-        'x-error-message' => N__ 'Invalid language tag format'
+        format => 'language_tag',
     };
 }
 sub username {
@@ -209,6 +221,175 @@ sub username {
 }
 sub jsonrpc_method {
     return joi->string->regex( $JSONRPC_METHOD_RE );
+}
+
+=head1 FORMAT INTERFACE
+
+This module contains a set of procedures for validating data types.
+The C<check_*> procedures take the value to validate and potential extra
+arguments and return either undef if the validation succeeded or the reason of
+the failure.
+
+    use Zonemaster::Backend::Validator qw( :format );
+
+    # prints "invalid value: The domain name character(s) are not supported"
+    if ( defined ( my $error = check_domain( 'not a domain' ) ) ) {
+        print "invalid value: $error\n";
+    } else {
+        print "value is valid\n";
+    }
+
+    # prints "value is valid"
+    if ( defined ( my $error = check_domain( 'zonemaster.net' ) ) ) {
+        print "invalid value: $error\n";
+    } else {
+        print "value is valid\n";
+    }
+
+=cut
+
+=head2 formats($config)
+
+Returns a hashref to be used with the L<"format" method in JSON::Validator|JSON::Validator::Schema/formats>.
+The keys are the names of the custom formats, supports: C<domain>,
+C<language_tag>, C<ip> and C<profile>.
+
+The method takes a L<Config|Zonemaster::Backend::Config> object as argument.
+
+=cut
+
+sub formats {
+    my ( $config ) = @_;
+    return {
+        domain => \&check_domain,
+        language_tag => sub { check_language_tag( @_, $config->LANGUAGE_locale ) },
+        ip => \&check_ip,
+        profile => sub { check_profile( @_, ( $config->PUBLIC_PROFILES, $config->PRIVATE_PROFILES ) ) },
+    };
+}
+
+=head2 check_domain(%value)
+
+Validates a L<domain name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#domain-name>.
+
+=cut
+
+sub check_domain {
+    my ( $domain ) = @_;
+
+    if ( !defined( $domain ) ) {
+        return N__ 'Domain name required';
+    }
+
+    if ( $domain =~ m/[^[:ascii:]]+/ ) {
+        if ( Zonemaster::LDNS::has_idn() ) {
+            eval { $domain = Zonemaster::LDNS::to_idn( $domain ); };
+            if ( $@ ) {
+                return N__ 'The domain name is IDNA invalid';
+            }
+        }
+        else {
+            return N__ 'The domain name contains non-ascii characters and IDNA support is not installed';
+        }
+    }
+
+    if ( $domain !~ m{^[a-z0-9_./-]+$}i ) {
+        return  N__ 'The domain name character(s) are not supported';
+    }
+
+    if ( $domain =~ m/\.\./i ) {
+        return  N__ 'The domain name contains consecutive dots';
+    }
+
+    my %levels = Zonemaster::Engine::Logger::Entry::levels();
+    my @res;
+    @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
+    @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
+    if ( @res != 0 ) {
+        return N__ 'The domain name or label is too long';
+    }
+
+    return undef;
+}
+
+=head2 check_language_tag($value, %locales)
+
+Validates a L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#language-tag>.
+
+=over
+
+=item %locales
+
+Hash of accepted locales, using the same structure than the hash returned by L<PUBLIC_PROFILES|Zonemaster::Bakend::Config/PUBLIC_PROFILES>.
+
+=back
+
+=cut
+
+sub check_language_tag {
+    my ( $language, %locales ) = @_;
+
+    my @error;
+
+    if ( $language !~ $LANGUAGE_RE ) {
+        return N__ 'Invalid language tag format';
+    }
+
+    if ( length $language == 2 ) {
+        if ( !exists $locales{$language} ) {
+            return N__ "Unkown language string";
+        }
+        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
+            return N__ "Language string not unique";
+        }
+    }
+    else {
+        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
+            return N__ "Unkown language string";
+        }
+    }
+    return undef;
+}
+
+=head2 check_ip($value)
+
+Validates an L<IP address|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#ip-address>.
+
+=cut
+
+sub check_ip {
+    my ( $ip ) = @_;
+
+    return N__ 'Invalid IP address' unless untaint_ip_address($ip) ;
+
+    return undef
+
+}
+
+=head2 check_profile($value, %profiles)
+
+Validates a L<profile name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#profile-name>.
+
+=over
+
+=item %profiles
+
+Hash of accepted profiles, using the same structure than the hash returned by L<LANGUAGE_locale|Zonemaster::Bakend::Config/LANGUAGE_locale>.
+
+=back
+
+=cut
+
+sub check_profile  {
+    my ( $profile, %profiles ) = @_;
+
+    if ( $profile !~ $PROFILE_NAME_RE ) {
+        return N__ "Invalid profile format";
+    }
+
+    if ( !exists $profiles{ lc($profile) } ) {
+        return N__ "Unknown profile";
+    }
 }
 
 =head1 UNTAINT INTERFACE

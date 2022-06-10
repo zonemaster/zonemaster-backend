@@ -2,47 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-09 15:49-0300\n"
-"PO-Revision-Date: 2021-12-09 15:56-0300\n"
-"Last-Translator: mats.dufberg@iis.se\n"
+"POT-Creation-Date: 2022-05-23 16:56-0400\n"
+"PO-Revision-Date: 2022-05-23 16:56-0400\n"
+"Last-Translator: hsalgado@vulcano.cl\n"
 "Language-Team: Zonemaster project\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0\n"
-
-msgid "Domain name required"
-msgstr "Se necesita el nombre de dominio"
-
-msgid ""
-"The domain name is not a valid IDNA string and cannot be converted to an A-"
-"label"
-msgstr ""
-"El nombre de dominio no es válido con IDNA, por lo que no puede ser "
-"convertido a una etiqueta A-label"
-
-msgid "The domain name contains non-ascii characters and IDNA is not installed"
-msgstr ""
-"El nombre de dominio contiene caracteres no-ascii, e IDNA no está instalado"
-
-msgid "The domain name character(s) are not supported"
-msgstr "Los caracteres del nombre de dominio no están soportados"
-
-msgid "The domain name or label is too long"
-msgstr "El nombre de dominio o la etiqueta es muy larga"
-
-msgid "Unknown profile"
-msgstr "Perfil desconocido"
-
-msgid "Invalid IP address"
-msgstr "Dirección IP inválida"
-
-msgid "Unkown language string"
-msgstr "Descriptor de idioma desconocido"
-
-msgid "Language string not unique"
-msgstr "Descriptor de idioma no es único"
 
 msgid "Invalid method parameter(s)."
 msgstr "Parámetro(s) de método inválido."
@@ -51,14 +19,11 @@ msgid "Missing property"
 msgstr "Propiedad no incluída"
 
 msgid ""
-"Warning: Zonemaster::LDNS not compiled with libidn, cannot handle non-ASCII "
-"names correctly."
+"Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
+"ASCII names correctly."
 msgstr ""
-"Advertencia: Zonemaster::LDNS no fue compilado con libidn, no se puede "
+"Advertencia: Zonemaster::LDNS no fue compilado con soporte IDN, no se puede "
 "manejar correctamente los nombres no-ASCII."
-
-msgid "The domain name contains a character or characters not supported"
-msgstr "El nombre de dominio contiene un carácter o caracteres no soportados"
 
 msgid "Invalid digest format"
 msgstr "Formato de resumen (digest) inválido"
@@ -72,5 +37,49 @@ msgstr "El tipo de resumen (digest) debe ser un entero positivo"
 msgid "Keytag must be a positive integer"
 msgstr "El tag de llave debe ser un entero positivo"
 
+msgid "Domain name required"
+msgstr "Se necesita el nombre de dominio"
+
+msgid "The domain name is IDNA invalid"
+msgstr "El nombre de dominio es inválido según IDNA"
+
+msgid ""
+"The domain name contains non-ascii characters and IDNA support is not "
+"installed"
+msgstr ""
+"El nombre de dominio contiene caracteres no-ascii, y el soporte IDNA no está "
+"instalado"
+
+msgid "The domain name character(s) are not supported"
+msgstr "Los caracteres del nombre de dominio no están soportados"
+
+msgid "The domain name contains consecutive dots"
+msgstr "El nombre de dominio contiene puntos consecutivos"
+
+msgid "The domain name or label is too long"
+msgstr "El nombre de dominio o la etiqueta es muy larga"
+
 msgid "Invalid language tag format"
 msgstr "Formato de descriptor de idioma inválido"
+
+msgid "Unkown language string"
+msgstr "Descriptor de idioma desconocido"
+
+msgid "Language string not unique"
+msgstr "Descriptor de idioma no es único"
+
+msgid "Invalid IP address"
+msgstr "Dirección IP inválida"
+
+msgid "Invalid profile format"
+msgstr "Formato de perfil (profile) inválido"
+
+msgid "Unknown profile"
+msgstr "Perfil desconocido"
+
+#~ msgid ""
+#~ "The domain name is not a valid IDNA string and cannot be converted to an "
+#~ "A-label"
+#~ msgstr ""
+#~ "El nombre de dominio no es válido con IDNA, por lo que no puede ser "
+#~ "convertido a una etiqueta A-label"

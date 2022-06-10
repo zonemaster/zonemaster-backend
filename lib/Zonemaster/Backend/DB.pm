@@ -6,25 +6,25 @@ use Moose::Role;
 
 use 5.14.2;
 
+use DBI qw(:sql_types);
 use Digest::MD5 qw(md5_hex);
 use Encode;
 use JSON::PP;
 use Log::Any qw( $log );
+use POSIX qw( strftime );
+use Try::Tiny;
 
 use Zonemaster::Engine::Profile;
 use Zonemaster::Backend::Errors;
 
 requires qw(
   add_batch_job
-  create_db
+  create_schema
+  drop_tables
   from_config
-  get_test_history
-  process_unfinished_tests_give_up
-  recent_test_hash_id
-  select_unfinished_tests
-  test_progress
-  test_results
+  get_dbh_specific_attributes
   get_relative_start_time
+  is_duplicate
 );
 
 has 'data_source_name' => (
@@ -47,7 +47,7 @@ has 'password' => (
 
 has 'dbhandle' => (
     is       => 'rw',
-    isa      => 'DBI::db',
+    isa      => 'Maybe[DBI::db]',
     required => 1,
 );
 
@@ -73,26 +73,35 @@ sub get_db_class {
 sub dbh {
     my ( $self ) = @_;
 
-    if ( !$self->dbhandle->ping ) {
-        my $dbh = $self->_new_dbh(    #
-            $self->data_source_name,
-            $self->user,
-            $self->password,
-        );
-
-        $self->dbhandle( $dbh );
+    if ( $self->dbhandle && $self->dbhandle->ping ) {
+        return $self->dbhandle;
     }
 
+    if ( $self->user ) {
+        $log->noticef( "Connecting to database '%s' as user '%s'", $self->data_source_name, $self->user );
+    }
+    else {
+        $log->noticef( "Connecting to database '%s'", $self->data_source_name );
+    }
+
+    my $attr = {
+        RaiseError          => 1,
+        AutoCommit          => 1,
+        AutoInactiveDestroy => 1,
+    };
+
+    $attr = { %$attr, %{ $self->get_dbh_specific_attributes } };
+
+    my $dbh = DBI->connect(
+        $self->data_source_name,
+        $self->user,
+        $self->password,
+        $attr
+    );
+
+    $self->dbhandle( $dbh );
+
     return $self->dbhandle;
-}
-
-sub user_exists {
-    my ( $self, $user ) = @_;
-
-    die Zonemaster::Backend::Error::Internal->new( reason => "username not provided to the method user_exists")
-        unless ( $user );
-
-    return $self->user_exists_in_db( $user );
 }
 
 sub add_api_user {
@@ -101,24 +110,33 @@ sub add_api_user {
     die Zonemaster::Backend::Error::Internal->new( reason => "username or api_key not provided to the method add_api_user")
         unless ( $username && $api_key );
 
-    die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
-        if ( $self->user_exists( $username ) );
+    my $dbh = $self->dbh;
+    my $result;
 
-    my $result = $self->add_api_user_to_db( $username, $api_key );
+    try {
+        $result = $dbh->do(
+            "INSERT INTO users (username, api_key) VALUES (?,?)",
+            undef,
+            $username,
+            $api_key,
+        );
+    } catch {
+        die Zonemaster::Backend::Error::Conflict->new( message => 'User already exists', data => { username => $username } )
+            if ( $self->is_duplicate );
+    };
 
-    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user_to_db not successful")
+    die Zonemaster::Backend::Error::Internal->new( reason => "add_api_user not successful")
         unless ( $result );
 
     return $result;
 }
 
-# Standard SQL, can be here
 sub create_new_test {
     my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
 
     my $dbh = $self->dbh;
 
-    $test_params->{domain} = $domain;
+    $test_params->{domain} = _normalize_domain( $domain );
 
     my $fingerprint = $self->generate_fingerprint( $test_params );
     my $encoded_params = $self->encode_params( $test_params );
@@ -128,25 +146,40 @@ sub create_new_test {
 
     my $priority    = $test_params->{priority};
     my $queue_label = $test_params->{queue};
+    my $now         = time();
+    my $threshold   = $now - $seconds_between_tests_with_same_params;
 
-    my $recent_hash_id = $self->recent_test_hash_id( $seconds_between_tests_with_same_params, $fingerprint );
+    my $recent_hash_id = $self->recent_test_hash_id( $fingerprint, $threshold );
 
     if ( $recent_hash_id ) {
         # A recent entry exists, so return its id
         $hash_id = $recent_hash_id;
     }
     else {
-        $hash_id = substr(md5_hex(time().rand()), 0, 16);
+        $hash_id = substr(md5_hex($now.rand()), 0, 16);
         $dbh->do(
-            "INSERT INTO test_results (hash_id, batch_id, priority, queue, fingerprint, params, domain, undelegated) VALUES (?,?,?,?,?,?,?,?)",
+            q[
+                INSERT INTO test_results (
+                    hash_id,
+                    batch_id,
+                    created_at,
+                    priority,
+                    queue,
+                    fingerprint,
+                    params,
+                    domain,
+                    undelegated
+                ) VALUES (?,?,?,?,?,?,?,?,?)
+            ],
             undef,
             $hash_id,
             $batch_id,
+            $self->format_time( time() ),
             $priority,
             $queue_label,
             $fingerprint,
             $encoded_params,
-            $test_params->{domain},
+            encode_utf8( $test_params->{domain} ),
             $undelegated,
         );
     }
@@ -154,7 +187,216 @@ sub create_new_test {
     return $hash_id;
 }
 
-# Standard SQL, can be here
+# Search for recent test result with the test same parameters, where
+# "threshold" gives the oldest start time.
+sub recent_test_hash_id {
+    my ( $self, $fingerprint, $threshold ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $recent_hash_id ) = $dbh->selectrow_array(
+        q[
+            SELECT hash_id
+            FROM test_results
+            WHERE fingerprint = ?
+              AND batch_id IS NULL
+              AND ( started_at IS NULL
+                 OR started_at >= ? )
+        ],
+        undef,
+        $fingerprint,
+        $self->format_time( $threshold ),
+    );
+
+    return $recent_hash_id;
+}
+
+=head2 test_progress($test_id, $progress)
+
+Takes a test_id and returns the current progress value for the associated test.
+If progress is set, update the progress value of the test.
+If the progress value is 1, set the C<started_at> field to the current time in UTC.
+
+The C<$progress> value is an integer in the range 1-99.
+
+=cut
+
+sub test_progress {
+    my ( $self, $test_id, $progress ) = @_;
+
+    my $dbh = $self->dbh;
+    if ( $progress ) {
+        $progress = $progress < 1 ? 1 :
+                    $progress > 99 ? 99 : $progress;
+        if ( $progress == 1 ) {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?,
+                        started_at = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $self->format_time( time() ),
+                $test_id,
+            );
+        }
+        else {
+            $dbh->do(
+                q[
+                    UPDATE test_results
+                    SET progress = ?
+                    WHERE hash_id = ?
+                      AND progress <> 100
+                ],
+                undef,
+                $progress,
+                $test_id,
+            );
+        }
+
+        return $progress;
+    }
+
+    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
+
+    return $result;
+}
+
+sub select_test_results {
+    my ( $self, $test_id ) = @_;
+
+    my ( $hrefs ) = $self->dbh->selectall_hashref(
+        q[
+            SELECT
+                id,
+                hash_id,
+                created_at AS creation_time,
+                params,
+                results
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        'hash_id',
+        undef,
+        $test_id
+    );
+
+    my $result = $hrefs->{$test_id};
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
+        unless defined $result;
+
+    $result->{created_at} = $self->to_iso8601( $result->{creation_time} );
+
+    return $result;
+}
+
+# "$new_results" is JSON encoded
+sub store_results {
+    my ( $self, $test_id, $new_results ) = @_;
+
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                ended_at = ?,
+                results = ?
+            WHERE hash_id = ?
+              AND progress < 100
+        ],
+        undef,
+        $self->format_time( time() ),
+        $new_results,
+        $test_id,
+    );
+}
+
+sub test_results {
+    my ( $self, $test_id ) = @_;
+
+    my $result = $self->select_test_results( $test_id );
+
+    eval {
+        $result->{params}  = decode_json( $result->{params} );
+
+        if (defined $result->{results}) {
+            $result->{results} = decode_json( $result->{results} );
+        } else {
+            $result->{results} = [];
+        }
+    };
+
+    die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
+        if $@;
+
+    return $result;
+}
+
+sub get_test_history {
+    my ( $self, $p ) = @_;
+
+    my $dbh = $self->dbh;
+
+    my $undelegated = undef;
+    if ($p->{filter} eq "undelegated") {
+        $undelegated = 1;
+    } elsif ($p->{filter} eq "delegated") {
+        $undelegated = 0;
+    }
+
+    my @results;
+    my $query = q[
+        SELECT
+            id,
+            hash_id,
+            created_at,
+            undelegated,
+            results
+        FROM test_results
+        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
+        ORDER BY id DESC
+        LIMIT ?
+        OFFSET ?];
+
+    my $sth = $dbh->prepare( $query );
+
+    $sth->bind_param( 1, _normalize_domain( $p->{frontend_params}{domain} ) );
+    $sth->bind_param( 2, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 3, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 4, $p->{limit} );
+    $sth->bind_param( 5, $p->{offset} );
+
+    $sth->execute();
+
+    while ( my $h = $sth->fetchrow_hashref ) {
+        $h->{results} = decode_json($h->{results}) if $h->{results};
+        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
+        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
+        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
+
+        # More important overwrites
+        my $overall = 'ok';
+        $overall = 'warning'  if $warning;
+        $overall = 'error'    if $error;
+        $overall = 'critical' if $critical;
+
+        push(
+            @results,
+            {
+                id               => $h->{hash_id},
+                creation_time    => $h->{created_at},
+                created_at       => $self->to_iso8601( $h->{created_at} ),
+                undelegated      => $h->{undelegated},
+                overall_result   => $overall,
+            }
+        );
+    }
+
+    return \@results;
+}
+
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
@@ -162,7 +404,7 @@ sub create_new_batch_job {
     my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
             SELECT
                 batch_id,
-                batch_jobs.creation_time AS batch_creation_time
+                batch_jobs.created_at AS batch_created_at
             FROM
                 test_results
             JOIN batch_jobs
@@ -176,42 +418,16 @@ sub create_new_batch_job {
     die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
         if ( $batch_id );
 
-    $dbh->do( "INSERT INTO batch_jobs (username) VALUES (?)", undef, $username );
+    $dbh->do( q[ INSERT INTO batch_jobs (username, created_at) VALUES (?,?) ],
+        undef,
+        $username,
+        $self->format_time( time() ),
+    );
     my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
 
     return $new_batch_id;
 }
 
-# Standard SQL, can be here
-sub user_exists_in_db {
-    my ( $self, $user ) = @_;
-
-    my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array(
-        "SELECT id FROM users WHERE username = ?",
-        undef,
-        $user
-    );
-
-    return $id;
-}
-
-# Standard SQL, can be here
-sub add_api_user_to_db {
-    my ( $self, $user_name, $api_key  ) = @_;
-
-    my $dbh = $self->dbh;
-    my $nb_inserted = $dbh->do(
-        "INSERT INTO users (username, api_key) VALUES (?,?)",
-        undef,
-        $user_name,
-        $api_key,
-    );
-
-    return $nb_inserted;
-}
-
-# Standard SQL, can be here
 sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
@@ -226,29 +442,39 @@ sub user_authorized {
     return $id;
 }
 
-# Standard SQL, can be here
+sub batch_exists_in_db {
+    my ( $self, $batch_id ) = @_;
+
+    my $dbh = $self->dbh;
+    my ( $id ) = $dbh->selectrow_array(
+        q[ SELECT id FROM batch_jobs WHERE id = ? ],
+        undef,
+        $batch_id
+    );
+
+    return $id;
+}
+
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
     my $result_id;
     my $dbh = $self->dbh;
 
-    my ( $id, $hash_id );
+    my ( $hash_id, $batch_id );
     if ( defined $queue_label ) {
-        ( $id, $hash_id ) = $dbh->selectrow_array( qq[ SELECT id, hash_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
+        ( $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
     }
     else {
-        ( $id, $hash_id ) = $dbh->selectrow_array( q[ SELECT id, hash_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
+        ( $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
     }
 
-    if ($id) {
-        $dbh->do( q[UPDATE test_results SET progress=1 WHERE id=?], undef, $id );
-        $result_id = $hash_id;
+    if ( $hash_id ) {
+        $self->test_progress( $hash_id, 1 );
     }
-    return $result_id;
+    return ( $hash_id, $batch_id );
 }
 
-# Standard SQL, can be here
 sub get_test_params {
     my ( $self, $test_id ) = @_;
 
@@ -260,11 +486,7 @@ sub get_test_params {
 
     my $result;
     eval {
-        if ( utf8::is_utf8( $params_json ) ) {
-            $result = decode_json( encode_utf8( $params_json ) );
-        } else {
-            $result = decode_json( $params_json );
-        }
+        $result = decode_json( $params_json );
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
@@ -276,6 +498,9 @@ sub get_test_params {
 # Standatd SQL, can be here
 sub get_batch_job_result {
     my ( $self, $batch_id ) = @_;
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batch_id } )
+        unless defined $self->batch_exists_in_db( $batch_id );
 
     my $dbh = $self->dbh;
 
@@ -316,6 +541,37 @@ sub process_unfinished_tests {
     }
 }
 
+sub select_unfinished_tests {
+    my ( $self, $queue_label, $test_run_timeout ) = @_;
+
+    if ( $queue_label ) {
+        my $sth = $self->dbh->prepare( "
+            SELECT hash_id, results
+            FROM test_results
+            WHERE started_at < ?
+            AND progress > 0
+            AND progress < 100
+            AND queue = ?" );
+        $sth->execute(    #
+            $self->format_time( time() - $test_run_timeout ),
+            $queue_label,
+        );
+        return $sth;
+    }
+    else {
+        my $sth = $self->dbh->prepare( "
+            SELECT hash_id, results
+            FROM test_results
+            WHERE started_at < ?
+            AND progress > 0
+            AND progress < 100" );
+        $sth->execute(    #
+            $self->format_time( time() - $test_run_timeout ),
+        );
+        return $sth;
+    }
+}
+
 sub force_end_test {
     my ( $self, $hash_id, $results, $timestamp ) = @_;
     my $result;
@@ -332,7 +588,8 @@ sub force_end_test {
         "tag"       => "UNABLE_TO_FINISH_TEST",
         "timestamp" => $timestamp,
         };
-    $self->process_unfinished_tests_give_up($result, $hash_id);
+
+    $self->store_results( $hash_id, encode_json($result) );
 }
 
 sub process_dead_test {
@@ -341,31 +598,15 @@ sub process_dead_test {
     $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
 }
 
-# A thin wrapper around DBI->connect to ensure similar behavior across database
-# engines.
-sub _new_dbh {
-    my ( $class, $data_source_name, $user, $password ) = @_;
+# Converts the domain to lowercase and if the domain is not the root ('.')
+# removes any trailing dot
+sub _normalize_domain {
+    my ( $domain ) = @_;
 
-    if ( $user ) {
-        $log->noticef( "Connecting to database '%s' as user '%s'", $data_source_name, $user );
-    }
-    else {
-        $log->noticef( "Connecting to database '%s'", $data_source_name );
-    }
+    $domain = lc( $domain );
+    $domain =~ s/\.$// unless $domain eq '.';
 
-    my $dbh = DBI->connect(
-        $data_source_name,
-        $user,
-        $password,
-        {
-            RaiseError => 1,
-            AutoCommit => 1,
-        }
-    );
-
-    $dbh->{AutoInactiveDestroy} = 1;
-
-    return $dbh;
+    return $domain;
 }
 
 sub _project_params {
@@ -375,10 +616,10 @@ sub _project_params {
 
     my %projection = ();
 
-    $projection{domain}   = lc $$params{domain} // "";
-    $projection{ipv4}     = $$params{ipv4}      // $profile->get( 'net.ipv4' );
-    $projection{ipv6}     = $$params{ipv6}      // $profile->get( 'net.ipv6' );
-    $projection{profile}  = $$params{profile}   // "default";
+    $projection{domain}   = _normalize_domain( $$params{domain} // "" );
+    $projection{ipv4}     = $$params{ipv4}       // $profile->get( 'net.ipv4' );
+    $projection{ipv6}     = $$params{ipv6}       // $profile->get( 'net.ipv6' );
+    $projection{profile}  = lc( $$params{profile} // "default" );
 
     my $array_ds_info = $$params{ds_info} // [];
     my @array_ds_info_sort = sort {
@@ -395,7 +636,7 @@ sub _project_params {
         if ( defined $$nameserver{ip} and $$nameserver{ip} eq "" ) {
             delete $$nameserver{ip};
         }
-        $$nameserver{ns} = lc $$nameserver{ns};
+        $$nameserver{ns} = _normalize_domain( $$nameserver{ns} );
     }
     my @array_nameservers_sort = sort {
         $a->{ns} cmp $b->{ns} or
@@ -407,11 +648,13 @@ sub _project_params {
     return \%projection;
 }
 
+# Take a params object with text strings and return an UTF-8 binary string
 sub _params_to_json_str {
     my ( $self, $params ) = @_;
 
     my $js = JSON::PP->new;
     $js->canonical( 1 );
+    $js->utf8( 1 );
 
     my $encoded_params = $js->encode( $params );
 
@@ -422,7 +665,7 @@ sub _params_to_json_str {
 
 Encode the params object into a JSON string. First a projection of some
 parameters is performed then all additional properties are kept.
-Returns a JSON string of a the using a union of the given hash and its
+Returns an UTF-8  binary string of the union of the given hash and its
 normalization using default values, see
 L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
 
@@ -440,7 +683,8 @@ sub encode_params {
 
 =head2 generate_fingerprint
 
-Returns a fingerprint of the hash passed in argument.
+Returns a fingerprint (an UTF-8 binary string) of the hash passed in argument
+(which contain text string).
 The fingerprint is computed after projecting the hash.
 Such fingerprint are usefull to find similar tests in the database.
 
@@ -451,7 +695,7 @@ sub generate_fingerprint {
 
     my $projected_params = $self->_project_params( $params );
     my $encoded_params = $self->_params_to_json_str( $projected_params );
-    my $fingerprint = md5_hex( encode_utf8( $encoded_params ) );
+    my $fingerprint = md5_hex( $encoded_params );
 
     return $fingerprint;
 }
@@ -475,6 +719,16 @@ sub undelegated {
     return 0;
 }
 
+sub format_time {
+    my ( $class, $time ) = @_;
+    return strftime "%Y-%m-%d %H:%M:%S", gmtime( $time );
+}
+
+sub to_iso8601 {
+    my ( $class, $time ) = @_;
+    $time =~ s/^([^ ]+) (.*)$/$1T$2Z/;
+    return $time;
+}
 
 no Moose::Role;
 

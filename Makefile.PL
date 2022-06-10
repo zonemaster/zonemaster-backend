@@ -33,8 +33,8 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.12,
-  'Zonemaster::Engine'          => 4.004,
-  'Zonemaster::LDNS'            => 2.002,
+  'Zonemaster::Engine'          => 4.005,
+  'Zonemaster::LDNS'            => 2.002002,
   'Plack::Middleware::ReverseProxy' => 0,
   'Locale::TextDomain'          => 1.20,
   ;

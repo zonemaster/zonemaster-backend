@@ -20,18 +20,18 @@ sub encode_and_fingerprint {
 subtest 'encoding and fingerprint' => sub {
 
     subtest 'missing properties' => sub {
-        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
-
         my %params = ( domain => "example.com" );
 
+        my $expected_encoded_params = '{"domain":"example.com","ds_info":[],"ipv4":null,"ipv6":null,"nameservers":[],"profile":"default"}';
         my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
         is $encoded_params, $expected_encoded_params, 'domain only: the encoded strings should match';
         #diag ($fingerprint);
 
+        my $expected_encoded_params_v4_true = '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":null,"nameservers":[],"profile":"default"}';
         $params{ipv4} = JSON::PP->true;
         my ( $encoded_params_ipv4, $fingerprint_ipv4 ) = encode_and_fingerprint( \%params );
-        is $encoded_params_ipv4, $expected_encoded_params, 'add ipv4: the encoded strings should match';
-        is $fingerprint_ipv4, $fingerprint, 'fingerprints should match';
+        is $encoded_params_ipv4, $expected_encoded_params_v4_true, 'add ipv4: the encoded strings should match';
+        isnt $fingerprint_ipv4, $fingerprint, 'fingerprints should not match';
     };
 
     subtest 'array properties' => sub {
@@ -121,7 +121,7 @@ subtest 'encoding and fingerprint' => sub {
     };
 
     subtest 'garbage properties set' => sub {
-        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}';
+        my $expected_encoded_params = '{"client":"GUI v3.3.0","domain":"example.com","ds_info":[],"ipv4":null,"ipv6":null,"nameservers":[],"profile":"default"}';
         my %params1 = (
             domain => "example.com",
         );
@@ -174,6 +174,8 @@ subtest 'encoding and fingerprint' => sub {
         my $expected_fingerprint = '8c64f7feaa3f13b77e769720991f2a79';
 
         my %params = ( domain => "café.example" );
+        $params{ipv4} = JSON::PP->true;
+        $params{ipv6} = JSON::PP->true;
 
         my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
         is $encoded_params, $expected_encoded_params, 'IDN domain: the encoded strings should match';
@@ -184,7 +186,7 @@ subtest 'encoding and fingerprint' => sub {
         subtest 'in domain' => sub {
             my %params1 = ( domain => "example.com" );
             my %params2 = ( domain => "example.com." );
-            my $expected_encoded_params = encode_utf8( '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
+            my $expected_encoded_params = encode_utf8( '{"domain":"example.com","ds_info":[],"ipv4":null,"ipv6":null,"nameservers":[],"profile":"default"}' );
 
             my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
             my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
@@ -196,7 +198,7 @@ subtest 'encoding and fingerprint' => sub {
         subtest 'in nameserver' => sub {
             my %params1 = ( domain => "example.com", nameservers => [ { ns => "ns1.example.com." } ] );
             my %params2 = ( domain => "example.com", nameservers => [ { ns => "ns1.example.com" } ] );
-            my $expected_encoded_params = encode_utf8( '{"domain":"example.com","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[{"ns":"ns1.example.com"}],"profile":"default"}' );
+            my $expected_encoded_params = encode_utf8( '{"domain":"example.com","ds_info":[],"ipv4":null,"ipv6":null,"nameservers":[{"ns":"ns1.example.com"}],"profile":"default"}' );
 
             my ( $encoded_params1, $fingerprint1 ) = encode_and_fingerprint( \%params1 );
             my ( $encoded_params2, $fingerprint2 ) = encode_and_fingerprint( \%params2 );
@@ -207,7 +209,7 @@ subtest 'encoding and fingerprint' => sub {
 
         subtest 'root is not modified' => sub {
             my %params = ( domain => "." );
-            my $expected_encoded_params = encode_utf8( '{"domain":".","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
+            my $expected_encoded_params = encode_utf8( '{"domain":".","ds_info":[],"ipv4":null,"ipv6":null,"nameservers":[],"profile":"default"}' );
 
             my ( $encoded_params, $fingerprint ) = encode_and_fingerprint( \%params );
             is $encoded_params, $expected_encoded_params, 'the encoded strings should match';

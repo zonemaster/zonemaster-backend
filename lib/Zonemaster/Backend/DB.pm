@@ -14,7 +14,6 @@ use Log::Any qw( $log );
 use POSIX qw( strftime );
 use Try::Tiny;
 
-use Zonemaster::Engine::Profile;
 use Zonemaster::Backend::Errors;
 
 requires qw(
@@ -611,8 +610,6 @@ sub _normalize_domain {
 
 sub _project_params {
     my ( $self, $params ) = @_;
-
-    my $profile = Zonemaster::Engine::Profile->effective;
 
     my %projection = ();
 

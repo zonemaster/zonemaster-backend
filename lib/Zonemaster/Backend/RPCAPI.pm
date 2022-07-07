@@ -23,6 +23,7 @@ use Encode;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
+use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
@@ -58,6 +59,11 @@ sub new {
     }
 
     $self->_init_db($dbtype);
+
+    $self->{_profiles} = Zonemaster::Backend::Config->load_profiles(    #
+        $self->{config}->PUBLIC_PROFILES,
+        $self->{config}->PRIVATE_PROFILES,
+    );
 
     return ( $self );
 }
@@ -257,8 +263,13 @@ sub start_domain_test {
 
         die "No domain in parameters\n" unless ( defined $params->{domain} && length($params->{domain}) );
 
-        $params->{priority}  //= 10;
-        $params->{queue}     //= 0;
+        $params->{profile}  //= "default";
+        $params->{priority} //= 10;
+        $params->{queue}    //= 0;
+
+        my $profile = $self->{_profiles}{ $params->{profile} };
+        $params->{ipv4} //= $profile->get( "net.ipv4" );
+        $params->{ipv6} //= $profile->get( "net.ipv6" );
 
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
@@ -514,8 +525,13 @@ sub add_batch_job {
 
     my $results;
     eval {
-        $params->{test_params}->{priority} //= 5;
-        $params->{test_params}->{queue}    //= 0;
+        $params->{test_params}{profile}  //= "default";
+        $params->{test_params}{priority} //= 5;
+        $params->{test_params}{queue}    //= 0;
+
+        my $profile = $self->{_profiles}{ $params->{test_params}{profile} };
+        $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
+        $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
 
         $results = $self->{db}->add_batch_job( $params );
     };

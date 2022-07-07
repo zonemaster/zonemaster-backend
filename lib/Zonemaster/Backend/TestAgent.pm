@@ -40,20 +40,10 @@ sub new {
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
     $self->{_db} = $dbclass->from_config( $config );
 
-    my %all_profiles = ( $config->PUBLIC_PROFILES, $config->PRIVATE_PROFILES );
-    foreach my $name ( keys %all_profiles ) {
-        my $path = $all_profiles{$name};
-
-        my $full_profile = Zonemaster::Engine::Profile->default;
-        if ( defined $path ) {
-            my $json = eval { read_file( $path, err_mode => 'croak' ) }    #
-              // die "Error loading profile '$name': $@";
-            my $named_profile = eval { Zonemaster::Engine::Profile->from_json( $json ) }    #
-              // die "Error loading profile '$name' at '$path': $@";
-            $full_profile->merge( $named_profile );
-        }
-        $self->{_profiles}{$name} = $full_profile;
-    }
+    $self->{_profiles} = Zonemaster::Backend::Config->load_profiles(    #
+        $config->PUBLIC_PROFILES,
+        $config->PRIVATE_PROFILES,
+    );
 
     bless( $self, $class );
     return $self;

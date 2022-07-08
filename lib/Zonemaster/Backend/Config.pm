@@ -17,7 +17,7 @@ use Zonemaster::Backend::DB;
 
 Readonly my @SIG_NAME => split ' ', $Config{sig_name};
 
-=head1 STATIC METHODS
+=head1 CLASS METHODS
 
 =head2 get_default_path
 
@@ -61,6 +61,50 @@ sub get_default_path {
       : -e '/usr/local/etc/zonemaster/backend_config.ini' ? '/usr/local/etc/zonemaster/backend_config.ini'
       :                                                     eval { dist_file( 'Zonemaster-Backend', 'backend_config.ini' ) };
     return $path // croak "File not found: backend_config.ini\n";
+}
+
+=head2 load_profiles
+
+Loads and returns a set of named profiles.
+
+    my %all_profiles = (
+        $config->PUBLIC_PROFILES,
+        $config->PRIVATE_PROFILES,
+    );
+    my %profiles = %{ Zonemaster::Backend::Config->load_profiles( %all_profiles ) };
+
+Takes a hash mapping profile names to profile paths.
+An `undef` path value means the default profile.
+
+Returns a hashref mapping profile names to profile objects.
+
+The returned profiles have omitted values filled in with defaults from the
+default profile.
+
+Dies if any of the given paths cannot be read or their contents cannot be parsed
+as JSON.
+
+=cut
+
+sub load_profiles {
+    my ( $class, %profile_paths ) = @_;
+
+    my %profiles;
+    foreach my $name ( keys %profile_paths ) {
+        my $path = $profile_paths{$name};
+
+        my $full_profile = Zonemaster::Engine::Profile->default;
+        if ( defined $path ) {
+            my $json = eval { read_file( $path, err_mode => 'croak' ) }    #
+              // die "Error loading profile '$name': $@";
+            my $named_profile = eval { Zonemaster::Engine::Profile->from_json( $json ) }    #
+              // die "Error loading profile '$name' at '$path': $@";
+            $full_profile->merge( $named_profile );
+        }
+        $profiles{$name} = $full_profile;
+    }
+
+    return \%profiles;
 }
 
 =head1 CONSTRUCTORS

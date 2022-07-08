@@ -14,7 +14,6 @@ use Log::Any qw( $log );
 use POSIX qw( strftime );
 use Try::Tiny;
 
-use Zonemaster::Engine::Profile;
 use Zonemaster::Backend::Errors;
 
 requires qw(
@@ -612,13 +611,11 @@ sub _normalize_domain {
 sub _project_params {
     my ( $self, $params ) = @_;
 
-    my $profile = Zonemaster::Engine::Profile->effective;
-
     my %projection = ();
 
     $projection{domain}   = _normalize_domain( $$params{domain} // "" );
-    $projection{ipv4}     = $$params{ipv4}       // $profile->get( 'net.ipv4' );
-    $projection{ipv6}     = $$params{ipv6}       // $profile->get( 'net.ipv6' );
+    $projection{ipv4}     = $$params{ipv4};
+    $projection{ipv6}     = $$params{ipv6};
     $projection{profile}  = lc( $$params{profile} // "default" );
 
     my $array_ds_info = $$params{ds_info} // [];

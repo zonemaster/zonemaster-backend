@@ -1,5 +1,14 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+
+v9.0.1 2022-07-08 (public fix release)
+
+ [Fixes]
+ - Corrects a bug where Zonemaster-Backend does not respect the IPv4 or
+   IPV6 setting in a custom profile (#1046, #1039)
+ - Updates the Danish translation (#1034)
+
+
 v9.0.0 2022-06-09 (public release release)
 
  [Deprecation]

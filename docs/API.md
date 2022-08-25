@@ -932,7 +932,6 @@ Example response:
   "result": {
     "creation_time": "2016-11-15 11:53:13.965982",
     "created_at": "2016-11-15T11:53:13Z",
-    "id": 25,
     "hash_id": "c45a3f8256c4a155",
     "params": {
       "ds_info": [],
@@ -991,7 +990,6 @@ An object with the following properties:
   The time in UTC at which the *test* was created.
 * `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
   was created.
-* `"id"`: **Deprecated** (planned removal: v2022.2). An integer.
 * `"hash_id"`: A [*test id*][Test id]. The *test* in question.
 * `"params"`: See below.
   `start_domain_test` when the *test* was started.

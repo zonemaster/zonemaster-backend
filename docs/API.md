@@ -434,7 +434,7 @@ The items of the array are objects with two keys, `"path"` and `"message"`:
 
 ## API method: `version_info`
 
-Returns the version of the Zonemaster Backend and Zonemaster Engine software combination
+Returns the version of the Zonemaster-LDNS, Zonemaster-Engine and Zonemaster-Backend software combination.
 
 Example request:
 ```json
@@ -451,6 +451,7 @@ Example response:
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
+    "zonemaster_ldns": "1.0.1",
     "zonemaster_backend": "1.0.7",
     "zonemaster_engine": "v1.0.14"
   }

@@ -107,9 +107,9 @@ sub version_info {
 
     my %ver;
     eval {
+        $ver{zonemaster_ldns} = Zonemaster::LDNS->VERSION;
         $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
         $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
-
     };
     if ($@) {
         handle_exception( $@ );

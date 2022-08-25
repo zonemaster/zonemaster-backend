@@ -157,6 +157,7 @@ subtest 'API calls' => sub {
 
     subtest 'version_info' => sub {
         my $res = $rpcapi->version_info();
+        ok( defined( $res->{zonemaster_ldns} ), 'Has a "zonemaster_ldns" key' );
         ok( defined( $res->{zonemaster_engine} ), 'Has a "zonemaster_engine" key' );
         ok( defined( $res->{zonemaster_backend} ), 'Has a "zonemaster_backend" key' );
     };

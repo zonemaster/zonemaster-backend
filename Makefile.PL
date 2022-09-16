@@ -26,6 +26,7 @@ requires
   'LWP::UserAgent'              => 0,
   'Mojolicious'                 => 7.28,
   'Moose'                       => 2.04,
+  'Net::IP::XS'                 => 0,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,
   'Role::Tiny'                  => 1.001003,

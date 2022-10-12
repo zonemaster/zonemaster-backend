@@ -364,6 +364,7 @@ sub get_test_results {
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};
+            $res->{testcase} = $test_res->{testcase};
 
             if ( $test_res->{module} eq 'SYSTEM' ) {
                 if ( $res->{message} =~ /policy\.json/ ) {

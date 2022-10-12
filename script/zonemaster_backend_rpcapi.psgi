@@ -59,56 +59,68 @@ my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
 
 my $router = router {
 ############## FRONTEND ####################
+    # Deprecated
     connect "version_info" => {
         handler => $handler,
         action => "version_info"
     };
 
+
+    # Deprecated
     connect "profile_names" => {
-                handler => $handler,
-                action => "profile_names"
-        };
+        handler => $handler,
+        action => "profile_names"
+    };
 
+    # Deprecated
     connect "get_language_tags" => {
-                handler => $handler,
-                action => "get_language_tags"
-        };
+        handler => $handler,
+        action => "get_language_tags"
+    };
 
-        connect "get_host_by_name" => {
+    # Deprecated
+    connect "get_host_by_name" => {
         handler => $handler,
         action => "get_host_by_name"
     };
 
+    # Deprecated
     connect "get_data_from_parent_zone" => {
         handler => $handler,
         action => "get_data_from_parent_zone"
     };
 
+    # Deprecated
     connect "start_domain_test" => {
         handler => $handler,
         action => "start_domain_test"
     };
 
+    # Deprecated
     connect "test_progress" => {
         handler => $handler,
         action => "test_progress"
     };
 
+    # Deprecated
     connect "get_test_params" => {
         handler => $handler,
         action => "get_test_params"
     };
 
+    # Deprecated
     connect "get_test_results" => {
         handler => $handler,
         action => "get_test_results"
     };
 
+    # Deprecated
     connect "get_test_history" => {
         handler => $handler,
         action => "get_test_history"
     };
 
+    # Deprecated
     connect "get_batch_job_result" => {
         handler => $handler,
         action => "get_batch_job_result"
@@ -117,6 +129,7 @@ my $router = router {
 
 if ($config->RPCAPI_enable_add_api_user) {
     $log->info('Enabling add_api_user method');
+    #Deprecated
     $router->connect("add_api_user", {
         handler => $handler,
         action => "add_api_user"
@@ -125,6 +138,7 @@ if ($config->RPCAPI_enable_add_api_user) {
 
 if ($config->RPCAPI_enable_add_batch_job) {
     $log->info('Enabling add_batch_job method');
+    #Deprecated
     $router->connect("add_batch_job", {
         handler => $handler,
         action => "add_batch_job"

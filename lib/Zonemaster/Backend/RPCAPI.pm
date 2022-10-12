@@ -121,19 +121,7 @@ sub system_versions {
 # Deprecated
 $json_schemas{version_info} = $json_schemas{system_versions};
 sub version_info {
-    my ( $self ) = @_;
-
-    my %ver;
-    eval {
-        $ver{zonemaster_ldns} = Zonemaster::LDNS->VERSION;
-        $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
-        $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return \%ver;
+    return system_versions( @_ );
 }
 
 $json_schemas{conf_profiles} = joi->object->strict;
@@ -308,41 +296,7 @@ sub lookup_delegation_data {
 # Deprecated
 $json_schemas{get_data_from_parent_zone} = $json_schemas{lookup_delegation_data};
 sub get_data_from_parent_zone {
-    my ( $self, $params ) = @_;
-
-    my $result = eval {
-        my %result;
-        my $domain = $params->{domain};
-
-        my @ns_list;
-        my @ns_names;
-
-        my $zone = Zonemaster::Engine->zone( $domain );
-        push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
-
-        my @ds_list;
-
-        $zone = Zonemaster::Engine->zone($domain);
-        my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
-        if ($ds_p) {
-            my @ds = $ds_p->get_records( 'DS', 'answer' );
-
-            foreach my $ds ( @ds ) {
-                next unless $ds->type eq 'DS';
-                push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-            }
-        }
-
-        $result{ns_list} = \@ns_list;
-        $result{ds_list} = \@ds_list;
-        return \%result;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-    elsif ($result) {
-        return $result;
-    }
+    return lookup_delegation_data( @_ );
 }
 
 $json_schemas{job_create} = {
@@ -481,19 +435,7 @@ sub job_params {
 # Deprecated
 $json_schemas{get_test_params} = $json_schemas{job_params};
 sub get_test_params {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval {
-        my $test_id = $params->{test_id};
-
-        $result = $self->{db}->get_test_params( $test_id );
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
+    return job_params( @_ );
 }
 
 $json_schemas{job_results} = {
@@ -594,89 +536,7 @@ sub job_results {
 # Deprecated
 $json_schemas{get_test_results} = $json_schemas{job_results};
 sub get_test_results {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval{
-
-        my $locale = $self->_get_locale( $params );
-
-        my $translator;
-        $translator = Zonemaster::Backend::Translator->new;
-
-        my $previous_locale = $translator->locale;
-        if ( !$translator->locale( $locale ) ) {
-            die "Failed to set locale: $locale";
-        }
-
-        eval { $translator->data } if $translator; # Provoke lazy loading of translation data
-
-        my @zm_results;
-        my %testcases;
-
-        my $test_info = $self->{db}->test_results( $params->{id} );
-        foreach my $test_res ( @{ $test_info->{results} } ) {
-            my $res;
-            if ( $test_res->{module} eq 'NAMESERVER' ) {
-                $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
-            }
-            elsif ($test_res->{module} eq 'SYSTEM'
-                && $test_res->{tag} eq 'POLICY_DISABLED'
-                && $test_res->{args}->{name} eq 'Example' )
-            {
-                next;
-            }
-
-            $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res ) . "\n";
-            $res->{message} =~ s/,/, /isg;
-            $res->{message} =~ s/;/; /isg;
-            $res->{level} = $test_res->{level};
-            $res->{testcase} = $test_res->{testcase} // 'UNSPECIFIED';
-            $testcases{$res->{testcase}} = $translator->test_case_description($res->{testcase});
-
-            if ( $test_res->{module} eq 'SYSTEM' ) {
-                if ( $res->{message} =~ /policy\.json/ ) {
-                    my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                    if ( $policy ) {
-                        my $policy_description = 'DEFAULT POLICY';
-                        $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
-                        $res->{message} =~ s/$policy/$policy_description/;
-                    }
-                    else {
-                        $res->{message} = 'UNKNOWN POLICY FORMAT';
-                    }
-                }
-                elsif ( $res->{message} =~ /config\.json/ ) {
-                    my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                    if ( $config ) {
-                        my $config_description = 'DEFAULT CONFIGURATION';
-                        $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
-                        $res->{message} =~ s/$config/$config_description/;
-                    }
-                    else {
-                        $res->{message} = 'UNKNOWN CONFIG FORMAT';
-                    }
-                }
-            }
-
-            push( @zm_results, $res );
-        }
-
-        $result = $test_info;
-        $result->{testcase_descriptions} = \%testcases;
-        $result->{results} = \@zm_results;
-
-        $translator->locale( $previous_locale );
-
-        $result = $test_info;
-        $result->{results} = \@zm_results;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
+    return job_results( @_ );
 }
 
 $json_schemas{domain_history} = {
@@ -916,19 +776,7 @@ sub batch_status {
 # Deprecated
 $json_schemas{get_batch_job_result} = $json_schemas{batch_status};
 sub get_batch_job_result {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval {
-        my $batch_id = $params->{batch_id};
-
-        $result = $self->{db}->get_batch_job_result($batch_id);
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
+    return batch_status( @_ );
 }
 
 sub _get_locale {

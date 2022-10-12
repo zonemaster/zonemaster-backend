@@ -65,11 +65,20 @@ my $router = router {
         action => "version_info"
     };
 
+    connect "system_versions" => {
+        handler => $handler,
+        action => "system_versions"
+    };
 
     # Deprecated
     connect "profile_names" => {
         handler => $handler,
         action => "profile_names"
+    };
+
+    connect "conf_profiles" => {
+        handler => $handler,
+        action => "conf_profiles"
     };
 
     # Deprecated
@@ -78,10 +87,20 @@ my $router = router {
         action => "get_language_tags"
     };
 
+    connect "conf_languages" => {
+        handler => $handler,
+        action => "conf_languages"
+    };
+
     # Deprecated
     connect "get_host_by_name" => {
         handler => $handler,
         action => "get_host_by_name"
+    };
+
+    connect "lookup_address_records" => {
+        handler => $handler,
+        action => "lookup_address_records"
     };
 
     # Deprecated
@@ -90,10 +109,20 @@ my $router = router {
         action => "get_data_from_parent_zone"
     };
 
+    connect "lookup_delegation_data" => {
+        handler => $handler,
+        action => "lookup_delegation_data"
+    };
+
     # Deprecated
     connect "start_domain_test" => {
         handler => $handler,
         action => "start_domain_test"
+    };
+
+    connect "job_create" => {
+        handler => $handler,
+        action => "job_create"
     };
 
     # Deprecated
@@ -102,10 +131,20 @@ my $router = router {
         action => "test_progress"
     };
 
+    connect "job_status" => {
+        handler => $handler,
+        action => "job_status"
+    };
+
     # Deprecated
     connect "get_test_params" => {
         handler => $handler,
         action => "get_test_params"
+    };
+
+    connect "job_params" => {
+        handler => $handler,
+        action => "job_params"
     };
 
     # Deprecated
@@ -114,10 +153,20 @@ my $router = router {
         action => "get_test_results"
     };
 
+    connect "job_results" => {
+        handler => $handler,
+        action => "job_results"
+    };
+
     # Deprecated
     connect "get_test_history" => {
         handler => $handler,
         action => "get_test_history"
+    };
+
+    connect "domain_history" => {
+        handler => $handler,
+        action => "domain_history"
     };
 
     # Deprecated
@@ -125,23 +174,36 @@ my $router = router {
         handler => $handler,
         action => "get_batch_job_result"
     };
+
+    connect "batch_status" => {
+        handler => $handler,
+        action => "batch_status"
+    };
 };
 
 if ($config->RPCAPI_enable_add_api_user) {
-    $log->info('Enabling add_api_user method');
+    $log->info('Enabling user_create method');
     #Deprecated
     $router->connect("add_api_user", {
         handler => $handler,
         action => "add_api_user"
     });
+    $router->connect("user_create", {
+        handler => $handler,
+        action => "user_create"
+    });
 }
 
 if ($config->RPCAPI_enable_add_batch_job) {
-    $log->info('Enabling add_batch_job method');
+    $log->info('Enabling batch_create method');
     #Deprecated
     $router->connect("add_batch_job", {
         handler => $handler,
         action => "add_batch_job"
+    });
+    $router->connect("batch_create", {
+        handler => $handler,
+        action => "batch_create"
     });
 }
 

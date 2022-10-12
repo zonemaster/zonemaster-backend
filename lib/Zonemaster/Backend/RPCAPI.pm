@@ -134,7 +134,10 @@ sub conf_profiles {
         handle_exception( $@ );
     }
 
-    return [ keys %profiles ];
+    my $result = {
+        profiles => [ keys %profiles ]
+    };
+    return $result;
 }
 
 # Deprecated
@@ -173,7 +176,11 @@ sub conf_languages {
         handle_exception( $@ );
     }
 
-    return \@lang_tags;
+    my $result = {
+        languages => \@lang_tags
+    };
+
+    return $result;
 }
 
 # Deprecated
@@ -210,20 +217,24 @@ $json_schemas{lookup_address_records} = {
 };
 sub lookup_address_records {
     my ( $self, $params ) = @_;
-    my @adresses;
+    my @addresses;
 
     eval {
         my $ns_name  = $params->{hostname};
 
-        @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
-        @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
+        @addresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+        @addresses = { $ns_name => '0.0.0.0' } if not @addresses;
 
     };
     if ($@) {
         handle_exception( $@ );
     }
 
-    return \@adresses;
+    my $result = {
+        address_records => \@addresses
+    };
+
+    return $result;
 }
 
 # Deprecated
@@ -327,7 +338,7 @@ $json_schemas{job_create} = {
 sub job_create {
     my ( $self, $params ) = @_;
 
-    my $result = 0;
+    my $job_id = 0;
     eval {
         $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
 
@@ -341,11 +352,15 @@ sub job_create {
         $params->{ipv4} //= $profile->get( "net.ipv4" );
         $params->{ipv6} //= $profile->get( "net.ipv6" );
 
-        $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
+        $job_id = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
     if ($@) {
         handle_exception( $@ );
     }
+
+    my $result = {
+        job_id => $job_id
+    };
 
     return $result;
 }
@@ -384,14 +399,18 @@ $json_schemas{job_status} = joi->object->strict->props(
 sub job_status {
     my ( $self, $params ) = @_;
 
-    my $result = 0;
+    my $progress = 0;
     eval {
         my $test_id = $params->{test_id};
-        $result = $self->{db}->test_progress( $test_id );
+        $progress = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
         handle_exception( $@ );
     }
+
+    my $result = {
+        progress => $progress
+    };
 
     return $result;
 }
@@ -560,23 +579,25 @@ $json_schemas{domain_history} = {
 sub domain_history {
     my ( $self, $params ) = @_;
 
-    my $results;
+    my @history;
 
     eval {
         $params->{offset} //= 0;
         $params->{limit} //= 200;
         $params->{filter} //= "all";
 
-        $results = $self->{db}->get_test_history( $params );
-        my @results = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
-        $results = \@results;
-
+        my $results = $self->{db}->get_test_history( $params );
+        @history = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
     };
     if ($@) {
         handle_exception( $@ );
     }
 
-    return $results;
+    my $result = {
+        history => \@history
+    };
+
+    return $result;
 }
 
 # Deprecated
@@ -610,7 +631,7 @@ $json_schemas{user_create} = joi->object->strict->props(
 sub user_create {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
-    my $result = 0;
+    my $success = 0;
 
     eval {
         my $allow = 0;
@@ -622,7 +643,7 @@ sub user_create {
         }
 
         if ( $allow ) {
-            $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
+            $success = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
         }
         else {
             die Zonemaster::Backend::Error::PermissionDenied->new(
@@ -634,6 +655,10 @@ sub user_create {
     if ($@) {
         handle_exception( $@ );
     }
+
+    my $result = {
+        success => $success
+    };
 
     return $result;
 }
@@ -711,7 +736,7 @@ $json_schemas{batch_create} = {
 sub batch_create {
     my ( $self, $params ) = @_;
 
-    my $results;
+    my $batch_id;
     eval {
         $params->{test_params}{profile}  //= "default";
         $params->{test_params}{priority} //= 5;
@@ -721,13 +746,17 @@ sub batch_create {
         $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
         $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
 
-        $results = $self->{db}->add_batch_job( $params );
+        $batch_id = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
         handle_exception( $@ );
     }
 
-    return $results;
+    my $result = {
+        batch_id => $batch_id
+    };
+
+    return $result;
 }
 
 # Deprecated

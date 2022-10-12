@@ -473,6 +473,7 @@ Example response:
 
 An object with the following properties:
 
+* `"zonemaster_ldns"`: A string. The version number of the running *Zonemaster LDNS*.
 * `"zonemaster_backend"`: A string. The version number of the running *Zonemaster Backend*.
 * `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *RPC API daemon*.
 

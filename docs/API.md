@@ -1580,83 +1580,84 @@ If the `batch_id` is undefined the following error is returned:
 
 ### API method: `version_info`
 
-**Deprecated**. Same as [`system_versions`][system_versions].
+**Deprecated** (planned removal: v2024.1).
+Same as [`system_versions`][system_versions].
 
 
 ### API method: `profile_names`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`conf_profiles`][conf_profiles], but returns only the array of
 [*Profile names*][Profile name].
 
 
 ### API method: `get_language_tags`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`conf_languages`][conf_languages], but returns only the array of
 [*language tags*][Language tag].
 
 
 ### API method: `get_host_by_name`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`lookup_address_records`][lookup_address_records], but returns only the
 array of objects.
 
 
 ### API method: `get_data_from_parent_zone`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`lookup_delegation_data`][lookup_delegation_data].
 
 
 ### API method: `start_domain_test`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`job_create`][job_create], but returns only the [*test id*][Test id].
 
 
 ### API method: `test_progress`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`job_status`][job_status], but returns only the [*progress
 percentage*][Progress percentage].
 
 
 ### API method: `get_test_results`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`job_results`][job_results].
 
 
 ### API method: `get_test_history`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`domain_history`][domain_history], but returns only the list of test
 object.
 
 
 ### API method: `add_api_user`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`user_create`][user_create], but returns only the success value.
 
 
 ### API method: `add_batch_job`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`batch_create`][batch_create], but returns only the [*batch id*][Batch id].
 
 
 ### API method: `get_batch_job_result`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`batch_status`][batch_status].
 
 
 ### API method: `get_test_params`
 
-**Deprecated**.
+**Deprecated** (planned removal: v2024.1).
 Same as [`job_params`][job_params].
 
 

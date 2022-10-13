@@ -469,7 +469,7 @@ Example response:
 ```
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following properties:
 
@@ -478,7 +478,7 @@ An object with the following properties:
 * `"zonemaster_engine"`: A string. The version number of the *Zonemaster Engine* used by the *RPC API daemon*.
 
 
-##### `"error"`
+#### `"error"`
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -514,7 +514,7 @@ Example response:
 ```
 
 
-##### `"result"`
+#### `"result"`
 
 An oject with the following property:
 
@@ -569,14 +569,14 @@ Example response:
 ```
 
 
-##### `"result"`
+#### `"result"`
 
 An oject with the following property:
 
 * `"languages"`: An array of [*language tags*][Language tag]. It is never empty.
 
 
-##### `"error"`
+#### `"error"`
 
 >
 > TODO: List all possible error codes and describe what they mean enough for
@@ -621,14 +621,14 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the property:
 
 * `"hostname"`: A [*domain name*][Domain name], required. The hostname whose IP addresses are to be resolved.
 
 
-##### `"result"`
+#### `"result"`
 
 An oject with the following property:
 
@@ -643,7 +643,7 @@ An oject with the following property:
 >
 
 
-##### `"error"`
+#### `"error"`
 
 * If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
@@ -724,7 +724,7 @@ Example response:
 >
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the properties:
 
@@ -732,7 +732,7 @@ An object with the properties:
 * `"language"`: A [*language tag*][Language tag], optional, used for validation error messages
   translation, if not provided messages will be untranslated (in English).
 
-##### `"result"`
+#### `"result"`
 
 An object with the following properties:
 
@@ -740,7 +740,7 @@ An object with the following properties:
 * `"ds_list"`: A list of [*DS info*][DS info] objects representing delegation signer (DS record data) of the given [*domain name*][Domain name].
 
 
-##### `"error"`
+#### `"error"`
 
 * If any parameter is invalid an error code of -32602 is returned. The `data` property contains an array of all errors, see [Validation error data].
 
@@ -808,7 +808,7 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the following properties:
 
@@ -827,7 +827,7 @@ An object with the following properties:
   translation, if not provided messages will be untranslated.
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following property:
 
@@ -844,7 +844,7 @@ The parameters that are compared when to determine if two requests are to be
 considered to be the same are `domain`, `ipv6`, `ipv4`, `nameservers`, `ds_info`
 and `profile`.
 
-##### `"error"`
+#### `"error"`
 
 * If any parameter is invalid an error code of -32602 is returned.
   The `data` property contains an array of all errors, see [Validation error data].
@@ -917,21 +917,21 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the property:
 
 `"test_id"`: A [*test id*][Test id], required. The *test* to report on.
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following property:
 
 * `"progress"`: A [*progress percentage*][Progress percentage].
 
 
-##### `"error"`
+#### `"error"`
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1015,7 +1015,7 @@ Example response:
 >
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the following properties:
 
@@ -1023,7 +1023,7 @@ An object with the following properties:
 * `"language"`: A [*language tag*][Language tag], required.
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following properties:
 
@@ -1053,7 +1053,7 @@ is a normalized version of an object created from the following parts:
 >
 
 
-##### `"error"`
+#### `"error"`
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1104,20 +1104,20 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the property:
 
 * `"test_id"`: A [*test id*][Test id], required.
 
 
-##### `"result"`
+#### `"result"`
 
 The `"params"` object sent to [`start_domain_test`][start_domain_test] or
 [`add_batch_job`][add_batch_job] when the *test* was started.
 
 
-##### `"error"`
+#### `"error"`
 
   >
   > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1177,14 +1177,14 @@ Example response:
 > symbol.
 >
 
-#### Undelegated and delegated
+### Undelegated and delegated
 
 A test is considered to be `"delegated"` below if the test was started, by
 [`start_domain_test`][start_domain_test] or [`add_batch_job`][add_batch_job]
 without specifying neither `"nameserver"` nor `"ds_info"`. Else it is considered to
 be `"undelegated"`.
 
-##### `"params"`
+#### `"params"`
 
 An object with the following properties:
 
@@ -1198,7 +1198,7 @@ The value of "frontend_params" is an object with the following properties:
 * `"domain"`: A [*domain name*][Domain name], required.
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following properties:
 
@@ -1217,7 +1217,7 @@ An object with the following properties:
     `"CRITICAL"`.
 * `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
 
-##### `"error"`
+#### `"error"`
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1259,7 +1259,7 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the following properties:
 
@@ -1268,7 +1268,7 @@ An object with the following properties:
   added.
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following property:
 
@@ -1276,7 +1276,7 @@ An object with the following property:
   success, or 0 if it failed.
 
 
-##### `"error"`
+#### `"error"`
 
 >
 > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
@@ -1403,7 +1403,7 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the following properties:
 
@@ -1426,14 +1426,14 @@ The value of `"test_params"` is an object with the following properties:
 * `"queue"`: A [*queue*][Queue], optional. (default: `0`)
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following property:
 
 * `"batch_id"`: An integer. The [*batch id*][Batch id].
 
 
-##### `"error"`
+#### `"error"`
 
 * You cannot create a new batch job if a *batch* with unfinished *tests* already
   exists for this [*username*][Username].
@@ -1541,14 +1541,14 @@ Example response:
 ```
 
 
-##### `"params"`
+#### `"params"`
 
 An object with the property:
 
 * `"batch_id"`: A [*batch id*][Batch id], required.
 
 
-##### `"result"`
+#### `"result"`
 
 An object with the following properties:
 
@@ -1557,7 +1557,7 @@ An object with the following properties:
 * `"finished_test_ids"`: a list of [*test ids*][Test id]. The set of finished *tests* in this *batch*.
 
 
-##### `"error"`
+#### `"error"`
 
 If the `batch_id` is undefined the following error is returned:
 

@@ -345,6 +345,7 @@ sub get_test_results {
         eval { $translator->data } if $translator; # Provoke lazy loading of translation data
 
         my @zm_results;
+        my %testcases;
 
         my $test_info = $self->{db}->test_results( $params->{id} );
         foreach my $test_res ( @{ $test_info->{results} } ) {
@@ -365,6 +366,7 @@ sub get_test_results {
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};
             $res->{testcase} = $test_res->{testcase};
+            $testcases{$res->{testcase}} = $translator->test_case_description($test_res->{testcase});
 
             if ( $test_res->{module} eq 'SYSTEM' ) {
                 if ( $res->{message} =~ /policy\.json/ ) {
@@ -395,6 +397,7 @@ sub get_test_results {
         }
 
         $result = $test_info;
+        $result->{testcase_descriptions} = \%testcases;
         $result->{results} = \@zm_results;
 
         $translator->locale( $previous_locale );

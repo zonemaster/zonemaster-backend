@@ -24,4 +24,7 @@ sub translate_tag {
     return decode_utf8( $octets );
 }
 
+sub test_case_description {
+    return decode_utf8(Zonemaster::Engine::Translator::test_case_description(@_));
+}
 1;

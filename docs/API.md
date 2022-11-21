@@ -386,6 +386,7 @@ The object has three keys, `"module"`, `"message"` and `"level"`.
 * `"module"`: a string. The *test module* that produced the result.
 * `"message"`: a string. A human-readable *message* describing that particular result.
 * `"level"`: a [*severity level*][Severity level]. The severity of the message.
+* `"testcase"`: a string. The *test case ID* of the *test case* that produced the result.
 
 Sometimes additional keys are present.
 
@@ -953,6 +954,11 @@ Example response:
       "ipv4": true,
       "client_id": "Zonemaster Dancer Frontend"
     },
+    "testcase_descriptions": {
+      "ZONE08": "MX is not an alias",
+      "SYNTAX05": "Misuse of '@' character in the SOA RNAME field",
+      ...
+    },
     "results": [
       {
         "module": "SYSTEM",
@@ -995,6 +1001,8 @@ An object with the following properties:
 * `"params"`: See below.
   `start_domain_test` when the *test* was started.
 * `"results"`: A list of [*test result*][Test result] objects.
+* `"testcase_descriptions"`: A map with the test case IDs as keys and the
+  translated descriptions of the corresponding the test cases as values.
 
 If the test was created by [`start_domain_test`][start_domain_test] then `"params"`
 is a normalized version `"params"` object sent to [`start_domain_test`][start_domain_test]
@@ -1015,9 +1023,9 @@ is a normalized version of an object created from the following parts:
 
 #### `"error"`
 
->
-> TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
->
+  >
+  > TODO: List all possible error codes and describe what they mean enough for clients to know how react to them.
+  >
 
 
 ## API method: `get_test_history`

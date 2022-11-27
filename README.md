@@ -59,8 +59,8 @@ The Zonemaster Backend documentation is split up into several documents:
 
 ## License
 
-The software is released under the 2-clause BSD license. See separate
-[LICENSE](LICENSE) file.
+This is free software under a 2-clause BSD license. The full text of the license can
+be found in the [LICENSE](LICENSE) file included in this respository.
 
 
 [Configuration documentation]: docs/Configuration.md

@@ -203,16 +203,13 @@ The LANGUAGE section has one key, `locale`.
 
 ### locale
 
-A string matching one of the following descriptions:
+A string matching the following descriptions:
 * A space separated list of one or more `locale tags` where each tag matches the
   regular expression `/^[a-z]{2}_[A-Z]{2}$/`.
-* The empty string. **Deprecated**, remove the LANGUAGE.locale entry or specify
-  LANGUAGE.locale = en_US instead.
 
 It is an error to repeat the same `locale tag`.
 
-If the `locale` key is empty or absent, the `locale tag` value
-"en_US" is set by default.
+If the `locale` key is absent, the `locale tag` value "en_US" is set by default.
 
 #### Design
 

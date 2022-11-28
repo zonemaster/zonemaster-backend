@@ -236,7 +236,7 @@ sub parse {
 
     if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
         if ( $value eq "" ) {
-            push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
+            die "config: Use of empty LANGUAGE.locale property is not permitted. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
         }
     }
 
@@ -308,11 +308,9 @@ sub parse {
         $obj->_set_RPCAPI_enable_add_batch_job( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
-        if ( $value ne "" ) {
-            $obj->_reset_LANGUAGE_locale();
-            for my $locale_tag ( split / +/, $value ) {
-                $obj->_add_LANGUAGE_locale( $locale_tag );
-            }
+        $obj->_reset_LANGUAGE_locale();
+        for my $locale_tag ( split / +/, $value ) {
+            $obj->_add_LANGUAGE_locale( $locale_tag );
         }
     }
 

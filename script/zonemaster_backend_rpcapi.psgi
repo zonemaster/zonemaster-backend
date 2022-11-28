@@ -42,6 +42,7 @@ $SIG{__WARN__} = sub {
 my $config = Zonemaster::Backend::Config->load_config();
 
 Zonemaster::Backend::Metrics->setup($config->METRICS_statsd_host, $config->METRICS_statsd_port);
+Zonemaster::Engine::init_engine();
 
 builder {
     enable sub {

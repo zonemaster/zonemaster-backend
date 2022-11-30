@@ -10,7 +10,7 @@ than v9.0.0, and not upgraded, use the following instruction.
 ### Preparation when using MariaDB
 
 If you're using MariaDB you need to make a backup of your database before
-upgrading its schema.
+upgrading its schema (make sure you have sufficient space available).
 
 ```sh
 mysqldump zonemaster > backup-file.sql

@@ -212,7 +212,8 @@ Basic data type: string
 
 A string matching one of the following regular expression:
 * `/^[a-z]{2}$/`, preferred format.
-* `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead.
+* `/^[a-z]{2}_[A-Z]{2}$/`, **deprecated** format, use the preferred format instead
+  (planned removal: v2023.1).
 
 The set of valid *language tags* is further constrained by the
 [`LANGUAGE.locale`][LANGUAGE.locale] property.
@@ -225,7 +226,8 @@ The set of valid *language tags* is further constrained by the
 E.g. if [`LANGUAGE.locale`][LANGUAGE.locale] is "en_US en_UK sv_SE", all the valid *language tags*
 are "en_US", "en_UK", "sv_SE" and "sv".
 
-The use of `language tags` that include the country code is *deprecated*.
+The use of `language tags` that include the country code is *deprecated* (planned
+removal: v2023.1).
 
 #### Design
 
@@ -515,7 +517,8 @@ Returns the set of valid [*language tags*][Language tag].
 > that would give the same [short language tag][Language tag] then the short tag
 > is excluded from the set of valid [*language tags*][Language tag].
 >
-> Note: Language tags that include country code are *deprecated*.
+> Note: Language tags that include country code are *deprecated* (planned
+> removal: v2023.1).
 
 Example request:
 ```json

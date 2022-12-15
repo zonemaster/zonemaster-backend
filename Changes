@@ -1,6 +1,40 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v10.0.0 2022-12-19 (public release version)
+
+ [Deprecation]
+ - The use of language tags that includes country code is
+   deprecated. See "docs/API.md#language-tag". Such
+   language codes will be made illegal in the v2023.1 release.
+   Use language codes without country code instead.
+ - The use of an empty string in the "LANGUAGE.locale"
+   setting is deprecated and will be made illegal in the
+   v2023.1 release. See "docs/Configuration.md#language-section".
+ - The use of two or more locale tags with the same language code
+   in the configuration is deprecated and will be made illegal in the
+   v2023.1 release. See "docs/Configuration.md#language-section".
+
+ [Breaking changes]
+ - Removes database primary key from API method "get_test_results"
+   (#946, #949).
+
+ [Features]
+ - Provides human readable messages when the test agent dies (#1058)
+ - Adds testcase results (#1055)
+ - Adds Zonemaster-LDNS version to API method "version_info" (#1050)
+
+ [Fixes]
+ - Corrects the license statement in Backend.pm (#1059)
+ - Fixes recursor init (#1057)
+ - Updates to use Net::IP::XS directly (#1053)
+ - Updates documents to use lowercase fragments when referring
+   to internal headings (#1052)
+ - Sets IPV6_DISABLED message to INFO in testing profile (#1051)
+ - Removes enabling IPv4 and IPv6 by default in zmtest
+   (#1041, #1040, #1066)
+
+
 v9.0.1 2022-07-08 (public fix release)
 
  [Fixes]
@@ -9,7 +43,7 @@ v9.0.1 2022-07-08 (public fix release)
  - Updates the Danish translation (#1034)
 
 
-v9.0.0 2022-06-09 (public release release)
+v9.0.0 2022-06-09 (public release version)
 
  [Deprecation]
  - The use of language tags that includes country code is

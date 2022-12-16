@@ -25,6 +25,8 @@ v10.0.0 2022-12-19 (public release version)
  - Adds Zonemaster-LDNS version to API method "version_info" (#1050)
 
  [Fixes]
+ - Updates deprecation information in "docs/API.pm" and
+   "docs/Configuration.md" (#1067)
  - Corrects the license statement in Backend.pm (#1059)
  - Fixes recursor init (#1057)
  - Updates to use Net::IP::XS directly (#1053)

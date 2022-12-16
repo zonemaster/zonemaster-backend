@@ -17,7 +17,7 @@ v10.0.0 2022-12-19 (public release version)
 
  [Breaking changes]
  - Removes database primary key from API method "get_test_results"
-   (#946, #949).
+   (#946, also see #949).
 
  [Features]
  - Provides human readable messages when the test agent dies (#1058)
@@ -29,7 +29,7 @@ v10.0.0 2022-12-19 (public release version)
  - Updates deprecation information in "docs/API.pm" and
    "docs/Configuration.md" (#1067)
  - Corrects the license statement in Backend.pm (#1059)
- - Fixes recursor init (#1057)
+ - Fixes get_data_from_parent_zone method (#1057)
  - Updates to use Net::IP::XS directly (#1053)
  - Updates documents to use lowercase fragments when referring
    to internal headings (#1052)

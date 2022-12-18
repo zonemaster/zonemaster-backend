@@ -21,7 +21,7 @@ v10.0.0 2022-12-19 (public release version)
 
  [Features]
  - Provides human readable messages when the test agent dies (#1058)
- - Adds testcase results (#1055)
+ - Adds testcase descriptions in test results (#1055)
  - Adds Zonemaster-LDNS version to API method "version_info" (#1050)
 
  [Fixes]

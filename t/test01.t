@@ -118,7 +118,7 @@ subtest 'API calls' => sub {
 
     subtest 'get_test_results' => sub {
         my $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en_US' } );
-        is( $res->{id}, $test_id, 'Retrieve the correct "id"' );
+        ok( ! defined $res->{id}, 'Do not expose primary key' );
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );
         ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
@@ -157,6 +157,7 @@ subtest 'API calls' => sub {
 
     subtest 'version_info' => sub {
         my $res = $rpcapi->version_info();
+        ok( defined( $res->{zonemaster_ldns} ), 'Has a "zonemaster_ldns" key' );
         ok( defined( $res->{zonemaster_engine} ), 'Has a "zonemaster_engine" key' );
         ok( defined( $res->{zonemaster_backend} ), 'Has a "zonemaster_backend" key' );
     };

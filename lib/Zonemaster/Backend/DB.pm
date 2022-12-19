@@ -269,7 +269,6 @@ sub select_test_results {
     my ( $hrefs ) = $self->dbh->selectall_hashref(
         q[
             SELECT
-                id,
                 hash_id,
                 created_at AS creation_time,
                 params,

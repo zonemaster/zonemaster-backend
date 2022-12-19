@@ -11,7 +11,7 @@ use File::Spec::Functions qw( file_name_is_absolute );
 use JSON::Validator::Joi;
 use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
-use Zonemaster::Engine::Net::IP;
+use Net::IP::XS;
 use Zonemaster::Engine::Logger::Entry;
 use Zonemaster::LDNS;
 
@@ -450,7 +450,7 @@ Accepts an IPv4 address.
 sub untaint_ipv4_address {
     my ( $value ) = @_;
     if ( $value =~ /($IPV4_RE)/
-        && Zonemaster::Engine::Net::IP::ip_is_ipv4( $value ) )
+        && Net::IP::XS::ip_is_ipv4( $value ) )
     {
         return $1;
     }
@@ -466,7 +466,7 @@ Accepts an IPv6 address.
 sub untaint_ipv6_address {
     my ( $value ) = @_;
     if ( $value =~ /($IPV6_RE)/
-        && Zonemaster::Engine::Net::IP::ip_is_ipv6( $value ) )
+        && Net::IP::XS::ip_is_ipv6( $value ) )
     {
         return $1;
     }

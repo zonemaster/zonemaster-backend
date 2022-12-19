@@ -1,4 +1,16 @@
 {
+    "logfilter": {
+        "BASIC":{
+            "IPV6_DISABLED" : [
+                {
+                    "when": {
+                        "rrtype": [ "SOA", "NS" ]
+                    },
+                    "set": "INFO"
+                }
+            ]
+        }
+    },
     "test_cases": [
         "address01",
         "address02",

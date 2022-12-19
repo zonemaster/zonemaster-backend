@@ -1,6 +1,6 @@
 package Zonemaster::Backend;
 
-our $VERSION = '9.0.1';
+our $VERSION = '10.0.0';
 
 use strict;
 use warnings;
@@ -16,12 +16,8 @@ Michal Toma <toma@nic.fr>
 
 =head1 LICENSE
 
-This is free software, licensed under:
-
-The (three-clause) BSD License
-
-The full text of the license can be found in the
-F<LICENSE> file included with this distribution.
+This is free software under a 2-clause BSD license. The full text of the license can
+be found in the F<LICENSE> file included with this distribution.
 
 =cut
 

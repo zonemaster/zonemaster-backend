@@ -2,38 +2,38 @@
 
 ## Table of contents
 
-* [Introduction](#Introduction)
+* [Introduction](#introduction)
 * [RPCAPI section](#rpcapi-section)
   * [enable_add_batch_job](#enable_add_batch_job)
   * [enable_add_api_user](#enable_add_api_user)
-* [DB section](#DB-section)
+* [DB section](#db-section)
   * [engine](#engine)
   * [user](#user)
   * [password](#password)
   * [database_host](#database_host)
   * [database_name](#database_name)
   * [polling_interval](#polling_interval)
-* [MYSQL section](#MYSQL-section)
+* [MYSQL section](#mysql-section)
   * [host](#host)
   * [port](#port)
   * [user](#user)
   * [password](#password)
   * [database](#database)
-* [POSTGRESQL section](#POSTGRESQL-section)
+* [POSTGRESQL section](#postgresql-section)
   * [host](#host-1)
   * [port](#port-1)
   * [user](#user-1)
   * [password](#password-1)
   * [database](#database-1)
-* [SQLITE section](#SQLITE-section)
+* [SQLITE section](#sqlite-section)
   * [database_file](#database_file)
-* [LANGUAGE section](#LANGUAGE-section)
+* [LANGUAGE section](#language-section)
   * [locale](#locale)
-* [METRICS section](#METRICS-section)
+* [METRICS section](#metrics-section)
   * [statsd_host](#statsd_host)
   * [statsd_port](#statsd_port)
-* [PUBLIC PROFILES and PRIVATE PROFILES sections](#PUBLIC-PROFILES-and-PRIVATE-PROFILES-sections)
-* [ZONEMASTER section](#ZONEMASTER-section)
+* [PUBLIC PROFILES and PRIVATE PROFILES sections](#public-profiles-and-private-profiles-sections)
+* [ZONEMASTER section](#zonemaster-section)
   * [max_zonemaster_execution_time](#max_zonemaster_execution_time)
   * [number_of_processes_for_frontend_testing](#number_of_processes_for_frontend_testing)
   * [number_of_processes_for_batch_testing](#number_of_processes_for_batch_testing)
@@ -207,12 +207,15 @@ A string matching one of the following descriptions:
 * A space separated list of one or more `locale tags` where each tag matches the
   regular expression `/^[a-z]{2}_[A-Z]{2}$/`.
 * The empty string. **Deprecated**, remove the LANGUAGE.locale entry or specify
-  LANGUAGE.locale = en_US instead.
+  LANGUAGE.locale = en_US instead. (Planned removal in version v2023.1.)
 
 It is an error to repeat the same `locale tag`.
 
 If the `locale` key is empty or absent, the `locale tag` value
 "en_US" is set by default.
+
+The use of two or more `locale tags` with the same language code is
+**deprecated** and is planned to be illegal from version v2023.1.
 
 #### Design
 

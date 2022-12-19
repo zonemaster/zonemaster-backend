@@ -26,6 +26,7 @@ requires
   'LWP::UserAgent'              => 0,
   'Mojolicious'                 => 7.28,
   'Moose'                       => 2.04,
+  'Net::IP::XS'                 => 0,
   'Parallel::ForkManager'       => 1.12,
   'Plack::Builder'              => 0,
   'Role::Tiny'                  => 1.001003,
@@ -33,8 +34,8 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.12,
-  'Zonemaster::Engine'          => 4.005001,
-  'Zonemaster::LDNS'            => 2.002002,
+  'Zonemaster::Engine'          => 4.006000,
+  'Zonemaster::LDNS'            => 3.000000,
   'Plack::Middleware::ReverseProxy' => 0,
   'Locale::TextDomain'          => 1.20,
   ;

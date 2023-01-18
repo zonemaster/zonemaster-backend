@@ -366,7 +366,7 @@ sub get_test_results {
             $res->{message} =~ s/;/; /isg;
             $res->{level} = $test_res->{level};
             $res->{testcase} = $test_res->{testcase} // 'UNSPECIFIED';
-            $testcases{$res->{testcase}} = $translator->test_case_description($test_res->{testcase});
+            $testcases{$res->{testcase}} = $translator->test_case_description($res->{testcase});
 
             if ( $test_res->{module} eq 'SYSTEM' ) {
                 if ( $res->{message} =~ /policy\.json/ ) {

@@ -34,8 +34,8 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.12,
-  'Zonemaster::Engine'          => 4.006000,
-  'Zonemaster::LDNS'            => 3.000000,
+  'Zonemaster::Engine'          => 4.006001,
+  'Zonemaster::LDNS'            => 3.001000,
   'Plack::Middleware::ReverseProxy' => 0,
   'Locale::TextDomain'          => 1.20,
   ;

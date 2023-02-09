@@ -396,16 +396,6 @@ Sometimes additional keys are present.
 This key is added when the module name is `"NAMESERVER"`.
 
 
-### Timestamp (deprecated)
-
-Basic data type: string
-
-**Deprecated representation** (planned removal: v2023.1).
-
-Default database timestamp format: "Y-M-D H:M:S.ms".
-Example: "2017-12-18 07:56:17.156939"
-
-
 ### Timestamp
 
 Basic data type: string
@@ -935,7 +925,6 @@ Example response:
   "jsonrpc": "2.0",
   "id": 6,
   "result": {
-    "creation_time": "2016-11-15 11:53:13.965982",
     "created_at": "2016-11-15T11:53:13Z",
     "hash_id": "c45a3f8256c4a155",
     "params": {
@@ -996,8 +985,6 @@ An object with the following properties:
 
 #### `"result"`
 
-* `"creation_time"`: **Deprecated** (planned removal: v2023.1). A [*deprecated timestamp*][Timestamp deprecated].
-  The time in UTC at which the *test* was created.
 * `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
   was created.
 * `"hash_id"`: A [*test id*][Test id]. The *test* in question.
@@ -1060,7 +1047,6 @@ Example response:
   "result": [
     {
       "id": "c45a3f8256c4a155",
-      "creation_time": "2016-11-15 11:53:13.965982",
       "created_at": "2016-11-15T11:53:13Z",
       "undelegated": true,
       "overall_result": "error",
@@ -1068,7 +1054,6 @@ Example response:
     {
       "id": "32dd4bc0582b6bf9",
       "undelegated": false,
-      "creation_time": "2016-11-14 08:46:41.532047",
       "created_at": "2016-11-14T08:46:41Z",
       "overall_result": "error",
     },
@@ -1109,8 +1094,6 @@ The value of "frontend_params" is an object with the following properties:
 An object with the following properties:
 
 * `"id"` A *test id*.
-* `"creation_time"`: **Deprecated** (planned removal: v2023.1). A [*deprecated timestamp*][Timestamp deprecated].
-  The time in UTC at which the *test* was created.
 * `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
   was created.
 * `"overall_result"`: A string. It reflects the most severe problem level among
@@ -1346,7 +1329,6 @@ request:
   "jsonrpc": "2.0",
   "error": {
     "data": {
-      "creation_time": "2021-09-27 07:33:40",
       "created_at": "2021-09-27T07:33:40Z",
       "batch_id": 1
     },
@@ -1574,7 +1556,6 @@ The `"params"` object sent to [`start_domain_test`][start_domain_test] or
 [Test id]:                            #test-id
 [Test result]:                        #test-result
 [Timestamp]:                          #timestamp
-[Timestamp deprecated]:               #timestamp-deprecated
 [Username]:                           #username
 [Validation error data]:              #validation-error-data
 [ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test

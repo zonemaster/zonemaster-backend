@@ -270,7 +270,7 @@ sub select_test_results {
         q[
             SELECT
                 hash_id,
-                created_at AS creation_time,
+                created_at,
                 params,
                 results
             FROM test_results
@@ -286,7 +286,7 @@ sub select_test_results {
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
         unless defined $result;
 
-    $result->{created_at} = $self->to_iso8601( $result->{creation_time} );
+    $result->{created_at} = $self->to_iso8601( $result->{created_at} );
 
     return $result;
 }
@@ -384,7 +384,6 @@ sub get_test_history {
             @results,
             {
                 id               => $h->{hash_id},
-                creation_time    => $h->{created_at},
                 created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall,
@@ -399,7 +398,7 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
+    my ( $batch_id, $created_at ) = $dbh->selectrow_array( "
             SELECT
                 batch_id,
                 batch_jobs.created_at AS batch_created_at
@@ -413,7 +412,7 @@ sub create_new_batch_job {
             LIMIT 1
             ", undef, $username );
 
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, created_at => $created_at } )
         if ( $batch_id );
 
     $dbh->do( q[ INSERT INTO batch_jobs (username, created_at) VALUES (?,?) ],

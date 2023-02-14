@@ -1578,6 +1578,9 @@ If the `batch_id` is undefined the following error is returned:
 
 ## Deprecated
 
+> For details of the deprecated methods' return values see the [version of this
+> document][API v10.0.0] included in the v2022.2 release, tagged as "v10.0.0".
+
 ### API method: `version_info`
 
 **Deprecated** (planned removal: v2024.1).
@@ -1587,22 +1590,18 @@ Same as [`system_versions`][system_versions].
 ### API method: `profile_names`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`conf_profiles`][conf_profiles], but returns only the array of
-[*Profile names*][Profile name].
+Same as [`conf_profiles`][conf_profiles].
 
 
 ### API method: `get_language_tags`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`conf_languages`][conf_languages], but returns only the array of
-[*language tags*][Language tag].
-
+Same as [`conf_languages`][conf_languages].
 
 ### API method: `get_host_by_name`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`lookup_address_records`][lookup_address_records], but returns only the
-array of objects.
+Same as [`lookup_address_records`][lookup_address_records].
 
 
 ### API method: `get_data_from_parent_zone`
@@ -1614,39 +1613,36 @@ Same as [`lookup_delegation_data`][lookup_delegation_data].
 ### API method: `start_domain_test`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_create`][job_create], but returns only the [*test id*][Test id].
+Same as [`job_create`][job_create].
 
 
 ### API method: `test_progress`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_status`][job_status], but returns only the [*progress
-percentage*][Progress percentage].
+Same as [`job_status`][job_status].
 
 
 ### API method: `get_test_results`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_results`][job_results].
 
 
 ### API method: `get_test_history`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`domain_history`][domain_history], but returns only the list of test
-object.
+Same as [`domain_history`][domain_history].
 
 
 ### API method: `add_api_user`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`user_create`][user_create], but returns only the success value.
+Same as [`user_create`][user_create].
 
 
 ### API method: `add_batch_job`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`batch_create`][batch_create], but returns only the [*batch id*][Batch id].
+Same as [`batch_create`][batch_create].
 
 
 ### API method: `get_batch_job_result`
@@ -1663,6 +1659,7 @@ Same as [`job_params`][job_params].
 
 [add_api_user]:                       #api-method-add_api_user
 [add_batch_job]:                      #api-method-add_batch_job
+[API v10.0.0]:                        https://github.com/zonemaster/zonemaster-backend/blob/v10.0.0/docs/API.md
 [API key]:                            #api-key
 [Batch id]:                           #batch-id
 [batch_create]:                       #api-method-batch_create

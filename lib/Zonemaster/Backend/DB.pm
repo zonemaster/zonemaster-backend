@@ -533,8 +533,15 @@ sub process_unfinished_tests {
         $test_run_timeout,
     );
 
+    my $msg = {
+        "level"     => "CRITICAL",
+        "module"    => "BACKEND_TEST_AGENT",
+        "tag"       => "UNABLE_TO_FINISH_TEST",
+        "args"      => { max_execution_time => $test_run_timeout },
+        "timestamp" => $test_run_timeout
+    };
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
+        $self->force_end_test($h->{hash_id}, $h->{results}, $msg);
     }
 }
 
@@ -570,7 +577,7 @@ sub select_unfinished_tests {
 }
 
 sub force_end_test {
-    my ( $self, $hash_id, $results, $timestamp ) = @_;
+    my ( $self, $hash_id, $results, $msg ) = @_;
     my $result;
     if ( defined $results && $results =~ /^\[/ ) {
         $result = decode_json( $results );
@@ -578,13 +585,7 @@ sub force_end_test {
     else {
         $result = [];
     }
-    push @$result,
-        {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "UNABLE_TO_FINISH_TEST",
-        "timestamp" => $timestamp,
-        };
+    push @$result, $msg;
 
     $self->store_results( $hash_id, encode_json($result) );
 }
@@ -592,7 +593,13 @@ sub force_end_test {
 sub process_dead_test {
     my ( $self, $hash_id ) = @_;
     my ( $results ) = $self->dbh->selectrow_array("SELECT results FROM test_results WHERE hash_id = ?", undef, $hash_id);
-    $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
+    my $msg = {
+        "level"     => "CRITICAL",
+        "module"    => "BACKEND_TEST_AGENT",
+        "tag"       => "TEST_DIED",
+        "timestamp" => $self->get_relative_start_time($hash_id)
+    };
+    $self->force_end_test($hash_id, $results, $msg);
 }
 
 # Converts the domain to lowercase and if the domain is not the root ('.')

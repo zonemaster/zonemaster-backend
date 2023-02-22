@@ -525,6 +525,14 @@ sub get_batch_job_result {
     return \%result;
 }
 
+=head2 process_unfinished_tests($queue_label, $test_run_timeout)
+
+Append a new log entry C<BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST> to all the
+tests started more that $test_run_timeout seconds in the queue $queue_label.
+Then store the results in database.
+
+=cut
+
 sub process_unfinished_tests {
     my ( $self, $queue_label, $test_run_timeout ) = @_;
 
@@ -544,6 +552,13 @@ sub process_unfinished_tests {
         $self->force_end_test($h->{hash_id}, $h->{results}, $msg);
     }
 }
+
+=head2 select_unfinished_tests($queue_label, $test_run_timeout)
+
+Search for all tests started more than $test_run_timeout seconds in the queue
+$queue_label.
+
+=cut
 
 sub select_unfinished_tests {
     my ( $self, $queue_label, $test_run_timeout ) = @_;
@@ -576,6 +591,13 @@ sub select_unfinished_tests {
     }
 }
 
+=head2 force_end_test($hash_id, $results, $msg)
+
+Append the $msg log entry to the $results arrayref and store the results into
+the database.
+
+=cut
+
 sub force_end_test {
     my ( $self, $hash_id, $results, $msg ) = @_;
     my $result;
@@ -589,6 +611,13 @@ sub force_end_test {
 
     $self->store_results( $hash_id, encode_json($result) );
 }
+
+=head2 process_dead_test($hash_id)
+
+Append a new log entry C<BACKEND_TEST_AGENT:TEST_DIED> to the test with $hash_id.
+Then store the results in database.
+
+=cut
 
 sub process_dead_test {
     my ( $self, $hash_id ) = @_;

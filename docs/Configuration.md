@@ -85,16 +85,16 @@ default to `no` (disabled).
 Deprecated (planned removal: v2024.1). Use
 [enable_batch_create][RPCAPI.enable_batch_create] instead.
 
-The [enable_batch_create][RPCAPI.enable_batch_create] property takes
-precedence over this.
+If defined, the [enable_batch_create][RPCAPI.enable_batch_create]
+property takes precedence over this.
 
 ### enable_add_api_user
 
 Deprecated (planned removal: v2024.1). Use
 [enable_user_create][RPCAPI.enable_user_create] instead.
 
-The [enable_user_create][RPCAPI.enable_user_create] property takes
-precedence over this.
+If defined, the [enable_user_create][RPCAPI.enable_user_create] property
+takes precedence over this.
 
 
 ## DB section

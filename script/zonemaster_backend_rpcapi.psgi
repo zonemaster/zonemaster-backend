@@ -181,7 +181,7 @@ my $router = router {
     };
 };
 
-if ($config->RPCAPI_enable_add_api_user) {
+if ( $config->RPCAPI_enable_user_create or $config->RPCAPI_enable_add_api_user ) {
     $log->info('Enabling user_create method');
     #Deprecated
     $router->connect("add_api_user", {
@@ -194,7 +194,7 @@ if ($config->RPCAPI_enable_add_api_user) {
     });
 }
 
-if ($config->RPCAPI_enable_add_batch_job) {
+if ( $config->RPCAPI_enable_batch_create or $config->RPCAPI_enable_add_batch_job ) {
     $log->info('Enabling batch_create method');
     #Deprecated
     $router->connect("add_batch_job", {

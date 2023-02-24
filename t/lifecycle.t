@@ -66,6 +66,11 @@ sub count_cancellation_messages {
     return scalar grep { $_->{tag} eq 'UNABLE_TO_FINISH_TEST' } @{ $results->{results} };
 }
 
+sub count_died_messages {
+    my $results = shift;
+    return scalar grep { $_->{tag} eq 'TEST_DIED' } @{ $results->{results} };
+}
+
 subtest 'Everything but Test::NoWarnings' => sub {
     lives_ok {    # Make sure we get to print log messages in case of errors.
         my $db = TestUtil::init_db( $config );
@@ -115,7 +120,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
 
             is $db->test_progress( $testid4 ), 100, 'terminates test';
 
-            is count_cancellation_messages( $db->test_results( $testid4 ) ), 1, 'one cancellation message present after crash';
+            is count_died_messages( $db->test_results( $testid4 ) ), 1, 'one died message present after crash';
         };
 
         subtest 'Do not reuse batch tests' => sub {

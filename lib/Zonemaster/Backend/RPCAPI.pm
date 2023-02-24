@@ -101,8 +101,8 @@ sub handle_exception {
     die $exception->as_hash;
 }
 
-$json_schemas{version_info} = joi->object->strict;
-sub version_info {
+$json_schemas{system_versions} = joi->object->strict;
+sub system_versions {
     my ( $self ) = @_;
 
     my %ver;
@@ -118,8 +118,14 @@ sub version_info {
     return \%ver;
 }
 
-$json_schemas{profile_names} = joi->object->strict;
-sub profile_names {
+# Deprecated
+$json_schemas{version_info} = $json_schemas{system_versions};
+sub version_info {
+    return system_versions( @_ );
+}
+
+$json_schemas{conf_profiles} = joi->object->strict;
+sub conf_profiles {
     my ( $self ) = @_;
 
     my %profiles;
@@ -128,13 +134,23 @@ sub profile_names {
         handle_exception( $@ );
     }
 
-    return [ keys %profiles ];
+    my $result = {
+        profiles => [ keys %profiles ]
+    };
+    return $result;
+}
+
+# Deprecated
+$json_schemas{profile_names} = $json_schemas{conf_profiles};
+sub profile_names {
+    my $result = conf_profiles( @_ );
+    return $result->{profiles};
 }
 
 # Return the list of language tags supported by get_test_results(). The tags are
 # derived from the locale tags set in the configuration file.
-$json_schemas{get_language_tags} = joi->object->strict;
-sub get_language_tags {
+$json_schemas{conf_languages} = joi->object->strict;
+sub conf_languages {
     my ( $self ) = @_;
 
     my @lang_tags;
@@ -153,10 +169,21 @@ sub get_language_tags {
         handle_exception( $@ );
     }
 
-    return \@lang_tags;
+    my $result = {
+        languages => \@lang_tags
+    };
+
+    return $result;
 }
 
-$json_schemas{get_host_by_name} = {
+# Deprecated
+$json_schemas{get_language_tags} = $json_schemas{conf_languages};
+sub get_language_tags {
+    my $result = conf_languages( @_ );
+    return $result->{languages};
+}
+
+$json_schemas{lookup_address_records} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'hostname' ],
@@ -164,25 +191,36 @@ $json_schemas{get_host_by_name} = {
         hostname => $zm_validator->domain_name
     }
 };
-sub get_host_by_name {
+sub lookup_address_records {
     my ( $self, $params ) = @_;
-    my @adresses;
+    my @addresses;
 
     eval {
         my $ns_name  = $params->{hostname};
 
-        @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
-        @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
+        @addresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+        @addresses = { $ns_name => '0.0.0.0' } if not @addresses;
 
     };
     if ($@) {
         handle_exception( $@ );
     }
 
-    return \@adresses;
+    my $result = {
+        address_records => \@addresses
+    };
+
+    return $result;
 }
 
-$json_schemas{get_data_from_parent_zone} = {
+# Deprecated
+$json_schemas{get_host_by_name} = $json_schemas{lookup_address_records};
+sub get_host_by_name {
+    my $result = lookup_address_records( @_ );
+    return $result->{address_records};
+}
+
+$json_schemas{lookup_delegation_data} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'domain' ],
@@ -191,7 +229,7 @@ $json_schemas{get_data_from_parent_zone} = {
         language => $zm_validator->language_tag,
     }
 };
-sub get_data_from_parent_zone {
+sub lookup_delegation_data {
     my ( $self, $params ) = @_;
 
     my $result = eval {
@@ -229,7 +267,13 @@ sub get_data_from_parent_zone {
     }
 }
 
-$json_schemas{start_domain_test} = {
+# Deprecated
+$json_schemas{get_data_from_parent_zone} = $json_schemas{lookup_delegation_data};
+sub get_data_from_parent_zone {
+    return lookup_delegation_data( @_ );
+}
+
+$json_schemas{job_create} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'domain' ],
@@ -254,10 +298,10 @@ $json_schemas{start_domain_test} = {
         language => $zm_validator->language_tag,
     }
 };
-sub start_domain_test {
+sub job_create {
     my ( $self, $params ) = @_;
 
-    my $result = 0;
+    my $job_id = 0;
     eval {
         $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
 
@@ -271,37 +315,59 @@ sub start_domain_test {
         $params->{ipv4} //= $profile->get( "net.ipv4" );
         $params->{ipv6} //= $profile->get( "net.ipv6" );
 
-        $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
+        $job_id = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
     if ($@) {
         handle_exception( $@ );
     }
 
+    my $result = {
+        job_id => $job_id
+    };
+
     return $result;
 }
 
-$json_schemas{test_progress} = joi->object->strict->props(
+# Deprecated
+$json_schemas{start_domain_test} = $json_schemas{job_create};
+sub start_domain_test {
+    my $result = job_create( @_ );
+    return $result->{job_id};
+}
+
+$json_schemas{job_status} = joi->object->strict->props(
     test_id => $zm_validator->test_id->required
 );
-sub test_progress {
+sub job_status {
     my ( $self, $params ) = @_;
 
-    my $result = 0;
+    my $progress = 0;
     eval {
         my $test_id = $params->{test_id};
-        $result = $self->{db}->test_progress( $test_id );
+        $progress = $self->{db}->test_progress( $test_id );
     };
     if ($@) {
         handle_exception( $@ );
     }
 
+    my $result = {
+        progress => $progress
+    };
+
     return $result;
 }
 
-$json_schemas{get_test_params} = joi->object->strict->props(
+# Deprecated
+$json_schemas{test_progress} = $json_schemas{job_create};
+sub test_progress {
+    my $result = job_status( @_ );
+    return $result->{progress};
+}
+
+$json_schemas{job_params} = joi->object->strict->props(
     test_id => $zm_validator->test_id->required
 );
-sub get_test_params {
+sub job_params {
     my ( $self, $params ) = @_;
 
     my $result;
@@ -317,7 +383,13 @@ sub get_test_params {
     return $result;
 }
 
-$json_schemas{get_test_results} = {
+# Deprecated
+$json_schemas{get_test_params} = $json_schemas{job_params};
+sub get_test_params {
+    return job_params( @_ );
+}
+
+$json_schemas{job_results} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'id', 'language' ],
@@ -326,7 +398,7 @@ $json_schemas{get_test_results} = {
         language => $zm_validator->language_tag,
     }
 };
-sub get_test_results {
+sub job_results {
     my ( $self, $params ) = @_;
 
     my $result;
@@ -412,7 +484,13 @@ sub get_test_results {
     return $result;
 }
 
-$json_schemas{get_test_history} = {
+# Deprecated
+$json_schemas{get_test_results} = $json_schemas{job_results};
+sub get_test_results {
+    return job_results( @_ );
+}
+
+$json_schemas{domain_history} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'frontend_params' ],
@@ -430,36 +508,45 @@ $json_schemas{get_test_history} = {
         }
     }
 };
-sub get_test_history {
+sub domain_history {
     my ( $self, $params ) = @_;
 
-    my $results;
+    my @history;
 
     eval {
         $params->{offset} //= 0;
         $params->{limit} //= 200;
         $params->{filter} //= "all";
 
-        $results = $self->{db}->get_test_history( $params );
-        my @results = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
-        $results = \@results;
-
+        my $results = $self->{db}->get_test_history( $params );
+        @history = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
     };
     if ($@) {
         handle_exception( $@ );
     }
 
-    return $results;
+    my $result = {
+        history => \@history
+    };
+
+    return $result;
 }
 
-$json_schemas{add_api_user} = joi->object->strict->props(
+# Deprecated
+$json_schemas{get_test_history} = $json_schemas{domain_history};
+sub get_test_history {
+    my $result = domain_history( @_ );
+    return $result->{history};
+}
+
+$json_schemas{user_create} = joi->object->strict->props(
     username => $zm_validator->username->required,
     api_key => $zm_validator->api_key->required,
 );
-sub add_api_user {
+sub user_create {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
-    my $result = 0;
+    my $success = 0;
 
     eval {
         my $allow = 0;
@@ -471,7 +558,7 @@ sub add_api_user {
         }
 
         if ( $allow ) {
-            $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
+            $success = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
         }
         else {
             die Zonemaster::Backend::Error::PermissionDenied->new(
@@ -484,10 +571,21 @@ sub add_api_user {
         handle_exception( $@ );
     }
 
+    my $result = {
+        success => $success
+    };
+
     return $result;
 }
 
-$json_schemas{add_batch_job} = {
+# Deprecated
+$json_schemas{add_api_user} = $json_schemas{user_create};
+sub add_api_user {
+    my $result = user_create( @_ );
+    return $result->{success};
+}
+
+$json_schemas{batch_create} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'username', 'api_key', 'domains' ],
@@ -524,10 +622,10 @@ $json_schemas{add_batch_job} = {
         }
     }
 };
-sub add_batch_job {
+sub batch_create {
     my ( $self, $params ) = @_;
 
-    my $results;
+    my $batch_id;
     eval {
         $params->{test_params}{profile}  //= "default";
         $params->{test_params}{priority} //= 5;
@@ -537,19 +635,30 @@ sub add_batch_job {
         $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
         $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
 
-        $results = $self->{db}->add_batch_job( $params );
+        $batch_id = $self->{db}->add_batch_job( $params );
     };
     if ($@) {
         handle_exception( $@ );
     }
 
-    return $results;
+    my $result = {
+        batch_id => $batch_id
+    };
+
+    return $result;
 }
 
-$json_schemas{get_batch_job_result} = joi->object->strict->props(
+# Deprecated
+$json_schemas{add_batch_job} = $json_schemas{batch_create};
+sub add_batch_job {
+    my $result = batch_create( @_ );
+    return $result->{batch_id};
+}
+
+$json_schemas{batch_status} = joi->object->strict->props(
     batch_id => $zm_validator->batch_id->required
 );
-sub get_batch_job_result {
+sub batch_status {
     my ( $self, $params ) = @_;
 
     my $result;
@@ -563,6 +672,12 @@ sub get_batch_job_result {
     }
 
     return $result;
+}
+
+# Deprecated
+$json_schemas{get_batch_job_result} = $json_schemas{batch_status};
+sub get_batch_job_result {
+    return batch_status( @_ );
 }
 
 sub _get_locale {

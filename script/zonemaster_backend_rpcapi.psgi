@@ -59,75 +59,151 @@ my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
 
 my $router = router {
 ############## FRONTEND ####################
+    # Deprecated
     connect "version_info" => {
         handler => $handler,
         action => "version_info"
     };
 
+    connect "system_versions" => {
+        handler => $handler,
+        action => "system_versions"
+    };
+
+    # Deprecated
     connect "profile_names" => {
-                handler => $handler,
-                action => "profile_names"
-        };
+        handler => $handler,
+        action => "profile_names"
+    };
 
+    connect "conf_profiles" => {
+        handler => $handler,
+        action => "conf_profiles"
+    };
+
+    # Deprecated
     connect "get_language_tags" => {
-                handler => $handler,
-                action => "get_language_tags"
-        };
+        handler => $handler,
+        action => "get_language_tags"
+    };
 
-        connect "get_host_by_name" => {
+    connect "conf_languages" => {
+        handler => $handler,
+        action => "conf_languages"
+    };
+
+    # Deprecated
+    connect "get_host_by_name" => {
         handler => $handler,
         action => "get_host_by_name"
     };
 
+    connect "lookup_address_records" => {
+        handler => $handler,
+        action => "lookup_address_records"
+    };
+
+    # Deprecated
     connect "get_data_from_parent_zone" => {
         handler => $handler,
         action => "get_data_from_parent_zone"
     };
 
+    connect "lookup_delegation_data" => {
+        handler => $handler,
+        action => "lookup_delegation_data"
+    };
+
+    # Deprecated
     connect "start_domain_test" => {
         handler => $handler,
         action => "start_domain_test"
     };
 
+    connect "job_create" => {
+        handler => $handler,
+        action => "job_create"
+    };
+
+    # Deprecated
     connect "test_progress" => {
         handler => $handler,
         action => "test_progress"
     };
 
+    connect "job_status" => {
+        handler => $handler,
+        action => "job_status"
+    };
+
+    # Deprecated
     connect "get_test_params" => {
         handler => $handler,
         action => "get_test_params"
     };
 
+    connect "job_params" => {
+        handler => $handler,
+        action => "job_params"
+    };
+
+    # Deprecated
     connect "get_test_results" => {
         handler => $handler,
         action => "get_test_results"
     };
 
+    connect "job_results" => {
+        handler => $handler,
+        action => "job_results"
+    };
+
+    # Deprecated
     connect "get_test_history" => {
         handler => $handler,
         action => "get_test_history"
     };
 
+    connect "domain_history" => {
+        handler => $handler,
+        action => "domain_history"
+    };
+
+    # Deprecated
     connect "get_batch_job_result" => {
         handler => $handler,
         action => "get_batch_job_result"
     };
+
+    connect "batch_status" => {
+        handler => $handler,
+        action => "batch_status"
+    };
 };
 
-if ($config->RPCAPI_enable_add_api_user) {
-    $log->info('Enabling add_api_user method');
+if ( $config->RPCAPI_enable_user_create or $config->RPCAPI_enable_add_api_user ) {
+    $log->info('Enabling user_create method');
+    #Deprecated
     $router->connect("add_api_user", {
         handler => $handler,
         action => "add_api_user"
     });
+    $router->connect("user_create", {
+        handler => $handler,
+        action => "user_create"
+    });
 }
 
-if ($config->RPCAPI_enable_add_batch_job) {
-    $log->info('Enabling add_batch_job method');
+if ( $config->RPCAPI_enable_batch_create or $config->RPCAPI_enable_add_batch_job ) {
+    $log->info('Enabling batch_create method');
+    #Deprecated
     $router->connect("add_batch_job", {
         handler => $handler,
         action => "add_batch_job"
+    });
+    $router->connect("batch_create", {
+        handler => $handler,
+        action => "batch_create"
     });
 }
 

@@ -336,15 +336,15 @@ sub start_domain_test {
 }
 
 $json_schemas{job_status} = joi->object->strict->props(
-    test_id => $zm_validator->test_id->required
+    job_id => $zm_validator->test_id->required
 );
 sub job_status {
     my ( $self, $params ) = @_;
 
     my $progress = 0;
     eval {
-        my $test_id = $params->{test_id};
-        $progress = $self->{db}->test_progress( $test_id );
+        my $job_id = $params->{job_id};
+        $progress = $self->{db}->test_progress( $job_id );
     };
     if ($@) {
         handle_exception( $@ );
@@ -358,23 +358,27 @@ sub job_status {
 }
 
 # Deprecated
-$json_schemas{test_progress} = $json_schemas{job_create};
+$json_schemas{test_progress} = joi->object->strict->props(
+    test_id => $zm_validator->test_id->required
+);
 sub test_progress {
-    my $result = job_status( @_ );
+    my ( $self, $params ) = @_;
+    $params->{job_id} = $params->{test_id};
+    my $result = $self->job_status( $params );
     return $result->{progress};
 }
 
 $json_schemas{job_params} = joi->object->strict->props(
-    test_id => $zm_validator->test_id->required
+    job_id => $zm_validator->test_id->required
 );
 sub job_params {
     my ( $self, $params ) = @_;
 
     my $result;
     eval {
-        my $test_id = $params->{test_id};
+        my $job_id = $params->{job_id};
 
-        $result = $self->{db}->get_test_params( $test_id );
+        $result = $self->{db}->get_test_params( $job_id );
     };
     if ($@) {
         handle_exception( $@ );
@@ -384,17 +388,21 @@ sub job_params {
 }
 
 # Deprecated
-$json_schemas{get_test_params} = $json_schemas{job_params};
+$json_schemas{get_test_params} = joi->object->strict->props(
+    test_id => $zm_validator->test_id->required
+);
 sub get_test_params {
-    return job_params( @_ );
+    my ( $self, $params ) = @_;
+    $params->{job_id} = $params->{test_id};
+    return $self->job_params( $params );
 }
 
 $json_schemas{job_results} = {
     type => 'object',
     additionalProperties => 0,
-    required => [ 'id', 'language' ],
+    required => [ 'job_id', 'language' ],
     properties => {
-        id => $zm_validator->test_id->required->compile,
+        job_id => $zm_validator->test_id->required->compile,
         language => $zm_validator->language_tag,
     }
 };
@@ -419,7 +427,7 @@ sub job_results {
         my @zm_results;
         my %testcases;
 
-        my $test_info = $self->{db}->test_results( $params->{id} );
+        my $test_info = $self->{db}->test_results( $params->{job_id} );
         foreach my $test_res ( @{ $test_info->{results} } ) {
             my $res;
             if ( $test_res->{module} eq 'NAMESERVER' ) {
@@ -485,9 +493,19 @@ sub job_results {
 }
 
 # Deprecated
-$json_schemas{get_test_results} = $json_schemas{job_results};
+$json_schemas{get_test_results} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'id', 'language' ],
+    properties => {
+        id => $zm_validator->test_id->required->compile,
+        language => $zm_validator->language_tag,
+    }
+};
 sub get_test_results {
-    return job_results( @_ );
+    my ( $self, $params ) = @_;
+    $params->{job_id} = $params->{id};
+    return $self->job_results( $params );
 }
 
 $json_schemas{domain_history} = {
@@ -536,6 +554,9 @@ sub domain_history {
 $json_schemas{get_test_history} = $json_schemas{domain_history};
 sub get_test_history {
     my $result = domain_history( @_ );
+    foreach my $res ( @{ $result->{history} } ) {
+        $res->{id} = delete $res->{job_id};
+    }
     return $result->{history};
 }
 
@@ -598,7 +619,7 @@ $json_schemas{batch_create} = {
             items => $zm_validator->domain_name,
             minItems => 1
         },
-        test_params => {
+        job_params => {
             type => 'object',
             additionalProperties => 0,
             properties => {
@@ -627,13 +648,13 @@ sub batch_create {
 
     my $batch_id;
     eval {
-        $params->{test_params}{profile}  //= "default";
-        $params->{test_params}{priority} //= 5;
-        $params->{test_params}{queue}    //= 0;
+        $params->{job_params}{profile}  //= "default";
+        $params->{job_params}{priority} //= 5;
+        $params->{job_params}{queue}    //= 0;
 
-        my $profile = $self->{_profiles}{ $params->{test_params}{profile} };
-        $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
-        $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
+        my $profile = $self->{_profiles}{ $params->{job_params}{profile} };
+        $params->{job_params}{ipv4} //= $profile->get( "net.ipv4" );
+        $params->{job_params}{ipv6} //= $profile->get( "net.ipv6" );
 
         $batch_id = $self->{db}->add_batch_job( $params );
     };
@@ -650,8 +671,11 @@ sub batch_create {
 
 # Deprecated
 $json_schemas{add_batch_job} = $json_schemas{batch_create};
+$json_schemas{add_batch_job}{properties}{test_params} = $json_schemas{add_batch_job}{properties}{job_params};
 sub add_batch_job {
-    my $result = batch_create( @_ );
+    my ( $self, $params ) = @_;
+    $params->{job_params} = $params->{test_params} // {};
+    my $result = $self->batch_create( $params );
     return $result->{batch_id};
 }
 
@@ -677,7 +701,11 @@ sub batch_status {
 # Deprecated
 $json_schemas{get_batch_job_result} = $json_schemas{batch_status};
 sub get_batch_job_result {
-    return batch_status( @_ );
+    my $results = batch_status( @_ );
+    if ( exists $results->{finished_job_ids} ) {
+        $results->{finished_test_ids} = delete $results->{finished_job_ids};
+    }
+    return $results;
 }
 
 sub _get_locale {

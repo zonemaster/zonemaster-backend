@@ -383,7 +383,7 @@ sub get_test_history {
         push(
             @results,
             {
-                id               => $h->{hash_id},
+                job_id           => $h->{hash_id},
                 created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall,
@@ -515,7 +515,7 @@ sub get_batch_job_result {
     while ( my $h = $sth1->fetchrow_hashref ) {
         if ( $h->{progress} eq '100' ) {
             $result{nb_finished}++;
-            push(@{$result{finished_test_ids}}, $h->{hash_id});
+            push(@{$result{finished_job_ids}}, $h->{hash_id});
         }
         else {
             $result{nb_running}++;

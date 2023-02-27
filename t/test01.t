@@ -83,42 +83,42 @@ my $params = {
 
 my $hash_id;
 
-# This is the first test added to the DB, its 'id' is 1
-my $test_id = 1;
-subtest 'add a first test' => sub {
+# This is the first job added to the DB, its 'id' is 1
+my $job_id = 1;
+subtest 'add a first job' => sub {
     my $res_job_id = $rpcapi->job_create( $params );
     $hash_id = $res_job_id->{job_id};
 
     ok( $hash_id, "API job_create OK" );
-    is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
+    is( length($hash_id), 16, "Job has a 16 characters length hash ID (hash_id=$hash_id)" );
 
-    my ( $test_id_db, $hash_id_db ) = $dbh->selectrow_array( "SELECT id, hash_id FROM test_results WHERE id=?", undef, $test_id );
-    is( $test_id_db, $test_id , 'API job_create -> Test inserted in the DB' );
+    my ( $job_id_db, $hash_id_db ) = $dbh->selectrow_array( "SELECT id, hash_id FROM test_results WHERE id=?", undef, $job_id );
+    is( $job_id_db, $job_id , 'API job_create -> Job inserted in the DB' );
     is( $hash_id_db, $hash_id , 'Correct hash_id in database' );
 
     # test job_status API
-    my $res_job_status = $rpcapi->job_status( { test_id => $hash_id } );
-    is( $res_job_status->{progress}, 0 , 'Test has been created, its progress is 0' );
+    my $res_job_status = $rpcapi->job_status( { job_id => $hash_id } );
+    is( $res_job_status->{progress}, 0 , 'Job has been created, its progress is 0' );
 };
 
-subtest 'get and run test' => sub {
+subtest 'get and run job' => sub {
     my ( $hash_id_from_db ) = $rpcapi->{db}->get_test_request();
-    is( $hash_id_from_db, $hash_id, 'Get correct test to run' );
+    is( $hash_id_from_db, $hash_id, 'Get correct job to run' );
 
-    my $res_job_status = $rpcapi->job_status( { test_id => $hash_id } );
-    is( $res_job_status->{progress}, 1, 'Test has been picked, its progress is 1' );
+    my $res_job_status = $rpcapi->job_status( { job_id => $hash_id } );
+    is( $res_job_status->{progress}, 1, 'Job has been picked, its progress is 1' );
 
-    diag "running the agent on test $hash_id";
+    diag "running the agent on job $hash_id";
     $agent->run( $hash_id ); # blocking call
 
-    $res_job_status = $rpcapi->job_status( { test_id => $hash_id } );
-    is( $res_job_status->{progress}, 100 , 'Test has finished, its progress is 100' );
+    $res_job_status = $rpcapi->job_status( { job_id => $hash_id } );
+    is( $res_job_status->{progress}, 100 , 'Job has finished, its progress is 100' );
 };
 
 subtest 'API calls' => sub {
 
     subtest 'job_results' => sub {
-        my $res = $rpcapi->job_results( { id => $hash_id, language => 'en_US' } );
+        my $res = $rpcapi->job_results( { job_id => $hash_id, language => 'en_US' } );
         ok( ! defined $res->{id}, 'Do not expose primary key' );
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );
@@ -126,15 +126,15 @@ subtest 'API calls' => sub {
         ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{results}, 'Value "results" properly defined' );
         if ( @{ $res->{results} } > 1 ) {
-            pass 'The test has some results';
+            pass 'The job has some results';
         }
         else {
-            fail 'The test has some results: ' . Dumper( $res->{results} );
+            fail 'The job has some results: ' . Dumper( $res->{results} );
         }
     };
 
     subtest 'job_params' => sub {
-        my $res = $rpcapi->job_params( { test_id => $hash_id } );
+        my $res = $rpcapi->job_params( { job_id => $hash_id } );
         is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
         is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
         is( $res->{client_id}, $params->{client_id}, 'Retrieve the correct "client_id" value' );
@@ -205,19 +205,19 @@ subtest 'API calls' => sub {
 
 };
 
-# start a second test with IPv6 disabled
+# start a second job with IPv6 disabled
 $params->{ipv6} = 0;
 my $job_res = $rpcapi->job_create( $params );
 $hash_id = $job_res->{job_id};
-diag "running the agent on test $hash_id";
+diag "running the agent on job $hash_id";
 $agent->run($hash_id);
 
-subtest 'second test has IPv6 disabled' => sub {
-    my $res = $rpcapi->job_params( { test_id => $hash_id } );
+subtest 'second job has IPv6 disabled' => sub {
+    my $res = $rpcapi->job_params( { job_id => $hash_id } );
     is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
     is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
-    $res = $rpcapi->job_results( { id => $hash_id, language => 'en_US' } );
+    $res = $rpcapi->job_results( { job_id => $hash_id, language => 'en_US' } );
     my @msg_basic = map { $_->{message} if $_->{module} eq 'BASIC' } @{ $res->{results} };
     ok( grep( /IPv6 is disabled/, @msg_basic ), 'Results contain an "IPv6 is disabled" message' );
 };
@@ -234,51 +234,51 @@ subtest 'domain_history' => sub {
 
     my $res_domain_history = $rpcapi->domain_history( $method_params );
     $domain_history = $res_domain_history->{history};
-    is( scalar( @$domain_history ), 2, 'Two tests created' );
+    is( scalar( @$domain_history ), 2, 'Two jobs created' );
 
     foreach my $res (@$domain_history) {
-        is( length($res->{id}), 16, 'Test has 16 characters length hash ID' );
-        is( $res->{undelegated}, JSON::PP::true, 'Test is undelegated' );
+        is( length($res->{job_id}), 16, 'Job has 16 characters length hash ID' );
+        is( $res->{undelegated}, JSON::PP::true, 'Job is undelegated' );
         ok( ! exists $res->{creation_time}, 'Key "creation_time" should be missing' );
         ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{overall_result}, 'Value "overall_result" properly defined' );
     }
 
-    subtest 'include finished tests only' => sub {
-        # start a thirs test with IPv4 disabled
+    subtest 'include finished jobs only' => sub {
+        # start a third job with IPv4 disabled
         $params->{ipv6} = 1;
         $params->{ipv4} = 0;
 
-        # create the test, retrieve its id but we don't run it
+        # create the job, retrieve its id but we don't run it
         $rpcapi->job_create( $params );
         ( $hash_id ) = $rpcapi->{db}->get_test_request();
 
         my $res_domain_history;
         $res_domain_history = $rpcapi->domain_history( $method_params );
         $domain_history = $res_domain_history->{history};
-        is( scalar( @$domain_history ), 2, 'Only 2 tests should be retrieved' );
+        is( scalar( @$domain_history ), 2, 'Only 2 jobs should be retrieved' );
 
-        # now run the test
-        diag "running the agent on test $hash_id";
+        # now run the job
+        diag "running the agent on job $hash_id";
         $agent->run( $hash_id );
 
         $res_domain_history = $rpcapi->domain_history( $method_params );
         $domain_history = $res_domain_history->{history};
-        is( scalar( @$domain_history ), 3, 'Now 3 tests should be retrieved' );
+        is( scalar( @$domain_history ), 3, 'Now 3 jobs should be retrieved' );
     }
 };
 
-subtest 'mock another client (i.e. reuse a previous test)' => sub {
+subtest 'mock another client (i.e. reuse a previous job)' => sub {
     $params->{client_id} = 'Another Client';
     $params->{client_version} = '0.1';
 
     my $res = $rpcapi->job_create( $params );
     my $new_hash_id = $res->{job_id};
 
-    is( $new_hash_id, $hash_id, 'Has the same hash than previous test' );
+    is( $new_hash_id, $hash_id, 'Has the same hash than previous job' );
 
-    subtest 'check test_params values' => sub {
-        my $res = $rpcapi->job_params( { test_id => "$hash_id" } );
+    subtest 'check job_params values' => sub {
+        my $res = $rpcapi->job_params( { job_id => "$hash_id" } );
         # the following values are part of the fingerprint
         is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
         is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
@@ -287,14 +287,14 @@ subtest 'mock another client (i.e. reuse a previous test)' => sub {
         is_deeply( $res->{nameservers}, $params->{nameservers}, 'Retrieve the correct "nameservers" value' );
         is_deeply( $res->{ds_info}, $params->{ds_info}, 'Retrieve the correct "ds_info" value' );
 
-        # both client_id and client_version are different since an old test has been reused
+        # both client_id and client_version are different since an old job has been reused
         isnt( $res->{client_id}, $params->{client_id}, 'The "client_id" value is not the same (which is fine)' );
         isnt( $res->{client_version}, $params->{client_version}, 'The "client_version" value is not the same (which is fine)' );
     };
 };
 
-subtest 'check historic tests' => sub {
-    # Verifies that delegated and undelegated tests are coded correctly when started
+subtest 'check historic domains' => sub {
+    # Verifies that delegated and undelegated jobs are coded correctly when started
     # and that the filter option in "domain_history" works correctly
 
     my $domain          = 'xa';
@@ -318,7 +318,7 @@ subtest 'check historic tests' => sub {
     my $domain2         = 'xb';
     my $params_ub1      = { # undelegated, batch
         domains         => [ $domain, $domain2 ],
-        test_params     => {
+        job_params      => {
             nameservers => [
                 { ns => 'ns2.nic.fr', ip => '192.134.4.1' },
                 ],
@@ -326,7 +326,7 @@ subtest 'check historic tests' => sub {
     };
     my $params_ub2      = { # undelegated, batch
         domains         => [ $domain, $domain2 ],
-        test_params     => {
+        job_params      => {
             ds_info     => [
                 { keytag => 11627, algorithm => 8, digtype => 2, digest => 'a6cca9e6027ecc80ba0f6d747923127f1d69005fe4f0ec0461bd633482595448' },
                 ],
@@ -339,12 +339,12 @@ subtest 'check historic tests' => sub {
 
     foreach my $param ($params_un1, $params_un2, $params_dn1) {
         my $job_res = $rpcapi->job_create( $param );
-        my $testid = $job_res->{job_id};
-        ok( $testid, "API job_create ID OK" );
-        diag "running the agent on test $testid";
-        $agent->run( $testid );
-        my $res_job_status = $rpcapi->job_status( { test_id => $testid } );
-        is( $res_job_status->{progress}, 100 , 'API job_status -> Test finished' );
+        my $jobid = $job_res->{job_id};
+        ok( $jobid, "API job_create ID OK" );
+        diag "running the agent on job $jobid";
+        $agent->run( $jobid );
+        my $res_job_status = $rpcapi->job_status( { job_id => $jobid } );
+        is( $res_job_status->{progress}, 100 , 'API job_status -> Job finished' );
     };
 
     my $res_domain_history_delegated = $rpcapi->domain_history(
@@ -365,9 +365,9 @@ subtest 'check historic tests' => sub {
     my $domain_history_undelegated = $res_domain_history_undelegated->{history};
 
     # diag explain( $domain_history_delegated );
-    is( scalar( @$domain_history_delegated ), 1, 'One delegated test created' );
+    is( scalar( @$domain_history_delegated ), 1, 'One delegated job created' );
     # diag explain( $domain_history_undelegated );
-    is( scalar( @$domain_history_undelegated ), 2, 'Two undelegated tests created' );
+    is( scalar( @$domain_history_undelegated ), 2, 'Two undelegated jobs created' );
 
     subtest 'domain is case and trailing dot insensitive' => sub {
         my $res_domain_history_delegated = $rpcapi->domain_history(
@@ -387,8 +387,8 @@ subtest 'check historic tests' => sub {
         my $domain_history_delegated = $res_domain_history_delegated->{history};
         my $domain_history_undelegated = $res_domain_history_undelegated->{history};
 
-        is( scalar( @$domain_history_delegated ), 1, 'One delegated test created' );
-        is( scalar( @$domain_history_undelegated ), 2, 'Two undelegated tests created' );
+        is( scalar( @$domain_history_delegated ), 1, 'One delegated job created' );
+        is( scalar( @$domain_history_undelegated ), 2, 'Two undelegated jobs created' );
     };
 };
 
@@ -399,15 +399,15 @@ subtest 'normalize "domain" column' => sub {
         "aFnic.Fr." => "afnic.fr"
     );
 
-    my $test_params = {
+    my $job_params = {
         client_id      => 'Unit Test',
         client_version => '1.0',
     };
 
     while ( my ($domain, $expected) = each (%domains_to_test) ) {
-        $test_params->{domain} = $domain;
+        $job_params->{domain} = $domain;
 
-        my $job_res = $rpcapi->job_create( $test_params );
+        my $job_res = $rpcapi->job_create( $job_params );
         $hash_id = $job_res->{job_id};
         my ( $db_domain ) = $dbh->selectrow_array( "SELECT domain FROM test_results WHERE hash_id=?", undef, $hash_id );
         is( $db_domain, $expected, 'stored domain name is normalized' );

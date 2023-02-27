@@ -132,7 +132,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
             my $params = {
                 %user,
                 domains => \@domains,
-                test_params => {
+                job_params => {
                     priority => 5,
                     queue   => 0
                 }

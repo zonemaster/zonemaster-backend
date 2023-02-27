@@ -171,9 +171,9 @@ sub add_batch_job {
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
-        my $test_params = $params->{test_params};
-        my $priority    = $test_params->{priority};
-        my $queue_label = $test_params->{queue};
+        my $job_params  = $params->{job_params};
+        my $priority    = $job_params->{priority};
+        my $queue_label = $job_params->{queue};
 
         $dbh->{AutoCommit} = 0;
         eval {$dbh->do( "DROP INDEX test_results__hash_id ON test_results" );};
@@ -198,16 +198,16 @@ sub add_batch_job {
             ],
         );
         foreach my $domain ( @{$params->{domains}} ) {
-            $test_params->{domain} = _normalize_domain( $domain );
+            $job_params->{domain} = _normalize_domain( $domain );
 
-            my $fingerprint = $self->generate_fingerprint( $test_params );
-            my $encoded_params = $self->encode_params( $test_params );
-            my $undelegated = $self->undelegated ( $test_params );
+            my $fingerprint = $self->generate_fingerprint( $job_params );
+            my $encoded_params = $self->encode_params( $job_params );
+            my $undelegated = $self->undelegated ( $job_params );
 
             my $hash_id = substr(md5_hex(time().rand()), 0, 16);
             $sth->execute(
                 $hash_id,
-                $test_params->{domain},
+                $job_params->{domain},
                 $batch_id,
                 $self->format_time( time() ),
                 $priority,

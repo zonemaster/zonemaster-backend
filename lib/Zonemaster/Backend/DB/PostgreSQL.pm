@@ -168,10 +168,10 @@ sub add_batch_job {
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
-        my $test_params = $params->{test_params};
+        my $job_params  = $params->{job_params};
 
-        my $priority    = $test_params->{priority};
-        my $queue_label = $test_params->{queue};
+        my $priority    = $job_params->{priority};
+        my $queue_label = $job_params->{queue};
 
         my $created_at = $self->format_time( time() );
 
@@ -201,15 +201,15 @@ sub add_batch_job {
         );
 
         foreach my $domain ( @{$params->{domains}} ) {
-            $test_params->{domain} = _normalize_domain( $domain );
+            $job_params->{domain} = _normalize_domain( $domain );
 
-            my $fingerprint = $self->generate_fingerprint( $test_params );
-            my $encoded_params = $self->encode_params( $test_params );
-            my $undelegated = $self->undelegated ( $test_params );
+            my $fingerprint = $self->generate_fingerprint( $job_params );
+            my $encoded_params = $self->encode_params( $job_params );
+            my $undelegated = $self->undelegated ( $job_params );
 
             my $hash_id = substr(md5_hex(time().rand()), 0, 16);
             $dbh->pg_putcopydata(
-                "$hash_id\t$test_params->{domain}\t$batch_id\t$created_at\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n"
+                "$hash_id\t$job_params->{domain}\t$batch_id\t$created_at\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n"
             );
         }
         $dbh->pg_putcopyend();

@@ -1161,7 +1161,6 @@ Example response:
       {
         "id": "32dd4bc0582b6bf9",
         "undelegated": false,
-        "creation_time": "2016-11-14 08:46:41.532047",
         "created_at": "2016-11-14T08:46:41Z",
         "overall_result": "error",
       },

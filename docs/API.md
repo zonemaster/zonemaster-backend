@@ -27,6 +27,8 @@
   * [Severity level](#severity-level)
   * [Test id](#test-id)
   * [Test result](#test-result)
+  * [Job id](#job-id)
+  * [Job result](#job-result)
   * [Timestamp (deprecated)](#timestamp-deprecated)
   * [Timestamp](#timestamp)
   * [Username](#username)
@@ -387,16 +389,30 @@ document. The following severity levels are not available through the RPCAPI
 
 ### Test id
 
-Basic data type: string
-
-A string of exactly 16 lower-case hex-digits matching `/^[0-9a-f]{16}$/`.
-
-Each *test* has a unique *test id*.
+**Deprecated** (planned removal: v2024.1).
+Renamed to [*job id*][Job id].
 
 
 ### Test result
 
+**Deprecated** (planned removal: v2024.1).
+Renamed to [*job result*][Job result].
+
+### Job id
+
+Basic data type: string
+
+A string of exactly 16 lower-case hex-digits matching `/^[0-9a-f]{16}$/`.
+
+Each *job* (formerly *test*) has a unique *job id* (formerly [*test id*][Test
+id]).
+
+
+### Job result
+
 Basic data type: object
+
+Formerly *test result*.
 
 The object has four keys, `"module"`, `"message"`, `"level"` and `"testcase"`.
 
@@ -766,7 +782,7 @@ An object with the following properties:
 
 ### API method: `job_create`
 
-Enqueues a new *test* and returns the [*test id*][Test id] of the *test*.
+Enqueues a new *job* and returns its [*job_id*][Job id].
 
 Example request:
 ```json
@@ -831,11 +847,11 @@ An object with the following properties:
 
 An object with the following property:
 
-* `"job_id"`: A [*test id*][Test id].
+* `"job_id"`: A [*job id*][Job id].
 
-If a test has been requested with the same parameters (as listed below) not more
-than "reuse time" ago, then a new request will not trigger a new test. Instead
-the `test id` of the previous test will be returned. The default value of
+If a job has been requested with the same parameters (as listed below) not more
+than "reuse time" ago, then a new request will not trigger a new job. Instead
+the `job_id` of the previous job will be returned. The default value of
 "reuse time" is 600 seconds, and can be set by the
 [`ZONEMASTER.age_reuse_previous_test`][ZONEMASTER.age_reuse_previous_test] key
 in the configuration file.
@@ -891,7 +907,7 @@ Example of error response:
 
 ### API method: `job_status`
 
-Reports on the progress of a *test*.
+Reports on the progress of a *job*.
 
 Example request:
 
@@ -901,7 +917,9 @@ Example request:
   "jsonrpc": "2.0",
   "id": 5,
   "method": "job_status",
-  "params": {"test_id": "c45a3f8256c4a155"}
+  "params": {
+      "job_id": "c45a3f8256c4a155"
+  }
 }
 ```
 
@@ -921,7 +939,9 @@ Example response:
 
 An object with the property:
 
-`"test_id"`: A [*test id*][Test id], required. The *test* to report on.
+`"test_id"`: **Deprecated** (planned removal v2024.1). A [*test id*][Test id].
+The *test* to report on.
+`"job_id"`: A [*job id*][Job id], required. The *job* to report on.
 
 
 #### `"result"`
@@ -940,7 +960,7 @@ An object with the following property:
 
 ### API method: `job_results`
 
-Return all [*test result*][Test result] objects of a *test*, with *messages* in the requested language as selected by the
+Return all [*job result*][Job result] objects of a *job*, with *messages* in the requested language as selected by the
 [*language tag*][Language tag].
 
 Example request:
@@ -950,14 +970,14 @@ Example request:
   "id": 6,
   "method": "job_results",
   "params": {
-    "id": "c45a3f8256c4a155",
+    "job_id": "c45a3f8256c4a155",
     "language": "en"
   }
 }
 ```
 
-The `id` parameter must match the `result` in the response to a [`job_create`][API job_create]
-call, and that test must have been completed.
+The `job_id` parameter must match the `job_id` in the response to a
+[`job_create`][API job_create] call, and that job must have been completed.
 
 Example response:
 ```json
@@ -1019,7 +1039,8 @@ Example response:
 
 An object with the following properties:
 
-* `"id"`: A [*test id*][Test id], required.
+* `"id"`: **Deprecated** (planned removal 2024.1). A [*test id*][Test id].
+* `"job_id"`: A [*job id*][Job id], required.
 * `"language"`: A [*language tag*][Language tag], required.
 
 
@@ -1027,28 +1048,28 @@ An object with the following properties:
 
 An object with the following properties:
 
-* `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
+* `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *job*
   was created.
-* `"hash_id"`: A [*test id*][Test id]. The *test* in question.
+* `"hash_id"`: A [*job id*][Job id]. The *job* in question.
 * `"params"`: See below.
-* `"results"`: A list of [*test result*][Test result] objects.
+* `"results"`: A list of [*job result*][Job result] objects.
 * `"testcase_descriptions"`: A map with the *[Test Case Identifiers]* as keys and the
   translated *Test Case Description* of the corresponding *[Test Cases]* as values.
 
-If the test was created by [`job_create`][API job_create] then `"params"`
+If the job was created by [`job_create`][API job_create] then `"params"`
 is a normalized version `"params"` object sent to [`job_create`][API job_create]
-when the *test* was created.
+when the *job* was created.
 
-If the test was created with [`batch_create`][API batch_create] then `"params"`
+If the job was created with [`batch_create`][API batch_create] then `"params"`
 is a normalized version of an object created from the following parts:
-* The keys from the`"test_params"` object sent to [`batch_create`][API batch_create]
-  when the *test* was created as part of a batch.
+* The keys from the`"job_params"` object sent to [`batch_create`][API batch_create]
+  when the *job* was created as part of a batch.
 * The `"domain"` key holding the specific [*domain name*][Domain name] for this
-  test result from the `"domains"` object included in the call to
+  job result from the `"domains"` object included in the call to
   [`batch_create`][API batch_create].
 
 >
-> TODO: Change name in the API of `"hash_id"` to `"test_id"`
+> TODO: Change name in the API of `"hash_id"` to `"job_id"`
 >
 
 
@@ -1061,7 +1082,7 @@ is a normalized version of an object created from the following parts:
 
 ### API method: `job_params`
 
-Return a normalized *params* objects of a *test*.
+Return a normalized *params* objects of a *job*.
 
 Example request:
 
@@ -1071,7 +1092,9 @@ Example request:
     "jsonrpc": "2.0",
     "id": 143014426992009,
     "method": "job_params",
-    "params": {"test_id": "6814584dc820354a"}
+    "params": {
+        "job_id": "6814584dc820354a"
+    }
 }
 ```
 
@@ -1107,13 +1130,14 @@ Example response:
 
 An object with the property:
 
-* `"test_id"`: A [*test id*][Test id], required.
+* `"test_id"`: **Deprecated** (planned removal 2024.1). A [*test id*][Test id].
+* `"job_id"`: A [*job id*][Job id], required.
 
 
 #### `"result"`
 
 The `"params"` object sent to [`job_create`][API job_create] or
-[`batch_create`][API batch_create] when the *test* was started.
+[`batch_create`][API batch_create] when the *job* was started.
 
 
 #### `"error"`
@@ -1125,7 +1149,7 @@ The `"params"` object sent to [`job_create`][API job_create] or
 
 ### API method: `domain_history`
 
-Returns a list of completed *tests* for a domain.
+Returns a list of completed *jobs* for a domain.
 
 Example request:
 ```json
@@ -1152,13 +1176,13 @@ Example response:
   "result": {
     "history": [
       {
-        "id": "c45a3f8256c4a155",
+        "job_id": "c45a3f8256c4a155",
         "created_at": "2016-11-15T11:53:13Z",
         "undelegated": true,
         "overall_result": "error",
       },
       {
-        "id": "32dd4bc0582b6bf9",
+        "job_id": "32dd4bc0582b6bf9",
         "undelegated": false,
         "created_at": "2016-11-14T08:46:41Z",
         "overall_result": "error",
@@ -1177,7 +1201,7 @@ Example response:
 
 ### Undelegated and delegated
 
-A test is considered to be `"delegated"` below if the test was started, by
+A job is considered to be `"delegated"` below if the job was started, by
 [`job_create`][API job_create] or [`batch_create`][API batch_create]
 without specifying neither `"nameserver"` nor `"ds_info"`. Else it is considered to
 be `"undelegated"`.
@@ -1200,11 +1224,11 @@ The value of "frontend_params" is an object with the following properties:
 
 An object with the following properties:
 
-* `"id"` A *test id*.
-* `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *test*
+* `"job_id"`: A *job id*.
+* `"created_at"`: A [*timestamp*][Timestamp]. The time in UTC at which the *job*
   was created.
 * `"overall_result"`: A string. It reflects the most severe problem level among
-  the test results for the test. It has one of the following values:
+  the test results for the job. It has one of the following values:
   * `"ok"`, if there are only messages with [*severity level*][Severity level] `"INFO"` or
     `"NOTICE"`.
   * `"warning"`, if there is at least one message with [*severity level*][Severity level]
@@ -1213,7 +1237,7 @@ An object with the following properties:
     `"ERROR"`, but none with `"CRITICAL"`.
   * `"critical"`, if there is at least one message with [*severity level*][Severity level]
     `"CRITICAL"`.
-* `"undelegated"`: `true` if the test is undelegated, `false` otherwise.
+* `"undelegated"`: `true` if the job is undelegated, `false` otherwise.
 
 #### `"error"`
 
@@ -1357,7 +1381,7 @@ Trying to add a user when the method is disabled:
 
 ### API method: `batch_create`
 
-Add a new *batch test* composed by a set of [*domain name*][Domain name] and a *params* object.
+Add a new *batch* composed by a set of [*domain name*][Domain name] and a *job_params* object.
 All the domains will be tested using identical parameters.
 
 This method is not available if [`RPCAPI.enable_batch_create`][RPCAPI.enable_batch_create]
@@ -1367,7 +1391,7 @@ A [*username*][Username] and its [*api key*][Api key] can be added with the
 [`user_create`][API user_create] method. A [*username*][Username] can only have
 one un-finished *batch* at a time.
 
-*Tests* enqueud using this method are assigned a [*priority*][Priority] of 5.
+*Jobs* enqueued using this method are assigned a [*priority*][Priority] of 5.
 
 
 Example request:
@@ -1379,7 +1403,7 @@ Example request:
   "params" : {
     "api_key": "fromage",
     "username": "citron",
-    "test_params": {},
+    "job_params": {},
     "domains": [
       "zonemaster.net",
       "domain1.se",
@@ -1408,13 +1432,13 @@ An object with the following properties:
 * `"username"`: A [*username*][Username], required. The name of the account of an authorized user.
 * `"api_key"`: An [*api key*][Api key], required. The api_key associated with the username.
 * `"domains"`: A list of [*domain names*][Domain names], required. The domains to be tested.
-* `"test_params"`: As described below, optional. (default: `{}`)
+* `"job_params"`: As described below, optional. (default: `{}`)
 
-The value of `"test_params"` is an object with the following properties:
+The value of `"job_params"` is an object with the following properties:
 
 * `"client_id"`: A [*client id*][Client id], optional. (default: unset)
 * `"profile"`: A [*profile name*][profile name], optional (default:
-  `"default"`). Run the tests using the given profile.
+  `"default"`). Run the jobs using the given profile.
 * `"client_version"`: A [*client version*][Client version], optional. (default: unset)
 * `"nameservers"`: A list of [*name server*][Name server] objects, optional. (default: `[]`)
 * `"ds_info"`: A list of [*DS info*][DS info] objects, optional. (default: `[]`)
@@ -1433,7 +1457,7 @@ An object with the following property:
 
 #### `"error"`
 
-* You cannot create a new batch job if a *batch* with unfinished *tests* already
+* You cannot create a new batch job if a *batch* with unfinished *jobs* already
   exists for this [*username*][Username].
 * If the given `profile` is not among the [available profiles][Profile sections],
   a user error is returned, see the [profile name section][profile name].
@@ -1503,7 +1527,7 @@ Trying to add a batch when the method has been disabled.
 
 ### API method: `batch_status`
 
-Return all [*test id*][Test id] objects of a *batch test*, with the number of finshed *test*.
+Return all [*job id*][Job id] objects of a *batch*, with the number of finished *jobs*.
 
 Example request:
 
@@ -1526,7 +1550,7 @@ Example response:
    "id": 147559211994909,
    "result": {
       "nb_finished": 5,
-      "finished_test_ids": [
+      "finished_job_ids": [
          "43b408794155324b",
          "be9cbb44fff0b2a8",
          "62f487731116fd87",
@@ -1550,9 +1574,9 @@ An object with the property:
 
 An object with the following properties:
 
-* `"nb_finished"`: a [*non-negative integer*][Non-negative integer]. The number of finished tests.
-* `"nb_running"`: a [*non-negative integer*][Non-negative integer]. The number of running tests.
-* `"finished_test_ids"`: a list of [*test ids*][Test id]. The set of finished *tests* in this *batch*.
+* `"nb_finished"`: a [*non-negative integer*][Non-negative integer]. The number of finished jobs.
+* `"nb_running"`: a [*non-negative integer*][Non-negative integer]. The number of running jobs.
+* `"finished_job_ids"`: a list of [*job ids*][Job id]. The set of finished *jobs* in this *batch*.
 
 
 #### `"error"`
@@ -1684,6 +1708,8 @@ Replaced by [`job_params`][API job_params].
 [IP address]:                         #ip-address
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
+[Job id]:                             #job-id
+[Job result]:                         #job-result
 [JSON Pointer]:                       https://datatracker.ietf.org/doc/html/rfc6901
 [JSON-RPC 2.0]:                       https://www.jsonrpc.org/specification
 [Language tag]:                       #language-tag

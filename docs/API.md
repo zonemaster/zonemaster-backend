@@ -1582,77 +1582,78 @@ If the `batch_id` is undefined the following error is returned:
 ### API method: `version_info`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`system_versions`][API system_versions].
+Replaced by [`system_versions`][API system_versions].
 
 
 ### API method: `profile_names`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`conf_profiles`][API conf_profiles].
+Replaced by [`conf_profiles`][API conf_profiles].
 
 
 ### API method: `get_language_tags`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`conf_languages`][API conf_languages].
+Replaced by [`conf_languages`][API conf_languages].
 
 ### API method: `get_host_by_name`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`lookup_address_records`][API lookup_address_records].
+Replaced by [`lookup_address_records`][API lookup_address_records].
 
 
 ### API method: `get_data_from_parent_zone`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`lookup_delegation_data`][API lookup_delegation_data].
+Replaced by [`lookup_delegation_data`][API lookup_delegation_data].
 
 
 ### API method: `start_domain_test`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_create`][API job_create].
+Replaced by [`job_create`][API job_create].
 
 
 ### API method: `test_progress`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_status`][API job_status].
+Replaced by [`job_status`][API job_status].
 
 
 ### API method: `get_test_results`
 
 **Deprecated** (planned removal: v2024.1).
+Replaced by [`job_results`][API job_results].
 
 
 ### API method: `get_test_history`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`domain_history`][API domain_history].
+Replaced by [`domain_history`][API domain_history].
 
 
 ### API method: `add_api_user`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`user_create`][API user_create].
+Replaced by [`user_create`][API user_create].
 
 
 ### API method: `add_batch_job`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`batch_create`][API batch_create].
+Replaced by [`batch_create`][API batch_create].
 
 
 ### API method: `get_batch_job_result`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`batch_status`][API batch_status].
+Replaced by [`batch_status`][API batch_status].
 
 
 ### API method: `get_test_params`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_params`][API job_params].
+Replaced by [`job_params`][API job_params].
 
 
 [API add_api_user]:                   #api-method-add_api_user

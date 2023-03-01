@@ -34,7 +34,7 @@ requires
   'Starman'                     => 0,
   'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.12,
-  'Zonemaster::Engine'          => 4.006001,
+  'Zonemaster::Engine'          => 4.006002,
   'Zonemaster::LDNS'            => 3.001000,
   'Plack::Middleware::ReverseProxy' => 0,
   'Locale::TextDomain'          => 1.20,

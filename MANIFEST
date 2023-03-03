@@ -91,6 +91,7 @@ t/idn.data
 t/idn.t
 t/lifecycle.t
 t/parameters_validation.t
+t/po-files.t
 t/test01.data
 t/test01.t
 t/test_profile.json

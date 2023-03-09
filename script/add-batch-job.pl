@@ -14,7 +14,7 @@ binmode STDOUT, ':utf8';
 
 my $e = Zonemaster::Backend::RPCAPI->new;
 
-say "Starting add_batch_job";
+say "Starting batch_create";
 my @domains;
 for (my $i = 0; $i < 100; $i++) {
     push(@domains, substr(md5_hex(rand(10000)), 0, 5).".fr");
@@ -22,9 +22,9 @@ for (my $i = 0; $i < 100; $i++) {
 
 #die Dumper(\@domains);
 
-$e->add_api_user({ username => 'test_user', api_key => 'API_KEY_01'});
+$e->user_create({ username => 'test_user', api_key => 'API_KEY_01'});
 
-$e->add_batch_job(
+$e->batch_create(
     {
         client_id      => 'Add Script',
         client_version => '1.0',

@@ -70,7 +70,7 @@ sub init_backend {
     my $rpcapi = TestUtil::create_rpcapi( $config );
 
     # create a user
-    $rpcapi->add_api_user( $user );
+    $rpcapi->user_create( $user );
 
     return $rpcapi;
 }
@@ -94,14 +94,14 @@ sub check_tolerance {
     cmp_ok( $delta, '<=', $tolerance, $msg);
 }
 
-subtest 'RPCAPI add_batch_job' => sub {
+subtest 'RPCAPI batch_create' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $rpcapi = init_backend( $config );
     my $dbh = $rpcapi->{db}->dbh;
 
     my @domains = ( 'afnic.fr' );
 
-    my $res = $rpcapi->add_batch_job(
+    my $res = $rpcapi->batch_create(
         {
             %$user,
             domains => \@domains,
@@ -109,7 +109,7 @@ subtest 'RPCAPI add_batch_job' => sub {
         }
     );
 
-    is( $res, 1, 'correct batch job id returned' );
+    is( $res->{batch_id}, 1, 'correct batch job id returned' );
 
     subtest 'table "batch_jobs" contains an entry' => sub {
         my ( $count ) = $dbh->selectrow_array( q[ SELECT count(*) FROM batch_jobs ] );
@@ -150,23 +150,24 @@ subtest 'RPCAPI add_batch_job' => sub {
     };
 };
 
-subtest 'RPCAPI get_batch_job_result' => sub {
+subtest 'RPCAPI batch_status' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $rpcapi = init_backend( $config );
     subtest 'batch job exists' => sub {
         my @domains = ( 'afnic.fr' );
 
-        my $batch_id = $rpcapi->add_batch_job(
+        my $res_batch_create = $rpcapi->batch_create(
             {
                 %$user,
                 domains => \@domains,
                 test_params => $params
             }
         );
+        my $batch_id = $res_batch_create->{batch_id};
 
         is( $batch_id, 1, 'correct batch job id returned' );
 
-        my $res = $rpcapi->get_batch_job_result( { batch_id => $batch_id } );
+        my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
 
         is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
         is( $res->{nb_finished}, 0, 'correct number of finished tests' );
@@ -175,7 +176,7 @@ subtest 'RPCAPI get_batch_job_result' => sub {
     subtest 'unknown batch' => sub {
         my $unknown_batch = 10;
         dies_ok {
-            $rpcapi->get_batch_job_result( { batch_id => $unknown_batch } );
+            $rpcapi->batch_status( { batch_id => $unknown_batch } );
         } 'getting results for an unknown batch_id should die';
         my $res = $@;
         is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
@@ -191,7 +192,7 @@ subtest 'batch with several domains' => sub {
 
     my @domains = sort( 'afnic.fr', 'iis.se' );
 
-    my $res = $rpcapi->add_batch_job(
+    my $res = $rpcapi->batch_create(
         {
             %$user,
             domains => \@domains,
@@ -199,9 +200,9 @@ subtest 'batch with several domains' => sub {
         }
     );
 
-    is( $res, 1, 'correct batch job id returned' );
+    is( $res->{batch_id}, 1, 'correct batch job id returned' );
 
-    $res = $rpcapi->get_batch_job_result( { batch_id => 1 } );
+    $res = $rpcapi->batch_status( { batch_id => 1 } );
 
     is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
     is( $res->{nb_finished}, 0, 'correct number of finished tests' );
@@ -246,24 +247,26 @@ subtest 'batch job still running' => sub {
 
     my @domains = ( 'afnic.fr' );
 
-    my $batch_id = $rpcapi->add_batch_job(
+    my $res_batch_create = $rpcapi->batch_create(
         {
             %$user,
             domains => \@domains,
             test_params => $params
         }
     );
+    my $batch_id = $res_batch_create->{batch_id};
 
     is( $batch_id, 1, 'correct batch job id returned' );
 
     dies_ok {
-        my $new_batch_id = $rpcapi->add_batch_job(
+        my $res = $rpcapi->batch_create(
             {
                 %$user,
                 domains => \@domains,
                 test_params => $params
             }
         );
+        my $new_batch_id = $res->{batch_id};
     } 'a batch is already running for the user, new batch creation should fail' ;
     my $res = $@;
     is( $res->{message}, 'Batch job still running', 'correct error message' );
@@ -272,14 +275,15 @@ subtest 'batch job still running' => sub {
 
     subtest 'use another user' => sub {
         my $another_user = { username => 'another', api_key => 'token' };
-        $rpcapi->add_api_user( $another_user );
-        my $batch_id = $rpcapi->add_batch_job(
+        $rpcapi->user_create( $another_user );
+        my $res = $rpcapi->batch_create(
             {
                 %$another_user,
                 domains => \@domains,
                 test_params => $params
             }
         );
+        my $batch_id = $res->{batch_id};
 
         is( $batch_id, 2, 'another_user can create another batch' );
     };
@@ -294,8 +298,8 @@ subtest 'duplicate user should fail' => sub {
     $rpcapi->{db}->dbh->{PrintError} = 0;
 
     dies_ok {
-        $rpcapi->add_api_user( { username => $user->{username}, api_key => "another api key" } );
-    } 'a user with the same username already exists, add_api_user should die';
+        $rpcapi->user_create( { username => $user->{username}, api_key => "another api key" } );
+    } 'a user with the same username already exists, user_create should die';
     my $res = $@;
     is( $res->{error}, 'Zonemaster::Backend::Error::Conflict', 'correct error type' );
     is( $res->{message}, 'User already exists', 'correct error message' );
@@ -317,13 +321,14 @@ subtest 'normalize "domain" column' => sub {
     );
     my @domains = keys %domains_to_test;
 
-    my $batch_id = $rpcapi->add_batch_job(
+    my $res = $rpcapi->batch_create(
         {
             %$user,
             domains => \@domains,
             test_params => $params
         }
     );
+    my $batch_id = $res->{batch_id};
 
     my @db_domain = map { $$_[0] } $dbh->selectall_array( "SELECT domain FROM test_results WHERE batch_id=?", undef, $batch_id );
 

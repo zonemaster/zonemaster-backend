@@ -344,9 +344,9 @@ with this type, it returns the following error message:
     }
 }
 ```
-The error code is "009" (as above) if method [`start_domain_test`][API start_domain_test]
+The error code is "009" (as above) if method [`job_create`][API job_create]
 was requested.
-Instead it will be "015" if method [`add_batch_job`][add_batch_job] is requested.
+Instead it will be "015" if method [`batch_create`][API batch_create] is requested.
 
 
 ### Progress percentage
@@ -956,7 +956,7 @@ Example request:
 }
 ```
 
-The `id` parameter must match the `result` in the response to a [`start_domain_test`][start_domain_test]
+The `id` parameter must match the `result` in the response to a [`job_create`][API job_create]
 call, and that test must have been completed.
 
 Example response:
@@ -1031,22 +1031,21 @@ An object with the following properties:
   was created.
 * `"hash_id"`: A [*test id*][Test id]. The *test* in question.
 * `"params"`: See below.
-  `start_domain_test` when the *test* was started.
 * `"results"`: A list of [*test result*][Test result] objects.
 * `"testcase_descriptions"`: A map with the *[Test Case Identifiers]* as keys and the
   translated *Test Case Description* of the corresponding *[Test Cases]* as values.
 
-If the test was created by [`start_domain_test`][start_domain_test] then `"params"`
-is a normalized version `"params"` object sent to [`start_domain_test`][start_domain_test]
+If the test was created by [`job_create`][API job_create] then `"params"`
+is a normalized version `"params"` object sent to [`job_create`][API job_create]
 when the *test* was created.
 
-If the test was created with [`add_batch_job`][add_batch_job] then `"params"`
+If the test was created with [`batch_create`][API batch_create] then `"params"`
 is a normalized version of an object created from the following parts:
-* The keys from the`"test_params"` object sent to [`add_batch_job`][add_batch_job]
+* The keys from the`"test_params"` object sent to [`batch_create`][API batch_create]
   when the *test* was created as part of a batch.
 * The `"domain"` key holding the specific [*domain name*][Domain name] for this
   test result from the `"domains"` object included in the call to
-  [`add_batch_job`][add_batch_job].
+  [`batch_create`][API batch_create].
 
 >
 > TODO: Change name in the API of `"hash_id"` to `"test_id"`
@@ -1113,8 +1112,8 @@ An object with the property:
 
 #### `"result"`
 
-The `"params"` object sent to [`start_domain_test`][start_domain_test] or
-[`add_batch_job`][add_batch_job] when the *test* was started.
+The `"params"` object sent to [`job_create`][API job_create] or
+[`batch_create`][API batch_create] when the *test* was started.
 
 
 #### `"error"`
@@ -1161,7 +1160,6 @@ Example response:
       {
         "id": "32dd4bc0582b6bf9",
         "undelegated": false,
-        "creation_time": "2016-11-14 08:46:41.532047",
         "created_at": "2016-11-14T08:46:41Z",
         "overall_result": "error",
       },
@@ -1180,7 +1178,7 @@ Example response:
 ### Undelegated and delegated
 
 A test is considered to be `"delegated"` below if the test was started, by
-[`start_domain_test`][start_domain_test] or [`add_batch_job`][add_batch_job]
+[`job_create`][API job_create] or [`batch_create`][API batch_create]
 without specifying neither `"nameserver"` nor `"ds_info"`. Else it is considered to
 be `"undelegated"`.
 
@@ -1226,10 +1224,10 @@ An object with the following properties:
 
 ### API method: `user_create`
 
-In order to use the [`add_batch_job`][add_batch_job] method a
+In order to use the [`batch_create`][API batch_create] method a
 [*username*][Username] and its [*api key*][Api key] must be added by this method.
 
-This method is not available if [`RPCAPI.enable_add_api_user`][RPCAPI.enable_add_api_user]
+This method is not available if [`RPCAPI.enable_user_create`][RPCAPI.enable_user_create]
 is disabled (disabled by default). This method is not available unless the connection to
 RPCAPI is over localhost (*administrative* method).
 
@@ -1342,7 +1340,7 @@ Trying to add a user over non-localhost:
     "data": {
       "remote_ip": "10.0.0.1"
     },
-    "message": "Call to \"add_api_user\" method not permitted from a remote IP"
+    "message": "Call to \"user_create\" method not permitted from a remote IP"
   }
 }
 ```
@@ -1352,7 +1350,7 @@ Trying to add a user when the method is disabled:
 {
   "error": {
     "code": -32601,
-    "message": "Procedure 'add_api_user' not found"
+    "message": "Procedure 'user_create' not found"
   }
 }
 ```
@@ -1362,11 +1360,11 @@ Trying to add a user when the method is disabled:
 Add a new *batch test* composed by a set of [*domain name*][Domain name] and a *params* object.
 All the domains will be tested using identical parameters.
 
-This method is not available if [`RPCAPI.enable_add_batch_job`][RPCAPI.enable_add_batch_job]
+This method is not available if [`RPCAPI.enable_batch_create`][RPCAPI.enable_batch_create]
 is disabled (enabled by default).
 
 A [*username*][Username] and its [*api key*][Api key] can be added with the
-[`add_api_user`][add_api_user] method. A [*username*][Username] can only have
+[`user_create`][API user_create] method. A [*username*][Username] can only have
 one un-finished *batch* at a time.
 
 *Tests* enqueud using this method are assigned a [*priority*][Priority] of 5.
@@ -1496,7 +1494,7 @@ Trying to add a batch when the method has been disabled.
 ```
 {
   "error": {
-    "message": "Procedure 'add_batch_job' not found",
+    "message": "Procedure 'batch_create' not found",
     "code": -32601
   }
 }
@@ -1584,108 +1582,112 @@ If the `batch_id` is undefined the following error is returned:
 ### API method: `version_info`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`system_versions`][system_versions].
+Replaced by [`system_versions`][API system_versions].
 
 
 ### API method: `profile_names`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`conf_profiles`][conf_profiles].
+Replaced by [`conf_profiles`][API conf_profiles].
 
 
 ### API method: `get_language_tags`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`conf_languages`][conf_languages].
+Replaced by [`conf_languages`][API conf_languages].
 
 ### API method: `get_host_by_name`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`lookup_address_records`][lookup_address_records].
+Replaced by [`lookup_address_records`][API lookup_address_records].
 
 
 ### API method: `get_data_from_parent_zone`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`lookup_delegation_data`][lookup_delegation_data].
+Replaced by [`lookup_delegation_data`][API lookup_delegation_data].
 
 
 ### API method: `start_domain_test`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_create`][job_create].
+Replaced by [`job_create`][API job_create].
 
 
 ### API method: `test_progress`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_status`][job_status].
+Replaced by [`job_status`][API job_status].
 
 
 ### API method: `get_test_results`
 
 **Deprecated** (planned removal: v2024.1).
+Replaced by [`job_results`][API job_results].
 
 
 ### API method: `get_test_history`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`domain_history`][domain_history].
+Replaced by [`domain_history`][API domain_history].
 
 
 ### API method: `add_api_user`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`user_create`][user_create].
+Replaced by [`user_create`][API user_create].
 
 
 ### API method: `add_batch_job`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`batch_create`][batch_create].
+Replaced by [`batch_create`][API batch_create].
 
 
 ### API method: `get_batch_job_result`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`batch_status`][batch_status].
+Replaced by [`batch_status`][API batch_status].
 
 
 ### API method: `get_test_params`
 
 **Deprecated** (planned removal: v2024.1).
-Same as [`job_params`][job_params].
+Replaced by [`job_params`][API job_params].
 
 
-[add_api_user]:                       #api-method-add_api_user
-[add_batch_job]:                      #api-method-add_batch_job
-[API v10.0.0]:                        https://github.com/zonemaster/zonemaster-backend/blob/v10.0.0/docs/API.md
+[API add_api_user]:                   #api-method-add_api_user
+[API add_batch_job]:                  #api-method-add_batch_job
+[API batch_create]:                   #api-method-batch_create
+[API batch_status]:                   #api-method-batch_status
+[API conf_languages]:                 #api-method-conf_languages
+[API conf_profiles]:                  #api-method-conf_profiles
+[API domain_history]:                 #api-method-domain_history
+[API job_create]:                     #api-method-job_create
+[API job_params]:                     #api-method-job_params
+[API job_results]:                    #api-method-job_results
+[API job_status]:                     #api-method-job_status
 [API key]:                            #api-key
+[API lookup_address_records]:         #api-method-lookup_address_records
+[API lookup_delegation_data]:         #api-method-lookup_delegation_data
+[API start_domain_test]:              #api-method-start_domain_test
+[API system_versions]:                #api-method-system_versions
+[API user_create]:                    #api-method-user_create
+[API v10.0.0]:                        https://github.com/zonemaster/zonemaster-backend/blob/v10.0.0/docs/API.md
 [Batch id]:                           #batch-id
-[batch_create]:                       #api-method-batch_create
-[batch_status]:                       #api-method-batch_status
 [Client id]:                          #client-id
 [Client version]:                     #client-version
-[conf_languages]:                     #api-method-conf_languages
-[conf_profiles]:                      #api-method-conf_profiles
 [Delegation Signer]:                  https://datatracker.ietf.org/doc/html/rfc4034#section-5
 [Domain name]:                        #domain-name
-[domain_history]:                     #api-method-domain_history
 [Dot-decimal notation]:               https://en.wikipedia.org/wiki/Dot-decimal_notation
 [DS info]:                            #ds-info
 [IP address]:                         #ip-address
 [ISO 3166-1 alpha-2]:                 https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 [ISO 639-1]:                          https://en.wikipedia.org/wiki/ISO_639-1
-[job_create]:                         #api-method-job_create
-[job_params]:                         #api-method-job_params
-[job_results]:                        #api-method-job_results
-[job_status]:                         #api-method-job_status
 [JSON Pointer]:                       https://datatracker.ietf.org/doc/html/rfc6901
 [JSON-RPC 2.0]:                       https://www.jsonrpc.org/specification
 [Language tag]:                       #language-tag
 [LANGUAGE.locale]:                    Configuration.md#locale
-[lookup_address_records]:             #api-method-lookup_address_records
-[lookup_delegation_data]:             #api-method-lookup_delegation_data
 [Name server]:                        #name-server
 [net.ipv4]:                           https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv4
 [net.ipv6]:                           https://metacpan.org/pod/Zonemaster::Engine::Profile#net.ipv6
@@ -1699,16 +1701,15 @@ Same as [`job_params`][job_params].
 [RFC 5952]:                           https://datatracker.ietf.org/doc/html/rfc5952
 [RPCAPI.enable_add_api_user]:         Configuration.md#enable_add_api_user
 [RPCAPI.enable_add_batch_job]:        Configuration.md#enable_add_batch_job
+[RPCAPI.enable_batch_create]:         Configuration.md#enable_batch_create
+[RPCAPI.enable_user_create]:          Configuration.md#enable_user_create
 [Severity Level Definitions]:         https://github.com/zonemaster/zonemaster/blob/master/docs/specifications/tests/SeverityLevelDefinitions.md
 [Severity level]:                     #severity-level
-[start_domain_test]:                  #api-method-start_domain_test
-[system_versions]:                    #api-method-system_versions
 [Test Cases]:                         https://github.com/zonemaster/zonemaster/tree/master/docs/specifications/tests#list-of-defined-test-cases
 [Test Case Identifiers]:              https://github.com/zonemaster/zonemaster/blob/master/docs/internal-documentation/templates/specifications/tests/TestCaseIdentifierSpecification.md
 [Test id]:                            #test-id
 [Test result]:                        #test-result
 [Timestamp]:                          #timestamp
-[user_create]:                        #api-method-user_create
 [Username]:                           #username
 [Validation error data]:              #validation-error-data
 [ZONEMASTER.age_reuse_previous_test]: Configuration.md#age_reuse_previous_test

@@ -1,4 +1,8 @@
 #!perl
+
+# This file is not included in the distribution package and not run
+# at installation with cpanm().
+
 use v5.14.2;
 use strict;
 use warnings;

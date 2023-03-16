@@ -12,7 +12,6 @@ use HTML::Entities;
 use JSON::PP;
 use JSON::Validator::Joi;
 use Log::Any qw($log);
-use String::ShellQuote;
 use Mojo::JSON::Pointer;
 use Scalar::Util qw(blessed);
 use JSON::Validator::Schema::Draft7;

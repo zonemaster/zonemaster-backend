@@ -15,6 +15,7 @@ my %patch = (
 );
 
 my $db_engine = $config->DB_engine;
+print "engine: $db_engine\n";
 
 if ( $db_engine =~ /^(MySQL|PostgreSQL|SQLite)$/ ) {
     $patch{ lc $db_engine }();
@@ -28,36 +29,48 @@ sub _update_data {
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
-    my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results', undef );
-    $sth1->execute;
-    while ( my $row = $sth1->fetchrow_arrayref ) {
-        my ( $hash_id, $results ) = @$row;
+    my ( $row_total ) = $dbh->selectrow_array( 'SELECT count(*) FROM test_results' );
+    print "count: $row_total\n";
 
-        next unless $results;
+    # depending on the resources available to select all data in database
+    # update $row_count to your needs
+    my $row_count = 50000;
+    my $row_done = 0;
+    while ( $row_done < $row_total ) {
+        print "row_done/row_total: $row_done / $row_total\n";
+        my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results ORDER BY id ASC LIMIT ?,?' );
+        $sth1->execute( $row_done, $row_count );
+        while ( my $row = $sth1->fetchrow_arrayref ) {
+            my ( $hash_id, $results ) = @$row;
 
-        my @records;
-        my $entries = $json->decode( $results );
+            next unless $results;
 
-        foreach my $m ( @$entries ) {
-            my $r = [
-                $hash_id,
-                $m->{level},
-                $m->{module},
-                $m->{testcase} // '',
-                $m->{tag},
-                $m->{timestamp},
-                $json->encode( $m->{args} // {} ),
-            ];
+            my @records;
+            my $entries = $json->decode( $results );
 
-            push @records, $r;
+            foreach my $m ( @$entries ) {
+                my $r = [
+                    $hash_id,
+                    $m->{level},
+                    $m->{module},
+                    $m->{testcase} // '',
+                    $m->{tag},
+                    $m->{timestamp},
+                    $json->encode( $m->{args} // {} ),
+                ];
+
+                push @records, $r;
+            }
+
+            my $query_values = join ", ", ("(?, ?, ?, ?, ?, ?, ?)") x @records;
+            my $query = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES $query_values";
+            my $sth = $dbh->prepare( $query );
+            $sth = $sth->execute( map { @$_ } @records );
+
+            $dbh->do( "UPDATE test_results SET results = NULL WHERE hash_id = ?", undef, $hash_id );
         }
 
-        my $query_values = join ", ", ("(?, ?, ?, ?, ?, ?, ?)") x @records;
-        my $query = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES $query_values";
-        my $sth = $dbh->prepare( $query );
-        $sth = $sth->execute( map { @$_ } @records );
-
-        $dbh->do( "UPDATE test_results SET results = NULL WHERE hash_id = ?", undef, $hash_id );
+        $row_done += $row_count;
     }
 }
 

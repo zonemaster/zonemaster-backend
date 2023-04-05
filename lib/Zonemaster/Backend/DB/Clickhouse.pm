@@ -154,7 +154,6 @@ sub create_schema {
     ####################################################################
     # BATCH JOBS
     ####################################################################
-    # TODO: manually populate id field for batch_jobs
     $dbh->do( q[
         CREATE TABLE IF NOT EXISTS batch_jobs (
             id UInt32,

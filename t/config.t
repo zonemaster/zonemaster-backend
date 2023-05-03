@@ -184,7 +184,7 @@ subtest 'Everything but NoWarnings' => sub {
             [LANGUAGE]
             locale =
         };
-        my $config = Zonemaster::Backend::Config->parse( $text );
+        Zonemaster::Backend::Config->parse( $text );
     }
     qr/Use of empty LANGUAGE.locale property is not permitted/, 'die: Invalid empty locale tag';
 

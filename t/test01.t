@@ -118,7 +118,11 @@ subtest 'get and run test' => sub {
 subtest 'API calls' => sub {
 
     subtest 'job_results' => sub {
-        my $res = $rpcapi->job_results( { id => $hash_id, language => 'en_US' } );
+        local $@ = undef;
+        my $res = eval { $rpcapi->job_results( { id => $hash_id, language => 'en_US' } ) };
+        if ( $@ ) {
+            fail 'Crashed while fetching job results: ' . Dumper( $@ );
+        }
         ok( ! defined $res->{id}, 'Do not expose primary key' );
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );

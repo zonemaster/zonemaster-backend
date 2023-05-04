@@ -357,7 +357,7 @@ sub job_status {
 }
 
 # Deprecated
-$json_schemas{test_progress} = $json_schemas{job_create};
+$json_schemas{test_progress} = $json_schemas{job_status};
 sub test_progress {
     my $result = job_status( @_ );
     return $result->{progress};

@@ -84,7 +84,7 @@ Readonly my $DIGEST_RE                  => qr/^[a-f0-9]{40}$|^[a-f0-9]{64}$|^[a-
 Readonly my $ENGINE_TYPE_RE             => qr/^(?:mysql|postgresql|sqlite)$/i;
 Readonly my $IPADDR_RE                  => qr/^$|$IPV4_RE|$IPV6_RE/;
 Readonly my $JSONRPC_METHOD_RE          => qr/^[a-z0-9_-]*$/i;
-Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}(_[A-Z]{2})?$/;
+Readonly my $LANGUAGE_RE                => qr/^[a-z]{2}$/;
 Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9_./-]{1,253}[.]?$}i;
 Readonly my $LDH_DOMAIN_RE2             => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
 Readonly my $LOCALE_TAG_RE              => qr/^[a-z]{2}_[A-Z]{2}$/;
@@ -334,20 +334,13 @@ sub check_language_tag {
     if ( $language !~ $LANGUAGE_RE ) {
         return N__ 'Invalid language tag format';
     }
+    elsif ( !exists $locales{$language} ) {
+        return N__ "Unkown language string";
+    }
+    elsif ( scalar keys %{ $locales{$language} } > 1 ) {
+        return N__ "Language string not unique";
+    }
 
-    if ( length $language == 2 ) {
-        if ( !exists $locales{$language} ) {
-            return N__ "Unkown language string";
-        }
-        elsif ( scalar keys %{ $locales{$language} } > 1 ) {
-            return N__ "Language string not unique";
-        }
-    }
-    else {
-        if ( !exists $locales{substr $language, 0, 2}{$language} ) {
-            return N__ "Unkown language string";
-        }
-    }
     return undef;
 }
 

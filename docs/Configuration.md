@@ -222,13 +222,11 @@ The LANGUAGE section has one key, `locale`.
 
 ### locale
 
-A string matching the following descriptions:
-* A space separated list of one or more `locale tags` where each tag matches the
-  regular expression `/^[a-z]{2}_[A-Z]{2}$/`.
-
+A string representing a space-separated list of one or more `locale tags`.
+Each tag matches the regular expression `/^[a-z]{2}_[A-Z]{2}$/`.
 It is an error to repeat the same `locale tag`.
 
-If the `locale` key is absent, the `locale tag` value "en_US" is set by default.
+Default value: `en_US`.
 
 The use of two or more `locale tags` with the same language code is
 **deprecated** and is planned to be illegal from version v2023.1.

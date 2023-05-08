@@ -691,13 +691,8 @@ sub _get_locale {
         return undef;
     }
 
-    if ( length $language == 2 ) {
-        my %locales = $self->{config}->LANGUAGE_locale;
-        ( $locale ) = keys %{ $locales{$language} };
-    }
-    else {
-        $locale = $language;
-    }
+    my %locales = $self->{config}->LANGUAGE_locale;
+    ( $locale ) = keys %{ $locales{$language} };
 
     if (defined $locale) {
         $locale .= '.UTF-8';

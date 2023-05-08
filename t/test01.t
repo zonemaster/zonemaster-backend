@@ -119,7 +119,7 @@ subtest 'API calls' => sub {
 
     subtest 'job_results' => sub {
         local $@ = undef;
-        my $res = eval { $rpcapi->job_results( { id => $hash_id, language => 'en_US' } ) };
+        my $res = eval { $rpcapi->job_results( { id => $hash_id, language => 'en' } ) };
         if ( $@ ) {
             fail 'Crashed while fetching job results: ' . Dumper( $@ );
         }
@@ -221,7 +221,7 @@ subtest 'second test has IPv6 disabled' => sub {
     is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
     is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
-    $res = $rpcapi->job_results( { id => $hash_id, language => 'en_US' } );
+    $res = $rpcapi->job_results( { id => $hash_id, language => 'en' } );
     my @msgs = map { $_->{message} } @{ $res->{results} };
     ok( grep( /IPv6 is disabled/, @msgs ), 'Results contain an "IPv6 is disabled" message' );
 };

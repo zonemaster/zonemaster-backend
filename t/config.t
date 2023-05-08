@@ -120,14 +120,11 @@ subtest 'Everything but NoWarnings' => sub {
             engine = SQLite
             [SQLITE]
             database_file = /var/db/zonemaster.sqlite
-            [LANGUAGE]
-            locale =
             [RPCAPI]
             enable_add_api_user = yes
             enable_add_batch_job = no
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*LANGUAGE\.locale/, 'deprecated empty LANGUAGE.locale' );
         $log->contains_ok( qr/deprecated.*RPCAPI\.enable_add_api_user/, 'deprecated: RPCAPI.enable_add_api_user' );
         $log->contains_ok( qr/deprecated.*RPCAPI\.enable_add_batch_job/, 'deprecated: RPCAPI.enable_add_batch_job' );
 
@@ -176,6 +173,20 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->MYSQL_host, 'localhost', 'set: MYSQL.host';
         is $config->MYSQL_port, 3333,        'set: MYSQL.port';
     };
+
+    throws_ok {
+        $log->clear();
+        my $text = q{
+            [DB]
+            engine = SQLite
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+            [LANGUAGE]
+            locale =
+        };
+        my $config = Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Use of empty LANGUAGE.locale property is not permitted/, 'die: Invalid empty locale tag';
 
     throws_ok {
         my $text = '{"this":"is","not":"a","valid":"ini","file":"!"}';

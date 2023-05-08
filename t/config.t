@@ -73,7 +73,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->POSTGRESQL_password,  'postgresql_password',       'set: POSTGRESQL.password';
         is $config->POSTGRESQL_database,  'postgresql_database',       'set: POSTGRESQL.database';
         is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'set: SQLITE.database_file';
-        eq_or_diff { $config->LANGUAGE_locale }, { sv => { sv_FI => 1 } }, 'set: LANGUAGE.locale';
+        eq_or_diff { $config->LANGUAGE_locale }, { sv => 'sv_FI' }, 'set: LANGUAGE.locale';
         eq_or_diff { $config->PUBLIC_PROFILES }, {    #
             default => '/path/to/default.profile',
             two     => '/path/to/two.profile'
@@ -103,7 +103,7 @@ subtest 'Everything but NoWarnings' => sub {
         cmp_ok abs( $config->DB_polling_interval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
         is $config->MYSQL_port,      3306, 'default: MYSQL.port';
         is $config->POSTGRESQL_port, 5432, 'default: POSTGRESQL.port';
-        eq_or_diff { $config->LANGUAGE_locale }, { en => { en_US => 1 } }, 'default: LANGUAGE.locale';
+        eq_or_diff { $config->LANGUAGE_locale }, { en => 'en_US' }, 'default: LANGUAGE.locale';
         eq_or_diff { $config->PUBLIC_PROFILES }, { default => undef }, 'default: PUBLIC_PROFILES';
         eq_or_diff { $config->PRIVATE_PROFILES }, {}, 'default: PRIVATE_PROFILES';
         is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
@@ -684,11 +684,11 @@ subtest 'Everything but NoWarnings' => sub {
             database_file = /var/db/zonemaster.sqlite
 
             [LANGUAGE]
-            locale = en_US en_US
+            locale = en_GB en_US
         };
         Zonemaster::Backend::Config->parse( $text );
     }
-    qr/LANGUAGE\.locale.*en_US/, 'die: Repeated locale_tag in LANGUAGE.locale';
+    qr/LANGUAGE\.locale.*en/, 'die: Repeated language code in LANGUAGE.locale';
 
     lives_and {
         my $text = q{

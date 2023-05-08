@@ -229,12 +229,8 @@ A string matching `/^[a-z]{2}$/`.
 
 The set of valid *language tags* is further constrained by the
 [`LANGUAGE.locale`][LANGUAGE.locale] property.
-A *language tag* needs to match the first two characters of exactly one *locale
-tag* in [`LANGUAGE.locale`][LANGUAGE.locale].
-(So that it is unambiguous which *locale tag* is matched.)
-
-E.g. if [`LANGUAGE.locale`][LANGUAGE.locale] is "en_US en_UK sv_SE", the only
-valid *language tag* is "sv".
+A *language tag* needs to match the language code of a *locale tag* in
+[`LANGUAGE.locale`][LANGUAGE.locale].
 
 #### Design
 

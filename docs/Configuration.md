@@ -223,19 +223,17 @@ The LANGUAGE section has one key, `locale`.
 ### locale
 
 A string representing a space-separated list of one or more `locale tags`.
-Each tag matches the regular expression `/^[a-z]{2}_[A-Z]{2}$/`.
-It is an error to repeat the same `locale tag`.
+Each tag`consists of a two-lowercase-letter language code, an underscore
+character, and a two-uppercase-letter country code (i.e. it matches the regular
+expression `/^[a-z]{2}_[A-Z]{2}$/`).
+Each `locale tag` must have a unique language code.
 
 Default value: `en_US`.
 
-The use of two or more `locale tags` with the same language code is
-**deprecated** and is planned to be illegal from version v2023.1.
-
 #### Design
 
-The two first characters of a `locale tag` are intended to be an
-[ISO 639-1] two-character language code and the two last characters
-are intended to be an [ISO 3166-1 alpha-2] two-character country code.
+The language code of a `locale tag` is intended to be an [ISO 639-1] code.
+The country code is intended to be an [ISO 3166-1 alpha-2] code.
 A `locale tag` is a locale setting for the available translation
 of messages without ".UTF-8", which is implied.
 

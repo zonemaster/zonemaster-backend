@@ -157,13 +157,7 @@ sub conf_languages {
     eval {
         my %locales = $self->{config}->LANGUAGE_locale;
 
-        for my $lang ( sort keys %locales ) {
-            my @locale_tags = sort keys %{ $locales{$lang} };
-            if ( scalar @locale_tags == 1 ) {
-                push @lang_tags, $lang;
-            }
-            push @lang_tags, @locale_tags;
-        }
+        @lang_tags = sort keys %locales;
     };
     if ( $@ ) {
         handle_exception( $@ );
@@ -685,20 +679,18 @@ sub _get_locale {
     my @error;
 
     my $language = $params->{language};
-    my $locale;
-
     if ( !defined $language ) {
         return undef;
     }
 
     my %locales = $self->{config}->LANGUAGE_locale;
-    ( $locale ) = keys %{ $locales{$language} };
 
-    if (defined $locale) {
-        $locale .= '.UTF-8';
+    my $locale = $locales{$language};
+    if ( !defined $locale ) {
+        return undef;
     }
 
-    return $locale;
+    return $locale . '.UTF-8';
 }
 
 sub _set_error_message_locale {

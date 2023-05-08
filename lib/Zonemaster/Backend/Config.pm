@@ -530,21 +530,14 @@ Returns a string.
 
 Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale>.
 
-Returns a mapping from two-letter locale tag prefixes to sets of full locale
-tags.
-This is represented by a hash of hashrefs where all second level values are
-C<1>.
+Returns a mapping from two-letter locale tag prefixes to full locale tags.
+This is represented by a hash mapping prefix to full locale tag.
 
 E.g.:
 
     (
-        en => {
-            en_GB => 1,
-            en_US => 1,
-        },
-        sv => {
-            sv_SE => 1,
-        },
+        en => "en_US",
+        sv => "sv_SE",
     )
 
 
@@ -845,11 +838,11 @@ sub _set_locales {
 
         my $lang_code = $locale_tag =~ s/_..$//r;
 
-        if ( exists $locales{$lang_code}{$locale_tag} ) {
-            die "Repeated locale tags in LANGUAGE.locale: $locale_tag\n";
+        if ( exists $locales{$lang_code} ) {
+            die "Repeated language code in LANGUAGE.locale: $lang_code\n";
         }
 
-        $locales{$lang_code}{$locale_tag} = 1;
+        $locales{$lang_code} = $locale_tag;
     }
 
     $self->{_LANGUAGE_locale} = \%locales;

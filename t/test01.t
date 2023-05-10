@@ -218,8 +218,8 @@ subtest 'second test has IPv6 disabled' => sub {
     is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
     $res = $rpcapi->job_results( { id => $hash_id, language => 'en_US' } );
-    my @msg_basic = map { $_->{message} if $_->{module} eq 'BASIC' } @{ $res->{results} };
-    ok( grep( /IPv6 is disabled/, @msg_basic ), 'Results contain an "IPv6 is disabled" message' );
+    my @msgs = map { $_->{message} } @{ $res->{results} };
+    ok( grep( /IPv6 is disabled/, @msgs ), 'Results contain an "IPv6 is disabled" message' );
 };
 
 my $domain_history;

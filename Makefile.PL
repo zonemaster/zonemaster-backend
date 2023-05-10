@@ -32,7 +32,6 @@ requires
   'Role::Tiny'                  => 1.001003,
   'Router::Simple::Declare'     => 0,
   'Starman'                     => 0,
-  'String::ShellQuote'          => 0,
   'Try::Tiny'                   => 0.12,
   'Zonemaster::Engine'          => 4.006002,
   'Zonemaster::LDNS'            => 3.001000,

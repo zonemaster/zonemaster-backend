@@ -320,7 +320,7 @@ Validates a L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/
 
 =item %locales
 
-Hash of accepted locales, using the same structure than the hash returned by L<PUBLIC_PROFILES|Zonemaster::Bakend::Config/PUBLIC_PROFILES>.
+A hash of configured locales, as returned by L<Zonemaster::Backend::Config::LANGUAGE_locale>.
 
 =back
 
@@ -336,9 +336,6 @@ sub check_language_tag {
     }
     elsif ( !exists $locales{$language} ) {
         return N__ "Unkown language string";
-    }
-    elsif ( scalar keys %{ $locales{$language} } > 1 ) {
-        return N__ "Language string not unique";
     }
 
     return undef;
@@ -367,7 +364,7 @@ Validates a L<profile name|https://github.com/zonemaster/zonemaster-backend/blob
 
 =item %profiles
 
-Hash of accepted profiles, using the same structure than the hash returned by L<LANGUAGE_locale|Zonemaster::Bakend::Config/LANGUAGE_locale>.
+A hash of configured profiles, as returned by L<Zonemaster::Backend::Config::PUBLIC_PROFILES>.
 
 =back
 

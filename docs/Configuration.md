@@ -240,9 +240,7 @@ of messages without ".UTF-8", which is implied.
 #### Usage
 
 Removing a language from the configuration file just blocks that
-language from being allowed. If there are more than one `locale tag`
-(with different country codes) for the same language, then
-all those must be removed to block that language.
+language from being allowed.
 
 English is the Zonemaster default language, but it can be blocked
 from being allowed by RPC-API by including some `locale tag` in the

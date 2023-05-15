@@ -234,7 +234,7 @@ A *language tag* needs to match the language code of a *locale tag* in
 
 #### Design
 
-The *language tag* values are intended to be [ISO 639-1] two-characters language
+The *language tag* values are intended to be [ISO 639-1] two-character language
 codes.
 
 #### Out-of-the box support
@@ -512,9 +512,6 @@ An oject with the following property:
 ### API method: `conf_languages`
 
 Returns the set of valid [*language tags*][Language tag].
-
-> Note: If there are two [*locale tags*][LANGUAGE.locale] in [LANGUAGE.locale]
-> that would give the same *[language tag]* then is excluded.
 
 Example request:
 ```json

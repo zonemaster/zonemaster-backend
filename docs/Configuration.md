@@ -223,7 +223,7 @@ The LANGUAGE section has one key, `locale`.
 ### locale
 
 A string representing a space-separated list of one or more `locale tags`.
-Each tag`consists of a two-lowercase-letter language code, an underscore
+Each tag consists of a two-lowercase-letter language code, an underscore
 character, and a two-uppercase-letter country code (i.e. it matches the regular
 expression `/^[a-z]{2}_[A-Z]{2}$/`).
 Each `locale tag` must have a unique language code.

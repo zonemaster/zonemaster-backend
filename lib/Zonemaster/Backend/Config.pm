@@ -219,7 +219,7 @@ sub parse {
     $obj->_set_RPCAPI_enable_batch_create( 'yes' );
     $obj->_set_RPCAPI_enable_add_api_user( 'no' ); # deprecated
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' ); # deprecated
-    $obj->_add_LANGUAGE_locale( 'en_US' );
+    $obj->_set_locales( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
 
@@ -236,11 +236,6 @@ sub parse {
     # Check deprecated properties and assign fallback values
     my @warnings;
 
-    if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
-        if ( $value eq "" ) {
-            push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
-        }
-    }
     if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_api_user' ) ) ) {
         push @warnings, "Use of deprecated config property RPCAPI.enable_add_api_user. Use RPCAPI.enable_user_create instead.";
     }
@@ -334,12 +329,7 @@ sub parse {
         }
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
-        if ( $value ne "" ) {
-            $obj->_reset_LANGUAGE_locale();
-            for my $locale_tag ( split / +/, $value ) {
-                $obj->_add_LANGUAGE_locale( $locale_tag );
-            }
-        }
+        $obj->_set_locales( $value );
     }
 
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
@@ -540,21 +530,14 @@ Returns a string.
 
 Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale>.
 
-Returns a mapping from two-letter locale tag prefixes to sets of full locale
-tags.
-This is represented by a hash of hashrefs where all second level values are
-C<1>.
+Returns a mapping from two-letter locale tag prefixes to full locale tags.
+This is represented by a hash mapping prefix to full locale tag.
 
 E.g.:
 
     (
-        en => {
-            en_GB => 1,
-            en_US => 1,
-        },
-        sv => {
-            sv_SE => 1,
-        },
+        en => "en_US",
+        sv => "sv_SE",
     )
 
 
@@ -838,27 +821,32 @@ sub new_PM {
     return $pm;
 }
 
-sub _add_LANGUAGE_locale {
-    my ( $self, $locale_tag ) = @_;
+sub _set_locales {
+    my ( $self, $value ) = @_;
 
-    $locale_tag = untaint_locale_tag( $locale_tag )    #
-      // die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+    my @locale_tags = split / +/, $value;
 
-    my $lang_code = $locale_tag =~ s/_..$//r;
-
-    if ( exists $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} ) {
-        die "Repeated locale tags in LANGUAGE.locale: $locale_tag\n";
+    if ( !@locale_tags ) {
+        die "config: Use of empty LANGUAGE.locale property is not permitted. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
     }
 
-    $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} = 1;
+    my %locales;
 
-    return;
-}
+    for my $locale_tag ( @locale_tags ) {
+        $locale_tag = untaint_locale_tag( $locale_tag )    #
+          // die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
 
-sub _reset_LANGUAGE_locale {
-    my ( $self ) = @_;
+        my $lang_code = $locale_tag =~ s/_..$//r;
 
-    delete $self->{_LANGUAGE_locale};
+        if ( exists $locales{$lang_code} ) {
+            die "Repeated language code in LANGUAGE.locale: $lang_code\n";
+        }
+
+        $locales{$lang_code} = $locale_tag;
+    }
+
+    $self->{_LANGUAGE_locale} = \%locales;
+
     return;
 }
 

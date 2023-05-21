@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-21 22:15+0000\n"
-"PO-Revision-Date: 2023-01-21 22:17+0000\n"
+"POT-Creation-Date: 2023-05-21 21:29+0000\n"
+"PO-Revision-Date: 2023-05-21 21:29+0000\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
 "Language: sv\n"
@@ -24,9 +24,23 @@ msgstr ""
 "Varning: Zonemaster::LDNS är inte kompilerad med IDNA-stöd, så enbart ASCII-"
 "namn kan hanteras."
 
+#. BACKEND_TEST_AGENT:TEST_DIED
+msgid "An error occured and Zonemaster could not start or finish the test."
+msgstr ""
+"Ett fel har inträffat så att Zonemaster inte kunde starta eller slutföra "
+"testet."
+
 #. BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
-msgid "Zonemaster was unable to start or finish the test."
-msgstr "Zonemaster kunde inte starta eller slutföra testen."
+#, perl-brace-format
+msgid ""
+"The test took too long to run (the current limit is {max_execution_time} "
+"seconds). Maybe there are too many name servers or the name servers are "
+"either unreachable or not responsive enough."
+msgstr ""
+"Det tog för lång tid att köra testet (övre tidsgränsen är f.n. "
+"{max_execution_time} sekunder). Kanske har domänen för många namnservrar "
+"eller så är namnservrarna oåtkomliga eller så tar namnservrarna för lång på "
+"att svara."
 
 msgid "Invalid digest format"
 msgstr "Ogiltigt format på digest-data"
@@ -67,9 +81,6 @@ msgstr "Ogiltigt format på språkkoden"
 
 msgid "Unkown language string"
 msgstr "Okänd språksträng"
-
-msgid "Language string not unique"
-msgstr "Språksträngen är inte unik"
 
 msgid "Invalid IP address"
 msgstr "Ogiltig IP-adress"

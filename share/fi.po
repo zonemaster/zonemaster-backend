@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-08 17:29+0000\n"
-"PO-Revision-Date: 2023-02-08 17:28+0000\n"
+"POT-Creation-Date: 2023-05-23 14:04+0000\n"
+"PO-Revision-Date: 2023-05-23 14:03+0000\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
 "Language: fi\n"
@@ -25,9 +25,21 @@ msgstr ""
 "Varoitus: Zonemaster::LDNS ei ole käännetty IDN tuella, joten se ei pysty "
 "käsittelemään ei-ASCII-nimiä oikein."
 
+#. BACKEND_TEST_AGENT:TEST_DIED
+msgid "An error occured and Zonemaster could not start or finish the test."
+msgstr ""
+"Tapahtui virhe, eikä Zonemaster voinut aloittaa tai suorittaa testiä loppuun."
+
 #. BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
-msgid "Zonemaster was unable to start or finish the test."
-msgstr "Zonemaster ei pystynyt aloittamaan tai lopettamaan testiä."
+#, perl-brace-format
+msgid ""
+"The test took too long to run (the current limit is {max_execution_time} "
+"seconds). Maybe there are too many name servers or the name servers are "
+"either unreachable or not responsive enough."
+msgstr ""
+"Testin suorittaminen kesti liian kauan (nykyinen raja on "
+"{max_execution_time} sekuntia). Ehkä nimipalvelimia on liian monta, "
+"nimipalvelimiin ei saada yhteyttä, tai ne eivät vastaa tarpeeksi nopeasti."
 
 msgid "Invalid digest format"
 msgstr "Virheellinen tiivisteen muoto"
@@ -68,9 +80,6 @@ msgstr "Virheellinen kielitunnisteen muoto"
 
 msgid "Unkown language string"
 msgstr "Tuntematon kielitunniste"
-
-msgid "Language string not unique"
-msgstr "Kielitunniste ei ole yksilöivä"
 
 msgid "Invalid IP address"
 msgstr "Virheellinen IP-osoite"

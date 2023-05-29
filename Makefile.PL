@@ -20,6 +20,7 @@ requires
   'JSON::PP'                        => 0,
   'JSON::RPC'                       => 1.01,
   'JSON::Validator'                 => 4.00,
+  'Locale::TextDomain'              => 1.20,
   'Log::Any'                        => 0,
   'Log::Any::Adapter::Dispatch'     => 0,
   'Log::Dispatch'                   => 0,
@@ -29,21 +30,20 @@ requires
   'Net::IP::XS'                     => 0,
   'Parallel::ForkManager'           => 1.12,
   'Plack::Builder'                  => 0,
+  'Plack::Middleware::ReverseProxy' => 0,
   'Role::Tiny'                      => 1.001003,
   'Router::Simple::Declare'         => 0,
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
   'Zonemaster::Engine'              => 4.006002,
   'Zonemaster::LDNS'                => 3.001000,
-  'Plack::Middleware::ReverseProxy' => 0,
-  'Locale::TextDomain'              => 1.20,
   ;
 
 test_requires 'DBD::SQLite' => 1.4702;
-test_requires 'Test::NoWarnings';
-test_requires 'Test::Exception';
 test_requires 'Test::Differences';
+test_requires 'Test::Exception';
 test_requires 'Time::Local' => 1.26;
+test_requires 'Test::NoWarnings';
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';

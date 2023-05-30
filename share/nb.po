@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-13 14:43+0000\n"
-"PO-Revision-Date: 2023-02-13 14:43+0000\n"
+"POT-Creation-Date: 2023-05-24 09:36+0000\n"
+"PO-Revision-Date: 2023-05-24 09:36+0000\n"
 "Last-Translator: richard.persson@norid.no\n"
 "Language-Team: Zonemaster project\n"
 "Language: nb\n"
@@ -24,9 +24,22 @@ msgstr ""
 "Advarsel: Zonemaster::LDNS er ikke kompilert med IDN-støtte. Kan bare "
 "håndtere ASCII-navn."
 
+#. BACKEND_TEST_AGENT:TEST_DIED
+#, fuzzy
+msgid "An error occured and Zonemaster could not start or finish the test."
+msgstr ""
+"Det oppstod en feil og Zonemaster kunne ikke starte eller fullføre testen."
+
 #. BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
-msgid "Zonemaster was unable to start or finish the test."
-msgstr "Zonemaster kunne ikke starte eller fullføre testen."
+#, perl-brace-format
+msgid ""
+"The test took too long to run (the current limit is {max_execution_time} "
+"seconds). Maybe there are too many name servers or the name servers are "
+"either unreachable or not responsive enough."
+msgstr ""
+"Testen tok for lang tid å kjøre (gjeldende grense er {max_execution_time} "
+"sekunder). Kanskje er det for mange navnetjenere eller navnetjenerne er "
+"enten utilgjengelige eller ikke responsive nok."
 
 msgid "Invalid digest format"
 msgstr "Ugyldig format på digest"
@@ -67,9 +80,6 @@ msgstr "Ugyldig format på språk-tag"
 
 msgid "Unkown language string"
 msgstr "Ukjent språk-tag"
-
-msgid "Language string not unique"
-msgstr "Språk er ikke unik"
 
 msgid "Invalid IP address"
 msgstr "Ugylding IP-adresse"

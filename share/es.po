@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-17 08:43+0000\n"
-"PO-Revision-Date: 2023-02-17 08:41+0000\n"
+"POT-Creation-Date: 2023-05-21 21:33+0000\n"
+"PO-Revision-Date: 2023-05-21 21:32+0000\n"
 "Last-Translator: hsalgado@vulcano.cl\n"
 "Language-Team: Zonemaster project\n"
 "Language: es\n"
@@ -25,9 +25,21 @@ msgstr ""
 "Advertencia: Zonemaster::LDNS no fue compilado con soporte IDN, no se puede "
 "manejar correctamente los nombres no-ASCII."
 
+#. BACKEND_TEST_AGENT:TEST_DIED
+msgid "An error occured and Zonemaster could not start or finish the test."
+msgstr ""
+"Ha ocurrido un error y Zonemaster no pudo comenzar o finalizar la prueba."
+
 #. BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
-msgid "Zonemaster was unable to start or finish the test."
-msgstr "Zonemaster no pudo iniciar o terminar la prueba."
+#, perl-brace-format
+msgid ""
+"The test took too long to run (the current limit is {max_execution_time} "
+"seconds). Maybe there are too many name servers or the name servers are "
+"either unreachable or not responsive enough."
+msgstr ""
+"La prueba tomó demasiado tiempo en terminar (el límite máximo actual es "
+"{max_execution_time} segundos). Quizás hay demasiados servidores de nombres, "
+"o son inalcanzables, o no lo suficientemente rápidos para responder."
 
 msgid "Invalid digest format"
 msgstr "Formato de resumen (digest) inválido"
@@ -68,9 +80,6 @@ msgstr "Formato de descriptor de idioma inválido"
 
 msgid "Unkown language string"
 msgstr "Descriptor de idioma desconocido"
-
-msgid "Language string not unique"
-msgstr "Descriptor de idioma no es único"
 
 msgid "Invalid IP address"
 msgstr "Dirección IP inválida"

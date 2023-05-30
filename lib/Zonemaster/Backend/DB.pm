@@ -698,7 +698,7 @@ Encode the params object into a JSON string. First a projection of some
 parameters is performed then all additional properties are kept.
 Returns an UTF-8  binary string of the union of the given hash and its
 normalization using default values, see
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
+L<https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#params-2>
 
 =cut
 

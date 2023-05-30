@@ -270,7 +270,7 @@ sub formats {
 
 =head2 check_domain(%value)
 
-Validates a L<domain name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#domain-name>.
+Validates a L<domain name|https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#domain-name>.
 
 =cut
 
@@ -314,7 +314,7 @@ sub check_domain {
 
 =head2 check_language_tag($value, %locales)
 
-Validates a L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#language-tag>.
+Validates a L<https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#language-tag>.
 
 =over
 
@@ -343,7 +343,7 @@ sub check_language_tag {
 
 =head2 check_ip($value)
 
-Validates an L<IP address|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#ip-address>.
+Validates an L<IP address|https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#ip-address>.
 
 =cut
 
@@ -358,7 +358,7 @@ sub check_ip {
 
 =head2 check_profile($value, %profiles)
 
-Validates a L<profile name|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#profile-name>.
+Validates a L<profile name|https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#profile-name>.
 
 =over
 

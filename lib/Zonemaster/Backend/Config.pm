@@ -149,7 +149,7 @@ Construct a new Zonemaster::Backend::Config based on a given configuration.
     );
 
 The configuration is interpreted according to the
-L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
+L<configuration format specification|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md>.
 
 Returns a new Zonemaster::Backend::Config instance with its properties set to
 normalized and untainted values according to the given configuration with
@@ -419,7 +419,7 @@ sub check_db {
 
 =head2 DB_engine
 
-Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#engine>.
+Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#engine>.
 
 Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 
@@ -442,28 +442,28 @@ sub _set_DB_engine {
 
 =head2 DB_polling_interval
 
-Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
+Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#polling_interval>.
 
 Returns a number.
 
 
 =head2 MYSQL_database
 
-Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>.
+Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database>.
 
 Returns a string.
 
 
 =head2 MYSQL_host
 
-Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
+Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#host>.
 
 Returns a string.
 
 
 =head2 MYSQL_port
 
-Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port>
+Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#port>
 property from the loaded config.
 
 Returns a number.
@@ -471,35 +471,35 @@ Returns a number.
 
 =head2 MYSQL_password
 
-Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>.
+Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#password>.
 
 Returns a string.
 
 
 =head2 MYSQL_user
 
-Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>.
+Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#user>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_database
 
-Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>.
+Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_host
 
-Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>.
+Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#host-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_port
 
-Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port-1>
+Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#port-1>
 property from the loaded config.
 
 Returns a number.
@@ -507,28 +507,28 @@ Returns a number.
 
 =head2 POSTGRESQL_password
 
-Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
+Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#password-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_user
 
-Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
+Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#user-1>.
 
 Returns a string.
 
 
 =head2 SQLITE_database_file
 
-Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>.
+Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database_file>.
 
 Returns a string.
 
 
 =head2 LANGUAGE_locale
 
-Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale>.
+Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#locale>.
 
 Returns a mapping from two-letter locale tag prefixes to full locale tags.
 This is represented by a hash mapping prefix to full locale tag.
@@ -543,7 +543,7 @@ E.g.:
 
 =head2 PUBLIC_PROFILES
 
-Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#public-profiles-and-private-profiles-sections>.
 
 Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
@@ -553,7 +553,7 @@ C<undef> means that the Zonemaster Engine default profile should be used.
 
 =head2 PRIVATE_PROFILES
 
-Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#public-profiles-and-private-profiles-sections>.
 
 Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
@@ -562,7 +562,7 @@ Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
-Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
+Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#max_zonemaster_execution_time>.
 
 Returns a number.
 
@@ -570,7 +570,7 @@ Returns a number.
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
 
 Get the value of
-L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
+L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#number_of_processes_for_frontend_testing>.
 
 Returns a number.
 
@@ -578,7 +578,7 @@ Returns a number.
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
 
 Get the value of
-L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
+L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#number_of_processes_for_batch_testing>.
 
 Returns a number.
 
@@ -586,7 +586,7 @@ Returns a number.
 =head2 ZONEMASTER_lock_on_queue
 
 Get the value of
-L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
+L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#lock_on_queue>.
 
 Returns a number.
 
@@ -594,7 +594,7 @@ Returns a number.
 =head2 ZONEMASTER_age_reuse_previous_test
 
 Get the value of
-L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
+L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#age_reuse_previous_test>.
 
 Returns a number.
 
@@ -602,7 +602,7 @@ Returns a number.
 =head2 METRICS_statsd_host
 
 Get the value of
-L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_host>.
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#statsd_host>.
 
 Returns a string.
 
@@ -610,7 +610,7 @@ Returns a string.
 =head2 METRICS_statsd_port
 
 Get the value of
-L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_port>.
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#statsd_port>.
 
 Returns a number.
 
@@ -618,7 +618,7 @@ Returns a number.
 =head2 RPCAPI_enable_user_create
 
 Get the value of
-L<RPCAPI.enable_user_create|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_user_create>.
+L<RPCAPI.enable_user_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_user_create>.
 
 Return 0 or 1
 
@@ -626,7 +626,7 @@ Return 0 or 1
 =head2 RPCAPI_enable_batch_create
 
 Get the value of
-L<RPCAPI.enable_batch_create|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_batch_create>.
+L<RPCAPI.enable_batch_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_batch_create>.
 
 Return 0 or 1
 
@@ -635,7 +635,7 @@ Return 0 or 1
 
 Deprecated (planned removal: v2024.1).
 Get the value of
-L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_api_user>.
+L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_api_user>.
 
 Return 0 or 1
 
@@ -644,7 +644,7 @@ Return 0 or 1
 
 Deprecated (planned removal: v2024.1).
 Get the value of
-L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_batch_job>.
+L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_batch_job>.
 
 Return 0 or 1
 

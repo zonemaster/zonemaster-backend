@@ -1,6 +1,7 @@
 [Unit]
 Description=test agent for Zonemaster Backend
 After=network.target mariadb.service postgresql.service
+Wants=mariadb.service postgresql.service
 
 [Service]
 Type=simple

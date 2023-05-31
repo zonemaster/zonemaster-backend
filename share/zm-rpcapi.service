@@ -1,10 +1,12 @@
 [Unit]
 Description=RPC server for Zonemaster Backend
 After=network.target mariadb.service postgresql.service
+Wants=mariadb.service postgresql.service
 
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/starman --listen=127.0.0.1:5000 --preload-app --user=zonemaster --group=zonemaster --pid=/run/zonemaster/zm-rpcapi.pid --error-log=/var/log/zonemaster/zm-rpcapi.log --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
+KillSignal=SIGQUIT
 PIDFile=/run/zonemaster/zm-rpcapi.pid
 
 [Install]

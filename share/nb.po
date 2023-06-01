@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-24 09:36+0000\n"
-"PO-Revision-Date: 2023-05-24 09:36+0000\n"
+"PO-Revision-Date: 2023-06-01 07:51+0200\n"
 "Last-Translator: richard.persson@norid.no\n"
 "Language-Team: Zonemaster project\n"
 "Language: nb\n"
@@ -25,7 +25,6 @@ msgstr ""
 "håndtere ASCII-navn."
 
 #. BACKEND_TEST_AGENT:TEST_DIED
-#, fuzzy
 msgid "An error occured and Zonemaster could not start or finish the test."
 msgstr ""
 "Det oppstod en feil og Zonemaster kunne ikke starte eller fullføre testen."

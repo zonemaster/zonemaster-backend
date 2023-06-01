@@ -729,6 +729,10 @@ sub jsonrpc_validate {
     }
 
     my $method_schema = $json_schemas{$jsonrpc_request->{method}};
+    if (blessed $method_schema) {
+        $method_schema = $method_schema->compile;
+    }
+
     # the JSON schema for the method has a 'required' key
     if ( exists $method_schema->{required} ) {
         if ( not exists $jsonrpc_request->{params} ) {

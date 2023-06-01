@@ -177,13 +177,9 @@ TODO: {
         "Sending an object whose ID is an object is an error";
 }
 
-TODO: {
-    local $TODO = 'See #1105';
-
-    test_validation jsonrpc("job_status"),
-        error_missing_params(),
-        "Calling job_status without parameters is an error";
-}
+test_validation jsonrpc("job_status"),
+    error_missing_params(),
+    "Calling job_status without parameters is an error";
 
 test_validation jsonrpc("job_status", undef, 1),
     error_bad_params(["/" => "Expected object - got null."]),
@@ -209,21 +205,17 @@ TODO: {
         "Passing array as parameter to job_status is an error";
 }
 
-TODO: {
-    local $TODO = 'See #1105';
+test_validation jsonrpc("job_status", {}),
+    error_bad_params(["/test_id" => "Missing property"]),
+    "Passing empty object as parameter to job_status is an error";
 
-    test_validation jsonrpc("job_status", {}),
-        error_bad_params(["/test_id" => "Missing property"]),
-        "Passing empty object as parameter to job_status is an error";
+test_validation jsonrpc("job_status", { test_id => 'this_will_definitely_never_ever_exist' }),
+    error_bad_params(["/test_id" => 'String does not match (?^u:^[0-9a-f]{16}$).']),
+    "Calling job_status with a bad test_id is an error";
 
-    test_validation jsonrpc("job_status", { test_id => 'this_will_definitely_never_ever_exist' }),
-        error_bad_params(["/test_id" => 'String does not match (?^u:^[0-9a-f]{16}$).']),
-        "Calling job_status with a bad test_id is an error";
-
-    test_validation jsonrpc("job_status", { test_id => '0123456789abcdef', data => "something" }),
-        error_bad_params(["/" => "Properties not allowed: data."]),
-        "Calling job_status with unknown parameters is an error";
-}
+test_validation jsonrpc("job_status", { test_id => '0123456789abcdef', data => "something" }),
+    error_bad_params(["/" => "Properties not allowed: data."]),
+    "Calling job_status with unknown parameters is an error";
 
 test_validation jsonrpc("job_status", { test_id => '0123456789abcdef' }),
     no_error,

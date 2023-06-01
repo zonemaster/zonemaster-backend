@@ -677,6 +677,10 @@ sub _get_locale {
     my ( $self, $params ) = @_;
     my @error;
 
+    if ( ref $params ne 'HASH' ) {
+        return undef;
+    }
+
     my $language = $params->{language};
     if ( !defined $language ) {
         return undef;
@@ -715,7 +719,7 @@ sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
-    if (!exists $jsonrpc_request->{id} || @error_rpc) {
+    if ((ref($jsonrpc_request) eq 'HASH' && !exists $jsonrpc_request->{id}) || @error_rpc) {
         $self->_set_error_message_locale;
         return {
             jsonrpc => '2.0',

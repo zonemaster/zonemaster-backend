@@ -129,25 +129,21 @@ test_validation undef,
     error_bad_jsonrpc('/: Expected object - got null.'),
     "Sending undef is an error";
 
-TODO: {
-    todo_skip "These tests trigger crashes", 4;
+test_validation JSON::PP::false,
+    error_bad_jsonrpc('/: Expected object - got boolean.'),
+    "Sending a boolean is an error";
 
-    test_validation JSON::PP::false,
-        error_bad_jsonrpc('/: Expected object - got boolean.'),
-        "Sending a boolean is an error";
+test_validation -1,
+    error_bad_jsonrpc('/: Expected object - got number.'),
+    "Sending a number is an error";
 
-    test_validation -1,
-        error_bad_jsonrpc('/: Expected object - got number.'),
-        "Sending a number is an error";
+test_validation "hello",
+    error_bad_jsonrpc('/: Expected object - got string.'),
+    "Sending a string is an error";
 
-    test_validation "hello",
-        error_bad_jsonrpc('/: Expected object - got string.'),
-        "Sending a string is an error";
-
-    test_validation [qw(a b c)],
-        error_bad_jsonrpc('/: Expected object - got array.'),
-        "Sending an array is an error";
-}
+test_validation [qw(a b c)],
+    error_bad_jsonrpc('/: Expected object - got array.'),
+    "Sending an array is an error";
 
 test_validation {},
     error_bad_jsonrpc('/jsonrpc: Missing property. /method: Missing property.'),
@@ -185,25 +181,21 @@ test_validation jsonrpc("job_status", undef, 1),
     error_bad_params(["/" => "Expected object - got null."]),
     "Passing null as parameter to job_status is an error";
 
-TODO: {
-    todo_skip "These tests trigger crashes", 4;
+test_validation jsonrpc("job_status", JSON::PP::false),
+    error_bad_params(["/" => "Expected object - got boolean."]),
+    "Passing boolean as parameter to job_status is an error";
 
-    test_validation jsonrpc("job_status", JSON::PP::false),
-        error_bad_params(["/" => "Expected object - got boolean."]),
-        "Passing boolean as parameter to job_status is an error";
+test_validation jsonrpc("job_status", 1),
+    error_bad_params(["/" => "Expected object - got number."]),
+    "Passing number as parameter to job_status is an error";
 
-    test_validation jsonrpc("job_status", 1),
-        error_bad_params(["/" => "Expected object - got number."]),
-        "Passing number as parameter to job_status is an error";
+test_validation jsonrpc("job_status", "hello"),
+    error_bad_params(["/" => "Expected object - got string."]),
+    "Passing string as parameter to job_status is an error";
 
-    test_validation jsonrpc("job_status", "hello"),
-        error_bad_params(["/" => "Expected object - got string."]),
-        "Passing string as parameter to job_status is an error";
-
-    test_validation jsonrpc("job_status", [qw(a b c)]),
-        error_bad_params(["/" => "Expected object - got array."]),
-        "Passing array as parameter to job_status is an error";
-}
+test_validation jsonrpc("job_status", [qw(a b c)]),
+    error_bad_params(["/" => "Expected object - got array."]),
+    "Passing array as parameter to job_status is an error";
 
 test_validation jsonrpc("job_status", {}),
     error_bad_params(["/test_id" => "Missing property"]),

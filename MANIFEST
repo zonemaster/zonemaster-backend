@@ -69,7 +69,6 @@ share/zm-rpcapi.lsb
 share/zm-testagent.lsb
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
-t/TestUtil.pm
 t/00-load.t
 t/batches.t
 t/config.t
@@ -78,8 +77,10 @@ t/idn.data
 t/idn.t
 t/lifecycle.t
 t/parameters_validation.t
+t/rpc_validation.t
 t/test01.data
 t/test01.t
 t/test_profile.json
 t/test_validate_syntax.t
+t/TestUtil.pm
 t/validator.t

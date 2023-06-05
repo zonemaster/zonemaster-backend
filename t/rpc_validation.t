@@ -157,21 +157,17 @@ test_validation { jsonrpc => '2.0', method => 'system_versions' },
     error_bad_jsonrpc(''),
     "Sending an object with no ID is an error";
 
-TODO: {
-    local $TODO = "Code does not enforce type of ID yet";
+test_validation { jsonrpc => '2.0', method => 'system_versions', id => JSON::PP::false },
+    error_bad_jsonrpc('/id: Expected null/number/string - got boolean.'),
+    "Sending an object whose ID is a boolean is an error";
 
-    test_validation { jsonrpc => '2.0', method => 'system_versions', id => JSON::PP::false },
-        error_bad_jsonrpc(''),
-        "Sending an object whose ID is a boolean is an error";
+test_validation { jsonrpc => '2.0', method => 'system_versions', id => [qw(a b c)] },
+    error_bad_jsonrpc('/id: Expected null/number/string - got array.'),
+    "Sending an object whose ID is an array is an error";
 
-    test_validation { jsonrpc => '2.0', method => 'system_versions', id => [qw(a b c)] },
-        error_bad_jsonrpc(''),
-        "Sending an object whose ID is an array is an error";
-
-    test_validation { jsonrpc => '2.0', method => 'system_versions', id => { a => 1 } },
-        error_bad_jsonrpc(''),
-        "Sending an object whose ID is an object is an error";
-}
+test_validation { jsonrpc => '2.0', method => 'system_versions', id => { a => 1 } },
+    error_bad_jsonrpc('/id: Expected null/number/string - got object.'),
+    "Sending an object whose ID is an object is an error";
 
 test_validation jsonrpc("job_status"),
     error_missing_params(),

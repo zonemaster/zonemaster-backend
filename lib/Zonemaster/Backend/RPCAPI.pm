@@ -714,7 +714,8 @@ sub _set_error_message_locale {
 
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
-    method => $zm_validator->jsonrpc_method()->required);
+    method => $zm_validator->jsonrpc_method()->required,
+    id => joi->type([qw(null number string)]));
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request) = @_;
 

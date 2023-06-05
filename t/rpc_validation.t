@@ -213,33 +213,29 @@ test_validation jsonrpc("system_versions"),
     no_error,
     "Calling system_versions with no parameters is OK";
 
-TODO: {
-    local $TODO = "Not validating parameters for system_versions yet";
+test_validation jsonrpc("system_versions", undef, 1),
+    error_bad_params(["/" => "Expected object - got null."]),
+    "Passing null as parameter to system_versions is an error";
 
-    test_validation jsonrpc("system_versions", undef, 1),
-        error_bad_params(["/" => "Expected object - got null."]),
-        "Passing null as parameter to system_versions is an error";
+test_validation jsonrpc("system_versions", JSON::PP::false),
+    error_bad_params(["/" => "Expected object - got boolean."]),
+    "Passing number as parameter to system_versions is an error";
 
-    test_validation jsonrpc("system_versions", JSON::PP::false),
-        error_bad_params(["/" => "Expected object - got boolean."]),
-        "Passing number as parameter to system_versions is an error";
+test_validation jsonrpc("system_versions", -1),
+    error_bad_params(["/" => "Expected object - got number."]),
+    "Passing number as parameter to system_versions is an error";
 
-    test_validation jsonrpc("system_versions", -1),
-        error_bad_params(["/" => "Expected object - got number."]),
-        "Passing number as parameter to system_versions is an error";
+test_validation jsonrpc("system_versions", "hello"),
+    error_bad_params(["/" => "Expected object - got string."]),
+    "Passing string as parameter to system_versions is an error";
 
-    test_validation jsonrpc("system_versions", "hello"),
-        error_bad_params(["/" => "Expected object - got string."]),
-        "Passing string as parameter to system_versions is an error";
+test_validation jsonrpc("system_versions", [qw(a b c)]),
+    error_bad_params(["/" => "Expected object - got array."]),
+    "Passing array as parameter to system_versions is an error";
 
-    test_validation jsonrpc("system_versions", [qw(a b c)]),
-        error_bad_params(["/" => "Expected object - got array."]),
-        "Passing array as parameter to system_versions is an error";
-
-    test_validation jsonrpc("system_versions", { data => "something" }),
-        error_bad_params(["/" => "Properties not allowed: data."]),
-        "Calling system_versions with unrecognized parameter is an error";
-}
+test_validation jsonrpc("system_versions", { data => "something" }),
+    error_bad_params(["/" => "Properties not allowed: data."]),
+    "Calling system_versions with unrecognized parameter is an error";
 
 test_validation jsonrpc("system_versions", {}),
     no_error,

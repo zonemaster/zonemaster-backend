@@ -738,18 +738,21 @@ sub jsonrpc_validate {
         $method_schema = $method_schema->compile;
     }
 
-    # the JSON schema for the method has a 'required' key
-    if ( exists $method_schema->{required} ) {
-        if ( not exists $jsonrpc_request->{params} ) {
-            return {
-                jsonrpc => '2.0',
-                id => $jsonrpc_request->{id},
-                error => {
-                    code => '-32602',
-                    message => "Missing 'params' object",
-                }
-            };
-        }
+    # The "params" key of the JSONRPC object is optional per the JSONRPC 2.0
+    # specification, but if the method being called requires at least one
+    # parameter, omitting it is an error.
+
+    if ( exists $method_schema->{required} and not exists $jsonrpc_request->{params} ) {
+        return {
+            jsonrpc => '2.0',
+            id => $jsonrpc_request->{id},
+            error => {
+                code => '-32602',
+                message => "Missing 'params' object",
+            }
+        };
+    }
+    elsif ( exists $jsonrpc_request->{params} ) {
         my @error_response = $self->validate_params($method_schema, $jsonrpc_request->{params});
 
         if ( scalar @error_response ) {

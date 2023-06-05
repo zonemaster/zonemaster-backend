@@ -717,7 +717,7 @@ my $rpc_request = joi->object->props(
     method => $zm_validator->jsonrpc_method()->required,
     id => joi->type([qw(null number string)]));
 sub jsonrpc_validate {
-    my ( $self, $jsonrpc_request) = @_;
+    my ( $self, $jsonrpc_request ) = @_;
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
     if ((ref($jsonrpc_request) eq 'HASH' && !exists $jsonrpc_request->{id}) || @error_rpc) {

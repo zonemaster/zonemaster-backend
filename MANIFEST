@@ -66,10 +66,11 @@ share/travis_mysql_backend_config.ini
 share/travis_postgresql_backend_config.ini
 share/travis_sqlite_backend_config.ini
 share/zm-rpcapi.lsb
+share/zm-rpcapi.service
 share/zm-testagent.lsb
+share/zm-testagent.service
 share/zm_rpcapi-bsd
 share/zm_testagent-bsd
-t/TestUtil.pm
 t/00-load.t
 t/batches.t
 t/config.t
@@ -82,4 +83,5 @@ t/test01.data
 t/test01.t
 t/test_profile.json
 t/test_validate_syntax.t
+t/TestUtil.pm
 t/validator.t

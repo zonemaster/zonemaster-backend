@@ -64,19 +64,19 @@ done
 [ -n "${domain}" ] || usage 2 "No domain specified"
 
 # Start test
-output="$(zmb "${server_url}" job_create --domain "${domain}" ${ipv4} ${ipv6} --profile "${profile}")" || exit $?
-testid="$(printf "%s" "${output}" | "${JQ}" -r .result.job_id)" || exit $?
+output="$(zmb "${server_url}" start_domain_test --domain "${domain}" ${ipv4} ${ipv6} --profile "${profile}")" || exit $?
+testid="$(printf "%s" "${output}" | "${JQ}" -r .result)" || exit $?
 printf "testid: %s\n" "${testid}" >&2
 
 if echo "${testid}" | grep -qE '[^0-9a-fA-F]' ; then
-    error 1 "job_create did not return a testid: ${testid}"
+    error 1 "start_domain_test did not return a testid: ${testid}"
 fi
 
 # Wait for test to finish
 while true
 do
-    output="$(zmb "${server_url}" job_status --test-id "${testid}")" || exit $?
-    progress="$(printf "%s" "${output}" | "${JQ}" -r .result.progress)" || exit $?
+    output="$(zmb "${server_url}" test_progress --test-id "${testid}")" || exit $?
+    progress="$(printf "%s" "${output}" | "${JQ}" -r .result)" || exit $?
     printf "\r${progress}%% done" >&2
     if [ "${progress}" -eq 100 ] ; then
         echo >&2
@@ -86,4 +86,4 @@ do
 done
 
 # Get test results
-zmb "${server_url}" job_results --test-id "${testid}" --lang "${lang}"
+zmb "${server_url}" get_test_results --test-id "${testid}" --lang "${lang}"

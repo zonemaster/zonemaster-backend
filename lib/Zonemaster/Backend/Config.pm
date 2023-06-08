@@ -217,8 +217,8 @@ sub parse {
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
     $obj->_set_RPCAPI_enable_user_create( 'no' );
     $obj->_set_RPCAPI_enable_batch_create( 'yes' );
-    $obj->_set_RPCAPI_enable_add_api_user( 'no' ); # deprecated
-    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' ); # deprecated
+    $obj->_set_RPCAPI_enable_add_api_user( 'no' );
+    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_set_locales( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
@@ -235,13 +235,7 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-
-    if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-        push @warnings, "Use of deprecated config property RPCAPI.enable_add_api_user. Use RPCAPI.enable_user_create instead.";
-    }
-    if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-        push @warnings, "Use of deprecated config property RPCAPI.enable_add_batch_job. Use RPCAPI.enable_batch_create instead.";
-    }
+    #currently no deprecation warnings
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
@@ -304,29 +298,17 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
         $obj->_set_METRICS_statsd_port( $value );
     }
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+        $obj->_set_RPCAPI_enable_add_api_user( $value );
+    }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_user_create' ) ) ) {
         $obj->_set_RPCAPI_enable_user_create( $value );
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-            $obj->_set_RPCAPI_enable_add_api_user( $value );
-        }
     }
-    else {
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-            $obj->_set_RPCAPI_enable_user_create( $value );
-            $obj->_set_RPCAPI_enable_add_api_user( $value );
-        }
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+        $obj->_set_RPCAPI_enable_add_batch_job( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_batch_create' ) ) ) {
         $obj->_set_RPCAPI_enable_batch_create( $value );
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-            $obj->_set_RPCAPI_enable_add_batch_job( $value );
-        }
-    }
-    else {
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-            $obj->_set_RPCAPI_enable_batch_create( $value );
-            $obj->_set_RPCAPI_enable_add_batch_job( $value );
-        }
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
         $obj->_set_locales( $value );
@@ -675,8 +657,8 @@ sub METRICS_statsd_host                                 { return $_[0]->{_METRIC
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
 sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; }
 sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; }
-sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; } # deprecated
-sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; } # deprecated
+sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
+sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
@@ -701,8 +683,8 @@ UNITCHECK {
     _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
     _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool );
-    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool ); #deprecated
-    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool ); #deprecated
+    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
+    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
 
 =head2 new_DB

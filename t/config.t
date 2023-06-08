@@ -113,47 +113,20 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
     };
 
-    subtest 'Deprecated values and fallbacks that are unconditional' => sub {
-        $log->clear();
-        my $text = q{
-            [DB]
-            engine = SQLite
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
-            [RPCAPI]
-            enable_add_api_user = yes
-            enable_add_batch_job = no
-        };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*RPCAPI\.enable_add_api_user/, 'deprecated: RPCAPI.enable_add_api_user' );
-        $log->contains_ok( qr/deprecated.*RPCAPI\.enable_add_batch_job/, 'deprecated: RPCAPI.enable_add_batch_job' );
+    SKIP: {
+        skip "no more deprecated values", 1;
 
-        is $config->RPCAPI_enable_add_api_user,  1, 'set: RPCAPI.enable_add_api_user';
-        is $config->RPCAPI_enable_add_batch_job, 0, 'set: RPCAPI.enable_add_batch_job';
-        is $config->RPCAPI_enable_user_create,   1, 'apply: RPCAPI.enable_user_create';
-        is $config->RPCAPI_enable_batch_create,  0, 'apply: RPCAPI.enable_batch_create';
-
-        subtest 'Deprecated RPCAPI properties and precedence' => sub {
+        subtest 'Deprecated values and fallbacks that are unconditional' => sub {
             $log->clear();
             my $text = q{
                 [DB]
                 engine = SQLite
                 [SQLITE]
                 database_file = /var/db/zonemaster.sqlite
-                [RPCAPI]
-                enable_add_api_user = yes
-                enable_add_batch_job = no
-                enable_user_create = no
-                enable_batch_create = yes
             };
             my $config = Zonemaster::Backend::Config->parse( $text );
-
-            is $config->RPCAPI_enable_add_api_user,  1, 'set: RPCAPI.enable_add_api_user';
-            is $config->RPCAPI_enable_add_batch_job, 0, 'set: RPCAPI.enable_add_batch_job';
-            is $config->RPCAPI_enable_user_create,   0, 'precedence: RPCAPI.enable_user_create';
-            is $config->RPCAPI_enable_batch_create,  1, 'precedence: RPCAPI.enable_batch_create';
         };
-    };
+    }
 
     subtest 'Warnings' => sub {
         $log->clear();

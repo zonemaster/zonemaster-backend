@@ -142,8 +142,15 @@ sub conf_profiles {
 # Deprecated
 $json_schemas{profile_names} = $json_schemas{conf_profiles};
 sub profile_names {
-    my $result = conf_profiles( @_ );
-    return $result->{profiles};
+    my ( $self ) = @_;
+
+    my %profiles;
+    eval { %profiles = $self->{config}->PUBLIC_PROFILES };
+    if ( $@ ) {
+        handle_exception( $@ );
+    }
+
+    return [ keys %profiles ];
 }
 
 # Return the list of language tags supported by get_test_results(). The tags are
@@ -172,8 +179,25 @@ sub conf_languages {
 # Deprecated
 $json_schemas{get_language_tags} = $json_schemas{conf_languages};
 sub get_language_tags {
-    my $result = conf_languages( @_ );
-    return $result->{languages};
+    my ( $self ) = @_;
+
+    my @lang_tags;
+    eval {
+        my %locales = $self->{config}->LANGUAGE_locale;
+
+        for my $lang ( sort keys %locales ) {
+            my @locale_tags = sort keys %{ $locales{$lang} };
+            if ( scalar @locale_tags == 1 ) {
+                push @lang_tags, $lang;
+            }
+            push @lang_tags, @locale_tags;
+        }
+    };
+    if ( $@ ) {
+        handle_exception( $@ );
+    }
+
+    return \@lang_tags;
 }
 
 $json_schemas{lookup_address_records} = {
@@ -209,8 +233,21 @@ sub lookup_address_records {
 # Deprecated
 $json_schemas{get_host_by_name} = $json_schemas{lookup_address_records};
 sub get_host_by_name {
-    my $result = lookup_address_records( @_ );
-    return $result->{address_records};
+    my ( $self, $params ) = @_;
+    my @adresses;
+
+    eval {
+        my $ns_name  = $params->{hostname};
+
+        @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+        @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
+
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
+    return \@adresses;
 }
 
 $json_schemas{lookup_delegation_data} = {
@@ -324,8 +361,29 @@ sub job_create {
 # Deprecated
 $json_schemas{start_domain_test} = $json_schemas{job_create};
 sub start_domain_test {
-    my $result = job_create( @_ );
-    return $result->{job_id};
+    my ( $self, $params ) = @_;
+
+    my $result = 0;
+    eval {
+        $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
+
+        die "No domain in parameters\n" unless ( defined $params->{domain} && length($params->{domain}) );
+
+        $params->{profile}  //= "default";
+        $params->{priority} //= 10;
+        $params->{queue}    //= 0;
+
+        my $profile = $self->{_profiles}{ $params->{profile} };
+        $params->{ipv4} //= $profile->get( "net.ipv4" );
+        $params->{ipv6} //= $profile->get( "net.ipv6" );
+
+        $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
+    return $result;
 }
 
 $json_schemas{job_status} = joi->object->strict->props(
@@ -353,8 +411,18 @@ sub job_status {
 # Deprecated
 $json_schemas{test_progress} = $json_schemas{job_status};
 sub test_progress {
-    my $result = job_status( @_ );
-    return $result->{progress};
+    my ( $self, $params ) = @_;
+
+    my $result = 0;
+    eval {
+        my $test_id = $params->{test_id};
+        $result = $self->{db}->test_progress( $test_id );
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
+    return $result;
 }
 
 $json_schemas{job_params} = joi->object->strict->props(
@@ -528,8 +596,25 @@ sub domain_history {
 # Deprecated
 $json_schemas{get_test_history} = $json_schemas{domain_history};
 sub get_test_history {
-    my $result = domain_history( @_ );
-    return $result->{history};
+    my ( $self, $params ) = @_;
+
+    my $results;
+
+    eval {
+        $params->{offset} //= 0;
+        $params->{limit} //= 200;
+        $params->{filter} //= "all";
+
+        $results = $self->{db}->get_test_history( $params );
+        my @results = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
+        $results = \@results;
+
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
+    return $results;
 }
 
 $json_schemas{user_create} = joi->object->strict->props(
@@ -574,8 +659,34 @@ sub user_create {
 # Deprecated
 $json_schemas{add_api_user} = $json_schemas{user_create};
 sub add_api_user {
-    my $result = user_create( @_ );
-    return $result->{success};
+    my ( $self, $params, undef, $remote_ip ) = @_;
+
+    my $result = 0;
+
+    eval {
+        my $allow = 0;
+        if ( defined $remote_ip ) {
+            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' || $remote_ip eq '::ffff:127.0.0.1' );
+        }
+        else {
+            $allow = 1;
+        }
+
+        if ( $allow ) {
+            $result = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
+        }
+        else {
+            die Zonemaster::Backend::Error::PermissionDenied->new(
+                message => 'Call to "add_api_user" method not permitted from a remote IP',
+                data => { remote_ip => $remote_ip }
+            );
+        }
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
+    return $result;
 }
 
 $json_schemas{batch_create} = {
@@ -644,8 +755,25 @@ sub batch_create {
 # Deprecated
 $json_schemas{add_batch_job} = $json_schemas{batch_create};
 sub add_batch_job {
-    my $result = batch_create( @_ );
-    return $result->{batch_id};
+    my ( $self, $params ) = @_;
+
+    my $results;
+    eval {
+        $params->{test_params}{profile}  //= "default";
+        $params->{test_params}{priority} //= 5;
+        $params->{test_params}{queue}    //= 0;
+
+        my $profile = $self->{_profiles}{ $params->{test_params}{profile} };
+        $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
+        $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
+
+        $results = $self->{db}->add_batch_job( $params );
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
+    return $results;
 }
 
 $json_schemas{batch_status} = joi->object->strict->props(

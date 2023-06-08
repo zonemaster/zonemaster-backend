@@ -117,7 +117,6 @@ sub system_versions {
     return \%ver;
 }
 
-# Deprecated
 $json_schemas{version_info} = $json_schemas{system_versions};
 sub version_info {
     my ( $self ) = @_;
@@ -151,7 +150,6 @@ sub conf_profiles {
     return $result;
 }
 
-# Deprecated
 $json_schemas{profile_names} = $json_schemas{conf_profiles};
 sub profile_names {
     my ( $self ) = @_;
@@ -188,7 +186,6 @@ sub conf_languages {
     return $result;
 }
 
-# Deprecated
 $json_schemas{get_language_tags} = $json_schemas{conf_languages};
 sub get_language_tags {
     my ( $self ) = @_;
@@ -242,7 +239,6 @@ sub lookup_address_records {
     return $result;
 }
 
-# Deprecated
 $json_schemas{get_host_by_name} = $json_schemas{lookup_address_records};
 sub get_host_by_name {
     my ( $self, $params ) = @_;
@@ -309,7 +305,6 @@ sub lookup_delegation_data {
     }
 }
 
-# Deprecated
 $json_schemas{get_data_from_parent_zone} = $json_schemas{lookup_delegation_data};
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
@@ -404,7 +399,6 @@ sub job_create {
     return $result;
 }
 
-# Deprecated
 $json_schemas{start_domain_test} = $json_schemas{job_create};
 sub start_domain_test {
     my ( $self, $params ) = @_;
@@ -454,7 +448,6 @@ sub job_status {
     return $result;
 }
 
-# Deprecated
 $json_schemas{test_progress} = $json_schemas{job_status};
 sub test_progress {
     my ( $self, $params ) = @_;
@@ -490,7 +483,6 @@ sub job_params {
     return $result;
 }
 
-# Deprecated
 $json_schemas{get_test_params} = $json_schemas{job_params};
 sub get_test_params {
     my ( $self, $params ) = @_;
@@ -603,7 +595,6 @@ sub job_results {
     return $result;
 }
 
-# Deprecated
 $json_schemas{get_test_results} = $json_schemas{job_results};
 sub get_test_results {
     my ( $self, $params ) = @_;
@@ -733,7 +724,6 @@ sub domain_history {
     return $result;
 }
 
-# Deprecated
 $json_schemas{get_test_history} = $json_schemas{domain_history};
 sub get_test_history {
     my ( $self, $params ) = @_;
@@ -796,7 +786,6 @@ sub user_create {
     return $result;
 }
 
-# Deprecated
 $json_schemas{add_api_user} = $json_schemas{user_create};
 sub add_api_user {
     my ( $self, $params, undef, $remote_ip ) = @_;
@@ -892,7 +881,6 @@ sub batch_create {
     return $result;
 }
 
-# Deprecated
 $json_schemas{add_batch_job} = $json_schemas{batch_create};
 sub add_batch_job {
     my ( $self, $params ) = @_;
@@ -935,7 +923,6 @@ sub batch_status {
     return $result;
 }
 
-# Deprecated
 $json_schemas{get_batch_job_result} = $json_schemas{batch_status};
 sub get_batch_job_result {
     my ( $self, $params ) = @_;

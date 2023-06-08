@@ -615,7 +615,6 @@ Return 0 or 1
 
 =head2 RPCAPI_enable_add_api_user
 
-Deprecated (planned removal: v2024.1).
 Get the value of
 L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_api_user>.
 
@@ -624,7 +623,6 @@ Return 0 or 1
 
 =head2 RPCAPI_enable_add_batch_job
 
-Deprecated (planned removal: v2024.1).
 Get the value of
 L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_batch_job>.
 

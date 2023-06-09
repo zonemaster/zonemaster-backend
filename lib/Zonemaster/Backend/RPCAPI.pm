@@ -100,6 +100,7 @@ sub handle_exception {
     die $exception->as_hash;
 }
 
+# Experimental
 $json_schemas{system_versions} = joi->object->strict;
 sub system_versions {
     my ( $self ) = @_;
@@ -134,6 +135,7 @@ sub version_info {
     return \%ver;
 }
 
+# Experimental
 $json_schemas{conf_profiles} = joi->object->strict;
 sub conf_profiles {
     my ( $self ) = @_;
@@ -163,6 +165,7 @@ sub profile_names {
     return [ keys %profiles ];
 }
 
+# Experimental
 # Return the list of language tags supported by get_test_results(). The tags are
 # derived from the locale tags set in the configuration file.
 $json_schemas{conf_languages} = joi->object->strict;
@@ -209,6 +212,7 @@ sub get_language_tags {
     return \@lang_tags;
 }
 
+# Experimental
 $json_schemas{lookup_address_records} = {
     type => 'object',
     additionalProperties => 0,
@@ -258,6 +262,7 @@ sub get_host_by_name {
     return \@adresses;
 }
 
+# Experimental
 $json_schemas{lookup_delegation_data} = {
     type => 'object',
     additionalProperties => 0,
@@ -344,6 +349,7 @@ sub get_data_from_parent_zone {
     }
 }
 
+# Experimental
 $json_schemas{job_create} = {
     type => 'object',
     additionalProperties => 0,
@@ -426,6 +432,7 @@ sub start_domain_test {
     return $result;
 }
 
+# Experimental
 $json_schemas{job_status} = joi->object->strict->props(
     test_id => $zm_validator->test_id->required
 );
@@ -464,6 +471,7 @@ sub test_progress {
     return $result;
 }
 
+# Experimental
 $json_schemas{job_params} = joi->object->strict->props(
     test_id => $zm_validator->test_id->required
 );
@@ -500,6 +508,7 @@ sub get_test_params {
     return $result;
 }
 
+# Experimental
 $json_schemas{job_results} = {
     type => 'object',
     additionalProperties => 0,
@@ -682,6 +691,7 @@ sub get_test_results {
     return $result;
 }
 
+# Experimental
 $json_schemas{domain_history} = {
     type => 'object',
     additionalProperties => 0,
@@ -747,6 +757,7 @@ sub get_test_history {
     return $results;
 }
 
+# Experimental
 $json_schemas{user_create} = joi->object->strict->props(
     username => $zm_validator->username->required,
     api_key => $zm_validator->api_key->required,
@@ -818,6 +829,7 @@ sub add_api_user {
     return $result;
 }
 
+# Experimental
 $json_schemas{batch_create} = {
     type => 'object',
     additionalProperties => 0,
@@ -904,6 +916,7 @@ sub add_batch_job {
     return $results;
 }
 
+# Experimental
 $json_schemas{batch_status} = joi->object->strict->props(
     batch_id => $zm_validator->batch_id->required
 );

@@ -64,6 +64,7 @@ my $router = router {
         action => "version_info"
     };
 
+    # Experimental
     connect "system_versions" => {
         handler => $handler,
         action => "system_versions"
@@ -74,6 +75,7 @@ my $router = router {
         action => "profile_names"
     };
 
+    # Experimental
     connect "conf_profiles" => {
         handler => $handler,
         action => "conf_profiles"
@@ -84,6 +86,7 @@ my $router = router {
         action => "get_language_tags"
     };
 
+    # Experimental
     connect "conf_languages" => {
         handler => $handler,
         action => "conf_languages"
@@ -94,6 +97,7 @@ my $router = router {
         action => "get_host_by_name"
     };
 
+    # Experimental
     connect "lookup_address_records" => {
         handler => $handler,
         action => "lookup_address_records"
@@ -104,6 +108,7 @@ my $router = router {
         action => "get_data_from_parent_zone"
     };
 
+    # Experimental
     connect "lookup_delegation_data" => {
         handler => $handler,
         action => "lookup_delegation_data"
@@ -114,6 +119,7 @@ my $router = router {
         action => "start_domain_test"
     };
 
+    # Experimental
     connect "job_create" => {
         handler => $handler,
         action => "job_create"
@@ -124,6 +130,7 @@ my $router = router {
         action => "test_progress"
     };
 
+    # Experimental
     connect "job_status" => {
         handler => $handler,
         action => "job_status"
@@ -134,6 +141,7 @@ my $router = router {
         action => "get_test_params"
     };
 
+    # Experimental
     connect "job_params" => {
         handler => $handler,
         action => "job_params"
@@ -144,6 +152,7 @@ my $router = router {
         action => "get_test_results"
     };
 
+    # Experimental
     connect "job_results" => {
         handler => $handler,
         action => "job_results"
@@ -154,6 +163,7 @@ my $router = router {
         action => "get_test_history"
     };
 
+    # Experimental
     connect "domain_history" => {
         handler => $handler,
         action => "domain_history"
@@ -164,6 +174,7 @@ my $router = router {
         action => "get_batch_job_result"
     };
 
+    # Experimental
     connect "batch_status" => {
         handler => $handler,
         action => "batch_status"

@@ -100,13 +100,7 @@ sub handle_exception {
     die $exception->as_hash;
 }
 
-# Experimental
-$json_schemas{system_versions} = joi->object->strict;
-sub system_versions {
-    return version_info( @_ );
-}
-
-$json_schemas{version_info} = $json_schemas{system_versions};
+$json_schemas{version_info} = joi->object->strict;
 sub version_info {
     my ( $self ) = @_;
 
@@ -124,15 +118,12 @@ sub version_info {
 }
 
 # Experimental
-$json_schemas{conf_profiles} = joi->object->strict;
-sub conf_profiles {
-    my $result = {
-        profiles => profile_name( @_ )
-    };
-    return $result;
+$json_schemas{system_versions} = $json_schemas{version_info};
+sub system_versions {
+    return version_info( @_ );
 }
 
-$json_schemas{profile_names} = $json_schemas{conf_profiles};
+$json_schemas{profile_names} = joi->object->strict;
 sub profile_names {
     my ( $self ) = @_;
 
@@ -146,17 +137,17 @@ sub profile_names {
 }
 
 # Experimental
-$json_schemas{conf_languages} = joi->object->strict;
-sub conf_languages {
+$json_schemas{conf_profiles} = $json_schemas{profile_names};
+sub conf_profiles {
     my $result = {
-        languages => get_language_tags( @_ )
+        profiles => profile_name( @_ )
     };
     return $result;
 }
 
 # Return the list of language tags supported by get_test_results(). The tags are
 # derived from the locale tags set in the configuration file.
-$json_schemas{get_language_tags} = $json_schemas{conf_languages};
+$json_schemas{get_language_tags} = joi->object->strict;
 sub get_language_tags {
     my ( $self ) = @_;
 
@@ -174,7 +165,15 @@ sub get_language_tags {
 }
 
 # Experimental
-$json_schemas{lookup_address_records} = {
+$json_schemas{conf_languages} = $json_schemas{get_language_tags};
+sub conf_languages {
+    my $result = {
+        languages => get_language_tags( @_ )
+    };
+    return $result;
+}
+
+$json_schemas{get_host_by_name} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'hostname' ],
@@ -182,14 +181,6 @@ $json_schemas{lookup_address_records} = {
         hostname => $zm_validator->domain_name
     }
 };
-sub lookup_address_records {
-    my $result = {
-        address_records => get_host_by_name( @_ )
-    };
-    return $result;
-}
-
-$json_schemas{get_host_by_name} = $json_schemas{lookup_address_records};
 sub get_host_by_name {
     my ( $self, $params ) = @_;
     my @adresses;
@@ -209,7 +200,15 @@ sub get_host_by_name {
 }
 
 # Experimental
-$json_schemas{lookup_delegation_data} = {
+$json_schemas{lookup_address_records} = $json_schemas{get_host_by_name};
+sub lookup_address_records {
+    my $result = {
+        address_records => get_host_by_name( @_ )
+    };
+    return $result;
+}
+
+$json_schemas{get_data_from_parent_zone} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'domain' ],
@@ -218,11 +217,6 @@ $json_schemas{lookup_delegation_data} = {
         language => $zm_validator->language_tag,
     }
 };
-sub lookup_delegation_data {
-    return get_data_from_parent_zone( @_ );
-}
-
-$json_schemas{get_data_from_parent_zone} = $json_schemas{lookup_delegation_data};
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
@@ -262,7 +256,12 @@ sub get_data_from_parent_zone {
 }
 
 # Experimental
-$json_schemas{job_create} = {
+$json_schemas{lookup_delegation_data} = $json_schemas{get_data_from_parent_zone};
+sub lookup_delegation_data {
+    return get_data_from_parent_zone( @_ );
+}
+
+$json_schemas{start_domain_test} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'domain' ],
@@ -287,14 +286,6 @@ $json_schemas{job_create} = {
         language => $zm_validator->language_tag,
     }
 };
-sub job_create {
-    my $result = {
-        job_id => start_domain_test( @_ )
-    };
-    return $result;
-}
-
-$json_schemas{start_domain_test} = $json_schemas{job_create};
 sub start_domain_test {
     my ( $self, $params ) = @_;
 
@@ -322,17 +313,17 @@ sub start_domain_test {
 }
 
 # Experimental
-$json_schemas{job_status} = joi->object->strict->props(
-    test_id => $zm_validator->test_id->required
-);
-sub job_status {
+$json_schemas{job_create} = $json_schemas{start_domain_test};
+sub job_create {
     my $result = {
-        progress => test_progress( @_ )
+        job_id => start_domain_test( @_ )
     };
     return $result;
 }
 
-$json_schemas{test_progress} = $json_schemas{job_status};
+$json_schemas{test_progress} = joi->object->strict->props(
+    test_id => $zm_validator->test_id->required
+);
 sub test_progress {
     my ( $self, $params ) = @_;
 
@@ -349,14 +340,17 @@ sub test_progress {
 }
 
 # Experimental
-$json_schemas{job_params} = joi->object->strict->props(
-    test_id => $zm_validator->test_id->required
-);
-sub job_params {
-    return get_test_params( @_ );
+$json_schemas{job_status} = $json_schemas{test_progress};
+sub job_status {
+    my $result = {
+        progress => test_progress( @_ )
+    };
+    return $result;
 }
 
-$json_schemas{get_test_params} = $json_schemas{job_params};
+$json_schemas{get_test_params} = joi->object->strict->props(
+    test_id => $zm_validator->test_id->required
+);
 sub get_test_params {
     my ( $self, $params ) = @_;
 
@@ -374,7 +368,12 @@ sub get_test_params {
 }
 
 # Experimental
-$json_schemas{job_results} = {
+$json_schemas{job_params} = $json_schemas{get_test_params};
+sub job_params {
+    return get_test_params( @_ );
+}
+
+$json_schemas{get_test_results} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'id', 'language' ],
@@ -383,11 +382,6 @@ $json_schemas{job_results} = {
         language => $zm_validator->language_tag,
     }
 };
-sub job_results {
-    return get_test_results( @_ );
-}
-
-$json_schemas{get_test_results} = $json_schemas{job_results};
 sub get_test_results {
     my ( $self, $params ) = @_;
 
@@ -475,7 +469,12 @@ sub get_test_results {
 }
 
 # Experimental
-$json_schemas{domain_history} = {
+$json_schemas{job_results} = $json_schemas{get_test_results};
+sub job_results {
+    return get_test_results( @_ );
+}
+
+$json_schemas{get_test_history} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'frontend_params' ],
@@ -493,14 +492,6 @@ $json_schemas{domain_history} = {
         }
     }
 };
-sub domain_history {
-    my $result = {
-        history => get_test_history( @_ )
-    };
-    return $result;
-}
-
-$json_schemas{get_test_history} = $json_schemas{domain_history};
 sub get_test_history {
     my ( $self, $params ) = @_;
 
@@ -524,18 +515,18 @@ sub get_test_history {
 }
 
 # Experimental
-$json_schemas{user_create} = joi->object->strict->props(
-    username => $zm_validator->username->required,
-    api_key => $zm_validator->api_key->required,
-);
-sub user_create {
+$json_schemas{domain_history} = $json_schemas{get_test_history};
+sub domain_history {
     my $result = {
-        success => add_api_user( @_ )
+        history => get_test_history( @_ )
     };
     return $result;
 }
 
-$json_schemas{add_api_user} = $json_schemas{user_create};
+$json_schemas{add_api_user} = joi->object->strict->props(
+    username => $zm_validator->username->required,
+    api_key => $zm_validator->api_key->required,
+);
 sub add_api_user {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
@@ -568,7 +559,15 @@ sub add_api_user {
 }
 
 # Experimental
-$json_schemas{batch_create} = {
+$json_schemas{user_create} = $json_schemas{add_api_user};
+sub user_create {
+    my $result = {
+        success => add_api_user( @_ )
+    };
+    return $result;
+}
+
+$json_schemas{add_batch_job} = {
     type => 'object',
     additionalProperties => 0,
     required => [ 'username', 'api_key', 'domains' ],
@@ -605,14 +604,6 @@ $json_schemas{batch_create} = {
         }
     }
 };
-sub batch_create {
-    my $result = {
-        batch_id => add_batch_job( @_ )
-    };
-    return $result;
-}
-
-$json_schemas{add_batch_job} = $json_schemas{batch_create};
 sub add_batch_job {
     my ( $self, $params ) = @_;
 
@@ -636,14 +627,17 @@ sub add_batch_job {
 }
 
 # Experimental
-$json_schemas{batch_status} = joi->object->strict->props(
-    batch_id => $zm_validator->batch_id->required
-);
-sub batch_status {
-    return get_batch_job_result( @_ );
+$json_schemas{batch_create} = $json_schemas{add_batch_job};
+sub batch_create {
+    my $result = {
+        batch_id => add_batch_job( @_ )
+    };
+    return $result;
 }
 
-$json_schemas{get_batch_job_result} = $json_schemas{batch_status};
+$json_schemas{get_batch_job_result} = joi->object->strict->props(
+    batch_id => $zm_validator->batch_id->required
+);
 sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
@@ -658,6 +652,12 @@ sub get_batch_job_result {
     }
 
     return $result;
+}
+
+# Experimental
+$json_schemas{batch_status} = $json_schemas{get_batch_job_result};
+sub batch_status {
+    return get_batch_job_result( @_ );
 }
 
 sub _get_locale {

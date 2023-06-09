@@ -103,19 +103,7 @@ sub handle_exception {
 # Experimental
 $json_schemas{system_versions} = joi->object->strict;
 sub system_versions {
-    my ( $self ) = @_;
-
-    my %ver;
-    eval {
-        $ver{zonemaster_ldns} = Zonemaster::LDNS->VERSION;
-        $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
-        $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return \%ver;
+    return version_info( @_ );
 }
 
 $json_schemas{version_info} = $json_schemas{system_versions};
@@ -138,16 +126,8 @@ sub version_info {
 # Experimental
 $json_schemas{conf_profiles} = joi->object->strict;
 sub conf_profiles {
-    my ( $self ) = @_;
-
-    my %profiles;
-    eval { %profiles = $self->{config}->PUBLIC_PROFILES };
-    if ( $@ ) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        profiles => [ keys %profiles ]
+        profiles => profile_name( @_ )
     };
     return $result;
 }
@@ -166,29 +146,16 @@ sub profile_names {
 }
 
 # Experimental
-# Return the list of language tags supported by get_test_results(). The tags are
-# derived from the locale tags set in the configuration file.
 $json_schemas{conf_languages} = joi->object->strict;
 sub conf_languages {
-    my ( $self ) = @_;
-
-    my @lang_tags;
-    eval {
-        my %locales = $self->{config}->LANGUAGE_locale;
-
-        @lang_tags = sort keys %locales;
-    };
-    if ( $@ ) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        languages => \@lang_tags
+        languages => get_language_tags( @_ )
     };
-
     return $result;
 }
 
+# Return the list of language tags supported by get_test_results(). The tags are
+# derived from the locale tags set in the configuration file.
 $json_schemas{get_language_tags} = $json_schemas{conf_languages};
 sub get_language_tags {
     my ( $self ) = @_;
@@ -197,13 +164,7 @@ sub get_language_tags {
     eval {
         my %locales = $self->{config}->LANGUAGE_locale;
 
-        for my $lang ( sort keys %locales ) {
-            my @locale_tags = sort keys %{ $locales{$lang} };
-            if ( scalar @locale_tags == 1 ) {
-                push @lang_tags, $lang;
-            }
-            push @lang_tags, @locale_tags;
-        }
+        @lang_tags = sort keys %locales;
     };
     if ( $@ ) {
         handle_exception( $@ );
@@ -222,24 +183,9 @@ $json_schemas{lookup_address_records} = {
     }
 };
 sub lookup_address_records {
-    my ( $self, $params ) = @_;
-    my @addresses;
-
-    eval {
-        my $ns_name  = $params->{hostname};
-
-        @addresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
-        @addresses = { $ns_name => '0.0.0.0' } if not @addresses;
-
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        address_records => \@addresses
+        address_records => get_host_by_name( @_ )
     };
-
     return $result;
 }
 
@@ -273,41 +219,7 @@ $json_schemas{lookup_delegation_data} = {
     }
 };
 sub lookup_delegation_data {
-    my ( $self, $params ) = @_;
-
-    my $result = eval {
-        my %result;
-        my $domain = $params->{domain};
-
-        my @ns_list;
-        my @ns_names;
-
-        my $zone = Zonemaster::Engine->zone( $domain );
-        push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
-
-        my @ds_list;
-
-        $zone = Zonemaster::Engine->zone($domain);
-        my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
-        if ($ds_p) {
-            my @ds = $ds_p->get_records( 'DS', 'answer' );
-
-            foreach my $ds ( @ds ) {
-                next unless $ds->type eq 'DS';
-                push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
-            }
-        }
-
-        $result{ns_list} = \@ns_list;
-        $result{ds_list} = \@ds_list;
-        return \%result;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-    elsif ($result) {
-        return $result;
-    }
+    return get_data_from_parent_zone( @_ );
 }
 
 $json_schemas{get_data_from_parent_zone} = $json_schemas{lookup_delegation_data};
@@ -376,32 +288,9 @@ $json_schemas{job_create} = {
     }
 };
 sub job_create {
-    my ( $self, $params ) = @_;
-
-    my $job_id = 0;
-    eval {
-        $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
-
-        die "No domain in parameters\n" unless ( defined $params->{domain} && length($params->{domain}) );
-
-        $params->{profile}  //= "default";
-        $params->{priority} //= 10;
-        $params->{queue}    //= 0;
-
-        my $profile = $self->{_profiles}{ $params->{profile} };
-        $params->{ipv4} //= $profile->get( "net.ipv4" );
-        $params->{ipv6} //= $profile->get( "net.ipv6" );
-
-        $job_id = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        job_id => $job_id
+        job_id => start_domain_test( @_ )
     };
-
     return $result;
 }
 
@@ -437,21 +326,9 @@ $json_schemas{job_status} = joi->object->strict->props(
     test_id => $zm_validator->test_id->required
 );
 sub job_status {
-    my ( $self, $params ) = @_;
-
-    my $progress = 0;
-    eval {
-        my $test_id = $params->{test_id};
-        $progress = $self->{db}->test_progress( $test_id );
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        progress => $progress
+        progress => test_progress( @_ )
     };
-
     return $result;
 }
 
@@ -476,19 +353,7 @@ $json_schemas{job_params} = joi->object->strict->props(
     test_id => $zm_validator->test_id->required
 );
 sub job_params {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval {
-        my $test_id = $params->{test_id};
-
-        $result = $self->{db}->get_test_params( $test_id );
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
+    return get_test_params( @_ );
 }
 
 $json_schemas{get_test_params} = $json_schemas{job_params};
@@ -519,89 +384,7 @@ $json_schemas{job_results} = {
     }
 };
 sub job_results {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval{
-
-        my $locale = $self->_get_locale( $params );
-
-        my $translator;
-        $translator = Zonemaster::Backend::Translator->new;
-
-        my $previous_locale = $translator->locale;
-        if ( !$translator->locale( $locale ) ) {
-            die "Failed to set locale: $locale";
-        }
-
-        eval { $translator->data } if $translator; # Provoke lazy loading of translation data
-
-        my @zm_results;
-        my %testcases;
-
-        my $test_info = $self->{db}->test_results( $params->{id} );
-        foreach my $test_res ( @{ $test_info->{results} } ) {
-            my $res;
-            if ( $test_res->{module} eq 'NAMESERVER' ) {
-                $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
-            }
-            elsif ($test_res->{module} eq 'SYSTEM'
-                && $test_res->{tag} eq 'POLICY_DISABLED'
-                && $test_res->{args}->{name} eq 'Example' )
-            {
-                next;
-            }
-
-            $res->{module} = $test_res->{module};
-            $res->{message} = $translator->translate_tag( $test_res ) . "\n";
-            $res->{message} =~ s/,/, /isg;
-            $res->{message} =~ s/;/; /isg;
-            $res->{level} = $test_res->{level};
-            $res->{testcase} = $test_res->{testcase} // 'UNSPECIFIED';
-            $testcases{$res->{testcase}} = $translator->test_case_description($res->{testcase});
-
-            if ( $test_res->{module} eq 'SYSTEM' ) {
-                if ( $res->{message} =~ /policy\.json/ ) {
-                    my ( $policy ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                    if ( $policy ) {
-                        my $policy_description = 'DEFAULT POLICY';
-                        $policy_description = 'SOME OTHER POLICY' if ( $policy =~ /some\/other\/policy\/path/ );
-                        $res->{message} =~ s/$policy/$policy_description/;
-                    }
-                    else {
-                        $res->{message} = 'UNKNOWN POLICY FORMAT';
-                    }
-                }
-                elsif ( $res->{message} =~ /config\.json/ ) {
-                    my ( $config ) = ( $res->{message} =~ /\s(\/.*)$/ );
-                    if ( $config ) {
-                        my $config_description = 'DEFAULT CONFIGURATION';
-                        $config_description = 'SOME OTHER CONFIGURATION' if ( $config =~ /some\/other\/configuration\/path/ );
-                        $res->{message} =~ s/$config/$config_description/;
-                    }
-                    else {
-                        $res->{message} = 'UNKNOWN CONFIG FORMAT';
-                    }
-                }
-            }
-
-            push( @zm_results, $res );
-        }
-
-        $result = $test_info;
-        $result->{testcase_descriptions} = \%testcases;
-        $result->{results} = \@zm_results;
-
-        $translator->locale( $previous_locale );
-
-        $result = $test_info;
-        $result->{results} = \@zm_results;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
+    return get_test_results( @_ );
 }
 
 $json_schemas{get_test_results} = $json_schemas{job_results};
@@ -711,26 +494,9 @@ $json_schemas{domain_history} = {
     }
 };
 sub domain_history {
-    my ( $self, $params ) = @_;
-
-    my @history;
-
-    eval {
-        $params->{offset} //= 0;
-        $params->{limit} //= 200;
-        $params->{filter} //= "all";
-
-        my $results = $self->{db}->get_test_history( $params );
-        @history = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        history => \@history
+        history => get_test_history( @_ )
     };
-
     return $result;
 }
 
@@ -763,37 +529,9 @@ $json_schemas{user_create} = joi->object->strict->props(
     api_key => $zm_validator->api_key->required,
 );
 sub user_create {
-    my ( $self, $params, undef, $remote_ip ) = @_;
-
-    my $success = 0;
-
-    eval {
-        my $allow = 0;
-        if ( defined $remote_ip ) {
-            $allow = 1 if ( $remote_ip eq '::1' || $remote_ip eq '127.0.0.1' || $remote_ip eq '::ffff:127.0.0.1' );
-        }
-        else {
-            $allow = 1;
-        }
-
-        if ( $allow ) {
-            $success = 1 if ( $self->{db}->add_api_user( $params->{username}, $params->{api_key} ) eq '1' );
-        }
-        else {
-            die Zonemaster::Backend::Error::PermissionDenied->new(
-                message => 'Call to "add_api_user" method not permitted from a remote IP',
-                data => { remote_ip => $remote_ip }
-            );
-        }
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        success => $success
+        success => add_api_user( @_ )
     };
-
     return $result;
 }
 
@@ -868,28 +606,9 @@ $json_schemas{batch_create} = {
     }
 };
 sub batch_create {
-    my ( $self, $params ) = @_;
-
-    my $batch_id;
-    eval {
-        $params->{test_params}{profile}  //= "default";
-        $params->{test_params}{priority} //= 5;
-        $params->{test_params}{queue}    //= 0;
-
-        my $profile = $self->{_profiles}{ $params->{test_params}{profile} };
-        $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
-        $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
-
-        $batch_id = $self->{db}->add_batch_job( $params );
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
     my $result = {
-        batch_id => $batch_id
+        batch_id => add_batch_job( @_ )
     };
-
     return $result;
 }
 
@@ -921,19 +640,7 @@ $json_schemas{batch_status} = joi->object->strict->props(
     batch_id => $zm_validator->batch_id->required
 );
 sub batch_status {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval {
-        my $batch_id = $params->{batch_id};
-
-        $result = $self->{db}->get_batch_job_result($batch_id);
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
+    return get_batch_job_result( @_ );
 }
 
 $json_schemas{get_batch_job_result} = $json_schemas{batch_status};

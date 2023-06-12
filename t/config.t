@@ -111,6 +111,9 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
         is $config->ZONEMASTER_lock_on_queue,                            0,   'default: ZONEMASTER.lock_on_queue';
         is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
+
+        is $config->RPCAPI_enable_add_api_user,  0,   'default: RPCAPI.enable_add_api_user';
+        is $config->RPCAPI_enable_add_batch_job, 1,   'default: RPCAPI.enable_add_batch_job';
     };
 
     SKIP: {

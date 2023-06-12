@@ -810,6 +810,76 @@ subtest 'Everything but NoWarnings' => sub {
     }
     qr/PRIVATE PROFILES.*default/, 'die: Default profile in PRIVATE PROFILES';
 
+    subtest 'RPCAPI experimental aliases' => sub {
+        subtest 'default values' => sub {
+            my $text = q{
+                [DB]
+                engine = SQLite
+
+                [SQLITE]
+                database_file = /var/db/zonemaster.sqlite
+            };
+            my $config = Zonemaster::Backend::Config->parse( $text );
+            is $config->RPCAPI_enable_add_api_user,  0, 'default: RPCAPI.enable_add_api_user';
+            is $config->RPCAPI_enable_add_batch_job, 1, 'default: RPCAPI.enable_add_batch_job';
+            is $config->RPCAPI_enable_user_create,   0, 'default: RPCAPI.enable_user_create';
+            is $config->RPCAPI_enable_batch_create,  1, 'default: RPCAPI.enable_batch_create';
+        };
+
+        subtest 'specifying stable and experimental parameters is forbidden' => sub {
+            throws_ok {
+                my $text = q{
+                    [DB]
+                    engine = SQLite
+
+                    [SQLITE]
+                    database_file = /var/db/zonemaster.sqlite
+
+                    [RPCAPI]
+                    enable_user_create = no
+                    enable_add_api_user = yes
+                };
+                Zonemaster::Backend::Config->parse( $text );
+            }
+            qr/Error:.+RPCAPI\.enable_add_api_user.+RPCAPI\.enable_user_create/, 'die: RPCAPI stable and experimental alias (add_api_user/user_create)';
+
+            throws_ok {
+                my $text = q{
+                    [DB]
+                    engine = SQLite
+
+                    [SQLITE]
+                    database_file = /var/db/zonemaster.sqlite
+
+                    [RPCAPI]
+                    enable_add_batch_job = no
+                    enable_batch_create = no
+                };
+                Zonemaster::Backend::Config->parse( $text );
+            }
+            qr/Error:.+RPCAPI\.enable_add_batch_job.+RPCAPI\.enable_batch_create/, 'die: RPCAPI stable and experimental alias (batch_job/batch_create)';
+        };
+
+        subtest 'setting alias' => sub {
+            my $text = q{
+                [DB]
+                engine = SQLite
+
+                [SQLITE]
+                database_file = /var/db/zonemaster.sqlite
+
+                [RPCAPI]
+                enable_user_create = no
+                enable_batch_create = no
+            };
+            my $config = Zonemaster::Backend::Config->parse( $text );
+            is $config->RPCAPI_enable_user_create,   0, 'set: RPCAPI.enable_user_create';
+            is $config->RPCAPI_enable_batch_create,  0, 'set: RPCAPI.enable_batch_create';
+            is $config->RPCAPI_enable_add_api_user,  0, 'aliased: RPCAPI.enable_add_api_user';
+            is $config->RPCAPI_enable_add_batch_job, 0, 'aliased: RPCAPI.enable_add_batch_job';
+        };
+    };
+
     {
         my $path = catfile( dirname( $0 ), '..', 'share', 'backend_config.ini' );
         my $text = read_file( $path );

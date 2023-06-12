@@ -298,17 +298,29 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
         $obj->_set_METRICS_statsd_port( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-        $obj->_set_RPCAPI_enable_add_api_user( $value );
-    }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_user_create' ) ) ) {
+        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+            die "Error: cannot specify both RPCAPI.enable_add_api_user and RPCAPI.enable_user_create\n";
+        }
+        $obj->_set_RPCAPI_enable_add_api_user( $value );
         $obj->_set_RPCAPI_enable_user_create( $value );
-    }
-    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-        $obj->_set_RPCAPI_enable_add_batch_job( $value );
+    } else {
+        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+            $obj->_set_RPCAPI_enable_add_api_user( $value );
+            $obj->_set_RPCAPI_enable_user_create( $value );
+        }
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_batch_create' ) ) ) {
+        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+            die "Error: cannot specify both RPCAPI.enable_add_batch_job and RPCAPI.enable_batch_create\n";
+        }
+        $obj->_set_RPCAPI_enable_add_batch_job( $value );
         $obj->_set_RPCAPI_enable_batch_create( $value );
+    } else {
+        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+            $obj->_set_RPCAPI_enable_add_batch_job( $value );
+            $obj->_set_RPCAPI_enable_batch_create( $value );
+        }
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
         $obj->_set_locales( $value );

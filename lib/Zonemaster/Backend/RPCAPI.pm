@@ -140,7 +140,7 @@ sub profile_names {
 $json_schemas{conf_profiles} = $json_schemas{profile_names};
 sub conf_profiles {
     my $result = {
-        profiles => profile_name( @_ )
+        profiles => profile_names( @_ )
     };
     return $result;
 }

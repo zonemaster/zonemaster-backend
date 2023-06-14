@@ -175,7 +175,7 @@ subtest 'API calls' => sub {
 
     subtest 'get_data_from_parent_zone' => sub {
         my $res = $rpcapi->get_data_from_parent_zone( { domain => "fr" } );
-        #diag explain( $res );
+        note explain( $res );
         ok( defined( $res->{ns_list} ), 'Has a list of nameservers' );
         ok( defined( $res->{ds_list} ), 'Has a list of DS records' );
 
@@ -234,7 +234,7 @@ subtest 'get_test_history' => sub {
     };
 
     $test_history = $rpcapi->get_test_history( $method_params );
-    #diag explain( $test_history );
+    note explain( $test_history );
     is( scalar( @$test_history ), 2, 'Two tests created' );
 
     foreach my $res (@$test_history) {
@@ -255,7 +255,7 @@ subtest 'get_test_history' => sub {
         ( $hash_id ) = $rpcapi->{db}->get_test_request();
 
         $test_history = $rpcapi->get_test_history( $method_params );
-        #diag explain( $test_history );
+        note explain( $test_history );
         is( scalar( @$test_history ), 2, 'Only 2 tests should be retrieved' );
 
         # now run the test
@@ -358,9 +358,9 @@ subtest 'check historic tests' => sub {
             }
         } );
 
-    # diag explain( $test_history_delegated );
+    note explain( $test_history_delegated );
     is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
-    # diag explain( $test_history_undelegated );
+    note explain( $test_history_undelegated );
     is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
 
     subtest 'domain is case and trailing dot insensitive' => sub {

@@ -215,10 +215,10 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_RPCAPI_enable_user_create( 'no' );
-    $obj->_set_RPCAPI_enable_batch_create( 'yes' );
-    $obj->_set_RPCAPI_enable_add_api_user( 'no' ); # deprecated
-    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' ); # deprecated
+    $obj->_set_RPCAPI_enable_user_create( 'no' ); # experimental
+    $obj->_set_RPCAPI_enable_batch_create( 'yes' ); # experimental
+    $obj->_set_RPCAPI_enable_add_api_user( 'no' );
+    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_set_locales( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
@@ -235,13 +235,7 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-
-    if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-        push @warnings, "Use of deprecated config property RPCAPI.enable_add_api_user. Use RPCAPI.enable_user_create instead.";
-    }
-    if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-        push @warnings, "Use of deprecated config property RPCAPI.enable_add_batch_job. Use RPCAPI.enable_batch_create instead.";
-    }
+    #currently no deprecation warnings
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
@@ -305,27 +299,27 @@ sub parse {
         $obj->_set_METRICS_statsd_port( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_user_create' ) ) ) {
-        $obj->_set_RPCAPI_enable_user_create( $value );
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-            $obj->_set_RPCAPI_enable_add_api_user( $value );
+        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+            die "Error: cannot specify both RPCAPI.enable_add_api_user and RPCAPI.enable_user_create\n";
         }
-    }
-    else {
+        $obj->_set_RPCAPI_enable_add_api_user( $value );
+        $obj->_set_RPCAPI_enable_user_create( $value );
+    } else {
         if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-            $obj->_set_RPCAPI_enable_user_create( $value );
             $obj->_set_RPCAPI_enable_add_api_user( $value );
+            $obj->_set_RPCAPI_enable_user_create( $value );
         }
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_batch_create' ) ) ) {
-        $obj->_set_RPCAPI_enable_batch_create( $value );
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-            $obj->_set_RPCAPI_enable_add_batch_job( $value );
+        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+            die "Error: cannot specify both RPCAPI.enable_add_batch_job and RPCAPI.enable_batch_create\n";
         }
-    }
-    else {
+        $obj->_set_RPCAPI_enable_add_batch_job( $value );
+        $obj->_set_RPCAPI_enable_batch_create( $value );
+    } else {
         if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
-            $obj->_set_RPCAPI_enable_batch_create( $value );
             $obj->_set_RPCAPI_enable_add_batch_job( $value );
+            $obj->_set_RPCAPI_enable_batch_create( $value );
         }
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
@@ -617,6 +611,7 @@ Returns a number.
 
 =head2 RPCAPI_enable_user_create
 
+Experimental.
 Get the value of
 L<RPCAPI.enable_user_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_user_create>.
 
@@ -625,6 +620,7 @@ Return 0 or 1
 
 =head2 RPCAPI_enable_batch_create
 
+Experimental.
 Get the value of
 L<RPCAPI.enable_batch_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_batch_create>.
 
@@ -633,7 +629,6 @@ Return 0 or 1
 
 =head2 RPCAPI_enable_add_api_user
 
-Deprecated (planned removal: v2024.1).
 Get the value of
 L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_api_user>.
 
@@ -642,7 +637,6 @@ Return 0 or 1
 
 =head2 RPCAPI_enable_add_batch_job
 
-Deprecated (planned removal: v2024.1).
 Get the value of
 L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_batch_job>.
 
@@ -673,10 +667,10 @@ sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMA
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
-sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; }
-sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; }
-sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; } # deprecated
-sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; } # deprecated
+sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; } # experimental
+sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; } # experimental
+sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
+sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
@@ -699,10 +693,10 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
     _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
     _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
-    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool );
-    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool );
-    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool ); #deprecated
-    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool ); #deprecated
+    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool ); # experimental
+    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool ); # experimental
+    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
+    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
 
 =head2 new_DB

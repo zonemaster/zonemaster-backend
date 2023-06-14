@@ -95,51 +95,51 @@ sub cmd_non_existing_method {
 }
 
 
-=head2 system_versions
+=head2 version_info
 
- zmb [GLOBAL OPTIONS] system_versions
+ zmb [GLOBAL OPTIONS] version_info
 
 =cut
 
-sub cmd_system_versions {
+sub cmd_version_info {
     return to_jsonrpc(
         id     => 1,
-        method => 'system_versions',
+        method => 'version_info',
     );
 }
 
 
-=head2 conf_profiles
+=head2 profile_names
 
- zmb [GLOBAL OPTIONS] conf_profiles
+ zmb [GLOBAL OPTIONS] profile_names
 
 =cut
 
-sub cmd_conf_profiles {
+sub cmd_profile_names {
     return to_jsonrpc(
         id     => 1,
-        method => 'conf_profiles',
+        method => 'profile_names',
     );
 }
 
 
-=head2 conf_languages
+=head2 get_language_tags
 
- zmb [GLOBAL OPTIONS] conf_languages
+ zmb [GLOBAL OPTIONS] get_language_tags
 
 =cut
 
-sub cmd_conf_languages {
+sub cmd_get_language_tags {
     return to_jsonrpc(
         id     => 1,
-        method => 'conf_languages',
+        method => 'get_language_tags',
     );
 }
 
 
-=head2 job_create
+=head2 start_domain_test
 
- zmb [GLOBAL OPTIONS] job_create [OPTIONS]
+ zmb [GLOBAL OPTIONS] start_domain_test [OPTIONS]
 
  Options:
 
@@ -164,7 +164,7 @@ sub cmd_conf_languages {
 
 =cut
 
-sub cmd_job_create {
+sub cmd_start_domain_test {
     my @opts = @_;
 
     my @opt_nameserver;
@@ -252,7 +252,7 @@ sub cmd_job_create {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'job_create',
+        method => 'start_domain_test',
         params => \%params,
     );
 }
@@ -260,16 +260,16 @@ sub cmd_job_create {
 
 
 
-=head2 job_status
+=head2 test_progress
 
- zmb [GLOBAL OPTIONS] job_status [OPTIONS]
+ zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
 
  Options:
    --test-id TEST_ID
 
 =cut
 
-sub cmd_job_status {
+sub cmd_test_progress {
     my @opts = @_;
 
     my $opt_test_id;
@@ -280,7 +280,7 @@ sub cmd_job_status {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'job_status',
+        method => 'test_progress',
         params => {
             test_id => $opt_test_id,
         },
@@ -288,16 +288,16 @@ sub cmd_job_status {
 }
 
 
-=head2 job_params
+=head2 get_test_params
 
- zmb [GLOBAL OPTIONS] job_params [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_params [OPTIONS]
 
  Options:
    --test-id TEST_ID
 
 =cut
 
-sub cmd_job_params {
+sub cmd_get_test_params {
     my @opts = @_;
 
     my $opt_test_id;
@@ -308,7 +308,7 @@ sub cmd_job_params {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'job_params',
+        method => 'get_test_params',
         params => {
             test_id => $opt_test_id,
         },
@@ -316,9 +316,9 @@ sub cmd_job_params {
 }
 
 
-=head2 job_results
+=head2 get_test_results
 
- zmb [GLOBAL OPTIONS] job_results [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_results [OPTIONS]
 
  Options:
    --test-id TEST_ID
@@ -326,7 +326,7 @@ sub cmd_job_params {
 
 =cut
 
-sub cmd_job_results {
+sub cmd_get_test_results {
     my @opts = @_;
 
     my $opt_lang;
@@ -339,7 +339,7 @@ sub cmd_job_results {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'job_results',
+        method => 'get_test_results',
         params => {
             id       => $opt_test_id,
             language => $opt_lang,
@@ -348,9 +348,9 @@ sub cmd_job_results {
 }
 
 
-=head2 domain_history
+=head2 get_test_history
 
- zmb [GLOBAL OPTIONS] domain_history [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_test_history [OPTIONS]
 
  Options:
    --domain DOMAIN_NAME
@@ -360,7 +360,7 @@ sub cmd_job_results {
 
 =cut
 
-sub cmd_domain_history {
+sub cmd_get_test_history {
     my @opts = @_;
     my $opt_filter;
     my $opt_domain;
@@ -398,15 +398,15 @@ sub cmd_domain_history {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'domain_history',
+        method => 'get_test_history',
         params => \%params,
     );
 }
 
 
-=head2 user_create
+=head2 add_api_user
 
- zmb [GLOBAL OPTIONS] user_create [OPTIONS]
+ zmb [GLOBAL OPTIONS] add_api_user [OPTIONS]
 
  Options:
    --username USERNAME
@@ -414,7 +414,7 @@ sub cmd_domain_history {
 
 =cut
 
-sub cmd_user_create {
+sub cmd_add_api_user {
     my @opts = @_;
 
     my $opt_username;
@@ -427,7 +427,7 @@ sub cmd_user_create {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'user_create',
+        method => 'add_api_user',
         params => {
             username => $opt_username,
             api_key  => $opt_api_key,
@@ -436,9 +436,9 @@ sub cmd_user_create {
 }
 
 
-=head2 batch_create
+=head2 add_batch_job
 
- zmb [GLOBAL OPTIONS] batch_create [OPTIONS]
+ zmb [GLOBAL OPTIONS] add_batch_job [OPTIONS]
 
  Options:
     --username USERNAME
@@ -467,7 +467,7 @@ sub cmd_user_create {
 
 =cut
 
-sub cmd_batch_create {
+sub cmd_add_batch_job {
     my @opts = @_;
 
     my $opt_username;
@@ -558,22 +558,22 @@ sub cmd_batch_create {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'batch_create',
+        method => 'add_batch_job',
         params => \%params,
     );
 }
 
 
-=head2 batch_status
+=head2 get_batch_job_result
 
- zmb [GLOBAL OPTIONS] batch_status [OPTIONS]
+ zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
 
  Options:
    --batch-id BATCH-ID
 
 =cut
 
-sub cmd_batch_status {
+sub cmd_get_batch_job_result {
     my @opts = @_;
 
     my $opt_batch_id;
@@ -584,7 +584,7 @@ sub cmd_batch_status {
 
     return to_jsonrpc(
         id     => 1,
-        method => 'batch_status',
+        method => 'get_batch_job_result',
         params => {
             batch_id => $opt_batch_id,
         },

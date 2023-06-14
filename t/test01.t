@@ -86,40 +86,39 @@ my $hash_id;
 # This is the first test added to the DB, its 'id' is 1
 my $test_id = 1;
 subtest 'add a first test' => sub {
-    my $res_job_id = $rpcapi->job_create( $params );
-    $hash_id = $res_job_id->{job_id};
+    $hash_id = $rpcapi->start_domain_test( $params );
 
-    ok( $hash_id, "API job_create OK" );
+    ok( $hash_id, "API start_domain_test OK" );
     is( length($hash_id), 16, "Test has a 16 characters length hash ID (hash_id=$hash_id)" );
 
     my ( $test_id_db, $hash_id_db ) = $dbh->selectrow_array( "SELECT id, hash_id FROM test_results WHERE id=?", undef, $test_id );
-    is( $test_id_db, $test_id , 'API job_create -> Test inserted in the DB' );
+    is( $test_id_db, $test_id , 'API start_domain_test -> Test inserted in the DB' );
     is( $hash_id_db, $hash_id , 'Correct hash_id in database' );
 
-    # test job_status API
-    my $res_job_status = $rpcapi->job_status( { test_id => $hash_id } );
-    is( $res_job_status->{progress}, 0 , 'Test has been created, its progress is 0' );
+    # test test_progress API
+    my $progress = $rpcapi->test_progress( { test_id => $hash_id } );
+    is( $progress, 0 , 'Test has been created, its progress is 0' );
 };
 
 subtest 'get and run test' => sub {
     my ( $hash_id_from_db ) = $rpcapi->{db}->get_test_request();
     is( $hash_id_from_db, $hash_id, 'Get correct test to run' );
 
-    my $res_job_status = $rpcapi->job_status( { test_id => $hash_id } );
-    is( $res_job_status->{progress}, 1, 'Test has been picked, its progress is 1' );
+    my $progress = $rpcapi->test_progress( { test_id => $hash_id } );
+    is( $progress, 1, 'Test has been picked, its progress is 1' );
 
     diag "running the agent on test $hash_id";
     $agent->run( $hash_id ); # blocking call
 
-    $res_job_status = $rpcapi->job_status( { test_id => $hash_id } );
-    is( $res_job_status->{progress}, 100 , 'Test has finished, its progress is 100' );
+    $progress = $rpcapi->test_progress( { test_id => $hash_id } );
+    is( $progress, 100 , 'Test has finished, its progress is 100' );
 };
 
 subtest 'API calls' => sub {
 
-    subtest 'job_results' => sub {
+    subtest 'get_test_results' => sub {
         local $@ = undef;
-        my $res = eval { $rpcapi->job_results( { id => $hash_id, language => 'en' } ) };
+        my $res = eval { $rpcapi->get_test_results( { id => $hash_id, language => 'en' } ) };
         if ( $@ ) {
             fail 'Crashed while fetching job results: ' . Dumper( $@ );
         }
@@ -137,8 +136,8 @@ subtest 'API calls' => sub {
         }
     };
 
-    subtest 'job_params' => sub {
-        my $res = $rpcapi->job_params( { test_id => $hash_id } );
+    subtest 'get_test_params' => sub {
+        my $res = $rpcapi->get_test_params( { test_id => $hash_id } );
         is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
         is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
         is( $res->{client_id}, $params->{client_id}, 'Retrieve the correct "client_id" value' );
@@ -149,35 +148,34 @@ subtest 'API calls' => sub {
         is_deeply( $res->{ds_info}, $params->{ds_info}, 'Retrieve the correct "ds_info" value' );
     };
 
-    subtest 'user_create' => sub {
+    subtest 'add_api_user' => sub {
         my $res;
         eval {
-            $res = $rpcapi->user_create( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } );
+            $res = $rpcapi->add_api_user( { username => "zonemaster_test", api_key => "zonemaster_test's api key" } );
         };
-        is( $res->{success}, 1, 'API user_create success');
+        is( $res, 1, 'API add_api_user success');
 
         my $user_check_query = q/SELECT * FROM users WHERE username = 'zonemaster_test'/;
-        is( scalar( $dbh->selectrow_array( $user_check_query ) ), 1 ,'API user_create user created' );
+        is( scalar( $dbh->selectrow_array( $user_check_query ) ), 1 ,'API add_api_user user created' );
     };
 
-    subtest 'system_versions' => sub {
-        my $res = $rpcapi->system_versions();
+    subtest 'version_info' => sub {
+        my $res = $rpcapi->version_info();
         ok( defined( $res->{zonemaster_ldns} ), 'Has a "zonemaster_ldns" key' );
         ok( defined( $res->{zonemaster_engine} ), 'Has a "zonemaster_engine" key' );
         ok( defined( $res->{zonemaster_backend} ), 'Has a "zonemaster_backend" key' );
     };
 
-    subtest 'conf_profiles' => sub {
-        my $res = $rpcapi->conf_profiles();
-        my $profiles = $res->{profiles};
-        is( scalar( @$profiles ), 2, 'There are exactly 2 public profiles' );
-        ok( grep( /default/, @$profiles ), 'The profile "default" is defined' );
-        ok( grep( /test_profile/, @$profiles ), 'The profile "test_profile" is defined' );
+    subtest 'profile_names' => sub {
+        my $res = $rpcapi->profile_names();
+        is( scalar( @$res ), 2, 'There are exactly 2 public profiles' );
+        ok( grep( /default/, @$res ), 'The profile "default" is defined' );
+        ok( grep( /test_profile/, @$res ), 'The profile "test_profile" is defined' );
     };
 
-    subtest 'lookup_delegation_data' => sub {
-        my $res = $rpcapi->lookup_delegation_data( { domain => "fr" } );
-        #diag explain( $res );
+    subtest 'get_data_from_parent_zone' => sub {
+        my $res = $rpcapi->get_data_from_parent_zone( { domain => "fr" } );
+        note explain( $res );
         ok( defined( $res->{ns_list} ), 'Has a list of nameservers' );
         ok( defined( $res->{ds_list} ), 'Has a list of DS records' );
 
@@ -211,23 +209,22 @@ subtest 'API calls' => sub {
 
 # start a second test with IPv6 disabled
 $params->{ipv6} = 0;
-my $job_res = $rpcapi->job_create( $params );
-$hash_id = $job_res->{job_id};
+$hash_id = $rpcapi->start_domain_test( $params );
 diag "running the agent on test $hash_id";
 $agent->run($hash_id);
 
 subtest 'second test has IPv6 disabled' => sub {
-    my $res = $rpcapi->job_params( { test_id => $hash_id } );
+    my $res = $rpcapi->get_test_params( { test_id => $hash_id } );
     is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
     is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
-    $res = $rpcapi->job_results( { id => $hash_id, language => 'en' } );
+    $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en' } );
     my @msgs = map { $_->{message} } @{ $res->{results} };
     ok( grep( /IPv6 is disabled/, @msgs ), 'Results contain an "IPv6 is disabled" message' );
 };
 
-my $domain_history;
-subtest 'domain_history' => sub {
+my $test_history;
+subtest 'get_test_history' => sub {
     my $offset = 0;
     my $limit  = 10;
     my $method_params = {
@@ -236,11 +233,11 @@ subtest 'domain_history' => sub {
         limit => $limit
     };
 
-    my $res_domain_history = $rpcapi->domain_history( $method_params );
-    $domain_history = $res_domain_history->{history};
-    is( scalar( @$domain_history ), 2, 'Two tests created' );
+    $test_history = $rpcapi->get_test_history( $method_params );
+    note explain( $test_history );
+    is( scalar( @$test_history ), 2, 'Two tests created' );
 
-    foreach my $res (@$domain_history) {
+    foreach my $res (@$test_history) {
         is( length($res->{id}), 16, 'Test has 16 characters length hash ID' );
         is( $res->{undelegated}, JSON::PP::true, 'Test is undelegated' );
         ok( ! exists $res->{creation_time}, 'Key "creation_time" should be missing' );
@@ -254,21 +251,19 @@ subtest 'domain_history' => sub {
         $params->{ipv4} = 0;
 
         # create the test, retrieve its id but we don't run it
-        $rpcapi->job_create( $params );
+        $rpcapi->start_domain_test( $params );
         ( $hash_id ) = $rpcapi->{db}->get_test_request();
 
-        my $res_domain_history;
-        $res_domain_history = $rpcapi->domain_history( $method_params );
-        $domain_history = $res_domain_history->{history};
-        is( scalar( @$domain_history ), 2, 'Only 2 tests should be retrieved' );
+        $test_history = $rpcapi->get_test_history( $method_params );
+        note explain( $test_history );
+        is( scalar( @$test_history ), 2, 'Only 2 tests should be retrieved' );
 
         # now run the test
         diag "running the agent on test $hash_id";
         $agent->run( $hash_id );
 
-        $res_domain_history = $rpcapi->domain_history( $method_params );
-        $domain_history = $res_domain_history->{history};
-        is( scalar( @$domain_history ), 3, 'Now 3 tests should be retrieved' );
+        $test_history = $rpcapi->get_test_history( $method_params );
+        is( scalar( @$test_history ), 3, 'Now 3 tests should be retrieved' );
     }
 };
 
@@ -276,13 +271,12 @@ subtest 'mock another client (i.e. reuse a previous test)' => sub {
     $params->{client_id} = 'Another Client';
     $params->{client_version} = '0.1';
 
-    my $res = $rpcapi->job_create( $params );
-    my $new_hash_id = $res->{job_id};
+    my $new_hash_id = $rpcapi->start_domain_test( $params );
 
     is( $new_hash_id, $hash_id, 'Has the same hash than previous test' );
 
     subtest 'check test_params values' => sub {
-        my $res = $rpcapi->job_params( { test_id => "$hash_id" } );
+        my $res = $rpcapi->get_test_params( { test_id => "$hash_id" } );
         # the following values are part of the fingerprint
         is( $res->{domain}, $params->{domain}, 'Retrieve the correct "domain" value' );
         is( $res->{profile}, $params->{profile}, 'Retrieve the correct "profile" value' );
@@ -299,10 +293,10 @@ subtest 'mock another client (i.e. reuse a previous test)' => sub {
 
 subtest 'check historic tests' => sub {
     # Verifies that delegated and undelegated tests are coded correctly when started
-    # and that the filter option in "domain_history" works correctly
+    # and that the filter option in "get_test_history" works correctly
 
     my $domain          = 'xa';
-    # Non-batch for "job_create":
+    # Non-batch for "start_domain_test":
     my $params_un1      = { # undelegated, non-batch
         domain          => $domain,
         nameservers     => [
@@ -318,7 +312,7 @@ subtest 'check historic tests' => sub {
     my $params_dn1 = { # delegated, non-batch
         domain          => $domain,
     };
-    # Batch for "batch_create"
+    # Batch for "add_batch_job"
     my $domain2         = 'xb';
     my $params_ub1      = { # undelegated, batch
         domains         => [ $domain, $domain2 ],
@@ -342,57 +336,51 @@ subtest 'check historic tests' => sub {
     # The batch jobs, $params_ub1, $params_ub2 and $params_db1, cannot be run from here due to limitation in the API. See issue #827.
 
     foreach my $param ($params_un1, $params_un2, $params_dn1) {
-        my $job_res = $rpcapi->job_create( $param );
-        my $testid = $job_res->{job_id};
-        ok( $testid, "API job_create ID OK" );
+        my $testid = $rpcapi->start_domain_test( $param );
+        ok( $testid, "API start_domain_test ID OK" );
         diag "running the agent on test $testid";
         $agent->run( $testid );
-        my $res_job_status = $rpcapi->job_status( { test_id => $testid } );
-        is( $res_job_status->{progress}, 100 , 'API job_status -> Test finished' );
+        is( $rpcapi->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );
     };
 
-    my $res_domain_history_delegated = $rpcapi->domain_history(
+    my $test_history_delegated = $rpcapi->get_test_history(
         {
             filter => 'delegated',
             frontend_params => {
                 domain => $domain,
             }
         } );
-    my $res_domain_history_undelegated = $rpcapi->domain_history(
+    my $test_history_undelegated = $rpcapi->get_test_history(
         {
             filter => 'undelegated',
             frontend_params => {
                 domain => $domain,
             }
         } );
-    my $domain_history_delegated = $res_domain_history_delegated->{history};
-    my $domain_history_undelegated = $res_domain_history_undelegated->{history};
 
-    # diag explain( $domain_history_delegated );
-    is( scalar( @$domain_history_delegated ), 1, 'One delegated test created' );
-    # diag explain( $domain_history_undelegated );
-    is( scalar( @$domain_history_undelegated ), 2, 'Two undelegated tests created' );
+    note explain( $test_history_delegated );
+    is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
+    note explain( $test_history_undelegated );
+    is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
 
     subtest 'domain is case and trailing dot insensitive' => sub {
-        my $res_domain_history_delegated = $rpcapi->domain_history(
+        my $test_history_delegated = $rpcapi->get_test_history(
             {
                 filter => 'delegated',
                 frontend_params => {
                     domain => $domain . '.',
                 }
             } );
-        my $res_domain_history_undelegated = $rpcapi->domain_history(
+        my $test_history_undelegated = $rpcapi->get_test_history(
             {
                 filter => 'undelegated',
                 frontend_params => {
                     domain => ucfirst( $domain ),
                 }
             } );
-        my $domain_history_delegated = $res_domain_history_delegated->{history};
-        my $domain_history_undelegated = $res_domain_history_undelegated->{history};
 
-        is( scalar( @$domain_history_delegated ), 1, 'One delegated test created' );
-        is( scalar( @$domain_history_undelegated ), 2, 'Two undelegated tests created' );
+        is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
+        is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
     };
 };
 
@@ -411,8 +399,7 @@ subtest 'normalize "domain" column' => sub {
     while ( my ($domain, $expected) = each (%domains_to_test) ) {
         $test_params->{domain} = $domain;
 
-        my $job_res = $rpcapi->job_create( $test_params );
-        $hash_id = $job_res->{job_id};
+        $hash_id = $rpcapi->start_domain_test( $test_params );
         my ( $db_domain ) = $dbh->selectrow_array( "SELECT domain FROM test_results WHERE hash_id=?", undef, $hash_id );
         is( $db_domain, $expected, 'stored domain name is normalized' );
     }

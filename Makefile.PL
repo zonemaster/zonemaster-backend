@@ -35,8 +35,8 @@ requires
   'Router::Simple::Declare'         => 0,
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
-  'Zonemaster::Engine'              => 4.006002,
-  'Zonemaster::LDNS'                => 3.001000,
+  'Zonemaster::LDNS'                => 3.002000,  # v3.2.0
+  'Zonemaster::Engine'              => 4.007000,  # v4.7.0
   ;
 
 test_requires 'DBD::SQLite' => 1.4702;

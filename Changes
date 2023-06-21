@@ -1,6 +1,25 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v11.0.0 2023-06-21 (public release version)
+
+ [Breaking changes]
+ - Removes deprecated features related to locale (#1097)
+ - Remove deprecated "creation_time" key (#1081)
+
+ [Features]
+ - Adds new experimental API methods and method names
+   (#1111, #1096, #1083, #1054)
+
+ [Fixes]
+ - Updates translations (#1108, #1103, #1102)
+ - Adds systemd start scripts for Rocky Linux (#1107)
+ - Removes documentation moved to the zonemaster/zonemaster
+   repository (#1104)
+ - Removes dependency to String::ShellQuote (#1093)
+ - Dissociate died test from reaching max execution time (#1082)
+
+
 v10.0.2 2023-03-01 (public fix release)
 
  [Fixes]

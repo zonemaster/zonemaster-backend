@@ -91,9 +91,9 @@ The Zonemaster *Engine* is a library for performing *tests*. It's hosted in [its
 own repository](https://github.com/zonemaster/zonemaster-engine/).
 
 --------
-[Configure the set of available profiles]: Configuration.md#profiles-section
+[Configure the set of available profiles]: https://github.com/zonemaster/zonemaster/blob/develop/docs/public/configuration/backend.md#profiles-section
 [Profile file]: https://metacpan.org/pod/Zonemaster::Engine::Config#PROFILE-DATA
-[Profile name]: API.md#profile-name
-[Profiles overview]: https://github.com/dotse/zonemaster/blob/master/docs/design/Profiles.md
-[RPC-API]: API.md
+[Profile name]: https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#profile-name
+[Profiles overview]: https://github.com/zonemaster/zonemaster/blob/master/docs/internal/design/Profiles.md
+[RPC-API]: https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md
 [Zonemaster Engine default profile]: https://metacpan.org/pod/Zonemaster::Engine::Config#DESCRIPTION

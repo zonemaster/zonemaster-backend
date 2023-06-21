@@ -12,6 +12,10 @@
 ^share/[^/]*\.mo$
 ^share/Zonemaster-Backend.pot$
 ^share/update-po$
+^Zonemaster-Backend-[0-9.]*\.tar\.gz
+
+# PO files are not present in the distribution package, tests of those are irrelevant there.
+^t/po-files.t
 
 #!start included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.

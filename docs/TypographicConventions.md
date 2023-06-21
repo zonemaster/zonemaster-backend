@@ -4,8 +4,8 @@ The Zonemaster Backend documentation uses the following typographic conventions:
 
 *Italic* text is used for:
 
-* technical terms defined in the [Architecture](Architecture.md) document
-* data types defined in the [API](API.md) document
+* technical terms defined in the [Architecture] document
+* data types defined in the [API] document
 
 `Monospace` text is used for:
 
@@ -23,3 +23,6 @@ The Zonemaster Backend documentation uses the following typographic conventions:
 >
 > * notes and commentary
 >
+
+[API]:          https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md
+[Architecture]: Architecture.md

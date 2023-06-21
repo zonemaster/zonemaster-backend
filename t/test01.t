@@ -117,11 +117,15 @@ subtest 'get and run test' => sub {
 subtest 'API calls' => sub {
 
     subtest 'get_test_results' => sub {
-        my $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en_US' } );
+        local $@ = undef;
+        my $res = eval { $rpcapi->get_test_results( { id => $hash_id, language => 'en' } ) };
+        if ( $@ ) {
+            fail 'Crashed while fetching job results: ' . Dumper( $@ );
+        }
         ok( ! defined $res->{id}, 'Do not expose primary key' );
         is( $res->{hash_id}, $hash_id, 'Retrieve the correct "hash_id"' );
         ok( defined $res->{params}, 'Value "params" properly defined' );
-        ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( ! exists $res->{creation_time}, 'Key "creation_time" should be missing' );
         ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{results}, 'Value "results" properly defined' );
         if ( @{ $res->{results} } > 1 ) {
@@ -171,7 +175,7 @@ subtest 'API calls' => sub {
 
     subtest 'get_data_from_parent_zone' => sub {
         my $res = $rpcapi->get_data_from_parent_zone( { domain => "fr" } );
-        #diag explain( $res );
+        note explain( $res );
         ok( defined( $res->{ns_list} ), 'Has a list of nameservers' );
         ok( defined( $res->{ds_list} ), 'Has a list of DS records' );
 
@@ -214,9 +218,9 @@ subtest 'second test has IPv6 disabled' => sub {
     is( $res->{ipv4}, $params->{ipv4}, 'Retrieve the correct "ipv4" value' );
     is( $res->{ipv6}, $params->{ipv6}, 'Retrieve the correct "ipv6" value' );
 
-    $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en_US' } );
-    my @msg_basic = map { $_->{message} if $_->{module} eq 'BASIC' } @{ $res->{results} };
-    ok( grep( /IPv6 is disabled/, @msg_basic ), 'Results contain an "IPv6 is disabled" message' );
+    $res = $rpcapi->get_test_results( { id => $hash_id, language => 'en' } );
+    my @msgs = map { $_->{message} } @{ $res->{results} };
+    ok( grep( /IPv6 is disabled/, @msgs ), 'Results contain an "IPv6 is disabled" message' );
 };
 
 my $test_history;
@@ -230,13 +234,13 @@ subtest 'get_test_history' => sub {
     };
 
     $test_history = $rpcapi->get_test_history( $method_params );
-    #diag explain( $test_history );
+    note explain( $test_history );
     is( scalar( @$test_history ), 2, 'Two tests created' );
 
     foreach my $res (@$test_history) {
         is( length($res->{id}), 16, 'Test has 16 characters length hash ID' );
         is( $res->{undelegated}, JSON::PP::true, 'Test is undelegated' );
-        ok( defined $res->{creation_time}, 'Value "creation_time" properly defined' );
+        ok( ! exists $res->{creation_time}, 'Key "creation_time" should be missing' );
         ok( defined $res->{created_at}, 'Value "created_at" properly defined' );
         ok( defined $res->{overall_result}, 'Value "overall_result" properly defined' );
     }
@@ -251,7 +255,7 @@ subtest 'get_test_history' => sub {
         ( $hash_id ) = $rpcapi->{db}->get_test_request();
 
         $test_history = $rpcapi->get_test_history( $method_params );
-        #diag explain( $test_history );
+        note explain( $test_history );
         is( scalar( @$test_history ), 2, 'Only 2 tests should be retrieved' );
 
         # now run the test
@@ -354,9 +358,9 @@ subtest 'check historic tests' => sub {
             }
         } );
 
-    # diag explain( $test_history_delegated );
+    note explain( $test_history_delegated );
     is( scalar( @$test_history_delegated ), 1, 'One delegated test created' );
-    # diag explain( $test_history_undelegated );
+    note explain( $test_history_undelegated );
     is( scalar( @$test_history_undelegated ), 2, 'Two undelegated tests created' );
 
     subtest 'domain is case and trailing dot insensitive' => sub {

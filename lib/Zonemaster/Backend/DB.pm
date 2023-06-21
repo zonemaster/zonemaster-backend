@@ -270,7 +270,7 @@ sub select_test_results {
         q[
             SELECT
                 hash_id,
-                created_at AS creation_time,
+                created_at,
                 params,
                 results
             FROM test_results
@@ -286,7 +286,7 @@ sub select_test_results {
     die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Test not found", data => { test_id => $test_id } )
         unless defined $result;
 
-    $result->{created_at} = $self->to_iso8601( $result->{creation_time} );
+    $result->{created_at} = $self->to_iso8601( $result->{created_at} );
 
     return $result;
 }
@@ -384,7 +384,6 @@ sub get_test_history {
             @results,
             {
                 id               => $h->{hash_id},
-                creation_time    => $h->{created_at},
                 created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
                 overall_result   => $overall,
@@ -399,7 +398,7 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $batch_id, $creation_time ) = $dbh->selectrow_array( "
+    my ( $batch_id, $created_at ) = $dbh->selectrow_array( "
             SELECT
                 batch_id,
                 batch_jobs.created_at AS batch_created_at
@@ -413,7 +412,7 @@ sub create_new_batch_job {
             LIMIT 1
             ", undef, $username );
 
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, creation_time => $creation_time } )
+    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, created_at => $created_at } )
         if ( $batch_id );
 
     $dbh->do( q[ INSERT INTO batch_jobs (username, created_at) VALUES (?,?) ],
@@ -526,6 +525,14 @@ sub get_batch_job_result {
     return \%result;
 }
 
+=head2 process_unfinished_tests($queue_label, $test_run_timeout)
+
+Append a new log entry C<BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST> to all the
+tests started more that $test_run_timeout seconds in the queue $queue_label.
+Then store the results in database.
+
+=cut
+
 sub process_unfinished_tests {
     my ( $self, $queue_label, $test_run_timeout ) = @_;
 
@@ -534,10 +541,24 @@ sub process_unfinished_tests {
         $test_run_timeout,
     );
 
+    my $msg = {
+        "level"     => "CRITICAL",
+        "module"    => "BACKEND_TEST_AGENT",
+        "tag"       => "UNABLE_TO_FINISH_TEST",
+        "args"      => { max_execution_time => $test_run_timeout },
+        "timestamp" => $test_run_timeout
+    };
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $self->force_end_test($h->{hash_id}, $h->{results}, $test_run_timeout);
+        $self->force_end_test($h->{hash_id}, $h->{results}, $msg);
     }
 }
+
+=head2 select_unfinished_tests($queue_label, $test_run_timeout)
+
+Search for all tests started more than $test_run_timeout seconds in the queue
+$queue_label.
+
+=cut
 
 sub select_unfinished_tests {
     my ( $self, $queue_label, $test_run_timeout ) = @_;
@@ -570,8 +591,15 @@ sub select_unfinished_tests {
     }
 }
 
+=head2 force_end_test($hash_id, $results, $msg)
+
+Append the $msg log entry to the $results arrayref and store the results into
+the database.
+
+=cut
+
 sub force_end_test {
-    my ( $self, $hash_id, $results, $timestamp ) = @_;
+    my ( $self, $hash_id, $results, $msg ) = @_;
     my $result;
     if ( defined $results && $results =~ /^\[/ ) {
         $result = decode_json( $results );
@@ -579,21 +607,28 @@ sub force_end_test {
     else {
         $result = [];
     }
-    push @$result,
-        {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "UNABLE_TO_FINISH_TEST",
-        "timestamp" => $timestamp,
-        };
+    push @$result, $msg;
 
     $self->store_results( $hash_id, encode_json($result) );
 }
 
+=head2 process_dead_test($hash_id)
+
+Append a new log entry C<BACKEND_TEST_AGENT:TEST_DIED> to the test with $hash_id.
+Then store the results in database.
+
+=cut
+
 sub process_dead_test {
     my ( $self, $hash_id ) = @_;
     my ( $results ) = $self->dbh->selectrow_array("SELECT results FROM test_results WHERE hash_id = ?", undef, $hash_id);
-    $self->force_end_test($hash_id, $results, $self->get_relative_start_time($hash_id));
+    my $msg = {
+        "level"     => "CRITICAL",
+        "module"    => "BACKEND_TEST_AGENT",
+        "tag"       => "TEST_DIED",
+        "timestamp" => $self->get_relative_start_time($hash_id)
+    };
+    $self->force_end_test($hash_id, $results, $msg);
 }
 
 # Converts the domain to lowercase and if the domain is not the root ('.')
@@ -663,7 +698,7 @@ Encode the params object into a JSON string. First a projection of some
 parameters is performed then all additional properties are kept.
 Returns an UTF-8  binary string of the union of the given hash and its
 normalization using default values, see
-L<https://github.com/zonemaster/zonemaster-backend/blob/master/docs/API.md#params-2>
+L<https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#params-2>
 
 =cut
 

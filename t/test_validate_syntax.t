@@ -278,12 +278,12 @@ subtest 'Everything but NoWarnings' => sub {
     {
         local $frontend_params->{language} = "fr-FR";
         my @res = start_domain_validate_params( $frontend_params );
-        is( scalar @res, 1, 'Invalid language, should be underscore not hyphen' ) or diag(  explain \@res );
+        is( scalar @res, 1, 'Invalid language tag syntax' ) or diag(  explain \@res );
     }
 
     {
         local $frontend_params->{language} = "nb_NO";
         my @res = start_domain_validate_params( $frontend_params );
-        is( scalar @res, 0, 'Valid language' ) or diag( explain \@res );
+        is( scalar @res, 1, 'Invalid language tag syntax' ) or diag(  explain \@res );
     }
 };

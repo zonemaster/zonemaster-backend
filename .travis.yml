@@ -78,7 +78,6 @@ addons:
       - libplack-perl
       - librole-tiny-perl
       - librouter-simple-perl
-      - libstring-shellquote-perl
       - libtest-nowarnings-perl
       - libtry-tiny-perl
       - postgresql

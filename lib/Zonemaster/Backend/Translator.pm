@@ -18,9 +18,14 @@ require Zonemaster::Engine::Logger::Entry;
 extends 'Zonemaster::Engine::Translator';
 
 Readonly my %TAG_DESCRIPTIONS => (
+    TEST_DIED => sub {
+        __x    # BACKEND_TEST_AGENT:TEST_DIED
+          'An error occured and Zonemaster could not start or finish the test.', @_;
+    },
     UNABLE_TO_FINISH_TEST => sub {
         __x    # BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
-          "Zonemaster was unable to start or finish the test.", @_;
+          'The test took too long to run (the current limit is {max_execution_time} seconds). '
+          . 'Maybe there are too many name servers or the name servers are either unreachable or not responsive enough.', @_;
     },
 );
 

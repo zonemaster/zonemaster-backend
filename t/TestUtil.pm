@@ -109,9 +109,9 @@ sub init_db {
 sub create_rpcapi {
     my ( $config ) = @_;
 
-    my $backend;
+    my $rpcapi;
     eval {
-        $backend = Zonemaster::Backend::RPCAPI->new(
+        $rpcapi = Zonemaster::Backend::RPCAPI->new(
             {
                 dbtype => $db_backend,
                 config => $config,
@@ -123,13 +123,13 @@ sub create_rpcapi {
         BAIL_OUT( 'Could not connect to database' );
     }
 
-    if ( not $backend->isa('Zonemaster::Backend::RPCAPI' ) ) {
+    if ( not $rpcapi->isa('Zonemaster::Backend::RPCAPI' ) ) {
         BAIL_OUT( 'Not a Zonemaster::Backend::RPCAPI object' );
     }
 
-    prepare_db( $backend->{db} );
+    prepare_db( $rpcapi->{db} );
 
-    return $backend;
+    return $rpcapi;
 }
 
 sub create_testagent {

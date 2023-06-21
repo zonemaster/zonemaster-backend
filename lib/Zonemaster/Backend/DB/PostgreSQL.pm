@@ -173,7 +173,7 @@ sub add_batch_job {
         my $priority    = $test_params->{priority};
         my $queue_label = $test_params->{queue};
 
-        my $creation_time = $self->format_time( time() );
+        my $created_at = $self->format_time( time() );
 
         $dbh->begin_work();
         $dbh->do( "ALTER TABLE test_results DROP CONSTRAINT IF EXISTS test_results_pkey" );
@@ -209,7 +209,7 @@ sub add_batch_job {
 
             my $hash_id = substr(md5_hex(time().rand()), 0, 16);
             $dbh->pg_putcopydata(
-                "$hash_id\t$test_params->{domain}\t$batch_id\t$creation_time\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n"
+                "$hash_id\t$test_params->{domain}\t$batch_id\t$created_at\t$priority\t$queue_label\t$fingerprint\t$encoded_params\t$undelegated\n"
             );
         }
         $dbh->pg_putcopyend();

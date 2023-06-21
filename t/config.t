@@ -73,7 +73,7 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->POSTGRESQL_password,  'postgresql_password',       'set: POSTGRESQL.password';
         is $config->POSTGRESQL_database,  'postgresql_database',       'set: POSTGRESQL.database';
         is $config->SQLITE_database_file, '/var/db/zonemaster.sqlite', 'set: SQLITE.database_file';
-        eq_or_diff { $config->LANGUAGE_locale }, { sv => { sv_FI => 1 } }, 'set: LANGUAGE.locale';
+        eq_or_diff { $config->LANGUAGE_locale }, { sv => 'sv_FI' }, 'set: LANGUAGE.locale';
         eq_or_diff { $config->PUBLIC_PROFILES }, {    #
             default => '/path/to/default.profile',
             two     => '/path/to/two.profile'
@@ -103,7 +103,7 @@ subtest 'Everything but NoWarnings' => sub {
         cmp_ok abs( $config->DB_polling_interval - 0.5 ), '<', 0.000001, 'default: DB.polling_interval';
         is $config->MYSQL_port,      3306, 'default: MYSQL.port';
         is $config->POSTGRESQL_port, 5432, 'default: POSTGRESQL.port';
-        eq_or_diff { $config->LANGUAGE_locale }, { en => { en_US => 1 } }, 'default: LANGUAGE.locale';
+        eq_or_diff { $config->LANGUAGE_locale }, { en => 'en_US' }, 'default: LANGUAGE.locale';
         eq_or_diff { $config->PUBLIC_PROFILES }, { default => undef }, 'default: PUBLIC_PROFILES';
         eq_or_diff { $config->PRIVATE_PROFILES }, {}, 'default: PRIVATE_PROFILES';
         is $config->ZONEMASTER_max_zonemaster_execution_time,            600, 'default: ZONEMASTER.max_zonemaster_execution_time';
@@ -111,21 +111,25 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    20,  'default: ZONEMASTER.number_of_processes_for_batch_testing';
         is $config->ZONEMASTER_lock_on_queue,                            0,   'default: ZONEMASTER.lock_on_queue';
         is $config->ZONEMASTER_age_reuse_previous_test,                  600, 'default: ZONEMASTER.age_reuse_previous_test';
+
+        is $config->RPCAPI_enable_add_api_user,  0,   'default: RPCAPI.enable_add_api_user';
+        is $config->RPCAPI_enable_add_batch_job, 1,   'default: RPCAPI.enable_add_batch_job';
     };
 
-    subtest 'Deprecated values and fallbacks that are unconditional' => sub {
-        $log->clear();
-        my $text = q{
-            [DB]
-            engine = SQLite
-            [SQLITE]
-            database_file = /var/db/zonemaster.sqlite
-            [LANGUAGE]
-            locale =
+    SKIP: {
+        skip "no more deprecated values", 1;
+
+        subtest 'Deprecated values and fallbacks that are unconditional' => sub {
+            $log->clear();
+            my $text = q{
+                [DB]
+                engine = SQLite
+                [SQLITE]
+                database_file = /var/db/zonemaster.sqlite
+            };
+            my $config = Zonemaster::Backend::Config->parse( $text );
         };
-        my $config = Zonemaster::Backend::Config->parse( $text );
-        $log->contains_ok( qr/deprecated.*LANGUAGE\.locale/, 'deprecated empty LANGUAGE.locale' );
-    };
+    }
 
     subtest 'Warnings' => sub {
         $log->clear();
@@ -145,6 +149,20 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->MYSQL_host, 'localhost', 'set: MYSQL.host';
         is $config->MYSQL_port, 3333,        'set: MYSQL.port';
     };
+
+    throws_ok {
+        $log->clear();
+        my $text = q{
+            [DB]
+            engine = SQLite
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+            [LANGUAGE]
+            locale =
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Use of empty LANGUAGE.locale property is not permitted/, 'die: Invalid empty locale tag';
 
     throws_ok {
         my $text = '{"this":"is","not":"a","valid":"ini","file":"!"}';
@@ -642,11 +660,11 @@ subtest 'Everything but NoWarnings' => sub {
             database_file = /var/db/zonemaster.sqlite
 
             [LANGUAGE]
-            locale = en_US en_US
+            locale = en_GB en_US
         };
         Zonemaster::Backend::Config->parse( $text );
     }
-    qr/LANGUAGE\.locale.*en_US/, 'die: Repeated locale_tag in LANGUAGE.locale';
+    qr/LANGUAGE\.locale.*en/, 'die: Repeated language code in LANGUAGE.locale';
 
     lives_and {
         my $text = q{
@@ -791,6 +809,76 @@ subtest 'Everything but NoWarnings' => sub {
         Zonemaster::Backend::Config->parse( $text );
     }
     qr/PRIVATE PROFILES.*default/, 'die: Default profile in PRIVATE PROFILES';
+
+    subtest 'RPCAPI experimental aliases' => sub {
+        subtest 'default values' => sub {
+            my $text = q{
+                [DB]
+                engine = SQLite
+
+                [SQLITE]
+                database_file = /var/db/zonemaster.sqlite
+            };
+            my $config = Zonemaster::Backend::Config->parse( $text );
+            is $config->RPCAPI_enable_add_api_user,  0, 'default: RPCAPI.enable_add_api_user';
+            is $config->RPCAPI_enable_add_batch_job, 1, 'default: RPCAPI.enable_add_batch_job';
+            is $config->RPCAPI_enable_user_create,   0, 'default: RPCAPI.enable_user_create';
+            is $config->RPCAPI_enable_batch_create,  1, 'default: RPCAPI.enable_batch_create';
+        };
+
+        subtest 'specifying stable and experimental parameters is forbidden' => sub {
+            throws_ok {
+                my $text = q{
+                    [DB]
+                    engine = SQLite
+
+                    [SQLITE]
+                    database_file = /var/db/zonemaster.sqlite
+
+                    [RPCAPI]
+                    enable_user_create = no
+                    enable_add_api_user = yes
+                };
+                Zonemaster::Backend::Config->parse( $text );
+            }
+            qr/Error:.+RPCAPI\.enable_add_api_user.+RPCAPI\.enable_user_create/, 'die: RPCAPI stable and experimental alias (add_api_user/user_create)';
+
+            throws_ok {
+                my $text = q{
+                    [DB]
+                    engine = SQLite
+
+                    [SQLITE]
+                    database_file = /var/db/zonemaster.sqlite
+
+                    [RPCAPI]
+                    enable_add_batch_job = no
+                    enable_batch_create = no
+                };
+                Zonemaster::Backend::Config->parse( $text );
+            }
+            qr/Error:.+RPCAPI\.enable_add_batch_job.+RPCAPI\.enable_batch_create/, 'die: RPCAPI stable and experimental alias (batch_job/batch_create)';
+        };
+
+        subtest 'setting alias' => sub {
+            my $text = q{
+                [DB]
+                engine = SQLite
+
+                [SQLITE]
+                database_file = /var/db/zonemaster.sqlite
+
+                [RPCAPI]
+                enable_user_create = no
+                enable_batch_create = no
+            };
+            my $config = Zonemaster::Backend::Config->parse( $text );
+            is $config->RPCAPI_enable_user_create,   0, 'set: RPCAPI.enable_user_create';
+            is $config->RPCAPI_enable_batch_create,  0, 'set: RPCAPI.enable_batch_create';
+            is $config->RPCAPI_enable_add_api_user,  0, 'aliased: RPCAPI.enable_add_api_user';
+            is $config->RPCAPI_enable_add_batch_job, 0, 'aliased: RPCAPI.enable_add_batch_job';
+        };
+    };
 
     {
         my $path = catfile( dirname( $0 ), '..', 'share', 'backend_config.ini' );

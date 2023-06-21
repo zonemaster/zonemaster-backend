@@ -268,7 +268,7 @@ subtest 'batch job still running' => sub {
     my $res = $@;
     is( $res->{message}, 'Batch job still running', 'correct error message' );
     is( $res->{data}->{batch_id}, $batch_id, 'error returned current running batch id' );
-    ok( $res->{data}->{creation_time}, 'error data contains batch creation time' );
+    ok( $res->{data}->{created_at}, 'error data contains batch creation time' );
 
     subtest 'use another user' => sub {
         my $another_user = { username => 'another', api_key => 'token' };

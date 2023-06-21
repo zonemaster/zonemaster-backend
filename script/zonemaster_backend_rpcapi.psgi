@@ -64,19 +64,43 @@ my $router = router {
         action => "version_info"
     };
 
+    # Experimental
+    connect "system_versions" => {
+        handler => $handler,
+        action => "system_versions"
+    };
+
     connect "profile_names" => {
-                handler => $handler,
-                action => "profile_names"
-        };
+        handler => $handler,
+        action => "profile_names"
+    };
+
+    # Experimental
+    connect "conf_profiles" => {
+        handler => $handler,
+        action => "conf_profiles"
+    };
 
     connect "get_language_tags" => {
-                handler => $handler,
-                action => "get_language_tags"
-        };
+        handler => $handler,
+        action => "get_language_tags"
+    };
 
-        connect "get_host_by_name" => {
+    # Experimental
+    connect "conf_languages" => {
+        handler => $handler,
+        action => "conf_languages"
+    };
+
+    connect "get_host_by_name" => {
         handler => $handler,
         action => "get_host_by_name"
+    };
+
+    # Experimental
+    connect "lookup_address_records" => {
+        handler => $handler,
+        action => "lookup_address_records"
     };
 
     connect "get_data_from_parent_zone" => {
@@ -84,9 +108,21 @@ my $router = router {
         action => "get_data_from_parent_zone"
     };
 
+    # Experimental
+    connect "lookup_delegation_data" => {
+        handler => $handler,
+        action => "lookup_delegation_data"
+    };
+
     connect "start_domain_test" => {
         handler => $handler,
         action => "start_domain_test"
+    };
+
+    # Experimental
+    connect "job_create" => {
+        handler => $handler,
+        action => "job_create"
     };
 
     connect "test_progress" => {
@@ -94,9 +130,21 @@ my $router = router {
         action => "test_progress"
     };
 
+    # Experimental
+    connect "job_status" => {
+        handler => $handler,
+        action => "job_status"
+    };
+
     connect "get_test_params" => {
         handler => $handler,
         action => "get_test_params"
+    };
+
+    # Experimental
+    connect "job_params" => {
+        handler => $handler,
+        action => "job_params"
     };
 
     connect "get_test_results" => {
@@ -104,30 +152,56 @@ my $router = router {
         action => "get_test_results"
     };
 
+    # Experimental
+    connect "job_results" => {
+        handler => $handler,
+        action => "job_results"
+    };
+
     connect "get_test_history" => {
         handler => $handler,
         action => "get_test_history"
+    };
+
+    # Experimental
+    connect "domain_history" => {
+        handler => $handler,
+        action => "domain_history"
     };
 
     connect "get_batch_job_result" => {
         handler => $handler,
         action => "get_batch_job_result"
     };
+
+    # Experimental
+    connect "batch_status" => {
+        handler => $handler,
+        action => "batch_status"
+    };
 };
 
-if ($config->RPCAPI_enable_add_api_user) {
+if ( $config->RPCAPI_enable_user_create or $config->RPCAPI_enable_add_api_user ) {
     $log->info('Enabling add_api_user method');
     $router->connect("add_api_user", {
         handler => $handler,
         action => "add_api_user"
     });
+    $router->connect("user_create", {
+        handler => $handler,
+        action => "user_create"
+    });
 }
 
-if ($config->RPCAPI_enable_add_batch_job) {
+if ( $config->RPCAPI_enable_batch_create or $config->RPCAPI_enable_add_batch_job ) {
     $log->info('Enabling add_batch_job method');
     $router->connect("add_batch_job", {
         handler => $handler,
         action => "add_batch_job"
+    });
+    $router->connect("batch_create", {
+        handler => $handler,
+        action => "batch_create"
     });
 }
 

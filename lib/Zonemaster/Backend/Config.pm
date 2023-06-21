@@ -149,7 +149,7 @@ Construct a new Zonemaster::Backend::Config based on a given configuration.
     );
 
 The configuration is interpreted according to the
-L<configuration format specification|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md>.
+L<configuration format specification|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md>.
 
 Returns a new Zonemaster::Backend::Config instance with its properties set to
 normalized and untainted values according to the given configuration with
@@ -215,9 +215,11 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
+    $obj->_set_RPCAPI_enable_user_create( 'no' ); # experimental
+    $obj->_set_RPCAPI_enable_batch_create( 'yes' ); # experimental
     $obj->_set_RPCAPI_enable_add_api_user( 'no' );
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
-    $obj->_add_LANGUAGE_locale( 'en_US' );
+    $obj->_set_locales( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
 
@@ -233,12 +235,7 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-
-    if ( defined( my $value = $ini->val( 'LANGUAGE', 'locale' ) ) ) {
-        if ( $value eq "" ) {
-            push @warnings, "Use of empty LANGUAGE.locale property is deprecated. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
-        }
-    }
+    #currently no deprecation warnings
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
@@ -301,19 +298,32 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
         $obj->_set_METRICS_statsd_port( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_user_create' ) ) ) {
+        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+            die "Error: cannot specify both RPCAPI.enable_add_api_user and RPCAPI.enable_user_create\n";
+        }
         $obj->_set_RPCAPI_enable_add_api_user( $value );
+        $obj->_set_RPCAPI_enable_user_create( $value );
+    } else {
+        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+            $obj->_set_RPCAPI_enable_add_api_user( $value );
+            $obj->_set_RPCAPI_enable_user_create( $value );
+        }
     }
-    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_batch_create' ) ) ) {
+        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+            die "Error: cannot specify both RPCAPI.enable_add_batch_job and RPCAPI.enable_batch_create\n";
+        }
         $obj->_set_RPCAPI_enable_add_batch_job( $value );
+        $obj->_set_RPCAPI_enable_batch_create( $value );
+    } else {
+        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+            $obj->_set_RPCAPI_enable_add_batch_job( $value );
+            $obj->_set_RPCAPI_enable_batch_create( $value );
+        }
     }
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
-        if ( $value ne "" ) {
-            $obj->_reset_LANGUAGE_locale();
-            for my $locale_tag ( split / +/, $value ) {
-                $obj->_add_LANGUAGE_locale( $locale_tag );
-            }
-        }
+        $obj->_set_locales( $value );
     }
 
     for my $name ( $ini->Parameters( 'PUBLIC PROFILES' ) ) {
@@ -403,7 +413,7 @@ sub check_db {
 
 =head2 DB_engine
 
-Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#engine>.
+Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#engine>.
 
 Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 
@@ -426,28 +436,28 @@ sub _set_DB_engine {
 
 =head2 DB_polling_interval
 
-Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#polling_interval>.
+Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#polling_interval>.
 
 Returns a number.
 
 
 =head2 MYSQL_database
 
-Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database>.
+Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database>.
 
 Returns a string.
 
 
 =head2 MYSQL_host
 
-Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host>.
+Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#host>.
 
 Returns a string.
 
 
 =head2 MYSQL_port
 
-Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port>
+Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#port>
 property from the loaded config.
 
 Returns a number.
@@ -455,35 +465,35 @@ Returns a number.
 
 =head2 MYSQL_password
 
-Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password>.
+Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#password>.
 
 Returns a string.
 
 
 =head2 MYSQL_user
 
-Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user>.
+Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#user>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_database
 
-Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-1>.
+Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_host
 
-Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-1>.
+Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#host-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_port
 
-Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port-1>
+Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#port-1>
 property from the loaded config.
 
 Returns a number.
@@ -491,50 +501,43 @@ Returns a number.
 
 =head2 POSTGRESQL_password
 
-Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-1>.
+Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#password-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_user
 
-Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-1>.
+Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#user-1>.
 
 Returns a string.
 
 
 =head2 SQLITE_database_file
 
-Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database_file>.
+Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database_file>.
 
 Returns a string.
 
 
 =head2 LANGUAGE_locale
 
-Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#locale>.
+Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#locale>.
 
-Returns a mapping from two-letter locale tag prefixes to sets of full locale
-tags.
-This is represented by a hash of hashrefs where all second level values are
-C<1>.
+Returns a mapping from two-letter locale tag prefixes to full locale tags.
+This is represented by a hash mapping prefix to full locale tag.
 
 E.g.:
 
     (
-        en => {
-            en_GB => 1,
-            en_US => 1,
-        },
-        sv => {
-            sv_SE => 1,
-        },
+        en => "en_US",
+        sv => "sv_SE",
     )
 
 
 =head2 PUBLIC_PROFILES
 
-Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#public-profiles-and-private-profiles-sections>.
 
 Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
@@ -544,7 +547,7 @@ C<undef> means that the Zonemaster Engine default profile should be used.
 
 =head2 PRIVATE_PROFILES
 
-Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#public-profiles-and-private-profiles-sections>.
+Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#public-profiles-and-private-profiles-sections>.
 
 Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
@@ -553,7 +556,7 @@ Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
-Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#max_zonemaster_execution_time>.
+Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#max_zonemaster_execution_time>.
 
 Returns a number.
 
@@ -561,7 +564,7 @@ Returns a number.
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
 
 Get the value of
-L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_frontend_testing>.
+L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#number_of_processes_for_frontend_testing>.
 
 Returns a number.
 
@@ -569,7 +572,7 @@ Returns a number.
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
 
 Get the value of
-L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#number_of_processes_for_batch_testing>.
+L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#number_of_processes_for_batch_testing>.
 
 Returns a number.
 
@@ -577,7 +580,7 @@ Returns a number.
 =head2 ZONEMASTER_lock_on_queue
 
 Get the value of
-L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#lock_on_queue>.
+L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#lock_on_queue>.
 
 Returns a number.
 
@@ -585,43 +588,57 @@ Returns a number.
 =head2 ZONEMASTER_age_reuse_previous_test
 
 Get the value of
-L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#age_reuse_previous_test>.
+L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#age_reuse_previous_test>.
 
 Returns a number.
 
-=cut
 
 =head2 METRICS_statsd_host
 
 Get the value of
-L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_host>.
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#statsd_host>.
 
 Returns a string.
 
-=cut
 
 =head2 METRICS_statsd_port
 
 Get the value of
-L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#statsd_port>.
+L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#statsd_port>.
 
 Returns a number.
 
-=cut
+
+=head2 RPCAPI_enable_user_create
+
+Experimental.
+Get the value of
+L<RPCAPI.enable_user_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_user_create>.
+
+Return 0 or 1
+
+
+=head2 RPCAPI_enable_batch_create
+
+Experimental.
+Get the value of
+L<RPCAPI.enable_batch_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_batch_create>.
+
+Return 0 or 1
+
 
 =head2 RPCAPI_enable_add_api_user
 
 Get the value of
-L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_api_user>.
+L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_api_user>.
 
 Return 0 or 1
 
-=cut
 
 =head2 RPCAPI_enable_add_batch_job
 
 Get the value of
-L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#enable_add_batch_job>.
+L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_batch_job>.
 
 Return 0 or 1
 
@@ -650,6 +667,8 @@ sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMA
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
+sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; } # experimental
+sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; } # experimental
 sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
 sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
@@ -674,6 +693,8 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
     _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
     _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
+    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool ); # experimental
+    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool ); # experimental
     _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
@@ -794,27 +815,32 @@ sub new_PM {
     return $pm;
 }
 
-sub _add_LANGUAGE_locale {
-    my ( $self, $locale_tag ) = @_;
+sub _set_locales {
+    my ( $self, $value ) = @_;
 
-    $locale_tag = untaint_locale_tag( $locale_tag )    #
-      // die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
+    my @locale_tags = split / +/, $value;
 
-    my $lang_code = $locale_tag =~ s/_..$//r;
-
-    if ( exists $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} ) {
-        die "Repeated locale tags in LANGUAGE.locale: $locale_tag\n";
+    if ( !@locale_tags ) {
+        die "config: Use of empty LANGUAGE.locale property is not permitted. Remove the LANGUAGE.locale entry or specify LANGUAGE.locale = en_US instead.";
     }
 
-    $self->{_LANGUAGE_locale}{$lang_code}{$locale_tag} = 1;
+    my %locales;
 
-    return;
-}
+    for my $locale_tag ( @locale_tags ) {
+        $locale_tag = untaint_locale_tag( $locale_tag )    #
+          // die "Illegal locale tag in LANGUAGE.locale: $locale_tag\n";
 
-sub _reset_LANGUAGE_locale {
-    my ( $self ) = @_;
+        my $lang_code = $locale_tag =~ s/_..$//r;
 
-    delete $self->{_LANGUAGE_locale};
+        if ( exists $locales{$lang_code} ) {
+            die "Repeated language code in LANGUAGE.locale: $lang_code\n";
+        }
+
+        $locales{$lang_code} = $locale_tag;
+    }
+
+    $self->{_LANGUAGE_locale} = \%locales;
+
     return;
 }
 

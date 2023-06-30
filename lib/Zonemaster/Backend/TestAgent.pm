@@ -112,8 +112,10 @@ sub run {
                 my ( $entry ) = @_;
                 if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
                     $nbr_testcases_finished++;
-                    # limit to max 99%, 100% is reached when data is stored in database
+                    # Must be at least 2% (0 and 1 are special) and limit to max 99%, 100% is reached when
+                    # data is stored in database
                     my $progress_percent = int( 99 * $nbr_testcases_finished /  $nbr_testcases_planned );
+                    $progress_percent = 2 if $progress_percent < 2;
                     $self->{_db}->test_progress( $test_id, $progress_percent );
                 }
             }

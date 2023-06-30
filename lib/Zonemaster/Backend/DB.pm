@@ -226,20 +226,25 @@ sub test_progress {
     if ( $progress ) {
         $progress = $progress < 1 ? 1 :
                     $progress > 99 ? 99 : $progress;
+
+        # $progress is set to 1 when a test ID is taken by a test agent.
+        # It is always 0 before. Require it to be 0 to prevent race condition
+        # between multiple test agents on the same queue.
         if ( $progress == 1 ) {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?,
-                        started_at = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $self->format_time( time() ),
-                $test_id,
-            );
+            unless ($dbh->do(
+                        q[
+                          UPDATE test_results
+                          SET progress = 1,
+                              started_at = ?
+                          WHERE hash_id = ?
+                          AND progress = 0
+                          ],
+                        undef,
+                        $self->format_time( time() ),
+                        $test_id,
+                    )) {
+                return undef;
+            }
         }
         else {
             $dbh->do(
@@ -467,7 +472,11 @@ sub get_test_request {
     }
 
     if ( $hash_id ) {
-        $self->test_progress( $hash_id, 1 );
+        unless ($self->test_progress( $hash_id, 1 ) ) {
+            # Failing means that another test agent took it before us.
+            $hash_id = undef;
+            $batch_id = undef;
+        }
     }
     return ( $hash_id, $batch_id );
 }

@@ -231,7 +231,8 @@ sub test_progress {
         # It is always 0 before. Require it to be 0 to prevent race condition
         # between multiple test agents on the same queue.
         if ( $progress == 1 ) {
-            unless ($dbh->do(
+
+            my $updated = $dbh->do(
                         q[
                           UPDATE test_results
                           SET progress = 1,
@@ -242,7 +243,8 @@ sub test_progress {
                         undef,
                         $self->format_time( time() ),
                         $test_id,
-                    )) {
+                );
+            if ($updated eq '0E0') { # It means zero
                 return undef;
             }
         }

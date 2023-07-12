@@ -398,23 +398,6 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $batch_id, $created_at ) = $dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.created_at AS batch_created_at
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id = batch_jobs.id
-                AND username = ?
-            WHERE
-                test_results.progress <> 100
-            LIMIT 1
-            ", undef, $username );
-
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, created_at => $created_at } )
-        if ( $batch_id );
-
     $dbh->do( q[ INSERT INTO batch_jobs (username, created_at) VALUES (?,?) ],
         undef,
         $username,

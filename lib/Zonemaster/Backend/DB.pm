@@ -17,6 +17,7 @@ use Readonly;
 use Try::Tiny;
 
 use Zonemaster::Backend::Errors;
+use Zonemaster::Engine::Logger::Entry;
 
 requires qw(
   add_batch_job
@@ -773,14 +774,16 @@ sub process_unfinished_tests {
         $test_run_timeout,
     );
 
-    my $msg = {
-        level     => "CRITICAL",
-        module    => "BACKEND_TEST_AGENT",
-        testcase  => "",
-        tag       => "UNABLE_TO_FINISH_TEST",
-        args      => { max_execution_time => $test_run_timeout },
-        timestamp => $test_run_timeout
-    };
+    my $msg = Zonemaster::Engine::Logger::Entry->new(
+        {
+            level     => "CRITICAL",
+            module    => "BACKEND_TEST_AGENT",
+            testcase  => "",
+            tag       => "UNABLE_TO_FINISH_TEST",
+            args      => { max_execution_time => $test_run_timeout },
+            timestamp => $test_run_timeout
+        }
+    );
     while ( my $h = $sth1->fetchrow_hashref ) {
         $self->force_end_test($h->{hash_id}, $msg);
     }
@@ -826,15 +829,15 @@ sub select_unfinished_tests {
 
 =head2 force_end_test($hash_id, $msg)
 
-Store the $msg log entry into the database and mark test with $hash_id as
-finished (progress to 100) in database.
+Store the L<Zonemaster::Engine::Logger::Entry> $msg log entry into the database
+and mark test with $hash_id as COMPLETED.
 
 =cut
 
 sub force_end_test {
     my ( $self, $hash_id, $msg ) = @_;
 
-    $self->add_result_entry( $hash_id, $msg );
+    $self->add_result_entries( $hash_id, $msg );
     $self->set_test_completed( $hash_id );
 }
 
@@ -847,14 +850,17 @@ with $hash_id.
 
 sub process_dead_test {
     my ( $self, $hash_id ) = @_;
-    my $msg = {
-        level     => "CRITICAL",
-        module    => "BACKEND_TEST_AGENT",
-        testcase  => "",
-        tag       => "TEST_DIED",
-        args      => {},
-        timestamp => $self->get_relative_start_time($hash_id)
-    };
+    my $msg = Zonemaster::Engine::Logger::Entry->new(
+        {
+            level     => "CRITICAL",
+            module    => "BACKEND_TEST_AGENT",
+            testcase  => "",
+            tag       => "TEST_DIED",
+            args      => {},
+            timestamp => $self->get_relative_start_time($hash_id)
+        }
+    );
+    #$msg = bless( $msg, "Zonemaster::Engine::Logger::Entry" );
     $self->force_end_test($hash_id, $msg);
 }
 
@@ -988,40 +994,21 @@ sub to_iso8601 {
     return $time;
 }
 
-sub add_result_entry {
-    my ( $self, $hash_id, $entry ) = @_;
-
-    my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
-
-    my $nb_inserted = $self->dbh->do(
-        "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        undef,
-        $hash_id,
-        $entry->{level},
-        $entry->{module},
-        $entry->{testcase},
-        $entry->{tag},
-        $entry->{timestamp},
-        $json->encode( $entry->{args} ),
-    );
-    return $nb_inserted;
-}
-
 sub add_result_entries {
-    my ( $self, $hash_id, $entries ) = @_;
+    my ( $self, $hash_id, @entries ) = @_;
     my @records;
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
-    foreach my $m ( @$entries ) {
+    foreach my $e ( @entries ) {
         my $r = [
             $hash_id,
-            $m->level,
-            $m->module,
-            $m->testcase,
-            $m->tag,
-            $m->timestamp,
-            $json->encode( $m->args // {} ),
+            $e->level,
+            $e->module,
+            $e->testcase,
+            $e->tag,
+            $e->timestamp,
+            $json->encode( $e->args // {} ),
         ];
 
         push @records, $r;

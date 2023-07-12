@@ -147,7 +147,7 @@ sub run {
 
     Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_add_result_entry_grep_duration",  tv_interval($start_time_2) * 1000);
 
-    $self->{_db}->add_result_entries( $test_id, \@entries);
+    $self->{_db}->add_result_entries( $test_id, @entries);
 
     my $callback_add_result_entry_duration = tv_interval($start_time_2);
     Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_add_result_entry_duration", $callback_add_result_entry_duration * 1000);

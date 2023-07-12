@@ -256,19 +256,18 @@ subtest 'batch job still running' => sub {
 
     is( $batch_id, 1, 'correct batch job id returned' );
 
-    dies_ok {
-        my $new_batch_id = $rpcapi->add_batch_job(
+
+    subtest 'a batch is already running for the user, new batch creation should not fail' => sub {
+        my $batch_id = $rpcapi->add_batch_job(
             {
                 %$user,
                 domains => \@domains,
                 test_params => $params
             }
         );
-    } 'a batch is already running for the user, new batch creation should fail' ;
-    my $res = $@;
-    is( $res->{message}, 'Batch job still running', 'correct error message' );
-    is( $res->{data}->{batch_id}, $batch_id, 'error returned current running batch id' );
-    ok( $res->{data}->{created_at}, 'error data contains batch creation time' );
+
+        is( $batch_id, 2, 'same user can create another batch' );
+    };
 
     subtest 'use another user' => sub {
         my $another_user = { username => 'another', api_key => 'token' };
@@ -281,7 +280,7 @@ subtest 'batch job still running' => sub {
             }
         );
 
-        is( $batch_id, 2, 'another_user can create another batch' );
+        is( $batch_id, 3, 'another_user can create another batch' );
     };
 };
 

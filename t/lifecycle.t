@@ -77,19 +77,20 @@ subtest 'Everything but Test::NoWarnings' => sub {
 
         subtest 'Testid reuse' => sub {
             my $testid1 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
+            is ref $testid1, '', 'create_new_test returns "testid" scalar';
+
             advance_time( 11 );
             my $testid2 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
+            is $testid2, $testid1, 'reuse is determined from start time (as opposed to creation time)';
 
             $db->test_progress( $testid1, 1 );    # mark test as started
             advance_time( 10 );
 
             my $testid3 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
+            is $testid3, $testid1, 'old testid is reused before it expires';
+
             advance_time( 1 );
             my $testid4 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
-
-            is ref $testid1, '', 'start_domain_test returns "testid" scalar';
-            is $testid2,   $testid1, 'reuse is determined from start time (as opposed to creation time)';
-            is $testid3,   $testid1, 'old testid is reused before it expires';
             isnt $testid4, $testid1, 'a new testid is generated after the old one expires';
         };
 

@@ -92,14 +92,24 @@ subtest 'Everything but Test::NoWarnings' => sub {
                 {
                     old_state  => $TEST_WAITING,
                     transition => ['claim_test'],
-                    returns    => undef,
+                    returns    => 1,                # true
                     new_state  => $TEST_RUNNING,
+                },
+                {
+                    old_state  => $TEST_RUNNING,
+                    transition => ['claim_test'],
+                    returns    => '',               # false
                 },
                 {
                     old_state  => $TEST_RUNNING,
                     transition => [ 'store_results', '{}' ],
                     returns    => undef,
                     new_state  => $TEST_COMPLETED,
+                },
+                {
+                    old_state  => $TEST_COMPLETED,
+                    transition => ['claim_test'],
+                    returns    => '',                #false
                 },
                 {
                     old_state  => $TEST_COMPLETED,

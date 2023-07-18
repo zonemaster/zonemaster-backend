@@ -210,7 +210,8 @@ subtest 'API calls' => sub {
 # start a second test with IPv6 disabled
 $params->{ipv6} = 0;
 $hash_id = $rpcapi->start_domain_test( $params );
-$rpcapi->{db}->claim_test( $hash_id );
+$rpcapi->{db}->claim_test( $hash_id )
+  or BAIL_OUT( "test needs to be claimed before calling run()" );
 diag "running the agent on test $hash_id";
 $agent->run($hash_id);
 
@@ -339,7 +340,8 @@ subtest 'check historic tests' => sub {
     foreach my $param ($params_un1, $params_un2, $params_dn1) {
         my $testid = $rpcapi->start_domain_test( $param );
         ok( $testid, "API start_domain_test ID OK" );
-        $rpcapi->{db}->claim_test( $testid );
+        $rpcapi->{db}->claim_test( $testid )
+          or BAIL_OUT( "test needs to be claimed before calling run()" );
         diag "running the agent on test $testid";
         $agent->run( $testid );
         is( $rpcapi->test_progress( { test_id => $testid } ), 100 , 'API test_progress -> Test finished' );

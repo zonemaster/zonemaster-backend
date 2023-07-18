@@ -75,7 +75,8 @@ subtest 'test IDN domain' => sub {
 };
 
 # run the test
-$db->claim_test( $test_id );
+$db->claim_test( $test_id )
+  or BAIL_OUT( "test needs to be claimed before calling run()" );
 $agent->run( $test_id ); # blocking call
 
 subtest 'test get_test_results' => sub {
@@ -96,7 +97,8 @@ subtest 'test IDN nameserver' => sub {
     };
 
     # run the test
-    $db->claim_test( $test_id );
+    $db->claim_test( $test_id )
+      or BAIL_OUT( "test needs to be claimed before calling run()" );
     $agent->run( $test_id ); # blocking call
 
     subtest 'test_results' => sub {

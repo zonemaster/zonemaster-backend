@@ -551,6 +551,9 @@ Only tests in the "waiting" state are considered.
 When a test is claimed it is removed from the queue and it transitions to the
 "running" state.
 
+It is safe for multiple callers running in parallel to allocate tests from the
+same queues.
+
 Dies when an error occurs in the database interface.
 
 =cut
@@ -593,9 +596,9 @@ sub get_test_request {
     if ( defined $hash_id ) {
 
         # ... and race to be the first to claim it ...
-        $self->claim_test( $hash_id );
-
-        return ( $hash_id, $batch_id );
+        if ( $self->claim_test( $hash_id ) ) {
+            return ( $hash_id, $batch_id );
+        }
     }
 
     return ( undef, undef );
@@ -605,6 +608,12 @@ sub get_test_request {
 
 Claim a test for processing.
 
+Transitions a test from the "waiting" state to the "running" state.
+
+Returns true on successful transition.
+Returns false if the given test does not exist or if it is not in the "waiting"
+state.
+
 Dies when an error occurs in the database interface.
 
 =cut
@@ -612,20 +621,20 @@ Dies when an error occurs in the database interface.
 sub claim_test {
     my ( $self, $test_id ) = @_;
 
-    $self->dbh->do(
+    my $rows_affected = $self->dbh->do(
         q[
             UPDATE test_results
             SET progress = 1,
                 started_at = ?
             WHERE hash_id = ?
-              AND progress <> 100
+              AND progress = 0
         ],
         undef,
         $self->format_time( time() ),
         $test_id,
     );
 
-    return;
+    return $rows_affected == 1;
 }
 
 sub get_test_params {

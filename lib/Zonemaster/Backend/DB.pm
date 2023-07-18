@@ -228,14 +228,28 @@ sub recent_test_hash_id {
 
 =head2 test_progress( $test_id, $progress )
 
-Takes a test_id and returns the current progress value for the associated test.
-If progress is set, update the progress value of the test.
+Get/set the progress value of the test associated with C<$test_id>.
+
+The given C<$progress> must be either C<undef> (when getting) or an number in
+the range 0-100 inclusive (when setting).
 
 If defined, C<$progress> is clamped to 1-99 inclusive.
 
 Dies when:
 
 =over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+attempting to update a test that is in a state other than "running"
+
+=item
+
+attempting to set a progress value that is lower than the current one
 
 =item
 
@@ -249,19 +263,30 @@ sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
     if ( $progress ) {
-        $progress = $progress < 1 ? 1 :
-                    $progress > 99 ? 99 : $progress;
-        $self->dbh->do(
+        if ( $progress < 0 || 100 < $progress ) {
+            die Zonemaster::Backend::Error::Internal->new( reason => "progress out of range" );
+        } elsif ( $progress < 1 ) {
+            $progress = 1;
+        } elsif ( 99 < $progress ) {
+            $progress = 99;
+        }
+
+        my $rows_affected = $self->dbh->do(
             q[
                 UPDATE test_results
                 SET progress = ?
                 WHERE hash_id = ?
-                  AND progress <> 100
+                  AND 1 <= progress
+                  AND progress <= ?
             ],
             undef,
             $progress,
             $test_id,
+            $progress,
         );
+        if ( $rows_affected == 0 ) {
+            die Zonemaster::Backend::Error::Internal->new( reason => 'job not found or illegal update' );
+        }
 
         return $progress;
     }
@@ -275,6 +300,9 @@ sub test_progress {
         undef,
         $test_id,
     );
+    if ( !defined $result ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
+    }
 
     return $result;
 }
@@ -347,13 +375,14 @@ sub select_test_results {
 sub store_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-    $self->dbh->do(
+    my $rows_affected = $self->dbh->do(
         q[
             UPDATE test_results
             SET progress = 100,
                 ended_at = ?,
                 results = ?
             WHERE hash_id = ?
+              AND 0 < progress
               AND progress < 100
         ],
         undef,
@@ -361,6 +390,12 @@ sub store_results {
         $new_results,
         $test_id,
     );
+
+    if ( $rows_affected == 0 ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "job not found or illegal transition" );
+    }
+
+    return;
 }
 
 sub test_results {

@@ -86,15 +86,25 @@ subtest 'Everything but Test::NoWarnings' => sub {
             my @cases = (
                 {
                     old_state  => $TEST_WAITING,
-                    transition => [ 'test_progress', 1 ],
-                    returns    => 1,
+                    transition => [ 'store_results', '{}' ],
+                    throws     => qr/illegal transition/,
+                },
+                {
+                    old_state  => $TEST_WAITING,
+                    transition => ['claim_test'],
+                    returns    => undef,
                     new_state  => $TEST_RUNNING,
                 },
                 {
                     old_state  => $TEST_RUNNING,
                     transition => [ 'store_results', '{}' ],
-                    returns    => 1,
+                    returns    => undef,
                     new_state  => $TEST_COMPLETED,
+                },
+                {
+                    old_state  => $TEST_COMPLETED,
+                    transition => [ 'store_results', '{}' ],
+                    throws     => qr/illegal transition/,
                 },
             );
 
@@ -126,6 +136,17 @@ subtest 'Everything but Test::NoWarnings' => sub {
                           "and it should not affect the actual state.";
                     }
                 }
+                elsif ( exists $case->{throws} ) {
+                    throws_ok {
+                        $db->$transition( $testid1, @args )
+                    }
+                    $case->{throws}, "In state '$case->{old_state}' transition '$transition' should throw an exception,";
+
+                    $current_state = $db->test_state( $testid1 );
+                    is $current_state,
+                      $case->{old_state},
+                      "and it should not affect the actual state.";
+                }
                 else {
                     BAIL_OUT( "Invalid case specification!" );
                 }
@@ -136,6 +157,8 @@ subtest 'Everything but Test::NoWarnings' => sub {
             my $testid1 = $db->create_new_test( "1.progress.test", {}, 10 );
             is ref $testid1, '', "create_new_test should return 'testid' scalar";
 
+            throws_ok { $db->test_progress( $testid1, 1 ) } qr/illegal update/, "Setting progress should throw an exception in 'waiting' state.";
+
             $db->claim_test( $testid1 );
 
             # Logically progress is 0 entering the 'running' state, but because
@@ -143,12 +166,20 @@ subtest 'Everything but Test::NoWarnings' => sub {
             # inclusive.
             is $db->test_progress( $testid1 ), 1, "Progress should be 1 entering the 'running' state.";
 
+            is $db->test_progress( $testid1, 0 ), 1, "Setting progress to 0 should succeed, but actual clamped value is returned,";
+            is $db->test_progress( $testid1 ),    1, "and it should persist at the clamped value.";
+            is $db->test_progress( $testid1, 0 ), 1, "Setting the same progress again should succeed.";
+
             is $db->test_progress( $testid1, 2 ), 2, "Setting a higher progress should be allowed,";
             is $db->test_progress( $testid1 ),    2, "and it should persist at the new value.";
             is $db->test_progress( $testid1, 2 ), 2, "Setting the same progress again should succeed.";
 
             is $db->test_progress( $testid1, 100 ), 99, "Setting progress to 100 should succeed, but actual clamped value is returned,";
             is $db->test_progress( $testid1 ),      99, "and it should persist at the clamped value.";
+
+            $db->store_results( $testid1, '{}' );
+
+            throws_ok { $db->test_progress( $testid1, 100 ) } qr/illegal update/, "Setting progress should throw an exception in 'completed' state.";
         };
 
         subtest 'Testid reuse' => sub {

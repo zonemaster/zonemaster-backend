@@ -230,7 +230,6 @@ sub recent_test_hash_id {
 
 Takes a test_id and returns the current progress value for the associated test.
 If progress is set, update the progress value of the test.
-If the progress value is 1, set the C<started_at> field to the current time in UTC.
 
 If defined, C<$progress> is clamped to 1-99 inclusive.
 
@@ -252,35 +251,17 @@ sub test_progress {
     if ( $progress ) {
         $progress = $progress < 1 ? 1 :
                     $progress > 99 ? 99 : $progress;
-
-        if ( $progress == 1 ) {
-            $self->dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?,
-                        started_at = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $self->format_time( time() ),
-                $test_id,
-            );
-        }
-        else {
-            $self->dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $test_id,
-            );
-        }
+        $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = ?
+                WHERE hash_id = ?
+                  AND progress <> 100
+            ],
+            undef,
+            $progress,
+            $test_id,
+        );
 
         return $progress;
     }
@@ -577,12 +558,39 @@ sub get_test_request {
     if ( defined $hash_id ) {
 
         # ... and race to be the first to claim it ...
-        $self->test_progress( $hash_id, 1 );
+        $self->claim_test( $hash_id );
 
         return ( $hash_id, $batch_id );
     }
 
     return ( undef, undef );
+}
+
+=head2 claim_test( $test_id )
+
+Claim a test for processing.
+
+Dies when an error occurs in the database interface.
+
+=cut
+
+sub claim_test {
+    my ( $self, $test_id ) = @_;
+
+    $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 1,
+                started_at = ?
+            WHERE hash_id = ?
+              AND progress <> 100
+        ],
+        undef,
+        $self->format_time( time() ),
+        $test_id,
+    );
+
+    return;
 }
 
 sub get_test_params {

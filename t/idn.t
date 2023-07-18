@@ -75,6 +75,7 @@ subtest 'test IDN domain' => sub {
 };
 
 # run the test
+$db->claim_test( $test_id );
 $agent->run( $test_id ); # blocking call
 
 subtest 'test get_test_results' => sub {
@@ -95,6 +96,7 @@ subtest 'test IDN nameserver' => sub {
     };
 
     # run the test
+    $db->claim_test( $test_id );
     $agent->run( $test_id ); # blocking call
 
     subtest 'test_results' => sub {

@@ -136,6 +136,13 @@ subtest 'Everything but Test::NoWarnings' => sub {
             my $testid1 = $db->create_new_test( "1.progress.test", {}, 10 );
             is ref $testid1, '', "create_new_test should return 'testid' scalar";
 
+            $db->claim_test( $testid1 );
+
+            # Logically progress is 0 entering the 'running' state, but because
+            # of implementation details we're clamping it to the range 1-99
+            # inclusive.
+            is $db->test_progress( $testid1 ), 1, "Progress should be 1 entering the 'running' state.";
+
             is $db->test_progress( $testid1, 2 ), 2, "Setting a higher progress should be allowed,";
             is $db->test_progress( $testid1 ),    2, "and it should persist at the new value.";
             is $db->test_progress( $testid1, 2 ), 2, "Setting the same progress again should succeed.";
@@ -152,7 +159,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
             my $testid2 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
             is $testid2, $testid1, 'reuse is determined from start time (as opposed to creation time)';
 
-            $db->test_progress( $testid1, 1 );    # mark test as started
+            $db->claim_test( $testid1 );
             advance_time( 10 );
 
             my $testid3 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
@@ -168,9 +175,9 @@ subtest 'Everything but Test::NoWarnings' => sub {
             my $testid3 = $db->create_new_test( "zone3.rpcapi.example", {}, 10 );
 
             # testid2 started 11 seconds ago, testid3 started 10 seconds ago
-            $db->test_progress( $testid2, 1 );
+            $db->claim_test( $testid2 );
             advance_time( 1 );
-            $db->test_progress( $testid3, 1 );
+            $db->claim_test( $testid3 );
             advance_time( 10 );
 
             $db->process_unfinished_tests( undef, 10 );
@@ -184,7 +191,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
 
         subtest 'Termination of crashed tests' => sub {
             my $testid4 = $db->create_new_test( "zone4.rpcapi.example", {}, 10 );
-            $db->test_progress( $testid4, 1 );    # mark test as started
+            $db->claim_test( $testid4 );
 
             $db->process_dead_test( $testid4 );
 

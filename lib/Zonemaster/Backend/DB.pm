@@ -9,9 +9,11 @@ use 5.14.2;
 use DBI qw(:sql_types);
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use Exporter qw( import );
 use JSON::PP;
 use Log::Any qw( $log );
 use POSIX qw( strftime );
+use Readonly;
 use Try::Tiny;
 
 use Zonemaster::Backend::Errors;
@@ -49,6 +51,21 @@ has 'dbhandle' => (
     isa      => 'Maybe[DBI::db]',
     required => 1,
 );
+
+Readonly our $TEST_WAITING   => 'waiting';
+Readonly our $TEST_RUNNING   => 'running';
+Readonly our $TEST_COMPLETED => 'completed';
+Readonly our $TEST_CRASHED   => 'crashed';
+Readonly our $TEST_LAPSED    => 'lapsed';
+
+our @EXPORT_OK = qw(
+    $TEST_WAITING
+    $TEST_RUNNING
+    $TEST_COMPLETED
+    $TEST_CRASHED
+    $TEST_LAPSED
+);
+
 
 =head2 get_db_class
 
@@ -261,6 +278,42 @@ sub test_progress {
     my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
 
     return $result;
+}
+
+sub test_state {
+    my ( $self, $test_id ) = @_;
+
+    my ( $progress, $results ) = $self->dbh->selectrow_array(
+        q[
+            SELECT progress, results
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $test_id,
+    );
+    if ( !defined $progress ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
+    }
+
+    if ( $progress == 0 ) {
+        return $TEST_WAITING;
+    }
+    elsif ( $progress < 100 ) {
+        return $TEST_RUNNING;
+    }
+    elsif ( $progress == 100 ) {
+        if ( $results =~ /"tag":"TEST_DIED"/ ) {
+            return $TEST_CRASHED;
+        } elsif ( $results =~ /"tag":"UNABLE_TO_FINISH_TEST"/ ) {
+            return $TEST_LAPSED;
+        } else {
+            return $TEST_COMPLETED;
+        }
+    }
+    else {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'state could not be determined' );
+    }
 }
 
 sub select_test_results {

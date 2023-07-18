@@ -15,6 +15,7 @@ BEGIN {
     *CORE::GLOBAL::time = sub { $TIME };
 }
 
+use Data::Dumper;
 use File::ShareDir qw[dist_file];
 use File::Temp qw[tempdir];
 
@@ -29,6 +30,7 @@ use TestUtil;
 
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
+use Zonemaster::Backend::DB qw( $TEST_WAITING $TEST_RUNNING $TEST_COMPLETED );
 
 sub advance_time {
     my ( $delta ) = @_;
@@ -74,6 +76,61 @@ sub count_died_messages {
 subtest 'Everything but Test::NoWarnings' => sub {
     lives_ok {    # Make sure we get to print log messages in case of errors.
         my $db = TestUtil::init_db( $config );
+
+        subtest 'State transitions' => sub {
+            my $testid1 = $db->create_new_test( "1.transition.test", {}, 10 );
+            is ref $testid1, '', "create_new_test should return 'testid' scalar";
+            my $current_state = $db->test_state( $testid1 );
+            is $current_state, $TEST_WAITING, "New test starts out in 'waiting' state.";
+
+            my @cases = (
+                {
+                    old_state  => $TEST_WAITING,
+                    transition => [ 'test_progress', 1 ],
+                    returns    => 1,
+                    new_state  => $TEST_RUNNING,
+                },
+                {
+                    old_state  => $TEST_RUNNING,
+                    transition => [ 'store_results', '{}' ],
+                    returns    => 1,
+                    new_state  => $TEST_COMPLETED,
+                },
+            );
+
+            for my $case ( @cases ) {
+                if ( $case->{old_state} ne $current_state ) {
+                    BAIL_OUT( "Assuming to be in '$case->{old_state}' but we're actually in '$current_state'!" );
+                }
+
+                my ( $transition, @args ) = @{ $case->{transition} };
+
+                if ( exists $case->{returns} ) {
+                    my $rv_string = Data::Dumper->new( [ $case->{returns} ] )->Indent( 0 )->Terse( 1 )->Dump;
+
+                    my $result = $db->$transition( $testid1, @args );
+                    is $result,
+                      $case->{returns},
+                      "In state '$case->{old_state}' transition '$transition' should return $rv_string,";
+
+                    if ( $case->{new_state} ) {
+                        $current_state = $db->test_state( $testid1 );
+                        is $current_state,
+                          $case->{new_state},
+                          "and it should move the test to '$case->{new_state}' state.";
+                    }
+                    else {
+                        $current_state = $db->test_state( $testid1 );
+                        is $current_state,
+                          $case->{old_state},
+                          "and it should not affect the actual state.";
+                    }
+                }
+                else {
+                    BAIL_OUT( "Invalid case specification!" );
+                }
+            }
+        };
 
         subtest 'Testid reuse' => sub {
             my $testid1 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );

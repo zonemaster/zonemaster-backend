@@ -132,6 +132,18 @@ subtest 'Everything but Test::NoWarnings' => sub {
             }
         };
 
+        subtest 'Progress' => sub {
+            my $testid1 = $db->create_new_test( "1.progress.test", {}, 10 );
+            is ref $testid1, '', "create_new_test should return 'testid' scalar";
+
+            is $db->test_progress( $testid1, 2 ), 2, "Setting a higher progress should be allowed,";
+            is $db->test_progress( $testid1 ),    2, "and it should persist at the new value.";
+            is $db->test_progress( $testid1, 2 ), 2, "Setting the same progress again should succeed.";
+
+            is $db->test_progress( $testid1, 100 ), 99, "Setting progress to 100 should succeed, but actual clamped value is returned,";
+            is $db->test_progress( $testid1 ),      99, "and it should persist at the clamped value.";
+        };
+
         subtest 'Testid reuse' => sub {
             my $testid1 = $db->create_new_test( "zone1.rpcapi.example", {}, 10 );
             is ref $testid1, '', 'create_new_test returns "testid" scalar';

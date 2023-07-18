@@ -226,25 +226,35 @@ sub recent_test_hash_id {
     return $recent_hash_id;
 }
 
-=head2 test_progress($test_id, $progress)
+=head2 test_progress( $test_id, $progress )
 
 Takes a test_id and returns the current progress value for the associated test.
 If progress is set, update the progress value of the test.
 If the progress value is 1, set the C<started_at> field to the current time in UTC.
 
-The C<$progress> value is an integer in the range 1-99.
+If defined, C<$progress> is clamped to 1-99 inclusive.
+
+Dies when:
+
+=over 2
+
+=item
+
+an error occurs in the database interface
+
+=back
 
 =cut
 
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    my $dbh = $self->dbh;
     if ( $progress ) {
         $progress = $progress < 1 ? 1 :
                     $progress > 99 ? 99 : $progress;
+
         if ( $progress == 1 ) {
-            $dbh->do(
+            $self->dbh->do(
                 q[
                     UPDATE test_results
                     SET progress = ?,
@@ -259,7 +269,7 @@ sub test_progress {
             );
         }
         else {
-            $dbh->do(
+            $self->dbh->do(
                 q[
                     UPDATE test_results
                     SET progress = ?
@@ -275,7 +285,15 @@ sub test_progress {
         return $progress;
     }
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
+    my ( $result ) = $self->dbh->selectrow_array(
+        q[
+            SELECT progress
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $test_id,
+    );
 
     return $result;
 }
@@ -505,24 +523,66 @@ sub batch_exists_in_db {
     return $id;
 }
 
+=head2 get_test_request( $queue_label )
+
+Find a waiting test and claim it for processing.
+
+If $queue_label is defined it must be an integer.
+If defined, only tests in the associated queue are considered.
+Otherwise tests from all queues are considered.
+
+Only tests in the "waiting" state are considered.
+When a test is claimed it is removed from the queue and it transitions to the
+"running" state.
+
+Dies when an error occurs in the database interface.
+
+=cut
+
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
-    my $result_id;
-    my $dbh = $self->dbh;
-
+    # Identify a candidate for allocation ...
     my ( $hash_id, $batch_id );
     if ( defined $queue_label ) {
-        ( $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
+        ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+            q[
+                SELECT hash_id,
+                       batch_id
+                FROM test_results
+                WHERE progress = 0
+                  AND queue = ?
+                ORDER BY priority DESC,
+                         id ASC
+                LIMIT 1
+            ],
+            undef,
+            $queue_label,
+        );
     }
     else {
-        ( $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
+        ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+            q[
+                SELECT hash_id,
+                       batch_id
+                FROM test_results
+                WHERE progress = 0
+                ORDER BY priority DESC,
+                         id ASC
+                LIMIT 1
+            ],
+        );
     }
 
-    if ( $hash_id ) {
+    if ( defined $hash_id ) {
+
+        # ... and race to be the first to claim it ...
         $self->test_progress( $hash_id, 1 );
+
+        return ( $hash_id, $batch_id );
     }
-    return ( $hash_id, $batch_id );
+
+    return ( undef, undef );
 }
 
 sub get_test_params {

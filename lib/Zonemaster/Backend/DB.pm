@@ -547,6 +547,9 @@ If $queue_label is defined it must be an integer.
 If defined, only tests in the associated queue are considered.
 Otherwise tests from all queues are considered.
 
+Returns the test id and the batch id of the claimed test.
+If there are no waiting tests to claim, C<undef> is returned for both ids.
+
 Only tests in the "waiting" state are considered.
 When a test is claimed it is removed from the queue and it transitions to the
 "running" state.
@@ -561,47 +564,52 @@ Dies when an error occurs in the database interface.
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
-    # Identify a candidate for allocation ...
-    my ( $hash_id, $batch_id );
-    if ( defined $queue_label ) {
-        ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
-            q[
-                SELECT hash_id,
-                       batch_id
-                FROM test_results
-                WHERE progress = 0
-                  AND queue = ?
-                ORDER BY priority DESC,
-                         id ASC
-                LIMIT 1
-            ],
-            undef,
-            $queue_label,
-        );
-    }
-    else {
-        ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
-            q[
-                SELECT hash_id,
-                       batch_id
-                FROM test_results
-                WHERE progress = 0
-                ORDER BY priority DESC,
-                         id ASC
-                LIMIT 1
-            ],
-        );
-    }
+    while ( 1 ) {
 
-    if ( defined $hash_id ) {
+        # Identify a candidate for allocation ...
+        my ( $hash_id, $batch_id );
+        if ( defined $queue_label ) {
+            ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+                q[
+                    SELECT hash_id,
+                           batch_id
+                    FROM test_results
+                    WHERE progress = 0
+                      AND queue = ?
+                    ORDER BY priority DESC,
+                             id ASC
+                    LIMIT 1
+                ],
+                undef,
+                $queue_label,
+            );
+        }
+        else {
+            ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+                q[
+                    SELECT hash_id,
+                           batch_id
+                    FROM test_results
+                    WHERE progress = 0
+                    ORDER BY priority DESC,
+                             id ASC
+                    LIMIT 1
+                ],
+            );
+        }
 
-        # ... and race to be the first to claim it ...
-        if ( $self->claim_test( $hash_id ) ) {
-            return ( $hash_id, $batch_id );
+        if ( defined $hash_id ) {
+
+            # ... and race to be the first to claim it ...
+            if ( $self->claim_test( $hash_id ) ) {
+                return ( $hash_id, $batch_id );
+            }
+        }
+        else {
+            # ... or stop trying if there are no candidates.
+            return ( undef, undef );
         }
     }
-
-    return ( undef, undef );
 }
 
 =head2 claim_test( $test_id )

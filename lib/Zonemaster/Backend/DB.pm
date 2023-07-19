@@ -262,7 +262,7 @@ an error occurs in the database interface
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    if ( $progress ) {
+    if ( defined $progress ) {
         if ( $progress < 0 || 100 < $progress ) {
             die Zonemaster::Backend::Error::Internal->new( reason => "progress out of range" );
         } elsif ( $progress < 1 ) {

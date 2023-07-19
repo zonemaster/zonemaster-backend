@@ -174,6 +174,9 @@ subtest 'Everything but Test::NoWarnings' => sub {
             is $db->test_progress( $testid1 ),    2, "and it should persist at the new value.";
             is $db->test_progress( $testid1, 2 ), 2, "Setting the same progress again should succeed.";
 
+            throws_ok { $db->test_progress( $testid1, 0 ) } qr/illegal update/, "Setting a lower progress should throw an exception,";
+            is $db->test_progress( $testid1 ), 2, "and it should persist at the old value.";
+
             is $db->test_progress( $testid1, 100 ), 99, "Setting progress to 100 should succeed, but actual clamped value is returned,";
             is $db->test_progress( $testid1 ),      99, "and it should persist at the clamped value.";
 

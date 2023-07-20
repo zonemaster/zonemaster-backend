@@ -52,11 +52,48 @@ has 'dbhandle' => (
     required => 1,
 );
 
-Readonly our $TEST_WAITING   => 'waiting';
-Readonly our $TEST_RUNNING   => 'running';
+=head2 $TEST_WAITING
+
+The test is waiting to be processed.
+
+=cut
+
+Readonly our $TEST_WAITING => 'waiting';
+
+=head2 $TEST_RUNNING
+
+The test is currently being processed.
+
+=cut
+
+Readonly our $TEST_RUNNING => 'running';
+
+=head2 $TEST_COMPLETED
+
+The test was already processed.
+The Zonemaster Engine test terminated normally.
+
+=cut
+
 Readonly our $TEST_COMPLETED => 'completed';
-Readonly our $TEST_CRASHED   => 'crashed';
-Readonly our $TEST_LAPSED    => 'lapsed';
+
+=head2 $TEST_CRASHED
+
+The test was already processed.
+A critical error occurred while processing.
+
+=cut
+
+Readonly our $TEST_CRASHED => 'crashed';
+
+=head2 $TEST_LAPSED
+
+The test was already processed.
+The processing was cancelled because it took too long.
+
+=cut
+
+Readonly our $TEST_LAPSED => 'lapsed';
 
 our @EXPORT_OK = qw(
     $TEST_WAITING

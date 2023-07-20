@@ -58,7 +58,7 @@ The test is waiting to be processed.
 
 =cut
 
-Readonly our $TEST_WAITING => 'waiting';
+Readonly our $TEST_WAITING => 'WAITING';
 
 =head2 $TEST_RUNNING
 
@@ -66,21 +66,37 @@ The test is currently being processed.
 
 =cut
 
-Readonly our $TEST_RUNNING => 'running';
+Readonly our $TEST_RUNNING => 'RUNNING';
 
 =head2 $TEST_COMPLETED
 
 The test was already processed.
+
+This state encompasses all of the following:
+
+=over 2
+
+=item
+
 The Zonemaster Engine test terminated normally.
+
+=item
+
+A critical error occurred while processing.
+
+=item
+
+The processing was cancelled because it took too long.
+
+=back
 
 =cut
 
-Readonly our $TEST_COMPLETED => 'completed';
+Readonly our $TEST_COMPLETED => 'COMPLETED';
 
 =head2 $TEST_CRASHED
 
 The test was already processed.
-A critical error occurred while processing.
 
 =cut
 
@@ -89,7 +105,6 @@ Readonly our $TEST_CRASHED => 'crashed';
 =head2 $TEST_LAPSED
 
 The test was already processed.
-The processing was cancelled because it took too long.
 
 =cut
 
@@ -99,8 +114,6 @@ our @EXPORT_OK = qw(
     $TEST_WAITING
     $TEST_RUNNING
     $TEST_COMPLETED
-    $TEST_CRASHED
-    $TEST_LAPSED
 );
 
 
@@ -347,9 +360,9 @@ sub test_progress {
 sub test_state {
     my ( $self, $test_id ) = @_;
 
-    my ( $progress, $results ) = $self->dbh->selectrow_array(
+    my ( $progress ) = $self->dbh->selectrow_array(
         q[
-            SELECT progress, results
+            SELECT progress
             FROM test_results
             WHERE hash_id = ?
         ],
@@ -363,17 +376,11 @@ sub test_state {
     if ( $progress == 0 ) {
         return $TEST_WAITING;
     }
-    elsif ( $progress < 100 ) {
+    elsif ( 0 < $progress && $progress < 100 ) {
         return $TEST_RUNNING;
     }
     elsif ( $progress == 100 ) {
-        if ( $results =~ /"tag":"TEST_DIED"/ ) {
-            return $TEST_CRASHED;
-        } elsif ( $results =~ /"tag":"UNABLE_TO_FINISH_TEST"/ ) {
-            return $TEST_LAPSED;
-        } else {
-            return $TEST_COMPLETED;
-        }
+        return $TEST_COMPLETED;
     }
     else {
         die Zonemaster::Backend::Error::Internal->new( reason => 'state could not be determined' );

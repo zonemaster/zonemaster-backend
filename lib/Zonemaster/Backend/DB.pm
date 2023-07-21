@@ -94,22 +94,6 @@ The processing was cancelled because it took too long.
 
 Readonly our $TEST_COMPLETED => 'COMPLETED';
 
-=head2 $TEST_CRASHED
-
-The test was already processed.
-
-=cut
-
-Readonly our $TEST_CRASHED => 'crashed';
-
-=head2 $TEST_LAPSED
-
-The test was already processed.
-
-=cut
-
-Readonly our $TEST_LAPSED => 'lapsed';
-
 our @EXPORT_OK = qw(
     $TEST_WAITING
     $TEST_RUNNING

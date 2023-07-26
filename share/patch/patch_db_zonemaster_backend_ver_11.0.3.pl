@@ -115,7 +115,7 @@ sub patch_db_mysql {
     } catch {
         print( "Could not upgrade database:  " . $_ );
 
-        eval { $dbh->rollback() };
+        $dbh->rollback();
     };
 }
 
@@ -186,7 +186,7 @@ sub patch_db_postgresql {
     } catch {
         print( "Could not upgrade database:  " . $_ );
 
-        eval { $dbh->rollback() };
+        $dbh->rollback();
     };
 }
 
@@ -227,6 +227,6 @@ sub patch_db_sqlite {
     } catch {
         print( "Error while upgrading database:  " . $_ );
 
-        eval { $dbh->rollback() };
+        $dbh->rollback();
     };
 }

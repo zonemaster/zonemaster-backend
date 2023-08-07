@@ -36,7 +36,7 @@ requires
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
   'Zonemaster::LDNS'                => 3.002000,  # v3.2.0
-  'Zonemaster::Engine'              => 4.007000,  # v4.7.0
+  'Zonemaster::Engine'              => 4.007002,  # v4.7.2
   ;
 
 test_requires 'DBD::SQLite' => 1.4702;

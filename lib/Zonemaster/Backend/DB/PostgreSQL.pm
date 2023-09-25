@@ -142,7 +142,7 @@ sub create_schema {
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
             timestamp REAL NOT NULL,
-            args JSON NOT NULL,
+            args JSONb NOT NULL,
 
             CONSTRAINT fk_level FOREIGN KEY(level) REFERENCES log_level(level)
         )

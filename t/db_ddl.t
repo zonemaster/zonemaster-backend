@@ -109,29 +109,30 @@ subtest 'Everything but Test::NoWarnings' => sub {
         subtest 'constraint on foreign key' => sub {
             subtest 'result_entries - hash_id should exist in test_results(hash_id)' => sub {
                 my $hash_id_ok = "0123456789abcdef";
+                # INFO is 1
                 my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
-                           VALUES ('$hash_id_ok', 'INFO', 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
+                           VALUES ('$hash_id_ok', 1, 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
                 my $inserted_rows = $db->dbh->do( $sql );
                 is $inserted_rows, 1, 'can insert an entry with an existing hash_id';
 
                 throws_ok {
                     my $hash_id_ko = "aaaaaaaaaaaaaaaa";
                     my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
-                        VALUES ('$hash_id_ko', 'INFO', 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
+                        VALUES ('$hash_id_ko', 1, 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
                     $db->dbh->do( $sql );
                 }
                 qr/foreign key/i, 'cannot insert an entry with an non-existing hash_id';
             };
 
             subtest 'result_entries - level should exist in log_level(level)' => sub {
-                my $level = "INFO";
+                my $level = 1; # INFO
                 my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
                            VALUES ('0123456789abcdef', '$level', 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
                 my $inserted_rows = $db->dbh->do( $sql );
                 is $inserted_rows, 1, 'can insert an entry with an existing level';
 
                 throws_ok {
-                    my $level = "DOESNTEXIST";
+                    my $level = 42; # does not exist
                     my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
                         VALUES ('0123456789abcdef', '$level', 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
                     $db->dbh->do( $sql );

@@ -462,13 +462,15 @@ sub test_results {
     my @result_entries = $self->dbh->selectall_array(
         q[
             SELECT
-                level,
-                module,
-                testcase,
-                tag,
-                timestamp,
-                args
-            FROM result_entries
+                l.level,
+                r.module,
+                r.testcase,
+                r.tag,
+                r.timestamp,
+                r.args
+            FROM result_entries r
+            INNER JOIN log_level l
+                ON r.level = l.value
             WHERE hash_id = ?
         ],
         { Slice => {} },
@@ -509,9 +511,9 @@ sub get_test_history {
     my @results;
     my $query = q[
         SELECT
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = 'CRITICAL') AS nb_critical,
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = 'ERROR') AS nb_error,
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = 'WARNING') AS nb_warning,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_critical,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_error,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_warning,
             id,
             hash_id,
             created_at,
@@ -524,11 +526,15 @@ sub get_test_history {
 
     my $sth = $dbh->prepare( $query );
 
-    $sth->bind_param( 1, _normalize_domain( $p->{frontend_params}{domain} ) );
-    $sth->bind_param( 2, $undelegated, SQL_INTEGER );
-    $sth->bind_param( 3, $undelegated, SQL_INTEGER );
-    $sth->bind_param( 4, $p->{limit} );
-    $sth->bind_param( 5, $p->{offset} );
+    my %levels = Zonemaster::Engine::Logger::Entry->levels();
+    $sth->bind_param( 1, $levels{CRITICAL} );
+    $sth->bind_param( 2, $levels{ERROR} );
+    $sth->bind_param( 3, $levels{WARNING} );
+    $sth->bind_param( 4, _normalize_domain( $p->{frontend_params}{domain} ) );
+    $sth->bind_param( 5, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 6, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 7, $p->{limit} );
+    $sth->bind_param( 8, $p->{offset} );
 
     $sth->execute();
 
@@ -1000,10 +1006,12 @@ sub add_result_entries {
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
+    my %levels = Zonemaster::Engine::Logger::Entry->levels();
+
     foreach my $e ( @entries ) {
         my $r = [
             $hash_id,
-            $e->level,
+            $levels{ $e->level },
             $e->module,
             $e->testcase,
             $e->tag,

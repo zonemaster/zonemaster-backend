@@ -120,10 +120,10 @@ sub create_schema {
     ####################################################################
     $dbh->do(
         "CREATE TABLE IF NOT EXISTS log_level (
-            level VARCHAR(15),
             value INT,
+            level VARCHAR(15),
 
-            UNIQUE (level)
+            UNIQUE (value)
         ) ENGINE=InnoDB
         "
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'log_level' table", data => $dbh->errstr() );
@@ -131,16 +131,16 @@ sub create_schema {
     my ( $c ) = $dbh->selectrow_array( "SELECT count(*) FROM log_level" );
     if ( $c == 0 ) {
         $dbh->do(
-            "INSERT INTO log_level (level, value)
+            "INSERT INTO log_level (value, level)
             VALUES
-                ('DEBUG3'   , -2),
-                ('DEBUG2'   , -1),
-                ('DEBUG'    , 0),
-                ('INFO'     , 1),
-                ('NOTICE'   , 2),
-                ('WARNING'  , 3),
-                ('ERROR'    , 4),
-                ('CRITICAL' , 5)
+                (-2, 'DEBUG3'),
+                (-1, 'DEBUG2'),
+                ( 0, 'DEBUG'),
+                ( 1, 'INFO'),
+                ( 2, 'NOTICE'),
+                ( 3, 'WARNING'),
+                ( 4, 'ERROR'),
+                ( 5, 'CRITICAL')
             "
         );
     }
@@ -151,7 +151,7 @@ sub create_schema {
     $dbh->do(
         "CREATE TABLE IF NOT EXISTS result_entries (
             hash_id VARCHAR(16) NOT NULL,
-            level VARCHAR(15) NOT NULL,
+            level INT NOT NULL,
             module VARCHAR(255) NOT NULL,
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
@@ -159,7 +159,7 @@ sub create_schema {
             args BLOB NOT NULL,
 
             CONSTRAINT fk_hash_id FOREIGN KEY (hash_id) REFERENCES test_results(hash_id),
-            CONSTRAINT fk_level FOREIGN KEY (level) REFERENCES log_level(level)
+            CONSTRAINT fk_level FOREIGN KEY (level) REFERENCES log_level(value)
         ) ENGINE=InnoDB
         "
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'result_entries' table", data => $dbh->errstr() );

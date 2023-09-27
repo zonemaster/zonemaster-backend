@@ -83,31 +83,7 @@ sub patch_db_mysql {
     $dbh->{AutoCommit} = 0;
 
     try {
-        $dbh->do(
-            "CREATE TABLE IF NOT EXISTS result_entries (
-                id integer AUTO_INCREMENT PRIMARY KEY,
-                hash_id VARCHAR(16) not null,
-                level ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL') not null,
-                module VARCHAR(255) not null,
-                testcase VARCHAR(255) not null,
-                tag VARCHAR(255) not null,
-                timestamp REAL not null,
-                args BLOB not null
-            ) ENGINE=InnoDB
-            "
-        );
-
-        my $indexes = $dbh->selectall_hashref( 'SHOW INDEXES FROM result_entries', 'Key_name' );
-        if ( not exists($indexes->{result_entries__hash_id}) ) {
-            $dbh->do(
-                'CREATE INDEX result_entries__hash_id ON result_entries (hash_id)'
-            );
-        }
-        if ( not exists($indexes->{result_entries__level}) ) {
-            $dbh->do(
-                'CREATE INDEX result_entries__level ON result_entries (level)'
-            );
-        }
+        $db->create_schema();
 
         _update_data( $dbh );
 
@@ -128,32 +104,7 @@ sub patch_db_postgresql {
     $dbh->{AutoCommit} = 0;
 
     try {
-
-        $dbh->do(
-            "CREATE TYPE log_level AS ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL')"
-        );
-
-        $dbh->do(
-            'CREATE TABLE IF NOT EXISTS result_entries (
-                id serial primary key,
-                hash_id VARCHAR(16) not null,
-                level log_level not null,
-                module varchar(255) not null,
-                testcase varchar(255) not null,
-                tag varchar(255) not null,
-                timestamp real not null,
-                args json not null
-            )
-            '
-        );
-
-        $dbh->do(
-            'CREATE INDEX IF NOT EXISTS result_entries__hash_id ON result_entries (hash_id)'
-        );
-
-        $dbh->do(
-            'CREATE INDEX IF NOT EXISTS result_entries__level ON result_entries (level)'
-        );
+        $db->create_schema();
 
         $dbh->do(q[
             INSERT INTO result_entries (
@@ -164,7 +115,7 @@ sub patch_db_postgresql {
                     hash_id,
                     (CASE WHEN res->'args' IS NULL THEN '{}' ELSE res->'args' END) AS args,
                     res->>'module' AS module,
-                    (res->>'level')::log_level AS level,
+                    (res->>'level') AS level,
                     res->>'tag' AS tag,
                     (res->>'timestamp')::real AS timestamp,
                     (CASE WHEN res->>'testcase' IS NULL THEN '' ELSE res->>'testcase' END) AS testcase
@@ -199,27 +150,7 @@ sub patch_db_sqlite {
     $dbh->{AutoCommit} = 0;
 
     try {
-        $dbh->do(
-            'CREATE TABLE IF NOT EXISTS result_entries (
-                id integer PRIMARY KEY AUTOINCREMENT,
-                hash_id VARCHAR(16) not null,
-                level varchar(15) not null,
-                module varchar(255) not null,
-                testcase varchar(255) not null,
-                tag varchar(255) not null,
-                timestamp real not null,
-                args blob not null
-            )
-            '
-        );
-
-        $dbh->do(
-            'CREATE INDEX IF NOT EXISTS result_entries__hash_id ON result_entries (hash_id)'
-        );
-
-        $dbh->do(
-            'CREATE INDEX IF NOT EXISTS result_entries__level ON result_entries (level)'
-        );
+        $db->create_schema();
 
         _update_data( $dbh );
 

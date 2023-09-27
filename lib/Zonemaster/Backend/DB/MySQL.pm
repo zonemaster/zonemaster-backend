@@ -217,8 +217,11 @@ Drop all the tables if they exist.
 sub drop_tables {
     my ( $self ) = @_;
 
+    # remove any FOREIGN KEY before droping the table
+    $self->dbh->do( "ALTER TABLE IF EXISTS result_entries DROP FOREIGN KEY IF EXISTS fk_level" );
+
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
-    $self->dbh->do( "DROP TABLE IF EXISTS result_entries CASCADE" );
+    $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
     $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );

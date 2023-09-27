@@ -116,13 +116,43 @@ sub create_schema {
     }
 
     ####################################################################
+    # LOG LEVEL
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS log_level (
+            level VARCHAR(15),
+            value INT,
+
+            UNIQUE (level)
+        ) ENGINE=InnoDB
+        "
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'log_level' table", data => $dbh->errstr() );
+
+    my ( $c ) = $dbh->selectrow_array( "SELECT count(*) FROM log_level" );
+    if ( $c == 0 ) {
+        $dbh->do(
+            "INSERT INTO log_level (level, value)
+            VALUES
+                ('DEBUG3'   , -2),
+                ('DEBUG2'   , -1),
+                ('DEBUG'    , 0),
+                ('INFO'     , 1),
+                ('NOTICE'   , 2),
+                ('WARNING'  , 3),
+                ('ERROR'    , 4),
+                ('CRITICAL' , 5)
+            "
+        );
+    }
+
+    ####################################################################
     # RESULT ENTRIES
     ####################################################################
     $dbh->do(
         "CREATE TABLE IF NOT EXISTS result_entries (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
-            level ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL,
+            level VARCHAR(15) NOT NULL,
             module VARCHAR(255) NOT NULL,
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
@@ -187,6 +217,7 @@ sub drop_tables {
 
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
     $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+    $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
 

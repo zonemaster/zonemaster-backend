@@ -105,14 +105,36 @@ sub create_schema {
     # RESULT ENTRIES
     ####################################################################
     $dbh->do(
-        "CREATE TYPE log_level AS ENUM ('DEBUG3', 'DEBUG2', 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL')"
-    );
+        "CREATE TABLE IF NOT EXISTS log_level (
+            level VARCHAR(15),
+            value INT,
+
+            UNIQUE (level)
+        )
+        "
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'log_level' table", data => $dbh->errstr() );
+    my ( $c ) = $dbh->selectrow_array( "SELECT count(*) FROM log_level" );
+    if ( $c == 0 ) {
+        $dbh->do(
+            "INSERT INTO log_level (level, value)
+            VALUES
+                ('DEBUG3'   , -2),
+                ('DEBUG2'   , -1),
+                ('DEBUG'    , 0),
+                ('INFO'     , 1),
+                ('NOTICE'   , 2),
+                ('WARNING'  , 3),
+                ('ERROR'    , 4),
+                ('CRITICAL' , 5)
+            "
+        );
+    }
 
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS result_entries (
             id BIGSERIAL PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
-            level log_level NOT NULL,
+            level VARCHAR(15) NOT NULL,
             module VARCHAR(255) NOT NULL,
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
@@ -178,9 +200,9 @@ sub drop_tables {
     try {
         $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
         $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+        $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
         $self->dbh->do( "DROP TABLE IF EXISTS users" );
         $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
-        $self->dbh->do( "DROP TYPE IF EXISTS log_level" );
     }
     finally {
         $self->dbh->do( "SET client_min_messages = ?", undef, $old_client_min_messages );

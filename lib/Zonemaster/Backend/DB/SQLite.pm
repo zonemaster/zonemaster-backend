@@ -134,7 +134,6 @@ sub create_schema {
     ####################################################################
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS result_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
             hash_id VARCHAR(16) NOT NULL,
             level VARCHAR(15) NOT NULL,
             module VARCHAR(255) NOT NULL,
@@ -143,6 +142,7 @@ sub create_schema {
             timestamp REAL NOT NULL,
             args BLOB NOT NULL,
 
+            FOREIGN KEY(hash_id) REFERENCES test_results(hash_id),
             FOREIGN KEY(level) REFERENCES log_level(level)
         )
         '

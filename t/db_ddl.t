@@ -107,6 +107,22 @@ subtest 'Everything but Test::NoWarnings' => sub {
         };
 
         subtest 'constraint on foreign key' => sub {
+            subtest 'result_entries - hash_id should exist in test_results(hash_id)' => sub {
+                my $hash_id_ok = "0123456789abcdef";
+                my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
+                           VALUES ('$hash_id_ok', 'INFO', 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
+                my $inserted_rows = $db->dbh->do( $sql );
+                is $inserted_rows, 1, 'can insert an entry with an existing hash_id';
+
+                throws_ok {
+                    my $hash_id_ko = "aaaaaaaaaaaaaaaa";
+                    my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
+                        VALUES ('$hash_id_ko', 'INFO', 'MODULE', 'TESTCASE', 'TAG', 42, '{}')";
+                    $db->dbh->do( $sql );
+                }
+                qr/foreign key/i, 'cannot insert an entry with an non-existing hash_id';
+            };
+
             subtest 'result_entries - level should exist in log_level(level)' => sub {
                 my $level = "INFO";
                 my $sql = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
@@ -121,13 +137,13 @@ subtest 'Everything but Test::NoWarnings' => sub {
                     $db->dbh->do( $sql );
                 }
                 qr/foreign key/i, 'cannot insert an entry with an non-existing level';
-            }
+            };
         };
     };
 };
 
 # FIXME: hack to avoid getting warnings from Test::NoWarnings
 my @warn = warnings();
-if ( @warn == 6 ) {
+if ( @warn == 7 ) {
     clear_warnings();
 }

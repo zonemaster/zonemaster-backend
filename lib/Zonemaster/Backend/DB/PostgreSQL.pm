@@ -135,7 +135,6 @@ sub create_schema {
     ####################################################################
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS result_entries (
-            id BIGSERIAL PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
             level VARCHAR(15) NOT NULL,
             module VARCHAR(255) NOT NULL,
@@ -144,6 +143,7 @@ sub create_schema {
             timestamp REAL NOT NULL,
             args JSONb NOT NULL,
 
+            CONSTRAINT fk_hash_id FOREIGN KEY (hash_id) REFERENCES test_results(hash_id),
             CONSTRAINT fk_level FOREIGN KEY(level) REFERENCES log_level(level)
         )
         '
@@ -203,7 +203,7 @@ sub drop_tables {
     $self->dbh->do( "SET client_min_messages = warning" );
 
     try {
-        $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+        $self->dbh->do( "DROP TABLE IF EXISTS test_results CASCADE" );
         $self->dbh->do( "DROP TABLE IF EXISTS result_entries CASCADE" );
         $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
         $self->dbh->do( "DROP TABLE IF EXISTS users" );

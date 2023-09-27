@@ -150,7 +150,6 @@ sub create_schema {
     ####################################################################
     $dbh->do(
         "CREATE TABLE IF NOT EXISTS result_entries (
-            id BIGINT AUTO_INCREMENT PRIMARY KEY,
             hash_id VARCHAR(16) NOT NULL,
             level VARCHAR(15) NOT NULL,
             module VARCHAR(255) NOT NULL,
@@ -159,6 +158,7 @@ sub create_schema {
             timestamp REAL NOT NULL,
             args BLOB NOT NULL,
 
+            CONSTRAINT fk_hash_id FOREIGN KEY (hash_id) REFERENCES test_results(hash_id),
             CONSTRAINT fk_level FOREIGN KEY (level) REFERENCES log_level(level)
         ) ENGINE=InnoDB
         "
@@ -218,6 +218,7 @@ sub drop_tables {
     my ( $self ) = @_;
 
     # remove any FOREIGN KEY before droping the table
+    $self->dbh->do( "ALTER TABLE IF EXISTS result_entries DROP FOREIGN KEY IF EXISTS fk_hash_id" );
     $self->dbh->do( "ALTER TABLE IF EXISTS result_entries DROP FOREIGN KEY IF EXISTS fk_level" );
 
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );

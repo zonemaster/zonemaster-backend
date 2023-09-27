@@ -55,6 +55,9 @@ sub create_schema {
 
     my $dbh = $self->dbh;
 
+    # enable FOREIGN KEY support
+    $dbh->do( 'PRAGMA foreign_keys = ON;' );
+
     ####################################################################
     # TEST RESULTS
     ####################################################################
@@ -138,7 +141,9 @@ sub create_schema {
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
             timestamp REAL NOT NULL,
-            args BLOB NOT NULL
+            args BLOB NOT NULL,
+
+            FOREIGN KEY(level) REFERENCES log_level(level)
         )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'result_entries' table", data => $dbh->errstr() );

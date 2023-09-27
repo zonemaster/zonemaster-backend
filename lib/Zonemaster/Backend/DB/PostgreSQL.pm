@@ -102,7 +102,7 @@ sub create_schema {
     );
 
     ####################################################################
-    # RESULT ENTRIES
+    # LOG LEVEL
     ####################################################################
     $dbh->do(
         "CREATE TABLE IF NOT EXISTS log_level (
@@ -130,6 +130,9 @@ sub create_schema {
         );
     }
 
+    ####################################################################
+    # RESULT ENTRIES
+    ####################################################################
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS result_entries (
             id BIGSERIAL PRIMARY KEY,
@@ -139,7 +142,9 @@ sub create_schema {
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
             timestamp REAL NOT NULL,
-            args JSON NOT NULL
+            args JSON NOT NULL,
+
+            CONSTRAINT fk_level FOREIGN KEY(level) REFERENCES log_level(level)
         )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'result_entries' table", data => $dbh->errstr() );
@@ -199,7 +204,7 @@ sub drop_tables {
 
     try {
         $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
-        $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+        $self->dbh->do( "DROP TABLE IF EXISTS result_entries CASCADE" );
         $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
         $self->dbh->do( "DROP TABLE IF EXISTS users" );
         $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );

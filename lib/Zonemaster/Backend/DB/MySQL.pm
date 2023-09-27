@@ -157,7 +157,9 @@ sub create_schema {
             testcase VARCHAR(255) NOT NULL,
             tag VARCHAR(255) NOT NULL,
             timestamp REAL NOT NULL,
-            args BLOB NOT NULL
+            args BLOB NOT NULL,
+
+            CONSTRAINT fk_level FOREIGN KEY (level) REFERENCES log_level(level)
         ) ENGINE=InnoDB
         "
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'result_entries' table", data => $dbh->errstr() );
@@ -216,7 +218,7 @@ sub drop_tables {
     my ( $self ) = @_;
 
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
-    $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+    $self->dbh->do( "DROP TABLE IF EXISTS result_entries CASCADE" );
     $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );

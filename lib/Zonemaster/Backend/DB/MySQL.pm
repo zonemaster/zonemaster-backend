@@ -218,8 +218,21 @@ sub drop_tables {
     my ( $self ) = @_;
 
     # remove any FOREIGN KEY before droping the table
-    $self->dbh->do( "ALTER TABLE IF EXISTS result_entries DROP FOREIGN KEY IF EXISTS fk_hash_id" );
-    $self->dbh->do( "ALTER TABLE IF EXISTS result_entries DROP FOREIGN KEY IF EXISTS fk_level" );
+    # MariaDB <10.4 and MySQL do not support the IF EXISTS syntax
+    # on ALTER TABLE and DROP FOREIGN KEY
+    #   MariaDB 10.3 is used on Ubuntu 20.04 LTS (eol 2023-04)
+    #   MySQL is used on FreeBSD
+    my $tables = $self->dbh->selectall_hashref( 'SHOW TABLE STATUS', 'Name' );
+    if ( exists $tables->{result_entries} ) {
+        my @fk = $self->dbh->selectall_array( 'SELECT constraint_name FROM information_schema.referential_constraints' );
+        @fk = map { ref eq 'ARRAY' ? @$_ : $_ } @fk;
+        if ( grep( /^fk_hash_id$/, @fk ) ) {
+            $self->dbh->do( "ALTER TABLE result_entries DROP FOREIGN KEY fk_hash_id" );
+        }
+        if ( grep( /^fk_level$/, @fk ) ) {
+            $self->dbh->do( "ALTER TABLE result_entries DROP FOREIGN KEY fk_level" );
+        }
+    }
 
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
     $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );

@@ -16,6 +16,7 @@ use POSIX qw( strftime );
 use Readonly;
 use Try::Tiny;
 
+use Zonemaster::Engine::Normalization;
 use Zonemaster::Backend::Errors;
 use Zonemaster::Engine::Logger::Entry;
 
@@ -874,10 +875,10 @@ sub process_dead_test {
 sub _normalize_domain {
     my ( $domain ) = @_;
 
-    $domain = lc( $domain );
-    $domain =~ s/\.$// unless $domain eq '.';
+    # Discard errors, at this point errors have already checked
+    my ( $_errors, $normalized_domain ) = normalize_name( $domain );
 
-    return $domain;
+    return $normalized_domain;
 }
 
 sub _project_params {

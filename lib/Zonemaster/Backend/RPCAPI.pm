@@ -22,6 +22,7 @@ use Encode;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
+use Zonemaster::Engine::Normalization;
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
@@ -223,16 +224,17 @@ sub get_data_from_parent_zone {
     my $result = eval {
         my %result;
         my $domain = $params->{domain};
+        my ( $_errors, $normalized_domain ) = normalize_name( $domain );
 
         my @ns_list;
         my @ns_names;
 
-        my $zone = Zonemaster::Engine->zone( $domain );
+        my $zone = Zonemaster::Engine->zone( $normalized_domain );
         push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
         my @ds_list;
 
-        $zone = Zonemaster::Engine->zone($domain);
+        $zone = Zonemaster::Engine->zone($normalized_domain);
         my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
         if ($ds_p) {
             my @ds = $ds_p->get_records( 'DS', 'answer' );
@@ -291,10 +293,6 @@ sub start_domain_test {
 
     my $result = 0;
     eval {
-        $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
-
-        die "No domain in parameters\n" unless ( defined $params->{domain} && length($params->{domain}) );
-
         $params->{profile}  //= "default";
         $params->{priority} //= 10;
         $params->{queue}    //= 0;

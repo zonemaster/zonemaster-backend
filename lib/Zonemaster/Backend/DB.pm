@@ -9,9 +9,11 @@ use 5.14.2;
 use DBI qw(:sql_types);
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use Exporter qw( import );
 use JSON::PP;
 use Log::Any qw( $log );
 use POSIX qw( strftime );
+use Readonly;
 use Try::Tiny;
 
 use Zonemaster::Backend::Errors;
@@ -49,6 +51,55 @@ has 'dbhandle' => (
     isa      => 'Maybe[DBI::db]',
     required => 1,
 );
+
+=head2 $TEST_WAITING
+
+The test is waiting to be processed.
+
+=cut
+
+Readonly our $TEST_WAITING => 'WAITING';
+
+=head2 $TEST_RUNNING
+
+The test is currently being processed.
+
+=cut
+
+Readonly our $TEST_RUNNING => 'RUNNING';
+
+=head2 $TEST_COMPLETED
+
+The test was already processed.
+
+This state encompasses all of the following:
+
+=over 2
+
+=item
+
+The Zonemaster Engine test terminated normally.
+
+=item
+
+A critical error occurred while processing.
+
+=item
+
+The processing was cancelled because it took too long.
+
+=back
+
+=cut
+
+Readonly our $TEST_COMPLETED => 'COMPLETED';
+
+our @EXPORT_OK = qw(
+    $TEST_WAITING
+    $TEST_RUNNING
+    $TEST_COMPLETED
+);
+
 
 =head2 get_db_class
 
@@ -209,58 +260,115 @@ sub recent_test_hash_id {
     return $recent_hash_id;
 }
 
-=head2 test_progress($test_id, $progress)
+=head2 test_progress( $test_id, $progress )
 
-Takes a test_id and returns the current progress value for the associated test.
-If progress is set, update the progress value of the test.
-If the progress value is 1, set the C<started_at> field to the current time in UTC.
+Get/set the progress value of the test associated with C<$test_id>.
 
-The C<$progress> value is an integer in the range 1-99.
+The given C<$progress> must be either C<undef> (when getting) or an number in
+the range 0-100 inclusive (when setting).
+
+If defined, C<$progress> is clamped to 1-99 inclusive.
+
+Dies when:
+
+=over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+attempting to update a test that is in a state other than "running"
+
+=item
+
+attempting to set a progress value that is lower than the current one
+
+=item
+
+an error occurs in the database interface
+
+=back
 
 =cut
 
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    my $dbh = $self->dbh;
-    if ( $progress ) {
-        $progress = $progress < 1 ? 1 :
-                    $progress > 99 ? 99 : $progress;
-        if ( $progress == 1 ) {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?,
-                        started_at = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $self->format_time( time() ),
-                $test_id,
-            );
+    if ( defined $progress ) {
+        if ( $progress < 0 || 100 < $progress ) {
+            die Zonemaster::Backend::Error::Internal->new( reason => "progress out of range" );
+        } elsif ( $progress < 1 ) {
+            $progress = 1;
+        } elsif ( 99 < $progress ) {
+            $progress = 99;
         }
-        else {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $test_id,
-            );
+
+        my $rows_affected = $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = ?
+                WHERE hash_id = ?
+                  AND 1 <= progress
+                  AND progress <= ?
+            ],
+            undef,
+            $progress,
+            $test_id,
+            $progress,
+        );
+        if ( $rows_affected == 0 ) {
+            die Zonemaster::Backend::Error::Internal->new( reason => 'job not found or illegal update' );
         }
 
         return $progress;
     }
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
+    my ( $result ) = $self->dbh->selectrow_array(
+        q[
+            SELECT progress
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $test_id,
+    );
+    if ( !defined $result ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
+    }
 
     return $result;
+}
+
+sub test_state {
+    my ( $self, $test_id ) = @_;
+
+    my ( $progress ) = $self->dbh->selectrow_array(
+        q[
+            SELECT progress
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $test_id,
+    );
+    if ( !defined $progress ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
+    }
+
+    if ( $progress == 0 ) {
+        return $TEST_WAITING;
+    }
+    elsif ( 0 < $progress && $progress < 100 ) {
+        return $TEST_RUNNING;
+    }
+    elsif ( $progress == 100 ) {
+        return $TEST_COMPLETED;
+    }
+    else {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'state could not be determined' );
+    }
 }
 
 sub select_test_results {
@@ -295,13 +403,14 @@ sub select_test_results {
 sub store_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-    $self->dbh->do(
+    my $rows_affected = $self->dbh->do(
         q[
             UPDATE test_results
             SET progress = 100,
                 ended_at = ?,
                 results = ?
             WHERE hash_id = ?
+              AND 0 < progress
               AND progress < 100
         ],
         undef,
@@ -309,6 +418,12 @@ sub store_results {
         $new_results,
         $test_id,
     );
+
+    if ( $rows_affected == 0 ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "job not found or illegal transition" );
+    }
+
+    return;
 }
 
 sub test_results {
@@ -435,24 +550,110 @@ sub batch_exists_in_db {
     return $id;
 }
 
+=head2 get_test_request( $queue_label )
+
+Find a waiting test and claim it for processing.
+
+If $queue_label is defined it must be an integer.
+If defined, only tests in the associated queue are considered.
+Otherwise tests from all queues are considered.
+
+Returns the test id and the batch id of the claimed test.
+If there are no waiting tests to claim, C<undef> is returned for both ids.
+
+Only tests in the "waiting" state are considered.
+When a test is claimed it is removed from the queue and it transitions to the
+"running" state.
+
+It is safe for multiple callers running in parallel to allocate tests from the
+same queues.
+
+Dies when an error occurs in the database interface.
+
+=cut
+
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
-    my $result_id;
-    my $dbh = $self->dbh;
+    while ( 1 ) {
 
-    my ( $hash_id, $batch_id );
-    if ( defined $queue_label ) {
-        ( $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
-    }
-    else {
-        ( $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
-    }
+        # Identify a candidate for allocation ...
+        my ( $hash_id, $batch_id );
+        if ( defined $queue_label ) {
+            ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+                q[
+                    SELECT hash_id,
+                           batch_id
+                    FROM test_results
+                    WHERE progress = 0
+                      AND queue = ?
+                    ORDER BY priority DESC,
+                             id ASC
+                    LIMIT 1
+                ],
+                undef,
+                $queue_label,
+            );
+        }
+        else {
+            ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+                q[
+                    SELECT hash_id,
+                           batch_id
+                    FROM test_results
+                    WHERE progress = 0
+                    ORDER BY priority DESC,
+                             id ASC
+                    LIMIT 1
+                ],
+            );
+        }
 
-    if ( $hash_id ) {
-        $self->test_progress( $hash_id, 1 );
+        if ( defined $hash_id ) {
+
+            # ... and race to be the first to claim it ...
+            if ( $self->claim_test( $hash_id ) ) {
+                return ( $hash_id, $batch_id );
+            }
+        }
+        else {
+            # ... or stop trying if there are no candidates.
+            return ( undef, undef );
+        }
     }
-    return ( $hash_id, $batch_id );
+}
+
+=head2 claim_test( $test_id )
+
+Claim a test for processing.
+
+Transitions a test from the "waiting" state to the "running" state.
+
+Returns true on successful transition.
+Returns false if the given test does not exist or if it is not in the "waiting"
+state.
+
+Dies when an error occurs in the database interface.
+
+=cut
+
+sub claim_test {
+    my ( $self, $test_id ) = @_;
+
+    my $rows_affected = $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 1,
+                started_at = ?
+            WHERE hash_id = ?
+              AND progress = 0
+        ],
+        undef,
+        $self->format_time( time() ),
+        $test_id,
+    );
+
+    return $rows_affected == 1;
 }
 
 sub get_test_params {

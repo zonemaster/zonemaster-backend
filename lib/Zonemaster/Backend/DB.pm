@@ -875,7 +875,7 @@ sub process_dead_test {
 sub _normalize_domain {
     my ( $domain ) = @_;
 
-    # Discard errors, at this point errors have already checked
+    # Discard errors, at this point errors have already been checked
     my ( $_errors, $normalized_domain ) = normalize_name( $domain );
 
     return $normalized_domain;

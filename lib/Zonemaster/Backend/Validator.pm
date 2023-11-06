@@ -284,8 +284,8 @@ sub check_domain {
 
     my ( $errors, $_domain ) = normalize_name( $domain );
 
-    if ( @{$errors} != 0 ) {
-        return @{$errors}[0]->message;
+    if ( @{$errors} ) {
+        return $errors->[0]->message;
     }
 
     return undef

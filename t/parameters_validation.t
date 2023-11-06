@@ -218,7 +218,7 @@ subtest 'Test custom formats' => sub {
             },
             output => [{
                 path => '/my_domain',
-                message => 'The domain name character(s) are not supported'
+                message => 'Domain name has an ASCII label ("not a domain") with a character not permitted.'
             }]
         },
         {

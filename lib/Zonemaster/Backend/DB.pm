@@ -866,7 +866,6 @@ sub process_dead_test {
             timestamp => $self->get_relative_start_time($hash_id)
         }
     );
-    #$msg = bless( $msg, "Zonemaster::Engine::Logger::Entry" );
     $self->force_end_test($hash_id, $msg);
 }
 

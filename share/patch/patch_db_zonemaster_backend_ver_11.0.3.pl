@@ -29,8 +29,11 @@ sub _update_data {
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
-    my ( $row_total ) = $dbh->selectrow_array( 'SELECT count(*) FROM test_results' );
+    # update only jobs with results
+    my ( $row_total ) = $dbh->selectrow_array( 'SELECT count(*) FROM test_results WHERE results IS NOT NULL' );
     print "count: $row_total\n";
+
+    my %levels = Zonemaster::Engine::Logger::Entry->levels();
 
     # depending on the resources available to select all data in database
     # update $row_count to your needs
@@ -38,7 +41,8 @@ sub _update_data {
     my $row_done = 0;
     while ( $row_done < $row_total ) {
         print "row_done/row_total: $row_done / $row_total\n";
-        my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results ORDER BY id ASC LIMIT ?,?' );
+        my $row_updated = 0;
+        my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results WHERE results IS NOT NULL ORDER BY id ASC LIMIT ?,?' );
         $sth1->execute( $row_done, $row_count );
         while ( my $row = $sth1->fetchrow_arrayref ) {
             my ( $hash_id, $results ) = @$row;
@@ -51,7 +55,7 @@ sub _update_data {
             foreach my $m ( @$entries ) {
                 my $r = [
                     $hash_id,
-                    $m->{level},
+                    $levels{ $m->{level} },
                     $m->{module},
                     $m->{testcase} // '',
                     $m->{tag},
@@ -67,11 +71,13 @@ sub _update_data {
             my $sth = $dbh->prepare( $query );
             $sth = $sth->execute( map { @$_ } @records );
 
-            $dbh->do( "UPDATE test_results SET results = NULL WHERE hash_id = ?", undef, $hash_id );
+            $row_updated += $dbh->do( "UPDATE test_results SET results = NULL WHERE hash_id = ?", undef, $hash_id );
         }
 
-        $row_done += $row_count;
+        # increase by min(row_updated, row_count)
+        $row_done += ( $row_updated < $row_count ) ? $row_updated : $row_count;
     }
+    print "row_done/row_total: $row_done / $row_total\n";
 }
 
 sub patch_db_mysql {
@@ -115,7 +121,7 @@ sub patch_db_postgresql {
                     hash_id,
                     (CASE WHEN res->'args' IS NULL THEN '{}' ELSE res->'args' END) AS args,
                     res->>'module' AS module,
-                    (res->>'level') AS level,
+                    (SELECT value FROM log_level WHERE level = (res->>'level')) AS level,
                     res->>'tag' AS tag,
                     (res->>'timestamp')::real AS timestamp,
                     (CASE WHEN res->>'testcase' IS NULL THEN '' ELSE res->>'testcase' END) AS testcase

@@ -10,14 +10,17 @@ use JSON::PP;
 use Scalar::Util qw( blessed );
 use File::Slurp;
 use Locale::TextDomain qw[Zonemaster-Backend];
+use Time::HiRes qw[time sleep gettimeofday tv_interval];
 
 use Zonemaster::LDNS;
 
 use Zonemaster::Engine;
 use Zonemaster::Engine::Translator;
-use Zonemaster::Backend::Config;
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Util;
+use Zonemaster::Engine::Logger::Entry;
+use Zonemaster::Backend::Config;
+use Zonemaster::Backend::Metrics;
 
 sub new {
     my ( $class, $params ) = @_;
@@ -62,6 +65,7 @@ sub run {
         die "Must give the name of a domain to test.\n";
     }
     $domain = $self->to_idn( $domain );
+    my %numeric = Zonemaster::Engine::Logger::Entry->levels();
 
     if ( $params->{nameservers} && @{ $params->{nameservers} } > 0 ) {
         $self->add_fake_delegation( $domain, $params->{nameservers} );
@@ -110,6 +114,7 @@ sub run {
         Zonemaster::Engine->logger->callback(
             sub {
                 my ( $entry ) = @_;
+
                 if ( $entry->{tag} and $entry->{tag} eq 'TEST_CASE_END' ) {
                     $nbr_testcases_finished++;
                     # limit to max 99%, 100% is reached when data is stored in database
@@ -132,7 +137,19 @@ sub run {
         }
     }
 
-    $self->{_db}->store_results( $test_id, Zonemaster::Engine->logger->json( 'INFO' ) );
+    my $insert_result_start_time = [ gettimeofday ];
+
+    # TODO: Make minimum level configurable
+    my @entries = grep { $_->numeric_level >= $numeric{INFO} } @{ Zonemaster::Engine->logger->entries };
+
+    Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_add_result_entry_filter_duration",  tv_interval($insert_result_start_time) * 1000);
+
+    $self->{_db}->add_result_entries( $test_id, @entries);
+
+    my $callback_add_result_entry_duration = tv_interval($insert_result_start_time);
+    Zonemaster::Backend::Metrics::timing("zonemaster.testagent.log_callback_add_result_entry_duration", $callback_add_result_entry_duration * 1000);
+
+    $self->{_db}->set_test_completed( $test_id );
 
     return;
 } ## end sub run

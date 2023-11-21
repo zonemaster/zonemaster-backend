@@ -52,6 +52,7 @@ share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
 share/Makefile
 share/patch/patch_db_zonemaster_backend_ver_9.0.0.pl
+share/patch/patch_db_zonemaster_backend_ver_11.0.3.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl

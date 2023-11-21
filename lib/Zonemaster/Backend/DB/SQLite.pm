@@ -55,6 +55,9 @@ sub create_schema {
 
     my $dbh = $self->dbh;
 
+    # enable FOREIGN KEY support
+    $dbh->do( 'PRAGMA foreign_keys = ON;' );
+
     ####################################################################
     # TEST RESULTS
     ####################################################################
@@ -96,6 +99,62 @@ sub create_schema {
         'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'
     );
 
+    ####################################################################
+    # LOG LEVEL
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS log_level (
+            value INTEGER,
+            level VARCHAR(15),
+
+            UNIQUE (value)
+        )
+        "
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'log_level' table", data => $dbh->errstr() );
+
+    my ( $c ) = $dbh->selectrow_array( "SELECT count(*) FROM log_level" );
+    if ( $c == 0 ) {
+        $dbh->do(
+            "INSERT INTO log_level (value, level)
+            VALUES
+                (-2, 'DEBUG3'),
+                (-1, 'DEBUG2'),
+                ( 0, 'DEBUG'),
+                ( 1, 'INFO'),
+                ( 2, 'NOTICE'),
+                ( 3, 'WARNING'),
+                ( 4, 'ERROR'),
+                ( 5, 'CRITICAL')
+            "
+        );
+    }
+
+    ####################################################################
+    # RESULT ENTRIES
+    ####################################################################
+    $dbh->do(
+        'CREATE TABLE IF NOT EXISTS result_entries (
+            hash_id VARCHAR(16) NOT NULL,
+            level INT NOT NULL,
+            module VARCHAR(255) NOT NULL,
+            testcase VARCHAR(255) NOT NULL,
+            tag VARCHAR(255) NOT NULL,
+            timestamp REAL NOT NULL,
+            args BLOB NOT NULL,
+
+            FOREIGN KEY(hash_id) REFERENCES test_results(hash_id),
+            FOREIGN KEY(level) REFERENCES log_level(value)
+        )
+        '
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'result_entries' table", data => $dbh->errstr() );
+
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS result_entries__hash_id ON result_entries (hash_id)'
+    );
+
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS result_entries__level ON result_entries (level)'
+    );
 
     ####################################################################
     # BATCH JOBS
@@ -137,6 +196,8 @@ sub drop_tables {
     my ( $self ) = @_;
 
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+    $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+    $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
 

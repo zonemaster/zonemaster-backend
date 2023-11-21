@@ -115,6 +115,68 @@ sub create_schema {
         );
     }
 
+    ####################################################################
+    # LOG LEVEL
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS log_level (
+            value INT,
+            level VARCHAR(15),
+
+            UNIQUE (value)
+        ) ENGINE=InnoDB
+        "
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'log_level' table", data => $dbh->errstr() );
+
+    my ( $c ) = $dbh->selectrow_array( "SELECT count(*) FROM log_level" );
+    if ( $c == 0 ) {
+        $dbh->do(
+            "INSERT INTO log_level (value, level)
+            VALUES
+                (-2, 'DEBUG3'),
+                (-1, 'DEBUG2'),
+                ( 0, 'DEBUG'),
+                ( 1, 'INFO'),
+                ( 2, 'NOTICE'),
+                ( 3, 'WARNING'),
+                ( 4, 'ERROR'),
+                ( 5, 'CRITICAL')
+            "
+        );
+    }
+
+    ####################################################################
+    # RESULT ENTRIES
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS result_entries (
+            hash_id VARCHAR(16) NOT NULL,
+            level INT NOT NULL,
+            module VARCHAR(255) NOT NULL,
+            testcase VARCHAR(255) NOT NULL,
+            tag VARCHAR(255) NOT NULL,
+            timestamp REAL NOT NULL,
+            args BLOB NOT NULL,
+
+            CONSTRAINT fk_hash_id FOREIGN KEY (hash_id) REFERENCES test_results(hash_id),
+            CONSTRAINT fk_level FOREIGN KEY (level) REFERENCES log_level(value)
+        ) ENGINE=InnoDB
+        "
+    ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'result_entries' table", data => $dbh->errstr() );
+
+    $indexes = $dbh->selectall_hashref( 'SHOW INDEXES FROM result_entries', 'Key_name' );
+    if ( not exists($indexes->{result_entries__hash_id}) ) {
+        $dbh->do(
+            'CREATE INDEX result_entries__hash_id ON result_entries (hash_id)'
+        );
+    }
+
+    if ( not exists($indexes->{result_entries__level}) ) {
+        $dbh->do(
+            'CREATE INDEX result_entries__level ON result_entries (level)'
+        );
+    }
+
 
     ####################################################################
     # BATCH JOBS
@@ -155,7 +217,26 @@ Drop all the tables if they exist.
 sub drop_tables {
     my ( $self ) = @_;
 
+    # remove any FOREIGN KEY before droping the table
+    # MariaDB <10.4 and MySQL do not support the IF EXISTS syntax
+    # on ALTER TABLE and DROP FOREIGN KEY
+    #   MariaDB 10.3 is used on Ubuntu 20.04 LTS (eol 2023-04)
+    #   MySQL is used on FreeBSD
+    my $tables = $self->dbh->selectall_hashref( 'SHOW TABLE STATUS', 'Name' );
+    if ( exists $tables->{result_entries} ) {
+        my @fk = $self->dbh->selectall_array( 'SELECT constraint_name FROM information_schema.referential_constraints' );
+        @fk = map { ref eq 'ARRAY' ? @$_ : $_ } @fk;
+        if ( grep( /^fk_hash_id$/, @fk ) ) {
+            $self->dbh->do( "ALTER TABLE result_entries DROP FOREIGN KEY fk_hash_id" );
+        }
+        if ( grep( /^fk_level$/, @fk ) ) {
+            $self->dbh->do( "ALTER TABLE result_entries DROP FOREIGN KEY fk_level" );
+        }
+    }
+
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+    $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+    $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
 

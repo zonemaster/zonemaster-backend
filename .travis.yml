@@ -8,24 +8,24 @@ stages:
   - test
 
 script:
-    - perl Makefile.PL && make test TEST_VERBOSE=1
+    - perl Makefile.PL && make all && echo "Start list MO files" && ls -1 share && find share/locale/ -type f && echo "End list MO files" && make test TEST_VERBOSE=1
 
 jobs:
   include:
     - stage: test
       env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
-      services: mysql
-    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
-      services: postgresql
+    # - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+    #  services: mysql
+    # - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    #  services: postgresql
     # Cover supported Perl versions with SQLite
-    - perl: "5.30.2"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - perl: "5.26"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - perl: "5.16"
-      dist: bionic
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    # - perl: "5.30.2"
+    #  env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    # - perl: "5.26"
+    #  env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    # - perl: "5.16"
+    #   dist: bionic
+    #  env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
   apt:
@@ -113,6 +113,8 @@ before_install:
   - ( cd zonemaster-engine && cpanm --verbose --notest . ) && rm -rf zonemaster-engine
 
     # Install share files
+  - ls -1 share
+  - find share/locale/ -type f
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 

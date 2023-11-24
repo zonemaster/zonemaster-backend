@@ -79,6 +79,7 @@ t/db.t
 t/idn.data
 t/idn.t
 t/lifecycle.t
+t/manifest.t
 t/parameters_validation.t
 t/rpc_validation.t
 t/test01.data

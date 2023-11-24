@@ -76,10 +76,12 @@ t/00-load.t
 t/batches.t
 t/config.t
 t/db.t
+t/db_ddl.t
 t/idn.data
 t/idn.t
 t/lifecycle.t
 t/parameters_validation.t
+t/queue.t
 t/rpc_validation.t
 t/test01.data
 t/test01.t

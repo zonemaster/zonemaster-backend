@@ -456,6 +456,8 @@ sub get_test_request {
 
             # ... and race to be the first to claim it ...
             if ( $self->claim_test( $hash_id ) ) {
+                # in Clickhouse batch_id is a non-NULL UInt32 and starts at 1
+                $batch_id = $batch_id > 0 ? $batch_id : undef;
                 return ( $hash_id, $batch_id );
             }
         }

@@ -12,7 +12,7 @@ use Log::Any qw( $log );
 
 use Zonemaster::Backend::Validator qw( untaint_ipv6_address );
 use Zonemaster::Backend::Errors;
-use Zonemaster::Backend::DB qw( $TEST_RUNNING );
+use Zonemaster::Backend::DB qw( $TEST_WAITING $TEST_RUNNING );
 
 with 'Zonemaster::Backend::DB';
 
@@ -371,6 +371,10 @@ sub set_test_completed {
 sub store_results {
     my ( $self, $test_id, $new_results ) = @_;
 
+    if ( $self->test_state( $test_id ) ne $TEST_RUNNING ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "illegal transition" );
+    }
+
     my $rows_affected = $self->dbh->do(
         q[
             ALTER TABLE test_results
@@ -465,6 +469,10 @@ sub get_test_request {
 # specific ALTER UPDATE syntax for Clickhouse
 sub claim_test {
     my ( $self, $test_id ) = @_;
+
+    if ( $self->test_state( $test_id ) ne $TEST_WAITING ) {
+        return '';
+    }
 
     my $rows_affected = $self->dbh->do(
         q[

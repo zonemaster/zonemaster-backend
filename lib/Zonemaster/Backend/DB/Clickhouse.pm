@@ -280,12 +280,28 @@ sub test_progress {
                 WHERE hash_id = ?
                   AND 1 <= progress
                   AND progress <= ?
+                SETTINGS mutations_sync = 1
             ],
             undef,
             $progress,
             $test_id,
             $progress,
         );
+
+        # number of affected rows is incorrect in Clickhouse and this is a feature
+        # see <https://github.com/ClickHouse/ClickHouse/issues/50970#issuecomment-1591333551>
+        ( $rows_affected ) = $self->dbh->selectrow_array(
+            q[
+              SELECT count(*)
+              FROM test_results
+              WHERE hash_id = ?
+                AND progress = ?
+            ],
+            undef,
+            $test_id,
+            $progress,
+        );
+
         if ( $rows_affected == 0 ) {
             die Zonemaster::Backend::Error::Internal->new( reason => 'job not found or illegal update' );
         }
@@ -326,9 +342,23 @@ sub set_test_completed {
             WHERE hash_id = ?
               AND 0 < progress
               AND progress < 100
+            SETTINGS mutations_sync = 1
         ],
         undef,
         $self->format_time( time() ),
+        $test_id,
+    );
+
+    # number of affected rows is incorrect in Clickhouse and this is a feature
+    # see <https://github.com/ClickHouse/ClickHouse/issues/50970#issuecomment-1591333551>
+    ( $rows_affected ) = $self->dbh->selectrow_array(
+        q[
+          SELECT count(*)
+          FROM test_results
+          WHERE hash_id = ?
+            AND progress = 100
+        ],
+        undef,
         $test_id,
     );
 
@@ -350,11 +380,25 @@ sub store_results {
             WHERE hash_id = ?
               AND 0 < progress
               AND progress < 100
+            SETTINGS mutations_sync = 1
         ],
         undef,
         $self->format_time( time() ),
         $new_results,
         $test_id,
+    );
+
+    # number of affected rows is incorrect in Clickhouse and this is a feature
+    # see <https://github.com/ClickHouse/ClickHouse/issues/50970#issuecomment-1591333551>
+    ( $rows_affected ) = $self->dbh->selectrow_array(
+        q[
+          SELECT count(*)
+          FROM test_results
+          WHERE hash_id = ?
+            AND progress = 100
+        ],
+        undef,
+        $test_id
     );
 
     if ( $rows_affected == 0 ) {
@@ -363,7 +407,6 @@ sub store_results {
 
     return;
 }
-
 
 # Almost the same as the one in DB.pm. The only difference is that
 # it relies on "created_at" instead of the "id" field which is not
@@ -430,10 +473,24 @@ sub claim_test {
                 started_at = ?
             WHERE hash_id = ?
               AND progress = 0
+            SETTINGS mutations_sync = 1
         ],
         undef,
         $self->format_time( time() ),
         $test_id,
+    );
+
+    # number of affected rows is incorrect in Clickhouse and this is a feature
+    # see <https://github.com/ClickHouse/ClickHouse/issues/50970#issuecomment-1591333551>
+    ( $rows_affected ) = $self->dbh->selectrow_array(
+        q[
+          SELECT count(*)
+          FROM test_results
+          WHERE hash_id = ?
+            AND progress = 1
+        ],
+        undef,
+        $test_id
     );
 
     return $rows_affected == 1;

@@ -84,7 +84,7 @@ sub create_schema {
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );
 
     $dbh->do(
-        'CREATE INDEX IF NOT EXISTS test_results__hash_id ON test_results (hash_id)'
+        'CREATE INDEX IF NOT EXISTS test_results__hash_id_created_at ON test_results (hash_id, created_at)'
     );
     $self->dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__fingerprint ON test_results (fingerprint)'
@@ -210,7 +210,7 @@ sub add_batch_job {
 
     my $dbh = $self->dbh;
 
-    if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
+    if ( 1 == $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
         $batch_id = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
@@ -218,7 +218,7 @@ sub add_batch_job {
         my $queue_label = $test_params->{queue};
 
         $dbh->{AutoCommit} = 0;
-        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id_created_at " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
@@ -257,7 +257,7 @@ sub add_batch_job {
                 $undelegated,
             );
         }
-        $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
+        $dbh->do( "CREATE INDEX test_results__hash_id_created_at ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );

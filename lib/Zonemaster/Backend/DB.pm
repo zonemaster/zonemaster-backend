@@ -511,16 +511,15 @@ sub get_test_history {
     my @results;
     my $query = q[
         SELECT
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_critical,
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_error,
-            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_warning,
-            id,
+            (SELECT count(*) FROM result_entries JOIN test_results ON result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_critical,
+            (SELECT count(*) FROM result_entries JOIN test_results ON result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_error,
+            (SELECT count(*) FROM result_entries JOIN test_results ON result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_warning,
             hash_id,
             created_at,
             undelegated
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
-        ORDER BY id DESC
+        ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?];
 
@@ -582,14 +581,14 @@ sub user_authorized {
     my ( $self, $user, $api_key ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array(
-        "SELECT id FROM users WHERE username = ? AND api_key = ?",
+    my ( $count ) = $dbh->selectrow_array(
+        "SELECT count(*) FROM users WHERE username = ? AND api_key = ?",
         undef,
         $user,
         $api_key
     );
 
-    return $id;
+    return $count;
 }
 
 sub batch_exists_in_db {
@@ -643,7 +642,7 @@ sub get_test_request {
                     WHERE progress = 0
                       AND queue = ?
                     ORDER BY priority DESC,
-                             id ASC
+                             created_at ASC
                     LIMIT 1
                 ],
                 undef,
@@ -658,7 +657,7 @@ sub get_test_request {
                     FROM test_results
                     WHERE progress = 0
                     ORDER BY priority DESC,
-                             id ASC
+                             created_at ASC
                     LIMIT 1
                 ],
             );

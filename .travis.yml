@@ -45,6 +45,7 @@ addons:
       - liblist-moreutils-perl
       - liblocale-msgfmt-perl
       - libmail-rfc822-address-perl
+      - libmail-spf-perl
       - libmodule-find-perl
       - libnet-ip-xs-perl
       - libpod-coverage-perl

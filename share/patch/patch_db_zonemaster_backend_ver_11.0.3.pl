@@ -15,23 +15,25 @@ my %patch = (
 );
 
 my $db_engine = $config->DB_engine;
-print "engine: $db_engine\n";
+print "Configured database engine: $db_engine\n";
 
 if ( $db_engine =~ /^(MySQL|PostgreSQL|SQLite)$/ ) {
+    print( "Starting database migration\n" );
     $patch{ lc $db_engine }();
+    print( "\nMigration done\n" );
 }
 else {
     die "Unknown database engine configured: $db_engine\n";
 }
 
-sub _update_data {
+sub _update_data_result_entries {
     my ( $dbh ) = @_;
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
     # update only jobs with results
     my ( $row_total ) = $dbh->selectrow_array( 'SELECT count(*) FROM test_results WHERE results IS NOT NULL' );
-    print "count: $row_total\n";
+    print "Will update $row_total rows\n";
 
     my %levels = Zonemaster::Engine::Logger::Entry->levels();
 
@@ -40,7 +42,7 @@ sub _update_data {
     my $row_count = 50000;
     my $row_done = 0;
     while ( $row_done < $row_total ) {
-        print "row_done/row_total: $row_done / $row_total\n";
+        print "Progress update: $row_done / $row_total\n";
         my $row_updated = 0;
         my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results WHERE results IS NOT NULL ORDER BY id ASC LIMIT ?,?' );
         $sth1->execute( $row_done, $row_count );
@@ -77,7 +79,43 @@ sub _update_data {
         # increase by min(row_updated, row_count)
         $row_done += ( $row_updated < $row_count ) ? $row_updated : $row_count;
     }
-    print "row_done/row_total: $row_done / $row_total\n";
+    print "Progress update: $row_done / $row_total\n";
+}
+
+sub _update_data_nomalize_domains {
+    my ( $db ) = @_;
+
+    my ( $row_total ) = $db->dbh->selectrow_array( 'SELECT count(*) FROM test_results' );
+    print "Will update $row_total rows\n";
+
+
+    my $sth1 = $db->dbh->prepare( 'SELECT hash_id, params FROM test_results' );
+    $sth1->execute;
+
+    my $row_done = 0;
+    my $progress = 0;
+
+    while ( my $row = $sth1->fetchrow_hashref ) {
+        my $hash_id = $row->{hash_id};
+        my $raw_params = decode_json($row->{params});
+        my $domain = $raw_params->{domain};
+
+        # This has never been cleaned
+        delete $raw_params->{user_ip};
+
+        my $params = $db->encode_params( $raw_params );
+        my $fingerprint = $db->generate_fingerprint( $raw_params );
+
+        $domain = Zonemaster::Backend::DB::_normalize_domain( $domain );
+
+        $db->dbh->do('UPDATE test_results SET domain = ?, params = ?, fingerprint = ? where hash_id = ?', undef, $domain, $params, $fingerprint, $hash_id);
+        $row_done += 1;
+        my $new_progress = int(($row_done / $row_total) * 100);
+        if ( $new_progress != $progress ) {
+            $progress = $new_progress;
+            print("$progress%\n");
+        }
+    }
 }
 
 sub patch_db_mysql {
@@ -91,7 +129,11 @@ sub patch_db_mysql {
     try {
         $db->create_schema();
 
-        _update_data( $dbh );
+        print( "\n-> (1/2) Populating new result_entries table\n" );
+        _update_data_result_entries( $dbh );
+
+        print( "\n-> (2/2) Normalizing domain names\n" );
+        _update_data_nomalize_domains( $db );
 
         $dbh->commit();
     } catch {
@@ -111,6 +153,8 @@ sub patch_db_postgresql {
 
     try {
         $db->create_schema();
+
+        print( "\n-> (1/2) Populating new result_entries table\n" );
 
         $dbh->do(q[
             INSERT INTO result_entries (
@@ -139,6 +183,10 @@ sub patch_db_postgresql {
             'UPDATE test_results SET results = NULL WHERE results IS NOT NULL'
         );
 
+
+        print( "\n-> (2/2) Normalizing domain names\n" );
+        _update_data_nomalize_domains( $db );
+
         $dbh->commit();
     } catch {
         print( "Could not upgrade database:  " . $_ );
@@ -158,7 +206,11 @@ sub patch_db_sqlite {
     try {
         $db->create_schema();
 
-        _update_data( $dbh );
+        print( "\n-> (1/2) Populating new result_entries table\n" );
+        _update_data_result_entries( $dbh );
+
+        print( "\n-> (2/2) Normalizing domain names\n" );
+        _update_data_nomalize_domains( $db );
 
         $dbh->commit();
     } catch {

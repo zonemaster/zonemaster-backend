@@ -875,8 +875,11 @@ sub process_dead_test {
 sub _normalize_domain {
     my ( $domain ) = @_;
 
-    # Discard errors, at this point errors have already been checked
-    my ( $_errors, $normalized_domain ) = normalize_name( $domain );
+    my ( $errors, $normalized_domain ) = normalize_name( $domain );
+
+    if ( scalar( @{$errors} ) ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "Normalizing domain returned errors.", data => $errors );
+    }
 
     return $normalized_domain;
 }

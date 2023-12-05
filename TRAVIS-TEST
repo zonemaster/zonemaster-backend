@@ -1,0 +1,13 @@
+CONTRIBUTING.md
+Changes
+LICENSE
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+README.md
+TRAVIS-TEST
+docs
+lib
+script
+share
+t

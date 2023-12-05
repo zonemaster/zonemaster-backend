@@ -89,3 +89,4 @@ t/test_profile.json
 t/test_validate_syntax.t
 t/TestUtil.pm
 t/validator.t
+TRAVIS-TEST

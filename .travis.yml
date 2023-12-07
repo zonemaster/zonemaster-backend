@@ -114,9 +114,9 @@ before_install:
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 
-    # Change default PostgreSQL 12 port to 5432
-  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf; fi
-  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main restart; fi
+    # Change default PostgreSQL 14 port to 5432
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/14/main/postgresql.conf; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 14 main restart; fi
 
 before_script:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi

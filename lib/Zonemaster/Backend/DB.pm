@@ -878,7 +878,7 @@ sub _normalize_domain {
     my ( $errors, $normalized_domain ) = normalize_name( $domain );
 
     if ( scalar( @{$errors} ) ) {
-        die Zonemaster::Backend::Error::Internal->new( reason => "Normalizing domain returned errors.", data => $errors );
+        die Zonemaster::Backend::Error::Internal->new( reason => "Normalizing domain returned errors.", data => [ map { $_->string } @{$errors} ] );
     }
 
     return $normalized_domain;

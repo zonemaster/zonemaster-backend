@@ -96,19 +96,24 @@ sub _update_data_nomalize_domains {
     my $progress = 0;
 
     while ( my $row = $sth1->fetchrow_hashref ) {
-        my $hash_id = $row->{hash_id};
-        my $raw_params = decode_json($row->{params});
-        my $domain = $raw_params->{domain};
+        eval {
+            my $hash_id = $row->{hash_id};
+            my $raw_params = decode_json($row->{params});
+            my $domain = $raw_params->{domain};
 
-        # This has never been cleaned
-        delete $raw_params->{user_ip};
+            # This has never been cleaned
+            delete $raw_params->{user_ip};
 
-        my $params = $db->encode_params( $raw_params );
-        my $fingerprint = $db->generate_fingerprint( $raw_params );
+            my $params = $db->encode_params( $raw_params );
+            my $fingerprint = $db->generate_fingerprint( $raw_params );
 
-        $domain = Zonemaster::Backend::DB::_normalize_domain( $domain );
+            $domain = Zonemaster::Backend::DB::_normalize_domain( $domain );
 
-        $db->dbh->do('UPDATE test_results SET domain = ?, params = ?, fingerprint = ? where hash_id = ?', undef, $domain, $params, $fingerprint, $hash_id);
+            $db->dbh->do('UPDATE test_results SET domain = ?, params = ?, fingerprint = ? where hash_id = ?', undef, $domain, $params, $fingerprint, $hash_id);
+        };
+        if ($@) {
+            warn "Caught error while updating record, ignoring: $@\n";
+        }
         $row_done += 1;
         my $new_progress = int(($row_done / $row_total) * 100);
         if ( $new_progress != $progress ) {

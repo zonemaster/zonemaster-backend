@@ -96,8 +96,8 @@ sub _update_data_nomalize_domains {
     my $progress = 0;
 
     while ( my $row = $sth1->fetchrow_hashref ) {
+        my $hash_id = $row->{hash_id};
         eval {
-            my $hash_id = $row->{hash_id};
             my $raw_params = decode_json($row->{params});
             my $domain = $raw_params->{domain};
 
@@ -112,7 +112,7 @@ sub _update_data_nomalize_domains {
             $db->dbh->do('UPDATE test_results SET domain = ?, params = ?, fingerprint = ? where hash_id = ?', undef, $domain, $params, $fingerprint, $hash_id);
         };
         if ($@) {
-            warn "Caught error while updating record, ignoring: $@\n";
+            warn "Caught error while updating record with hash id $hash_id, ignoring: $@\n";
         }
         $row_done += 1;
         my $new_progress = int(($row_done / $row_total) * 100);

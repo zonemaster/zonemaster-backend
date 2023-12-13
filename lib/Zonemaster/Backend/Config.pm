@@ -198,7 +198,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'CLICKHOUSE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -210,6 +210,7 @@ sub parse {
     $obj->_set_DB_polling_interval( '0.5' );
     $obj->_set_MYSQL_port( '3306' );
     $obj->_set_POSTGRESQL_port( '5432' );
+    $obj->_set_CLICKHOUSE_port( '9004' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
@@ -276,6 +277,21 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'SQLITE', 'database_file' ) ) ) {
         $obj->_set_SQLITE_database_file( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'CLICKHOUSE', 'host' ) ) ) {
+        $obj->_set_CLICKHOUSE_host( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'CLICKHOUSE', 'port' ) ) ) {
+        $obj->{_CLICKHOUSE_port} = $value;
+    }
+    if ( defined( my $value = $get_and_clear->( 'CLICKHOUSE', 'user' ) ) ) {
+        $obj->_set_CLICKHOUSE_user( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'CLICKHOUSE', 'password' ) ) ) {
+        $obj->_set_CLICKHOUSE_password( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'CLICKHOUSE', 'database' ) ) ) {
+        $obj->_set_CLICKHOUSE_database( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
         $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
@@ -367,6 +383,19 @@ sub parse {
         die "config: missing required property SQLITE.database_file (required when DB.engine = SQLite)\n"
           if !defined $obj->SQLITE_database_file;
     }
+    elsif ( $obj->DB_engine eq 'Clickhouse' ) {
+        die "config: missing required property CLICKHOUSE.host (required when DB.engine = Clickhouse)\n"
+          if !defined $obj->CLICKHOUSE_host;
+
+        die "config: missing required property CLICKHOUSE.user (required when DB.engine = Clickhouse)\n"
+          if !defined $obj->CLICKHOUSE_user;
+
+        die "config: missing required property CLICKHOUSE.password (required when DB.engine = Clickhouse)\n"
+          if !defined $obj->CLICKHOUSE_password;
+
+        die "config: missing required property CLICKHOUSE.database (required when DB.engine = Clickhouse)\n"
+          if !defined $obj->CLICKHOUSE_database;
+    }
 
     # Check unknown property names
     {
@@ -397,7 +426,7 @@ Returns a normalized string based on the supported databases.
 
 =head3 EXCEPTION
 
-Dies if the value is not one of SQLite, PostgreSQL or MySQL.
+Dies if the value is not one of SQLite, PostgreSQL, MySQL or Clickhouse.
 
 =cut
 
@@ -405,7 +434,7 @@ sub check_db {
     my ( $self, $db ) = @_;
 
     $db = untaint_engine_type( $db )    #
-      // die "Unknown database '$db', should be one of SQLite, MySQL or PostgreSQL\n";
+      // die "Unknown database '$db', should be one of SQLite, MySQL, PostgreSQL or Clickhouse\n";
 
     return _normalize_engine_type( $db );
 }
@@ -415,7 +444,7 @@ sub check_db {
 
 Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#engine>.
 
-Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
+Returns one of C<"SQLite">, C<"PostgreSQL">, C<"MySQL"> or C<"Clickhouse">.
 
 =cut
 
@@ -516,6 +545,44 @@ Returns a string.
 =head2 SQLITE_database_file
 
 Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database_file>.
+
+Returns a string.
+
+
+=head2 CLICKHOUSE_database
+
+Get the value of L<CLICKHOUSE.database|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#database-2>.
+
+Connection to the Clickhouse server is done using the MySQL interface.
+
+Returns a string.
+
+
+=head2 CLICKHOUSE_host
+
+Get the value of L<CLICKHOUSE.host|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#host-2>.
+
+Returns a string.
+
+
+=head2 CLICKHOUSE_port
+
+Returns the L<CLICKHOUSE.port|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#port-2>
+property from the loaded config.
+
+Returns a number.
+
+
+=head2 CLICKHOUSE_password
+
+Get the value of L<CLICKHOUSE.password|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#password-2>.
+
+Returns a string.
+
+
+=head2 CLICKHOUSE_user
+
+Get the value of L<CLICKHOUSE.user|https://github.com/zonemaster/zonemaster-backend/blob/master/docs/Configuration.md#user-2>.
 
 Returns a string.
 
@@ -657,6 +724,11 @@ sub POSTGRESQL_user                                     { return $_[0]->{_POSTGR
 sub POSTGRESQL_password                                 { return $_[0]->{_POSTGRESQL_password}; }
 sub POSTGRESQL_database                                 { return $_[0]->{_POSTGRESQL_database}; }
 sub SQLITE_database_file                                { return $_[0]->{_SQLITE_database_file}; }
+sub CLICKHOUSE_host                                     { return $_[0]->{_CLICKHOUSE_host}; }
+sub CLICKHOUSE_port                                     { return $_[0]->{_CLICKHOUSE_port}; }
+sub CLICKHOUSE_user                                     { return $_[0]->{_CLICKHOUSE_user}; }
+sub CLICKHOUSE_password                                 { return $_[0]->{_CLICKHOUSE_password}; }
+sub CLICKHOUSE_database                                 { return $_[0]->{_CLICKHOUSE_database}; }
 sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
 sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
 sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
@@ -686,6 +758,11 @@ UNITCHECK {
     _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
+    _create_setter( '_set_CLICKHOUSE_host',                                     '_CLICKHOUSE_host',                                     \&untaint_host );
+    _create_setter( '_set_CLICKHOUSE_port',                                     '_CLICKHOUSE_port',                                     \&untaint_strictly_positive_int );
+    _create_setter( '_set_CLICKHOUSE_user',                                     '_CLICKHOUSE_user',                                     \&untaint_postgresql_ident );
+    _create_setter( '_set_CLICKHOUSE_password',                                 '_CLICKHOUSE_password',                                 \&untaint_password );
+    _create_setter( '_set_CLICKHOUSE_database',                                 '_CLICKHOUSE_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
@@ -920,6 +997,7 @@ sub _normalize_engine_type {
         mysql      => 'MySQL',
         postgresql => 'PostgreSQL',
         sqlite     => 'SQLite',
+        clickhouse => 'Clickhouse',
     };
 
     return $db_module_names->{ lc $value };

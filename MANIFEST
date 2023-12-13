@@ -18,6 +18,7 @@ lib/Zonemaster/Backend.pm
 lib/Zonemaster/Backend/Config.pm
 lib/Zonemaster/Backend/Config/DCPlugin.pm
 lib/Zonemaster/Backend/DB.pm
+lib/Zonemaster/Backend/DB/Clickhouse.pm
 lib/Zonemaster/Backend/DB/MySQL.pm
 lib/Zonemaster/Backend/DB/PostgreSQL.pm
 lib/Zonemaster/Backend/DB/SQLite.pm

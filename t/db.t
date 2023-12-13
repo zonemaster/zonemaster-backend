@@ -170,8 +170,8 @@ subtest 'encoding and fingerprint' => sub {
     };
 
     subtest 'IDN domain' => sub {
-        my $expected_encoded_params = encode_utf8( '{"domain":"café.example","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
-        my $expected_fingerprint = '8c64f7feaa3f13b77e769720991f2a79';
+        my $expected_encoded_params = encode_utf8( '{"domain":"xn--caf-dma.example","ds_info":[],"ipv4":true,"ipv6":true,"nameservers":[],"profile":"default"}' );
+        my $expected_fingerprint = '8cb027ff2c175f48aed2623abad0cdd2';
 
         my %params = ( domain => "café.example" );
         $params{ipv4} = JSON::PP->true;

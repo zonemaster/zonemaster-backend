@@ -5,8 +5,14 @@ use JSON::PP;
 use Try::Tiny;
 
 use Zonemaster::Backend::Config;
+use Zonemaster::Engine;
 
 my $config = Zonemaster::Backend::Config->load_config();
+
+my %module_mapping;
+for my $module ( Zonemaster::Engine->modules ) {
+    $module_mapping{lc $module} = $module;
+}
 
 my %patch = (
     mysql       => \&patch_db_mysql,
@@ -55,11 +61,17 @@ sub _update_data_result_entries {
             my $entries = $json->decode( $results );
 
             foreach my $m ( @$entries ) {
+                my $module = $module_mapping{ lc $m->{module} } // ucfirst lc $m->{module};
+                my $testcase =
+                  ( $m->{testcase} eq 'UNSPECIFIED' )
+                  ? 'Unspecified'
+                  : $m->{testcase} =~ s/[a-z_]*/$module/ir;
+
                 my $r = [
                     $hash_id,
                     $levels{ $m->{level} },
-                    $m->{module},
-                    $m->{testcase} // '',
+                    $module,
+                    $testcase,
                     $m->{tag},
                     $m->{timestamp},
                     $json->encode( $m->{args} // {} ),

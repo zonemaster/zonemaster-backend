@@ -32,8 +32,10 @@ else {
     die "Unknown database engine configured: $db_engine\n";
 }
 
+# depending on the resources available to select all data in database
+# update $row_count to your needs
 sub _update_data_result_entries {
-    my ( $dbh ) = @_;
+    my ( $dbh, $row_count ) = @_;
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
@@ -43,9 +45,6 @@ sub _update_data_result_entries {
 
     my %levels = Zonemaster::Engine::Logger::Entry->levels();
 
-    # depending on the resources available to select all data in database
-    # update $row_count to your needs
-    my $row_count = 50000;
     my $row_done = 0;
     while ( $row_done < $row_total ) {
         print "Progress update: $row_done / $row_total\n";
@@ -147,7 +146,7 @@ sub patch_db_mysql {
         $db->create_schema();
 
         print( "\n-> (1/2) Populating new result_entries table\n" );
-        _update_data_result_entries( $dbh );
+        _update_data_result_entries( $dbh, 50000 );
 
         print( "\n-> (2/2) Normalizing domain names\n" );
         _update_data_nomalize_domains( $db );
@@ -224,7 +223,7 @@ sub patch_db_sqlite {
         $db->create_schema();
 
         print( "\n-> (1/2) Populating new result_entries table\n" );
-        _update_data_result_entries( $dbh );
+        _update_data_result_entries( $dbh, 142 );
 
         print( "\n-> (2/2) Normalizing domain names\n" );
         _update_data_nomalize_domains( $db );

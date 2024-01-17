@@ -177,21 +177,17 @@ sub patch_db_postgresql {
                 hash_id, args, module, level, tag, timestamp, testcase
             )
             (
-                select
-                    hash_id,
-                    (CASE WHEN res->'args' IS NULL THEN '{}' ELSE res->'args' END) AS args,
+                SELECT
+                    test_results.hash_id,
+                    COALESCE(res->'args', '{}') AS args,
                     res->>'module' AS module,
-                    (SELECT value FROM log_level WHERE level = (res->>'level')) AS level,
+                    log_level.value AS level,
                     res->>'tag' AS tag,
                     (res->>'timestamp')::real AS timestamp,
-                    (CASE WHEN res->>'testcase' IS NULL THEN '' ELSE res->>'testcase' END) AS testcase
-                FROM
-                (
-                    SELECT
-                        json_array_elements(results) AS res,
-                        hash_id
-                    FROM test_results
-                ) AS s1
+                    COALESCE(res->>'testcase', '') AS testcase
+                FROM test_results,
+                     json_array_elements(results) as res
+                     LEFT JOIN log_level ON (res->>'level' = log_level.level)
             )
         ]);
 

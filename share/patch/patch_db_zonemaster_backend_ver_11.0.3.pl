@@ -180,11 +180,18 @@ sub patch_db_postgresql {
                 SELECT
                     test_results.hash_id,
                     COALESCE(res->'args', '{}') AS args,
-                    res->>'module' AS module,
+                    CASE res->>'module'
+                        WHEN 'DNSSEC' THEN res->>'module'
+                        ELSE initcap(res->>'module')
+                      END AS module,
                     log_level.value AS level,
                     res->>'tag' AS tag,
                     (res->>'timestamp')::real AS timestamp,
-                    COALESCE(res->>'testcase', '') AS testcase
+                    CASE
+                        WHEN res->>'testcase' IS NULL THEN ''
+                        WHEN res->>'testcase' LIKE 'DNSSEC%' THEN res->>'testcase'
+                        ELSE initcap(res->>'testcase')
+                      END AS testcase
                 FROM test_results,
                      json_array_elements(results) as res
                      LEFT JOIN log_level ON (res->>'level' = log_level.level)

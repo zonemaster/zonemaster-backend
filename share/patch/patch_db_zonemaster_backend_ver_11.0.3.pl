@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use List::Util qw(zip);
 use JSON::PP;
 use Try::Tiny;
 
@@ -65,6 +66,13 @@ sub _update_data_result_entries {
                   ( $m->{testcase} eq 'UNSPECIFIED' )
                   ? 'Unspecified'
                   : $m->{testcase} =~ s/[a-z_]*/$module/ir;
+
+                if ($testcase eq 'Delegation01' and $m->{tag} =~ /^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$/) {
+                    my @ips = split( /;/, delete $m->{args}{ns_ip_list} );
+                    my @names = split( /;/, delete $m->{args}{nsname_list} );
+                    my @ns_list = map { join( '/', @$_ ) } zip(\@names, \@ips);
+                    $m->{args}{ns_list} = join( ';', @ns_list );
+                }
 
                 my $r = [
                     $hash_id,
@@ -170,7 +178,7 @@ sub patch_db_postgresql {
     try {
         $db->create_schema();
 
-        print( "\n-> (1/2) Populating new result_entries table\n" );
+        print( "\n-> (1/3) Populating new result_entries table\n" );
 
         $dbh->do(q[
             INSERT INTO result_entries (
@@ -203,8 +211,24 @@ sub patch_db_postgresql {
         );
 
 
-        print( "\n-> (2/2) Normalizing domain names\n" );
+        print( "\n-> (2/3) Normalizing domain names\n" );
         _update_data_nomalize_domains( $db );
+
+        print( "\n-> (3/3) Migrating arguments to messages for Delegation01" );
+        $dbh->do(q[
+            UPDATE result_entries
+               SET args = (
+                  SELECT args
+                         - ARRAY['ns_ip_list', 'nsname_list']
+                         || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
+                    FROM unnest(
+                           string_to_array(args->>'ns_ip_list', ';'),
+                           string_to_array(args->>'nsname_list', ';'))
+                      AS unnest(ip, name))
+             WHERE testcase = 'Delegation01'
+                   AND tag ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
+                   AND (NOT args ? 'ns_list');
+        ]);
 
         $dbh->commit();
     } catch {

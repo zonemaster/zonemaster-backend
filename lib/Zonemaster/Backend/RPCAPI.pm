@@ -404,7 +404,7 @@ sub get_test_results {
         my $test_info = $self->{db}->test_results( $params->{id} );
         foreach my $test_res ( @{ $test_info->{results} } ) {
             my $res;
-            if ( $test_res->{module} eq 'NAMESERVER' ) {
+            if ( $test_res->{module} eq 'Nameserver' ) {
                 $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
             }
             elsif ($test_res->{module} eq 'SYSTEM'

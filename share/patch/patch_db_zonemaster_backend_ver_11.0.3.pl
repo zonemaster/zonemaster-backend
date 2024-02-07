@@ -1,12 +1,19 @@
 use strict;
 use warnings;
 
+use List::Util qw(zip);
 use JSON::PP;
 use Try::Tiny;
 
 use Zonemaster::Backend::Config;
+use Zonemaster::Engine;
 
 my $config = Zonemaster::Backend::Config->load_config();
+
+my %module_mapping;
+for my $module ( Zonemaster::Engine->modules ) {
+    $module_mapping{lc $module} = $module;
+}
 
 my %patch = (
     mysql       => \&patch_db_mysql,
@@ -26,8 +33,10 @@ else {
     die "Unknown database engine configured: $db_engine\n";
 }
 
+# depending on the resources available to select all data in database
+# update $row_count to your needs
 sub _update_data_result_entries {
-    my ( $dbh ) = @_;
+    my ( $dbh, $row_count ) = @_;
 
     my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
 
@@ -37,9 +46,6 @@ sub _update_data_result_entries {
 
     my %levels = Zonemaster::Engine::Logger::Entry->levels();
 
-    # depending on the resources available to select all data in database
-    # update $row_count to your needs
-    my $row_count = 50000;
     my $row_done = 0;
     while ( $row_done < $row_total ) {
         print "Progress update: $row_done / $row_total\n";
@@ -55,11 +61,24 @@ sub _update_data_result_entries {
             my $entries = $json->decode( $results );
 
             foreach my $m ( @$entries ) {
+                my $module = $module_mapping{ lc $m->{module} } // ucfirst lc $m->{module};
+                my $testcase =
+                  ( $m->{testcase} eq 'UNSPECIFIED' )
+                  ? 'Unspecified'
+                  : $m->{testcase} =~ s/[a-z_]*/$module/ir;
+
+                if ($testcase eq 'Delegation01' and $m->{tag} =~ /^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$/) {
+                    my @ips = split( /;/, delete $m->{args}{ns_ip_list} );
+                    my @names = split( /;/, delete $m->{args}{nsname_list} );
+                    my @ns_list = map { join( '/', @$_ ) } zip(\@names, \@ips);
+                    $m->{args}{ns_list} = join( ';', @ns_list );
+                }
+
                 my $r = [
                     $hash_id,
                     $levels{ $m->{level} },
-                    $m->{module},
-                    $m->{testcase} // '',
+                    $module,
+                    $testcase,
                     $m->{tag},
                     $m->{timestamp},
                     $json->encode( $m->{args} // {} ),
@@ -135,7 +154,7 @@ sub patch_db_mysql {
         $db->create_schema();
 
         print( "\n-> (1/2) Populating new result_entries table\n" );
-        _update_data_result_entries( $dbh );
+        _update_data_result_entries( $dbh, 50000 );
 
         print( "\n-> (2/2) Normalizing domain names\n" );
         _update_data_nomalize_domains( $db );
@@ -159,28 +178,31 @@ sub patch_db_postgresql {
     try {
         $db->create_schema();
 
-        print( "\n-> (1/2) Populating new result_entries table\n" );
+        print( "\n-> (1/3) Populating new result_entries table\n" );
 
         $dbh->do(q[
             INSERT INTO result_entries (
                 hash_id, args, module, level, tag, timestamp, testcase
             )
             (
-                select
-                    hash_id,
-                    (CASE WHEN res->'args' IS NULL THEN '{}' ELSE res->'args' END) AS args,
-                    res->>'module' AS module,
-                    (SELECT value FROM log_level WHERE level = (res->>'level')) AS level,
+                SELECT
+                    test_results.hash_id,
+                    COALESCE(res->'args', '{}') AS args,
+                    CASE res->>'module'
+                        WHEN 'DNSSEC' THEN res->>'module'
+                        ELSE initcap(res->>'module')
+                      END AS module,
+                    log_level.value AS level,
                     res->>'tag' AS tag,
                     (res->>'timestamp')::real AS timestamp,
-                    (CASE WHEN res->>'testcase' IS NULL THEN '' ELSE res->>'testcase' END) AS testcase
-                FROM
-                (
-                    SELECT
-                        json_array_elements(results) AS res,
-                        hash_id
-                    FROM test_results
-                ) AS s1
+                    CASE
+                        WHEN res->>'testcase' IS NULL THEN ''
+                        WHEN res->>'testcase' LIKE 'DNSSEC%' THEN res->>'testcase'
+                        ELSE initcap(res->>'testcase')
+                      END AS testcase
+                FROM test_results,
+                     json_array_elements(results) as res
+                     LEFT JOIN log_level ON (res->>'level' = log_level.level)
             )
         ]);
 
@@ -189,8 +211,24 @@ sub patch_db_postgresql {
         );
 
 
-        print( "\n-> (2/2) Normalizing domain names\n" );
+        print( "\n-> (2/3) Normalizing domain names\n" );
         _update_data_nomalize_domains( $db );
+
+        print( "\n-> (3/3) Migrating arguments to messages for Delegation01" );
+        $dbh->do(q[
+            UPDATE result_entries
+               SET args = (
+                  SELECT args
+                         - ARRAY['ns_ip_list', 'nsname_list']
+                         || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
+                    FROM unnest(
+                           string_to_array(args->>'ns_ip_list', ';'),
+                           string_to_array(args->>'nsname_list', ';'))
+                      AS unnest(ip, name))
+             WHERE testcase = 'Delegation01'
+                   AND tag ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
+                   AND (NOT args ? 'ns_list');
+        ]);
 
         $dbh->commit();
     } catch {
@@ -212,7 +250,7 @@ sub patch_db_sqlite {
         $db->create_schema();
 
         print( "\n-> (1/2) Populating new result_entries table\n" );
-        _update_data_result_entries( $dbh );
+        _update_data_result_entries( $dbh, 142 );
 
         print( "\n-> (2/2) Normalizing domain names\n" );
         _update_data_nomalize_domains( $db );

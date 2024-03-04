@@ -22,7 +22,7 @@ use Encode;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
-use Zonemaster::Engine::Normalization;
+use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
@@ -224,7 +224,7 @@ sub get_data_from_parent_zone {
     my $result = eval {
         my %result;
         my $domain = $params->{domain};
-        my ( $_errors, $normalized_domain ) = normalize_name( $domain );
+        my ( $_errors, $normalized_domain ) = normalize_name( trim_space ( $domain ) );
 
         my @ns_list;
         my @ns_names;

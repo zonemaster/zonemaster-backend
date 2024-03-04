@@ -3,12 +3,11 @@ use strict;
 use warnings;
 use feature 'say';
 
+use Encode qw( decode_utf8 FB_CROAK );
 use Getopt::Long qw( GetOptionsFromArray :config require_order );
-
-use Pod::Usage;
-
-use JSON::PP;
+use JSON::PP qw( encode_json );
 use LWP::UserAgent;
+use Pod::Usage;
 
 =head1 NAME
 
@@ -32,6 +31,8 @@ This interface is unstable and will change in a future release.
 
 sub main {
     my @argv = @_;
+
+    @argv = map { decode_utf8( $_, FB_CROAK ) } @argv;
 
     my $opt_help;
     my $opt_verbose;

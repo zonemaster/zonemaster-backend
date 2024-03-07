@@ -572,7 +572,7 @@ sub domain_history {
 
     return {
         history => [
-            map {    #
+            map {
                 {
                     job_id         => $_->{id},
                     created_at     => $_->{created_at},

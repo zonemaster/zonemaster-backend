@@ -761,8 +761,8 @@ $json_schemas{batch_status} = $json_schemas{get_batch_job_result};
 sub batch_status {
     my $result = get_batch_job_result( @_ );
     return {
-        num_running       => $result->{nb_running},
-        num_finished      => $result->{nb_finished},
+        num_running      => $result->{nb_running},
+        num_finished     => $result->{nb_finished},
         finished_job_ids => $result->{finished_job_ids},
     };
 }

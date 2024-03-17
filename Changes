@@ -1,6 +1,22 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v11.1.0 2024-03-18 (public release version)
+
+ [Release information]
+ - New database schema requires migration of existing database.
+
+ [Features]
+ - Migrates to new test results database table (#1092, #1145, #1147)
+ - Adds possibility to run several Test Agents on the same or multiple
+   servers to the same queue to increase capacity (#1121)
+ - Adds input name normalization (#1132)
+
+ [Fixes]
+ - Fixes FreeBSD testagent start script (#1146)
+ - Fixes a change in JSON::Validator code (#1109)
+
+
 v11.0.2 2023-09-08 (public fix version)
 
  [Fixes]

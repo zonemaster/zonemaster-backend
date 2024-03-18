@@ -18,6 +18,9 @@ load_rc_config $name
 export ZONEMASTER_BACKEND_CONFIG_FILE="/usr/local/etc/zonemaster/backend_config.ini"
 #ZM_BACKEND_TESTAGENT_LOGLEVEL='info'  # Set this variable to override the default log level
 
+# Make Perl available for service() when executed via env() in script
+export PATH="$PATH:/usr/local/bin"
+
 command="/usr/local/bin/zonemaster_backend_testagent"
 command_args="--user=${zm_testagent_user} --group=${zm_testagent_group} --pidfile=${zm_testagent_pidfile}"
 if [ -n "$ZM_BACKEND_TESTAGENT_LOGLEVEL" ] ; then

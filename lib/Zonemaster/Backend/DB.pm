@@ -9,12 +9,16 @@ use 5.14.2;
 use DBI qw(:sql_types);
 use Digest::MD5 qw(md5_hex);
 use Encode;
+use Exporter qw( import );
 use JSON::PP;
 use Log::Any qw( $log );
 use POSIX qw( strftime );
+use Readonly;
 use Try::Tiny;
 
+use Zonemaster::Engine::Normalization;
 use Zonemaster::Backend::Errors;
+use Zonemaster::Engine::Logger::Entry;
 
 requires qw(
   add_batch_job
@@ -49,6 +53,55 @@ has 'dbhandle' => (
     isa      => 'Maybe[DBI::db]',
     required => 1,
 );
+
+=head2 $TEST_WAITING
+
+The test is waiting to be processed.
+
+=cut
+
+Readonly our $TEST_WAITING => 'WAITING';
+
+=head2 $TEST_RUNNING
+
+The test is currently being processed.
+
+=cut
+
+Readonly our $TEST_RUNNING => 'RUNNING';
+
+=head2 $TEST_COMPLETED
+
+The test was already processed.
+
+This state encompasses all of the following:
+
+=over 2
+
+=item
+
+The Zonemaster Engine test terminated normally.
+
+=item
+
+A critical error occurred while processing.
+
+=item
+
+The processing was cancelled because it took too long.
+
+=back
+
+=cut
+
+Readonly our $TEST_COMPLETED => 'COMPLETED';
+
+our @EXPORT_OK = qw(
+    $TEST_WAITING
+    $TEST_RUNNING
+    $TEST_COMPLETED
+);
+
 
 =head2 get_db_class
 
@@ -209,58 +262,143 @@ sub recent_test_hash_id {
     return $recent_hash_id;
 }
 
-=head2 test_progress($test_id, $progress)
+=head2 test_progress( $test_id, $progress )
 
-Takes a test_id and returns the current progress value for the associated test.
-If progress is set, update the progress value of the test.
-If the progress value is 1, set the C<started_at> field to the current time in UTC.
+Get/set the progress value of the test associated with C<$test_id>.
 
-The C<$progress> value is an integer in the range 1-99.
+The given C<$progress> must be either C<undef> (when getting) or an number in
+the range 0-100 inclusive (when setting).
+
+If defined, C<$progress> is clamped to 1-99 inclusive.
+
+Dies when:
+
+=over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+attempting to update a test that is in a state other than "running"
+
+=item
+
+attempting to set a progress value that is lower than the current one
+
+=item
+
+an error occurs in the database interface
+
+=back
 
 =cut
 
 sub test_progress {
     my ( $self, $test_id, $progress ) = @_;
 
-    my $dbh = $self->dbh;
-    if ( $progress ) {
-        $progress = $progress < 1 ? 1 :
-                    $progress > 99 ? 99 : $progress;
-        if ( $progress == 1 ) {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?,
-                        started_at = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $self->format_time( time() ),
-                $test_id,
-            );
+    if ( defined $progress ) {
+        if ( $progress < 0 || 100 < $progress ) {
+            die Zonemaster::Backend::Error::Internal->new( reason => "progress out of range" );
+        } elsif ( $progress < 1 ) {
+            $progress = 1;
+        } elsif ( 99 < $progress ) {
+            $progress = 99;
         }
-        else {
-            $dbh->do(
-                q[
-                    UPDATE test_results
-                    SET progress = ?
-                    WHERE hash_id = ?
-                      AND progress <> 100
-                ],
-                undef,
-                $progress,
-                $test_id,
-            );
+
+        my $rows_affected = $self->dbh->do(
+            q[
+                UPDATE test_results
+                SET progress = ?
+                WHERE hash_id = ?
+                  AND 1 <= progress
+                  AND progress <= ?
+            ],
+            undef,
+            $progress,
+            $test_id,
+            $progress,
+        );
+        if ( $rows_affected == 0 ) {
+            die Zonemaster::Backend::Error::Internal->new( reason => 'job not found or illegal update' );
         }
 
         return $progress;
     }
 
-    my ( $result ) = $self->dbh->selectrow_array( "SELECT progress FROM test_results WHERE hash_id=?", undef, $test_id );
+    my ( $result ) = $self->dbh->selectrow_array(
+        q[
+            SELECT progress
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $test_id,
+    );
+    if ( !defined $result ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
+    }
 
     return $result;
+}
+
+sub test_state {
+    my ( $self, $test_id ) = @_;
+
+    my ( $progress ) = $self->dbh->selectrow_array(
+        q[
+            SELECT progress
+            FROM test_results
+            WHERE hash_id = ?
+        ],
+        undef,
+        $test_id,
+    );
+    if ( !defined $progress ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
+    }
+
+    if ( $progress == 0 ) {
+        return $TEST_WAITING;
+    }
+    elsif ( 0 < $progress && $progress < 100 ) {
+        return $TEST_RUNNING;
+    }
+    elsif ( $progress == 100 ) {
+        return $TEST_COMPLETED;
+    }
+    else {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'state could not be determined' );
+    }
+}
+
+sub set_test_completed {
+    my ( $self, $test_id ) = @_;
+
+    my $current_state = $self->test_state( $test_id );
+
+    if ( $current_state ne $TEST_RUNNING ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to COMPLETED' );
+    }
+
+    my $rows_affected = $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 100,
+                ended_at = ?
+            WHERE hash_id = ?
+              AND 0 < progress
+              AND progress < 100
+        ],
+        undef,
+        $self->format_time( time() ),
+        $test_id,
+    );
+
+    if ( $rows_affected == 0 ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "job not found or illegal transition" );
+    }
 }
 
 sub select_test_results {
@@ -271,8 +409,7 @@ sub select_test_results {
             SELECT
                 hash_id,
                 created_at,
-                params,
-                results
+                params
             FROM test_results
             WHERE hash_id = ?
         ],
@@ -295,13 +432,14 @@ sub select_test_results {
 sub store_results {
     my ( $self, $test_id, $new_results ) = @_;
 
-    $self->dbh->do(
+    my $rows_affected = $self->dbh->do(
         q[
             UPDATE test_results
             SET progress = 100,
                 ended_at = ?,
                 results = ?
             WHERE hash_id = ?
+              AND 0 < progress
               AND progress < 100
         ],
         undef,
@@ -309,6 +447,12 @@ sub store_results {
         $new_results,
         $test_id,
     );
+
+    if ( $rows_affected == 0 ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "job not found or illegal transition" );
+    }
+
+    return;
 }
 
 sub test_results {
@@ -316,14 +460,35 @@ sub test_results {
 
     my $result = $self->select_test_results( $test_id );
 
+    my @result_entries = $self->dbh->selectall_array(
+        q[
+            SELECT
+                l.level,
+                r.module,
+                r.testcase,
+                r.tag,
+                r.timestamp,
+                r.args
+            FROM result_entries r
+            INNER JOIN log_level l
+                ON r.level = l.value
+            WHERE hash_id = ?
+        ],
+        { Slice => {} },
+        $test_id
+    );
+
     eval {
         $result->{params}  = decode_json( $result->{params} );
 
-        if (defined $result->{results}) {
-            $result->{results} = decode_json( $result->{results} );
-        } else {
-            $result->{results} = [];
-        }
+        @result_entries = map {
+            {
+                %$_,
+                args => decode_json( $_->{args} ),
+            }
+        } @result_entries;
+
+        $result->{results} = \@result_entries;
     };
 
     die Zonemaster::Backend::Error::JsonError->new( reason => "$@", data => { test_id => $test_id } )
@@ -347,11 +512,13 @@ sub get_test_history {
     my @results;
     my $query = q[
         SELECT
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_critical,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_error,
+            (SELECT count(*) FROM result_entries WHERE result_entries.hash_id = test_results.hash_id AND level = ?) AS nb_warning,
             id,
             hash_id,
             created_at,
-            undelegated,
-            results
+            undelegated
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY id DESC
@@ -360,25 +527,29 @@ sub get_test_history {
 
     my $sth = $dbh->prepare( $query );
 
-    $sth->bind_param( 1, _normalize_domain( $p->{frontend_params}{domain} ) );
-    $sth->bind_param( 2, $undelegated, SQL_INTEGER );
-    $sth->bind_param( 3, $undelegated, SQL_INTEGER );
-    $sth->bind_param( 4, $p->{limit} );
-    $sth->bind_param( 5, $p->{offset} );
+    my %levels = Zonemaster::Engine::Logger::Entry->levels();
+    $sth->bind_param( 1, $levels{CRITICAL} );
+    $sth->bind_param( 2, $levels{ERROR} );
+    $sth->bind_param( 3, $levels{WARNING} );
+    $sth->bind_param( 4, _normalize_domain( $p->{frontend_params}{domain} ) );
+    $sth->bind_param( 5, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 6, $undelegated, SQL_INTEGER );
+    $sth->bind_param( 7, $p->{limit} );
+    $sth->bind_param( 8, $p->{offset} );
 
     $sth->execute();
 
     while ( my $h = $sth->fetchrow_hashref ) {
-        $h->{results} = decode_json($h->{results}) if $h->{results};
-        my $critical = ( grep { $_->{level} eq 'CRITICAL' } @{ $h->{results} } );
-        my $error    = ( grep { $_->{level} eq 'ERROR' } @{ $h->{results} } );
-        my $warning  = ( grep { $_->{level} eq 'WARNING' } @{ $h->{results} } );
-
-        # More important overwrites
-        my $overall = 'ok';
-        $overall = 'warning'  if $warning;
-        $overall = 'error'    if $error;
-        $overall = 'critical' if $critical;
+        my $overall_result = 'ok';
+        if ( $h->{nb_critical} ) {
+            $overall_result = 'critical';
+        }
+        elsif ( $h->{nb_error} ) {
+            $overall_result = 'error';
+        }
+        elsif ( $h->{nb_warning} ) {
+            $overall_result = 'warning';
+        }
 
         push(
             @results,
@@ -386,7 +557,7 @@ sub get_test_history {
                 id               => $h->{hash_id},
                 created_at       => $self->to_iso8601( $h->{created_at} ),
                 undelegated      => $h->{undelegated},
-                overall_result   => $overall,
+                overall_result   => $overall_result,
             }
         );
     }
@@ -398,23 +569,6 @@ sub create_new_batch_job {
     my ( $self, $username ) = @_;
 
     my $dbh = $self->dbh;
-    my ( $batch_id, $created_at ) = $dbh->selectrow_array( "
-            SELECT
-                batch_id,
-                batch_jobs.created_at AS batch_created_at
-            FROM
-                test_results
-            JOIN batch_jobs
-                ON batch_id = batch_jobs.id
-                AND username = ?
-            WHERE
-                test_results.progress <> 100
-            LIMIT 1
-            ", undef, $username );
-
-    die Zonemaster::Backend::Error::Conflict->new( message => 'Batch job still running', data => { batch_id => $batch_id, created_at => $created_at } )
-        if ( $batch_id );
-
     $dbh->do( q[ INSERT INTO batch_jobs (username, created_at) VALUES (?,?) ],
         undef,
         $username,
@@ -452,24 +606,110 @@ sub batch_exists_in_db {
     return $id;
 }
 
+=head2 get_test_request( $queue_label )
+
+Find a waiting test and claim it for processing.
+
+If $queue_label is defined it must be an integer.
+If defined, only tests in the associated queue are considered.
+Otherwise tests from all queues are considered.
+
+Returns the test id and the batch id of the claimed test.
+If there are no waiting tests to claim, C<undef> is returned for both ids.
+
+Only tests in the "waiting" state are considered.
+When a test is claimed it is removed from the queue and it transitions to the
+"running" state.
+
+It is safe for multiple callers running in parallel to allocate tests from the
+same queues.
+
+Dies when an error occurs in the database interface.
+
+=cut
+
 sub get_test_request {
     my ( $self, $queue_label ) = @_;
 
-    my $result_id;
-    my $dbh = $self->dbh;
+    while ( 1 ) {
 
-    my ( $hash_id, $batch_id );
-    if ( defined $queue_label ) {
-        ( $hash_id, $batch_id ) = $dbh->selectrow_array( qq[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 AND queue=? ORDER BY priority DESC, id ASC LIMIT 1 ], undef, $queue_label );
-    }
-    else {
-        ( $hash_id, $batch_id ) = $dbh->selectrow_array( q[ SELECT hash_id, batch_id FROM test_results WHERE progress=0 ORDER BY priority DESC, id ASC LIMIT 1 ] );
-    }
+        # Identify a candidate for allocation ...
+        my ( $hash_id, $batch_id );
+        if ( defined $queue_label ) {
+            ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+                q[
+                    SELECT hash_id,
+                           batch_id
+                    FROM test_results
+                    WHERE progress = 0
+                      AND queue = ?
+                    ORDER BY priority DESC,
+                             id ASC
+                    LIMIT 1
+                ],
+                undef,
+                $queue_label,
+            );
+        }
+        else {
+            ( $hash_id, $batch_id ) = $self->dbh->selectrow_array(
+                q[
+                    SELECT hash_id,
+                           batch_id
+                    FROM test_results
+                    WHERE progress = 0
+                    ORDER BY priority DESC,
+                             id ASC
+                    LIMIT 1
+                ],
+            );
+        }
 
-    if ( $hash_id ) {
-        $self->test_progress( $hash_id, 1 );
+        if ( defined $hash_id ) {
+
+            # ... and race to be the first to claim it ...
+            if ( $self->claim_test( $hash_id ) ) {
+                return ( $hash_id, $batch_id );
+            }
+        }
+        else {
+            # ... or stop trying if there are no candidates.
+            return ( undef, undef );
+        }
     }
-    return ( $hash_id, $batch_id );
+}
+
+=head2 claim_test( $test_id )
+
+Claim a test for processing.
+
+Transitions a test from the "waiting" state to the "running" state.
+
+Returns true on successful transition.
+Returns false if the given test does not exist or if it is not in the "waiting"
+state.
+
+Dies when an error occurs in the database interface.
+
+=cut
+
+sub claim_test {
+    my ( $self, $test_id ) = @_;
+
+    my $rows_affected = $self->dbh->do(
+        q[
+            UPDATE test_results
+            SET progress = 1,
+                started_at = ?
+            WHERE hash_id = ?
+              AND progress = 0
+        ],
+        undef,
+        $self->format_time( time() ),
+        $test_id,
+    );
+
+    return $rows_affected == 1;
 }
 
 sub get_test_params {
@@ -541,15 +781,18 @@ sub process_unfinished_tests {
         $test_run_timeout,
     );
 
-    my $msg = {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "UNABLE_TO_FINISH_TEST",
-        "args"      => { max_execution_time => $test_run_timeout },
-        "timestamp" => $test_run_timeout
-    };
+    my $msg = Zonemaster::Engine::Logger::Entry->new(
+        {
+            level     => "CRITICAL",
+            module    => "BACKEND_TEST_AGENT",
+            testcase  => "",
+            tag       => "UNABLE_TO_FINISH_TEST",
+            args      => { max_execution_time => $test_run_timeout },
+            timestamp => $test_run_timeout
+        }
+    );
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $self->force_end_test($h->{hash_id}, $h->{results}, $msg);
+        $self->force_end_test($h->{hash_id}, $msg);
     }
 }
 
@@ -591,44 +834,40 @@ sub select_unfinished_tests {
     }
 }
 
-=head2 force_end_test($hash_id, $results, $msg)
+=head2 force_end_test($hash_id, $msg)
 
-Append the $msg log entry to the $results arrayref and store the results into
-the database.
+Store the L<Zonemaster::Engine::Logger::Entry> $msg log entry into the database
+and mark test with $hash_id as COMPLETED.
 
 =cut
 
 sub force_end_test {
-    my ( $self, $hash_id, $results, $msg ) = @_;
-    my $result;
-    if ( defined $results && $results =~ /^\[/ ) {
-        $result = decode_json( $results );
-    }
-    else {
-        $result = [];
-    }
-    push @$result, $msg;
+    my ( $self, $hash_id, $msg ) = @_;
 
-    $self->store_results( $hash_id, encode_json($result) );
+    $self->add_result_entries( $hash_id, $msg );
+    $self->set_test_completed( $hash_id );
 }
 
 =head2 process_dead_test($hash_id)
 
-Append a new log entry C<BACKEND_TEST_AGENT:TEST_DIED> to the test with $hash_id.
-Then store the results in database.
+Store a new log entry C<BACKEND_TEST_AGENT:TEST_DIED> in database for the test
+with $hash_id.
 
 =cut
 
 sub process_dead_test {
     my ( $self, $hash_id ) = @_;
-    my ( $results ) = $self->dbh->selectrow_array("SELECT results FROM test_results WHERE hash_id = ?", undef, $hash_id);
-    my $msg = {
-        "level"     => "CRITICAL",
-        "module"    => "BACKEND_TEST_AGENT",
-        "tag"       => "TEST_DIED",
-        "timestamp" => $self->get_relative_start_time($hash_id)
-    };
-    $self->force_end_test($hash_id, $results, $msg);
+    my $msg = Zonemaster::Engine::Logger::Entry->new(
+        {
+            level     => "CRITICAL",
+            module    => "BACKEND_TEST_AGENT",
+            testcase  => "",
+            tag       => "TEST_DIED",
+            args      => {},
+            timestamp => $self->get_relative_start_time($hash_id)
+        }
+    );
+    $self->force_end_test($hash_id, $msg);
 }
 
 # Converts the domain to lowercase and if the domain is not the root ('.')
@@ -636,10 +875,13 @@ sub process_dead_test {
 sub _normalize_domain {
     my ( $domain ) = @_;
 
-    $domain = lc( $domain );
-    $domain =~ s/\.$// unless $domain eq '.';
+    my ( $errors, $normalized_domain ) = normalize_name( $domain );
 
-    return $domain;
+    if ( scalar( @{$errors} ) ) {
+        die Zonemaster::Backend::Error::Internal->new( reason => "Normalizing domain returned errors.", data => [ map { $_->string } @{$errors} ] );
+    }
+
+    return $normalized_domain;
 }
 
 sub _project_params {
@@ -759,6 +1001,33 @@ sub to_iso8601 {
     my ( $class, $time ) = @_;
     $time =~ s/^([^ ]+) (.*)$/$1T$2Z/;
     return $time;
+}
+
+sub add_result_entries {
+    my ( $self, $hash_id, @entries ) = @_;
+    my @records;
+
+    my $json = JSON::PP->new->allow_blessed->convert_blessed->canonical;
+
+    my %levels = Zonemaster::Engine::Logger::Entry->levels();
+
+    foreach my $e ( @entries ) {
+        my $r = [
+            $hash_id,
+            $levels{ $e->level },
+            $e->module,
+            $e->testcase,
+            $e->tag,
+            $e->timestamp,
+            $json->encode( $e->args // {} ),
+        ];
+
+        push @records, $r;
+    }
+    my $query_values = join ", ", ("(?, ?, ?, ?, ?, ?, ?)") x @records;
+    my $query = "INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args) VALUES $query_values";
+    my $sth = $self->dbh->prepare($query);
+    $sth = $sth->execute(map { @$_ } @records);
 }
 
 no Moose::Role;

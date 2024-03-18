@@ -13,6 +13,7 @@ use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
 use Net::IP::XS;
 use Zonemaster::Engine::Logger::Entry;
+use Zonemaster::Engine::Normalization;
 use Zonemaster::LDNS;
 
 our @EXPORT_OK = qw(
@@ -281,35 +282,13 @@ sub check_domain {
         return N__ 'Domain name required';
     }
 
-    if ( $domain =~ m/[^[:ascii:]]+/ ) {
-        if ( Zonemaster::LDNS::has_idn() ) {
-            eval { $domain = Zonemaster::LDNS::to_idn( $domain ); };
-            if ( $@ ) {
-                return N__ 'The domain name is IDNA invalid';
-            }
-        }
-        else {
-            return N__ 'The domain name contains non-ascii characters and IDNA support is not installed';
-        }
+    my ( $errors, $_domain ) = normalize_name( $domain );
+
+    if ( @{$errors} ) {
+        return $errors->[0]->message;
     }
 
-    if ( $domain !~ m{^[a-z0-9_./-]+$}i ) {
-        return  N__ 'The domain name character(s) are not supported';
-    }
-
-    if ( $domain =~ m/\.\./i ) {
-        return  N__ 'The domain name contains consecutive dots';
-    }
-
-    my %levels = Zonemaster::Engine::Logger::Entry::levels();
-    my @res;
-    @res = Zonemaster::Engine::Test::Basic->basic00( $domain );
-    @res = grep { $_->numeric_level >= $levels{ERROR} } @res;
-    if ( @res != 0 ) {
-        return N__ 'The domain name or label is too long';
-    }
-
-    return undef;
+    return undef
 }
 
 =head2 check_language_tag($value, %locales)

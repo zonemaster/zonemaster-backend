@@ -1,8 +1,8 @@
-dist: focal
+dist: jammy
 
 language: perl
 
-perl: "5.32"
+perl: "5.36"
 
 stages:
   - test
@@ -19,12 +19,9 @@ jobs:
     - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
       services: postgresql
     # Cover supported Perl versions with SQLite
-    - perl: "5.30.2"
+    - perl: "5.30"
       env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     - perl: "5.26"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - perl: "5.16"
-      dist: bionic
       env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
@@ -45,6 +42,7 @@ addons:
       - liblist-moreutils-perl
       - liblocale-msgfmt-perl
       - libmail-rfc822-address-perl
+      - libmail-spf-perl
       - libmodule-find-perl
       - libnet-ip-xs-perl
       - libpod-coverage-perl
@@ -116,9 +114,9 @@ before_install:
   - mkdir -p ./lib/auto/share/dist/
   - ln -s ../../../../share ./lib/auto/share/dist/Zonemaster-Backend
 
-    # Change default PostgreSQL 12 port to 5432
-  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf; fi
-  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 12 main restart; fi
+    # Change default PostgreSQL 14 port to 5432
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/14/main/postgresql.conf; fi
+  - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 14 main restart; fi
 
 before_script:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi

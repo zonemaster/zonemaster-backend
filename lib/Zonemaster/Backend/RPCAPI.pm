@@ -22,6 +22,7 @@ use Encode;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
+use Zonemaster::Engine::Normalization;
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
@@ -223,16 +224,17 @@ sub get_data_from_parent_zone {
     my $result = eval {
         my %result;
         my $domain = $params->{domain};
+        my ( $_errors, $normalized_domain ) = normalize_name( $domain );
 
         my @ns_list;
         my @ns_names;
 
-        my $zone = Zonemaster::Engine->zone( $domain );
+        my $zone = Zonemaster::Engine->zone( $normalized_domain );
         push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
 
         my @ds_list;
 
-        $zone = Zonemaster::Engine->zone($domain);
+        $zone = Zonemaster::Engine->zone($normalized_domain);
         my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
         if ($ds_p) {
             my @ds = $ds_p->get_records( 'DS', 'answer' );
@@ -291,10 +293,6 @@ sub start_domain_test {
 
     my $result = 0;
     eval {
-        $params->{domain} =~ s/^\.// unless ( !$params->{domain} || $params->{domain} eq '.' );
-
-        die "No domain in parameters\n" unless ( defined $params->{domain} && length($params->{domain}) );
-
         $params->{profile}  //= "default";
         $params->{priority} //= 10;
         $params->{queue}    //= 0;
@@ -406,7 +404,7 @@ sub get_test_results {
         my $test_info = $self->{db}->test_results( $params->{id} );
         foreach my $test_res ( @{ $test_info->{results} } ) {
             my $res;
-            if ( $test_res->{module} eq 'NAMESERVER' ) {
+            if ( $test_res->{module} eq 'Nameserver' ) {
                 $res->{ns} = ( $test_res->{args}->{ns} ) ? ( $test_res->{args}->{ns} ) : ( 'All' );
             }
             elsif ($test_res->{module} eq 'SYSTEM'
@@ -664,6 +662,10 @@ sub _get_locale {
     my ( $self, $params ) = @_;
     my @error;
 
+    if ( ref $params ne 'HASH' ) {
+        return undef;
+    }
+
     my $language = $params->{language};
     if ( !defined $language ) {
         return undef;
@@ -697,12 +699,13 @@ sub _set_error_message_locale {
 
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
-    method => $zm_validator->jsonrpc_method()->required);
+    method => $zm_validator->jsonrpc_method()->required,
+    id => joi->type([qw(null number string)]));
 sub jsonrpc_validate {
-    my ( $self, $jsonrpc_request) = @_;
+    my ( $self, $jsonrpc_request ) = @_;
 
     my @error_rpc = $rpc_request->validate($jsonrpc_request);
-    if (!exists $jsonrpc_request->{id} || @error_rpc) {
+    if ((ref($jsonrpc_request) eq 'HASH' && !exists $jsonrpc_request->{id}) || @error_rpc) {
         $self->_set_error_message_locale;
         return {
             jsonrpc => '2.0',
@@ -716,18 +719,25 @@ sub jsonrpc_validate {
     }
 
     my $method_schema = $json_schemas{$jsonrpc_request->{method}};
-    # the JSON schema for the method has a 'required' key
-    if ( exists $method_schema->{required} ) {
-        if ( not exists $jsonrpc_request->{params} ) {
-            return {
-                jsonrpc => '2.0',
-                id => $jsonrpc_request->{id},
-                error => {
-                    code => '-32602',
-                    message => "Missing 'params' object",
-                }
-            };
-        }
+    if (blessed $method_schema) {
+        $method_schema = $method_schema->compile;
+    }
+
+    # The "params" key of the JSONRPC object is optional per the JSONRPC 2.0
+    # specification, but if the method being called requires at least one
+    # parameter, omitting it is an error.
+
+    if ( exists $method_schema->{required} and not exists $jsonrpc_request->{params} ) {
+        return {
+            jsonrpc => '2.0',
+            id => $jsonrpc_request->{id},
+            error => {
+                code => '-32602',
+                message => "Missing 'params' object",
+            }
+        };
+    }
+    elsif ( exists $jsonrpc_request->{params} ) {
         my @error_response = $self->validate_params($method_schema, $jsonrpc_request->{params});
 
         if ( scalar @error_response ) {

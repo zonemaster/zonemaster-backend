@@ -1,6 +1,13 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v11.1.1 2024-03-28
+
+ [Fixes]
+ - Corrects the database migration script for version
+   v11.1.0 (#1159)
+
+
 v11.1.0 2024-03-18 (public release version)
 
  [Release information]

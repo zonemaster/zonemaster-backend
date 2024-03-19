@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use List::Util qw(zip);
+use List::MoreUtils qw(zip_unflatten);
 use JSON::PP;
 use Try::Tiny;
 
@@ -70,7 +70,7 @@ sub _update_data_result_entries {
                 if ($testcase eq 'Delegation01' and $m->{tag} =~ /^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$/) {
                     my @ips = split( /;/, delete $m->{args}{ns_ip_list} );
                     my @names = split( /;/, delete $m->{args}{nsname_list} );
-                    my @ns_list = map { join( '/', @$_ ) } zip(\@names, \@ips);
+                    my @ns_list = map { join( '/', @$_ ) } zip_unflatten(@names, @ips);
                     $m->{args}{ns_list} = join( ';', @ns_list );
                 }
 

@@ -178,57 +178,11 @@ sub patch_db_postgresql {
     try {
         $db->create_schema();
 
-        print( "\n-> (1/3) Populating new result_entries table\n" );
+        print( "\n-> (1/2) Populating new result_entries table\n" );
+        _update_data_result_entries( $dbh, 50000 );
 
-        $dbh->do(q[
-            INSERT INTO result_entries (
-                hash_id, args, module, level, tag, timestamp, testcase
-            )
-            (
-                SELECT
-                    test_results.hash_id,
-                    COALESCE(res->'args', '{}') AS args,
-                    CASE res->>'module'
-                        WHEN 'DNSSEC' THEN res->>'module'
-                        ELSE initcap(res->>'module')
-                      END AS module,
-                    log_level.value AS level,
-                    res->>'tag' AS tag,
-                    (res->>'timestamp')::real AS timestamp,
-                    CASE
-                        WHEN res->>'testcase' IS NULL THEN ''
-                        WHEN res->>'testcase' LIKE 'DNSSEC%' THEN res->>'testcase'
-                        ELSE initcap(res->>'testcase')
-                      END AS testcase
-                FROM test_results,
-                     json_array_elements(results) as res
-                     LEFT JOIN log_level ON (res->>'level' = log_level.level)
-            )
-        ]);
-
-        $dbh->do(
-            'UPDATE test_results SET results = NULL WHERE results IS NOT NULL'
-        );
-
-
-        print( "\n-> (2/3) Normalizing domain names\n" );
+        print( "\n-> (2/2) Normalizing domain names\n" );
         _update_data_normalize_domains( $db );
-
-        print( "\n-> (3/3) Migrating arguments to messages for Delegation01" );
-        $dbh->do(q[
-            UPDATE result_entries
-               SET args = (
-                  SELECT args
-                         - ARRAY['ns_ip_list', 'nsname_list']
-                         || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
-                    FROM unnest(
-                           string_to_array(args->>'ns_ip_list', ';'),
-                           string_to_array(args->>'nsname_list', ';'))
-                      AS unnest(ip, name))
-             WHERE testcase = 'Delegation01'
-                   AND tag ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
-                   AND (NOT args ? 'ns_list');
-        ]);
 
         $dbh->commit();
     } catch {

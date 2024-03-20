@@ -63,7 +63,7 @@ sub _update_data_result_entries {
             foreach my $m ( @$entries ) {
                 my $module = $module_mapping{ lc $m->{module} } // ucfirst lc $m->{module};
                 my $testcase =
-                  ( $m->{testcase} eq 'UNSPECIFIED' )
+                  ( !defined $m->{testcase} or $m->{testcase} eq 'UNSPECIFIED' )
                   ? 'Unspecified'
                   : $m->{testcase} =~ s/[a-z_]*/$module/ir;
 

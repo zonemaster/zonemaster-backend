@@ -101,7 +101,7 @@ sub _update_data_result_entries {
     print "Progress update: $row_done / $row_total\n";
 }
 
-sub _update_data_nomalize_domains {
+sub _update_data_normalize_domains {
     my ( $db ) = @_;
 
     my ( $row_total ) = $db->dbh->selectrow_array( 'SELECT count(*) FROM test_results' );
@@ -157,7 +157,7 @@ sub patch_db_mysql {
         _update_data_result_entries( $dbh, 50000 );
 
         print( "\n-> (2/2) Normalizing domain names\n" );
-        _update_data_nomalize_domains( $db );
+        _update_data_normalize_domains( $db );
 
         $dbh->commit();
     } catch {
@@ -212,7 +212,7 @@ sub patch_db_postgresql {
 
 
         print( "\n-> (2/3) Normalizing domain names\n" );
-        _update_data_nomalize_domains( $db );
+        _update_data_normalize_domains( $db );
 
         print( "\n-> (3/3) Migrating arguments to messages for Delegation01" );
         $dbh->do(q[
@@ -253,7 +253,7 @@ sub patch_db_sqlite {
         _update_data_result_entries( $dbh, 142 );
 
         print( "\n-> (2/2) Normalizing domain names\n" );
-        _update_data_nomalize_domains( $db );
+        _update_data_normalize_domains( $db );
 
         $dbh->commit();
     } catch {

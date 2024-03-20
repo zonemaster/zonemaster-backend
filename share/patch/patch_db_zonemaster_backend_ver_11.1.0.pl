@@ -50,8 +50,8 @@ sub _update_data_result_entries {
     while ( $row_done < $row_total ) {
         print "Progress update: $row_done / $row_total\n";
         my $row_updated = 0;
-        my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results WHERE results IS NOT NULL ORDER BY id ASC LIMIT ?,?' );
-        $sth1->execute( $row_done, $row_count );
+        my $sth1 = $dbh->prepare( 'SELECT hash_id, results FROM test_results WHERE results IS NOT NULL ORDER BY id ASC LIMIT ? OFFSET ?' );
+        $sth1->execute( $row_count, $row_done );
         while ( my $row = $sth1->fetchrow_arrayref ) {
             my ( $hash_id, $results ) = @$row;
 

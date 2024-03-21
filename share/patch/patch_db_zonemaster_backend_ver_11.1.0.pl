@@ -167,6 +167,60 @@ sub patch_db_mysql {
     };
 }
 
+sub _patch_db_postgresql_step1 {
+    my ($dbh) = @_;
+
+    # Why a cursor instead of a plain SELECT statement? Because DBD::Pg does
+    # not use server-side cursors itself when reading the result of a SELECT
+    # query.
+    #
+    # And why is that a problem? That’s because the DBMS will try to compute
+    # the entire result set before handing it to the client. With large
+    # Zonemaster setups with years of history and millions of tests, this
+    # SELECT statement will generate hundreds of millions of rows. So without
+    # the appropriate precautions, a plain SELECT query like this one will
+    # definitely take out the machine it is running on!
+    print("Starting up\n");
+    $dbh->do(q[
+        DECLARE curs NO SCROLL CURSOR WITH HOLD FOR
+        SELECT
+          test_results.hash_id,
+          log_level.value AS level,
+          CASE res->>'module'
+            WHEN 'DNSSEC' THEN res->>'module'
+            ELSE initcap(res->>'module')
+          END AS module,
+          CASE
+            WHEN res->>'testcase' IS NULL THEN ''
+            WHEN res->>'testcase' LIKE 'DNSSEC%' THEN res->>'testcase'
+            ELSE initcap(res->>'testcase')
+          END AS testcase,
+          res->>'tag' AS tag,
+          (res->>'timestamp')::real AS timestamp,
+          COALESCE(res->'args', '{}') AS args
+          FROM test_results,
+               json_array_elements(results) as res
+          LEFT JOIN log_level ON (res->>'level' = log_level.level)]);
+
+    my $read_sth = $dbh->prepare(q[FETCH FORWARD 10000 FROM curs;]);
+
+    my $write_sth = $dbh->prepare(q[
+        INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
+        VALUES (?, ?, ?, ?, ?, ?, ?)]
+    );
+
+    my $row_inserted = 0;
+
+    while ($read_sth->execute(), $read_sth->rows() > 0) {
+        print("Progress update: ${row_inserted} rows inserted\n");
+        while (my $row = $read_sth->fetchrow_arrayref) {
+            $write_sth->execute(@$row);
+        }
+
+        $row_inserted += $read_sth->rows();
+    }
+}
+
 sub patch_db_postgresql {
     use Zonemaster::Backend::DB::PostgreSQL;
 
@@ -178,11 +232,31 @@ sub patch_db_postgresql {
     try {
         $db->create_schema();
 
-        print( "\n-> (1/2) Populating new result_entries table\n" );
-        _update_data_result_entries( $dbh, 50000 );
+        print( "\n-> (1/3) Populating new result_entries table\n" );
+        _patch_db_postgresql_step1( $dbh );
 
-        print( "\n-> (2/2) Normalizing domain names\n" );
+        $dbh->do(
+            'UPDATE test_results SET results = NULL WHERE results IS NOT NULL'
+        );
+
+        print( "\n-> (2/3) Normalizing domain names\n" );
         _update_data_normalize_domains( $db );
+
+        print( "\n-> (3/3) Migrating arguments to messages for Delegation01" );
+        $dbh->do(q[
+            UPDATE result_entries
+               SET args = (
+                  SELECT args
+                         - ARRAY['ns_ip_list', 'nsname_list']
+                         || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
+                    FROM unnest(
+                           string_to_array(args->>'ns_ip_list', ';'),
+                           string_to_array(args->>'nsname_list', ';'))
+                      AS unnest(ip, name))
+             WHERE testcase = 'Delegation01'
+                   AND tag ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
+                   AND (NOT args ? 'ns_list');
+        ]);
 
         $dbh->commit();
     } catch {

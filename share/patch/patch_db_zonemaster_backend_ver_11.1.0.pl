@@ -195,35 +195,35 @@ sub _patch_db_postgresql_step1 {
         SELECT
           test_results.hash_id,
           log_level.value AS level,
-          CASE res->>'module'
-            WHEN 'DNSSEC' THEN res->>'module'
-            ELSE initcap(res->>'module')
+          CASE res.module
+            WHEN 'DNSSEC' THEN res.module
+            ELSE initcap(res.module)
           END AS module,
           CASE
-            WHEN res->>'testcase' IS NULL THEN ''
-            WHEN res->>'testcase' LIKE 'DNSSEC%' THEN res->>'testcase'
-            ELSE initcap(res->>'testcase')
+            WHEN res.testcase IS NULL THEN ''
+            WHEN res.testcase LIKE 'DNSSEC%' THEN res.testcase
+            ELSE initcap(res.testcase)
           END AS testcase,
-          res->>'tag' AS tag,
-          (res->>'timestamp')::real AS timestamp,
-          migrated_args.args AS args
+          res.tag AS tag,
+          res.timestamp AS timestamp,
+          COALESCE(migrated_args.args, '{}') AS args
           FROM test_results,
-               json_array_elements(results) as res
-          LEFT JOIN log_level ON (res->>'level' = log_level.level)
-          LEFT JOIN LATERAL (SELECT COALESCE(res->'args', '{}')::JSONB) AS orig_args(args) ON TRUE
+               json_to_recordset(results)
+                 AS res(module TEXT, testcase TEXT, tag TEXT, level TEXT, timestamp REAL, args JSONB)
+          LEFT JOIN log_level ON (res.level = log_level.level)
           LEFT JOIN LATERAL (
-            SELECT CASE WHEN res->>'testcase' = 'DELEGATION01'
-                AND res->>'tag' ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
-                AND (NOT orig_args.args ? 'ns_list')
+            SELECT CASE WHEN res.testcase = 'DELEGATION01'
+                AND res.tag ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
+                AND (NOT res.args ? 'ns_list')
             THEN (
-              SELECT orig_args.args
+              SELECT res.args
                    - ARRAY['ns_ip_list', 'nsname_list']
                   || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
                 FROM unnest(
-                  string_to_array(orig_args.args->>'ns_ip_list', ';'),
-                  string_to_array(orig_args.args->>'nsname_list', ';'))
+                  string_to_array(res.args->>'ns_ip_list', ';'),
+                  string_to_array(res.args->>'nsname_list', ';'))
                        AS unnest(ip, name))
-            ELSE orig_args.args
+            ELSE res.args
             END) AS migrated_args(args) ON TRUE]);
 
     # I’ve tried to avoid hardcoding numbers but FETCH statements somehow

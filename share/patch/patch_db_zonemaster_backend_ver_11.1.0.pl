@@ -163,7 +163,7 @@ sub patch_db_mysql {
 
         $dbh->commit();
     } catch {
-        print( "Could not upgrade database:  " . $_ );
+        print( "\nCould not upgrade database:  " . $_ );
 
         $dbh->rollback();
     };
@@ -293,7 +293,7 @@ sub patch_db_postgresql {
 
         $dbh->commit();
     } catch {
-        print( "Could not upgrade database:  " . $_ );
+        print( "\nCould not upgrade database:  " . $_ );
 
         $dbh->rollback();
     };
@@ -318,7 +318,7 @@ sub patch_db_sqlite {
 
         $dbh->commit();
     } catch {
-        print( "Error while upgrading database:  " . $_ );
+        print( "\nError while upgrading database:  " . $_ );
 
         $dbh->rollback();
     };

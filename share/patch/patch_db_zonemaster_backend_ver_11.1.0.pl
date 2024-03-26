@@ -206,10 +206,25 @@ sub _patch_db_postgresql_step1 {
           END AS testcase,
           res->>'tag' AS tag,
           (res->>'timestamp')::real AS timestamp,
-          COALESCE(res->'args', '{}') AS args
+          migrated_args.args AS args
           FROM test_results,
                json_array_elements(results) as res
-          LEFT JOIN log_level ON (res->>'level' = log_level.level)]);
+          LEFT JOIN log_level ON (res->>'level' = log_level.level)
+          LEFT JOIN LATERAL (SELECT COALESCE(res->'args', '{}')::JSONB) AS orig_args(args) ON TRUE
+          LEFT JOIN LATERAL (
+            SELECT CASE WHEN res->>'testcase' = 'DELEGATION01'
+                AND res->>'tag' ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
+                AND (NOT orig_args.args ? 'ns_list')
+            THEN (
+              SELECT orig_args.args
+                   - ARRAY['ns_ip_list', 'nsname_list']
+                  || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
+                FROM unnest(
+                  string_to_array(orig_args.args->>'ns_ip_list', ';'),
+                  string_to_array(orig_args.args->>'nsname_list', ';'))
+                       AS unnest(ip, name))
+            ELSE orig_args.args
+            END) AS migrated_args(args) ON TRUE]);
 
     # I’ve tried to avoid hardcoding numbers but FETCH statements somehow
     # don’t like being parameterized with placeholders. This will have to do.
@@ -266,31 +281,15 @@ sub patch_db_postgresql {
     try {
         $db->create_schema();
 
-        print( "\n-> (1/3) Populating new result_entries table\n" );
+        print( "\n-> (1/2) Populating new result_entries table\n" );
         _patch_db_postgresql_step1( $dbh );
 
         $dbh->do(
             'UPDATE test_results SET results = NULL WHERE results IS NOT NULL'
         );
 
-        print( "\n-> (2/3) Normalizing domain names\n" );
+        print( "\n-> (2/2) Normalizing domain names\n" );
         _update_data_normalize_domains( $db );
-
-        print( "\n-> (3/3) Migrating arguments to messages for Delegation01\n" );
-        $dbh->do(q[
-            UPDATE result_entries
-               SET args = (
-                  SELECT args
-                         - ARRAY['ns_ip_list', 'nsname_list']
-                         || jsonb_build_object('ns_list', string_agg(name || '/' || ip, ';'))
-                    FROM unnest(
-                           string_to_array(args->>'ns_ip_list', ';'),
-                           string_to_array(args->>'nsname_list', ';'))
-                      AS unnest(ip, name))
-             WHERE testcase = 'Delegation01'
-                   AND tag ~ '^(NOT_)?ENOUGH_IPV[46]_NS_(CHILD|DEL)$'
-                   AND (NOT args ? 'ns_list');
-        ]);
 
         $dbh->commit();
     } catch {

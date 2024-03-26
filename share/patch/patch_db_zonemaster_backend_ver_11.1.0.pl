@@ -4,6 +4,8 @@ use warnings;
 use List::MoreUtils qw(zip_unflatten);
 use JSON::PP;
 use Try::Tiny;
+use File::Temp qw(tempfile);
+use Encode qw(find_encoding);
 
 use Zonemaster::Backend::Config;
 use Zonemaster::Engine;
@@ -168,7 +170,14 @@ sub patch_db_mysql {
 }
 
 sub _patch_db_postgresql_step1 {
-    my ($dbh) = @_;
+    my ($dbh, $chunk_size) = @_;
+    $chunk_size //= 100_000;
+
+    # This is used later for backslash-escaping data supplied to COPY … FROM
+    # STDIN commands.
+    my %conv = ( 8 => '\b', 9 => '\t', 10 => '\n', 11 => '\v', 12 => '\f', 13 => '\r', 92 => '\\\\' );
+
+    my $utf8 = find_encoding('utf8');
 
     # Why a cursor instead of a plain SELECT statement? Because DBD::Pg does
     # not use server-side cursors itself when reading the result of a SELECT
@@ -202,23 +211,48 @@ sub _patch_db_postgresql_step1 {
                json_array_elements(results) as res
           LEFT JOIN log_level ON (res->>'level' = log_level.level)]);
 
-    my $read_sth = $dbh->prepare(q[FETCH FORWARD 10000 FROM curs;]);
-
-    my $write_sth = $dbh->prepare(q[
-        INSERT INTO result_entries (hash_id, level, module, testcase, tag, timestamp, args)
-        VALUES (?, ?, ?, ?, ?, ?, ?)]
-    );
-
+    # I’ve tried to avoid hardcoding numbers but FETCH statements somehow
+    # don’t like being parameterized with placeholders. This will have to do.
+    my $read_sth = $dbh->prepare(sprintf(q[FETCH FORWARD %d FROM curs], $chunk_size));
     my $row_inserted = 0;
 
-    while ($read_sth->execute(), $read_sth->rows() > 0) {
+    while ($read_sth->execute(), (my $row_count = $read_sth->rows()) > 0) {
+        my @copydata = ();
+
         print("Progress update: ${row_inserted} rows inserted\n");
+        $row_inserted += $row_count;
+
+        $dbh->do(q[COPY result_entries FROM STDIN]);
         while (my $row = $read_sth->fetchrow_arrayref) {
-            $write_sth->execute(@$row);
+            my @columns = map {
+                if (defined $_) {
+                    # Replaces invalid UTF-8 sequences with U+FFFD and escapes
+                    # characters as required by PostgreSQL’s text COPY data
+                    # format.
+                    $utf8->encode($utf8->decode($_) =~ s/[\x08-\x0D\\]/$conv{ord $&}/aegr);
+                } else {
+                    '\N';
+                }
+            } @$row;
+            my $line = join("\t", @columns) . "\n";
+            push @copydata, $line;
+            $dbh->pg_putcopydata( $line );
         }
 
-        $row_inserted += $read_sth->rows();
+        try {
+            $dbh->pg_putcopyend();
+        }
+        catch {
+            print("An error occurred while trying to copy some data.\n");
+            my ($fh, $filename) = tempfile();
+            print $fh @copydata;
+            close $fh;
+            print("The data supplied to COPY causing the failure has been ",
+                  "stored in $filename for inspection\n");
+            die $_;
+        }
     }
+    print("Done inserting ${row_inserted} rows\n");
 }
 
 sub patch_db_postgresql {
@@ -242,7 +276,7 @@ sub patch_db_postgresql {
         print( "\n-> (2/3) Normalizing domain names\n" );
         _update_data_normalize_domains( $db );
 
-        print( "\n-> (3/3) Migrating arguments to messages for Delegation01" );
+        print( "\n-> (3/3) Migrating arguments to messages for Delegation01\n" );
         $dbh->do(q[
             UPDATE result_entries
                SET args = (

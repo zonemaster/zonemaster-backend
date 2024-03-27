@@ -281,6 +281,10 @@ sub patch_db_postgresql {
     try {
         $db->create_schema();
 
+        # Make sure the planner knows that log_level is a small table
+        # so it can optimize step 1 appropriately
+        $dbh->do(q[ANALYZE log_level]);
+
         print( "\n-> (1/2) Populating new result_entries table\n" );
         _patch_db_postgresql_step1( $dbh );
 

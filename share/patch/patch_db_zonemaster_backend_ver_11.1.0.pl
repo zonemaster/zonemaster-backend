@@ -191,7 +191,7 @@ sub _patch_db_postgresql_step1 {
     # definitely take out the machine it is running on!
     print("Starting up\n");
     $dbh->do(q[
-        DECLARE curs NO SCROLL CURSOR WITH HOLD FOR
+        DECLARE curs NO SCROLL CURSOR FOR
         SELECT
           test_results.hash_id,
           log_level.value AS level,
@@ -267,6 +267,7 @@ sub _patch_db_postgresql_step1 {
             die $_;
         }
     }
+    $dbh->do(q[CLOSE curs]);
     print("Done inserting ${row_inserted} rows\n");
 }
 

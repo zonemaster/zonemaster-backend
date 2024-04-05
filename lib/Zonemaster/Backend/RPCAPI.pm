@@ -338,10 +338,16 @@ sub test_progress {
 }
 
 # Experimental
-$json_schemas{job_status} = $json_schemas{test_progress};
+$json_schemas{job_status} = joi->object->strict->props(
+    job_id => $zm_validator->test_id->required
+);
 sub job_status {
+    my ( $self, $params ) = @_;
+
+    $params->{test_id} = delete $params->{job_id};
+
     my $result = {
-        progress => test_progress( @_ )
+        progress => $self->test_progress( $params )
     };
     return $result;
 }
@@ -366,9 +372,15 @@ sub get_test_params {
 }
 
 # Experimental
-$json_schemas{job_params} = $json_schemas{get_test_params};
+$json_schemas{job_params} = joi->object->strict->props(
+    job_id => $zm_validator->test_id->required
+);
 sub job_params {
-    return get_test_params( @_ );
+    my ( $self, $params ) = @_;
+
+    $params->{test_id} = delete $params->{job_id};
+
+    return $self->get_test_params( $params );
 }
 
 $json_schemas{get_test_results} = {
@@ -467,9 +479,29 @@ sub get_test_results {
 }
 
 # Experimental
-$json_schemas{job_results} = $json_schemas{get_test_results};
+$json_schemas{job_results} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'job_id', 'language' ],
+    properties => {
+        job_id => $zm_validator->test_id->required->compile,
+        language => $zm_validator->language_tag,
+    }
+};
 sub job_results {
-    return get_test_results( @_ );
+    my ( $self, $params ) = @_;
+
+    $params->{id} = delete $params->{job_id};
+
+    my $result = $self->get_test_results( $params );
+
+    return {
+        created_at            => $result->{created_at},
+        job_id                => $result->{hash_id},
+        results               => $result->{results},
+        params                => $result->{params},
+        testcase_descriptions => $result->{testcase_descriptionsd},
+    };
 }
 
 $json_schemas{get_test_history} = {
@@ -513,12 +545,43 @@ sub get_test_history {
 }
 
 # Experimental
-$json_schemas{domain_history} = $json_schemas{get_test_history};
+$json_schemas{domain_history} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'params' ],
+    properties => {
+        offset => joi->integer->min(0)->compile,
+        limit => joi->integer->min(0)->compile,
+        filter => joi->string->regex('^(?:all|delegated|undelegated)$')->compile,
+        params => {
+            type => 'object',
+            additionalProperties => 0,
+            required => [ 'domain' ],
+            properties => {
+                domain => $zm_validator->domain_name
+            }
+        }
+    }
+};
 sub domain_history {
-    my $result = {
-        history => get_test_history( @_ )
+    my ( $self, $params ) = @_;
+
+    $params->{frontend_params} = delete $params->{params};
+
+    my $results = $self->get_test_history( $params );
+
+    return {
+        history => [
+            map {
+                {
+                    job_id         => $_->{id},
+                    created_at     => $_->{created_at},
+                    overall_result => $_->{overall_result},
+                    undelegated    => $_->{undelegated},
+                }
+            } @$results
+        ],
     };
-    return $result;
 }
 
 $json_schemas{add_api_user} = joi->object->strict->props(
@@ -625,11 +688,52 @@ sub add_batch_job {
 }
 
 # Experimental
-$json_schemas{batch_create} = $json_schemas{add_batch_job};
+$json_schemas{batch_create} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'username', 'api_key', 'domains' ],
+    properties => {
+        username => $zm_validator->username->required->compile,
+        api_key => $zm_validator->api_key->required->compile,
+        domains => {
+            type => "array",
+            additionalItems => 0,
+            items => $zm_validator->domain_name,
+            minItems => 1
+        },
+        job_params => {
+            type => 'object',
+            additionalProperties => 0,
+            properties => {
+                ipv4 => joi->boolean->compile,
+                ipv6 => joi->boolean->compile,
+                nameservers => {
+                    type => 'array',
+                    items => $zm_validator->nameserver
+                },
+                ds_info => {
+                    type => 'array',
+                    items => $zm_validator->ds_info
+                },
+                profile => $zm_validator->profile_name,
+                client_id => $zm_validator->client_id->compile,
+                client_version => $zm_validator->client_version->compile,
+                config => joi->string->compile,
+                priority => $zm_validator->priority->compile,
+                queue => $zm_validator->queue->compile,
+            }
+        }
+    }
+};
 sub batch_create {
+    my ( $self, $params ) = @_;
+
+    $params->{test_params} = delete $params->{job_params};
+
     my $result = {
-        batch_id => add_batch_job( @_ )
+        batch_id => $self->add_batch_job( $params )
     };
+
     return $result;
 }
 
@@ -655,7 +759,12 @@ sub get_batch_job_result {
 # Experimental
 $json_schemas{batch_status} = $json_schemas{get_batch_job_result};
 sub batch_status {
-    return get_batch_job_result( @_ );
+    my $result = get_batch_job_result( @_ );
+    return {
+        running_count    => $result->{nb_running},
+        finished_count   => $result->{nb_finished},
+        finished_job_ids => $result->{finished_job_ids},
+    };
 }
 
 sub _get_locale {

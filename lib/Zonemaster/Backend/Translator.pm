@@ -30,8 +30,10 @@ Readonly my %TAG_DESCRIPTIONS => (
 );
 
 sub _build_all_tag_descriptions {
+    my ( $class ) = @_;
+
     my $all_tag_descriptions = Zonemaster::Engine::Translator::_build_all_tag_descriptions();
-    $all_tag_descriptions->{BACKEND_TEST_AGENT} = \%TAG_DESCRIPTIONS;
+    $all_tag_descriptions->{Backend_Test_Agent} = \%TAG_DESCRIPTIONS;
     return $all_tag_descriptions;
 }
 

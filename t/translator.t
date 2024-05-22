@@ -73,7 +73,7 @@ like $translation, qr/cass\x{e9}e/,
 ###
 
 $message = {
-    module => 'Backend_Test_Agent',
+    module => 'Backend',
     testcase => '',
     timestamp => '59',
     level => 'CRITICAL',

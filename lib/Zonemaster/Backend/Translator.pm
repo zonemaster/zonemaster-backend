@@ -33,7 +33,7 @@ sub _build_all_tag_descriptions {
     my ( $class ) = @_;
 
     my $all_tag_descriptions = Zonemaster::Engine::Translator::_build_all_tag_descriptions();
-    $all_tag_descriptions->{Backend_Test_Agent} = \%TAG_DESCRIPTIONS;
+    $all_tag_descriptions->{Backend} = \%TAG_DESCRIPTIONS;
     return $all_tag_descriptions;
 }
 

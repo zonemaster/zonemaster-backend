@@ -32,7 +32,7 @@ sub _update_result_entries {
 
     $dbh->do(<<SQL) or die 'Migration failed';
         UPDATE result_entries
-           SET module = 'Backend_Test_Agent'
-         WHERE module = 'BACKEND_TEST_AGENT';
+           SET module = 'Backend'
+         WHERE upper(module) = 'BACKEND_TEST_AGENT';
 SQL
 }

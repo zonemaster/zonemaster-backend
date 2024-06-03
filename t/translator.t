@@ -16,12 +16,9 @@ isa_ok 'Zonemaster::Backend::Translator', 'Zonemaster::Engine::Translator';
 
 my $translator;
 
-# FIXME: the new() method is deprecated but the instance() method does not
-# work; the following should be changed once Zonemaster::Engine::Translator
-# (Engine, not Backend) is fixed.
-$translator = Zonemaster::Backend::Translator->new();
+$translator = Zonemaster::Backend::Translator->instance();
 isa_ok $translator, 'Zonemaster::Backend::Translator',
-    "Zonemaster::Backend::Translator->new()";
+    "Zonemaster::Backend::Translator->instance()";
 
 ###
 ### Change locale

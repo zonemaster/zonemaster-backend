@@ -401,7 +401,7 @@ sub get_test_results {
         my $locale = $self->_get_locale( $params );
 
         my $translator;
-        $translator = Zonemaster::Backend::Translator->new;
+        $translator = Zonemaster::Backend::Translator->instance();
 
         my $previous_locale = $translator->locale;
         if ( !$translator->locale( $locale ) ) {

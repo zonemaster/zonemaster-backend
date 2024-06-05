@@ -784,7 +784,7 @@ sub process_unfinished_tests {
     my $msg = Zonemaster::Engine::Logger::Entry->new(
         {
             level     => "CRITICAL",
-            module    => "BACKEND_TEST_AGENT",
+            module    => "Backend",
             testcase  => "",
             tag       => "UNABLE_TO_FINISH_TEST",
             args      => { max_execution_time => $test_run_timeout },
@@ -860,7 +860,7 @@ sub process_dead_test {
     my $msg = Zonemaster::Engine::Logger::Entry->new(
         {
             level     => "CRITICAL",
-            module    => "BACKEND_TEST_AGENT",
+            module    => "Backend",
             testcase  => "",
             tag       => "TEST_DIED",
             args      => {},

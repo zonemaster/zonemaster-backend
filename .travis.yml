@@ -118,6 +118,13 @@ before_install:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/14/main/postgresql.conf; fi
   - if [[ "$TARGET" == "PostgreSQL" ]]; then sudo pg_ctlcluster 14 main restart; fi
 
+    # Enable locales for translation
+  - #echo "Enable locales"
+  - #sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|es_ES\.UTF-8.*|fi_FI\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
+  - #sudo locale-gen
+  - echo "List activate locales"
+  - echo "$(locale -a)"
+
 before_script:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi
   - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c 'CREATE DATABASE travis_zonemaster OWNER travis_zonemaster;'; fi

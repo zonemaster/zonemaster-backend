@@ -4,7 +4,14 @@ use v5.16;
 use warnings;
 use utf8;
 
+use POSIX qw (setlocale);
+use Locale::Messages qw[LC_MESSAGES LC_ALL];
+
 use Test::More;
+
+# Set correct locale for translation in case not set in calling environment
+setlocale( LC_ALL, "C.UTF-8");
+setlocale( LC_MESSAGES, "C.UTF-8");
 
 ###
 ### Basic tests

@@ -13,16 +13,16 @@ script:
 jobs:
   include:
     - stage: test
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+      env: LANGUAGE=C.UTF-8 LANG=C-UTF.8 LC_CTYPE=C.UTF-8 LC_ALL=C.UTF-8 TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - env: LANGUAGE=C.UTF-8 LANG=C-UTF.8 LC_CTYPE=C.UTF-8 LC_ALL=C.UTF-8 TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
       services: mysql
-    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - env: LANGUAGE=C.UTF-8 LANG=C-UTF.8 LC_CTYPE=C.UTF-8 LC_ALL=C.UTF-8 TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
       services: postgresql
     # Cover supported Perl versions with SQLite
     - perl: "5.30"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+      env: LANGUAGE=C.UTF-8 LANG=C-UTF.8 LC_CTYPE=C.UTF-8 LC_ALL=C.UTF-8 TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     - perl: "5.26"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+      env: LANGUAGE=C.UTF-8 LANG=C-UTF.8 LC_CTYPE=C.UTF-8 LC_ALL=C.UTF-8 TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
   apt:
@@ -121,7 +121,7 @@ before_install:
     # Enable locales for translation
   - echo "List activate locales"
   - locale -a
-  - printenv
+  - printenv | grep -i utf
 
 before_script:
   - if [[ "$TARGET" == "PostgreSQL" ]]; then psql -U travis -c "CREATE USER travis_zonemaster WITH PASSWORD 'travis_zonemaster';"; fi

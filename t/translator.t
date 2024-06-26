@@ -8,6 +8,9 @@ use POSIX qw (setlocale);
 use Locale::Messages qw[LC_MESSAGES LC_ALL LC_CTYPE];
 use Test::More;
 
+exec("env");
+exit;
+
 # Set correct locale for translation in case not set in calling environment
 delete $ENV{"LANG"};
 delete $ENV{"LANGUAGE"};

@@ -5,11 +5,13 @@ use warnings;
 use utf8;
 
 use POSIX qw (setlocale);
-use Locale::Messages qw[LC_MESSAGES LC_ALL];
-
+use Locale::Messages qw[LC_MESSAGES LC_ALL LC_CTYPE];
 use Test::More;
 
 # Set correct locale for translation in case not set in calling environment
+delete $ENV{"LANG"};
+delete $ENV{"LANGUAGE"};
+setlocale( LC_CTYPE, "C.UTF-8");
 setlocale( LC_ALL, "C.UTF-8");
 setlocale( LC_MESSAGES, "C.UTF-8");
 

@@ -17,6 +17,7 @@ jobs:
     - env: TARGET=MySQL ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
       services: mysql
     - env: TARGET=PostgreSQL ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+      dist: jammy
       services: postgresql
     # Cover supported Perl versions with SQLite
     - perl: "5.30"

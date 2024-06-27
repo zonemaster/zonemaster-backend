@@ -12,7 +12,7 @@ use Test::More;
 delete $ENV{"LANG"};
 delete $ENV{"LANGUAGE"};
 delete $ENV{"LC_CTYPE"};
-delete $ENV{"LC_MESSAGE"};
+delete $ENV{"LC_MESSAGES"};
 setlocale( LC_ALL, "C.UTF-8");
 
 ###

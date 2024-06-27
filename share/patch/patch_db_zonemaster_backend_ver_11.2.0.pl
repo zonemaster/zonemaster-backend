@@ -1,12 +1,6 @@
 use strict;
 use warnings;
 
-use List::MoreUtils qw(zip_unflatten);
-use JSON::PP;
-use Try::Tiny;
-use File::Temp qw(tempfile);
-use Encode qw(find_encoding);
-
 use Zonemaster::Backend::Config;
 use Zonemaster::Engine;
 

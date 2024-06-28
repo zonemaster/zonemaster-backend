@@ -2,7 +2,7 @@ dist: focal
 
 language: perl
 
-perl: "5.36"
+perl: "5.38"
 
 stages:
   - test
@@ -20,7 +20,7 @@ jobs:
       dist: jammy
       services: postgresql
     # Cover supported Perl versions with SQLite
-    - perl: "5.30"
+    - perl: "5.34"
       env: TARGET=SQLite ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     - perl: "5.26"
       env: TARGET=SQLite ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini

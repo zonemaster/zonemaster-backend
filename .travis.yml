@@ -1,4 +1,4 @@
-dist: jammy
+dist: focal
 
 language: perl
 
@@ -13,16 +13,17 @@ script:
 jobs:
   include:
     - stage: test
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
-    - env: TARGET=MySQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
+      env: TARGET=SQLite ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+    - env: TARGET=MySQL ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_mysql_backend_config.ini
       services: mysql
-    - env: TARGET=PostgreSQL ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+    - env: TARGET=PostgreSQL ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_postgresql_backend_config.ini
+      dist: jammy
       services: postgresql
     # Cover supported Perl versions with SQLite
     - perl: "5.30"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+      env: TARGET=SQLite ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
     - perl: "5.26"
-      env: TARGET=SQLite ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
+      env: TARGET=SQLite ZONEMASTER_TRAVIS_TESTING=1 ZONEMASTER_RECORD=0 ZONEMASTER_BACKEND_CONFIG_FILE=./share/travis_sqlite_backend_config.ini
 
 addons:
   apt:

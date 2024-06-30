@@ -1,6 +1,26 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v11.2.0 2024-07-01 (part of Zonemaster v2024.1 release)
+
+ [Release information]
+ - Translations have not been fully updated in this release. They will
+   be updated in an upcoming release.
+ - Migration of the database is required by this release to retain
+   consistency in results in the database.
+
+ [Features]
+ - Ensures Backend’s messages get translated (#1166)
+
+ [Fixes]
+ - Avoids double UTF-8 encoding in zmb (#1144)
+ - Makes job_status report proper percentages (#1150)
+ - Updates language in experimental RPC API paramaters (#1155)
+ - Makes RPCAPI call Translator’s instance() method, instead of new()
+   (#1167)
+ - Bumps DBD::SQLite to 1.66 for Rocky Linux 8 (#1174)
+
+
 v11.1.1 2024-03-28
 
  [Fixes]

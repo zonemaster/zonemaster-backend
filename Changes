@@ -15,7 +15,7 @@ v11.2.0 2024-07-01 (part of Zonemaster v2024.1 release)
  [Fixes]
  - Avoids double UTF-8 encoding in zmb (#1144)
  - Makes job_status report proper percentages (#1150)
- - Updates language in experimental RPC API paramaters (#1155)
+ - Updates language in experimental RPC API parameters (#1155)
  - Makes RPCAPI call Translator’s instance() method, instead of new()
    (#1167)
  - Bumps DBD::SQLite to 1.66 for Rocky Linux 8 (#1174)

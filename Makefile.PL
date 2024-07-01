@@ -35,11 +35,11 @@ requires
   'Router::Simple::Declare'         => 0,
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
-  'Zonemaster::LDNS'                => 4.000000,  # v4.0.0
-  'Zonemaster::Engine'              => 5.000000,  # v5.0.0
+  'Zonemaster::LDNS'                => 4.000002,  # v4.0.2
+  'Zonemaster::Engine'              => 6.000000,  # v6.0.0
   ;
 
-test_requires 'DBD::SQLite' => 1.4702;
+test_requires 'DBD::SQLite' => 1.66;
 test_requires 'Test::Differences';
 test_requires 'Test::Exception';
 test_requires 'Time::Local' => 1.26;
@@ -47,7 +47,7 @@ test_requires 'Test::NoWarnings';
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';
-recommends 'DBD::SQLite';
+recommends 'DBD::SQLite' => 1.66;
 
 install_share;
 

@@ -30,8 +30,10 @@ Readonly my %TAG_DESCRIPTIONS => (
 );
 
 sub _build_all_tag_descriptions {
+    my ( $class ) = @_;
+
     my $all_tag_descriptions = Zonemaster::Engine::Translator::_build_all_tag_descriptions();
-    $all_tag_descriptions->{BACKEND_TEST_AGENT} = \%TAG_DESCRIPTIONS;
+    $all_tag_descriptions->{Backend} = \%TAG_DESCRIPTIONS;
     return $all_tag_descriptions;
 }
 
@@ -39,12 +41,14 @@ sub translate_tag {
     my ( $self, $hashref ) = @_;
 
     my $entry = Zonemaster::Engine::Logger::Entry->new( { %{ $hashref } } );
-    my $octets = Zonemaster::Engine::Translator::translate_tag( $self, $entry );
 
-    return decode_utf8( $octets );
+    return decode_utf8( $self->SUPER::translate_tag( $entry ) );
 }
 
 sub test_case_description {
-    return decode_utf8(Zonemaster::Engine::Translator::test_case_description(@_));
+    my ( $self, $test_name ) = @_;
+
+    return decode_utf8( $self->SUPER::test_case_description( $test_name ) );
 }
+
 1;

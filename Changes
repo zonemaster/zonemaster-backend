@@ -10,7 +10,8 @@ v11.2.0 2024-07-01 (part of Zonemaster v2024.1 release)
    consistency in results in the database.
 
  [Features]
- - Ensures Backend’s messages are translated when requested. (#1166)
+ - Fixes regression that caused Backend’s messages not to be
+   translated (#1166)
 
  [Fixes]
  - Avoids double UTF-8 encoding in zmb (#1144)

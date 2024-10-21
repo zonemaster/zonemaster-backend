@@ -43,7 +43,7 @@ test_requires 'DBD::SQLite' => 1.66;
 test_requires 'Test::Differences';
 test_requires 'Test::Exception';
 test_requires 'Time::Local' => 1.26;
-test_requires 'Test::NoWarnings';
+test_requires 'Test::NoWarnings' => 0;
 
 recommends 'DBD::mysql';
 recommends 'DBD::Pg';

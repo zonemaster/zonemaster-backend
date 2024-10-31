@@ -513,7 +513,7 @@ sub cmd_add_batch_job {
             chomp;
             s/\s+$//;
             next if /^#/ or /^$/;
-            push( @opt_domains, $_ );
+            push( @opt_domains, decode_utf8( $_ ) );
         };
     };
 

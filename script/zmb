@@ -464,7 +464,7 @@ sub cmd_add_api_user {
     ignored. Trailing white space is ignored.
 
  "--file" and "--domain" can be combined. Domains specified
-    by any "--domain" are added before thoes specified in the
+    by any "--domain" are added before those specified in the
     file, if any.
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:

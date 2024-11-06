@@ -512,6 +512,7 @@ sub cmd_add_batch_job {
         while( <$fh> ) {
             chomp;
             s/\s+$//;
+            s/^\s+//;
             next if /^#/ or /^$/;
             push( @opt_domains, decode_utf8( $_ ) );
         };

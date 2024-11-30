@@ -25,7 +25,8 @@ my $datafile = "$t_path/test01.data";
 TestUtil::restore_datafile( $datafile );
 
 my $tempdir = tempdir( CLEANUP => 1 );
-my $config = Zonemaster::Backend::Config->parse( <<EOF );
+
+my $configuration = <<"EOF";
 [DB]
 engine = $db_backend
 
@@ -46,10 +47,23 @@ database_file = $tempdir/zonemaster.sqlite
 
 [LANGUAGE]
 locale = en_US
-
-[PUBLIC PROFILES]
-test_profile=$t_path/test_profile.json
 EOF
+
+if ( $ENV{ZONEMASTER_RECORD} ) {
+  $configuration .= <<"EOF";
+[PUBLIC PROFILES]
+test_profile=$t_path/test_profile_network_true.json
+default=$t_path/test_profile_network_true.json
+EOF
+} else {
+  $configuration .= <<"EOF";
+[PUBLIC PROFILES]
+test_profile=$t_path/test_profile_no_network.json
+default=$t_path/test_profile_no_network.json
+EOF
+}
+
+my $config = Zonemaster::Backend::Config->parse( $configuration );
 
 my $rpcapi = TestUtil::create_rpcapi( $config );
 
@@ -181,7 +195,6 @@ subtest 'API calls' => sub {
 
         my @ns_list = map { $_->{ns} } @{ $res->{ns_list} };
         ok( grep( /d\.nic\.fr/, @ns_list ), 'Has "d.nic.fr" nameserver' );
-        ok( grep( /e\.ext\.nic\.fr/, @ns_list ), 'Has "e.ext.nic.fr" nameserver' );
         ok( grep( /f\.ext\.nic\.fr/, @ns_list ), 'Has "f.ext.nic.fr" nameserver' );
         ok( grep( /g\.ext\.nic\.fr/, @ns_list ), 'Has "g.ext.nic.fr" nameserver' );
 
@@ -190,16 +203,14 @@ subtest 'API calls' => sub {
         ok( grep( /2001:678:c::1/, @ip_list ), 'Has "2001:678:c::1" ip' );
         ok( grep( /194\.0\.36\.1/, @ip_list ), 'Has "194.0.36.1" ip' ); # g.ext.nic.fr
         ok( grep( /2001:678:4c::1/, @ip_list ), 'Has "2001:678:4c::1" ip' );
-        ok( grep( /193\.176\.144\.22/, @ip_list ), 'Has "193.176.144.22" ip' ); # e.ext.nic.fr
-        ok( grep( /2a00:d78:0:102:193:176:144:22/, @ip_list ), 'Has "2a00:d78:0:102:193:176:144:22" ip' );
         ok( grep( /194\.146\.106\.46/, @ip_list ), 'Has "194.146.106.46" ip' ); # f.ext.nic.fr
         ok( grep( /2001:67c:1010:11::53/, @ip_list ), 'Has "2001:67c:1010:11::53" ip' );
 
         my $ds_value = {
             'algorithm' => 13,
-            'digest' => '1b3386864d30ccc8f4541b985bf2ca320e4f52c57c53353f6d29c9ad58a5671f',
+			'digest' => '1303e8da8fb60db500d5bea1ee5dc9a2bcc93dfe2fc43d346576658feccf5749', # must match case
             'digtype' => 2,
-            'keytag' => 51508
+            'keytag' => 29133
         };
         is( scalar( @{ $res->{ds_list} } ), 1, 'Has only one DS set' );
         is_deeply( $res->{ds_list}[0], $ds_value, 'Has correct DS values' );

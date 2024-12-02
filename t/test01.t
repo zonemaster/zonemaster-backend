@@ -208,7 +208,7 @@ subtest 'API calls' => sub {
 
         my $ds_value = {
             'algorithm' => 13,
-			'digest' => '1303e8da8fb60db500d5bea1ee5dc9a2bcc93dfe2fc43d346576658feccf5749', # must match case
+            'digest' => '1303e8da8fb60db500d5bea1ee5dc9a2bcc93dfe2fc43d346576658feccf5749', # must match case
             'digtype' => 2,
             'keytag' => 29133
         };

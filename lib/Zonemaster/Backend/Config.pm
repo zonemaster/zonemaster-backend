@@ -74,12 +74,12 @@ Loads and returns a set of named profiles.
     my %profiles = %{ Zonemaster::Backend::Config->load_profiles( %all_profiles ) };
 
 Takes a hash mapping profile names to profile paths.
-An `undef` path value means the default profile.
+An `undef` path value means the default (effective) profile.
 
 Returns a hashref mapping profile names to profile objects.
 
-The returned profiles have omitted values filled in with defaults from the
-default profile.
+The returned profiles have omitted values filled in with values from the
+effective profile.
 
 Dies if any of the given paths cannot be read or their contents cannot be parsed
 as JSON.
@@ -93,7 +93,7 @@ sub load_profiles {
     foreach my $name ( keys %profile_paths ) {
         my $path = $profile_paths{$name};
 
-        my $full_profile = Zonemaster::Engine::Profile->default;
+        my $full_profile = Zonemaster::Engine::Profile->effective;
         if ( defined $path ) {
             my $json = eval { read_file( $path, err_mode => 'croak' ) }    #
               // die "Error loading profile '$name': $@";

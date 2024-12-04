@@ -87,6 +87,8 @@ t/rpc_validation.t
 t/test01.data
 t/test01.t
 t/test_profile.json
+t/test_profile_network_true.json
+t/test_profile_no_network.json
 t/test_validate_syntax.t
 t/TestUtil.pm
 t/validator.t

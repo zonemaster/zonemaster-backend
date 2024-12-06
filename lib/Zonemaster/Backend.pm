@@ -1,6 +1,6 @@
 package Zonemaster::Backend;
 
-our $VERSION = '11.2.0';
+our $VERSION = '11.3.0';
 
 use strict;
 use warnings;

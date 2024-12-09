@@ -73,4 +73,8 @@
 
 # Avoid MYMETA files
 ^MYMETA\.
+
+# Avoid MANIFEST test
+t/manifest.t
+
 #!end included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP

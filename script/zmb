@@ -19,8 +19,6 @@ Zmb is meant to be pronounced I<Zimba>.
 
 zmb [GLOBAL OPTIONS] COMMAND [OPTIONS]
 
-This interface is unstable and will change in a future release.
-
 =head1 GLOBAL OPTIONS
 
  --help         Show usage
@@ -454,10 +452,20 @@ sub cmd_add_api_user {
     --client-version CLIENT_VERSION
     --profile PROFILE_NAME
     --queue QUEUE
+    --file FILENAME
 
  "--domain" is repeated for each domain to be tested.
  "--nameserver" can be repeated for each name server.
  "--ds-info" can be repeated for each DS record.
+
+ "--file" points at a file with a list of domain names
+    to test, one name per line. Lines starting with "#",
+    empty lines and lines with white space only are
+    ignored. Trailing white space is ignored.
+
+ "--file" and "--domain" can be combined. Domains specified
+    by any "--domain" are added before those specified in the
+    file, if any.
 
  DS_INFO is a comma separated list of key-value pairs. The expected pairs are:
 
@@ -475,6 +483,7 @@ sub cmd_add_batch_job {
     my $opt_api_key;
     my @opt_nameserver;
     my @opt_domains;
+    my $opt_file;
     my $opt_client_id;
     my $opt_client_version;
     my @opt_ds_info;
@@ -495,8 +504,19 @@ sub cmd_add_batch_job {
         'ipv6=s'           => \$opt_ipv6,
         'profile=s'        => \$opt_profile,
         'queue=s'          => \$opt_queue,
+        'file=s'           => \$opt_file,
     ) or pod2usage( 2 );
 
+    if ($opt_file) {
+        open( my $fh, "<", $opt_file ) or die "Can't open < $opt_file: $!";
+        while( <$fh> ) {
+            chomp;
+            s/\s+$//;
+            s/^\s+//;
+            next if /^#/ or /^$/;
+            push( @opt_domains, decode_utf8( $_ ) );
+        };
+    };
 
     my %params = ( domains => \@opt_domains );
 

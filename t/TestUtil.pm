@@ -74,7 +74,6 @@ sub restore_datafile {
         die q{Stored data file missing} if not -r $datafile;
         Zonemaster::Engine->preload_cache( $datafile );
         Zonemaster::Engine->profile->set( q{no_network}, 1 );
-        diag "not recording";
     } else {
         diag "recording";
     }

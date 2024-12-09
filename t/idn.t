@@ -25,7 +25,8 @@ my $datafile = "$t_path/idn.data";
 TestUtil::restore_datafile( $datafile );
 
 my $tempdir = tempdir( CLEANUP => 1 );
-my $config = Zonemaster::Backend::Config->parse( <<EOF );
+
+my $configuration = <<"EOF";
 [DB]
 engine = $db_backend
 
@@ -46,10 +47,23 @@ database_file = $tempdir/zonemaster.sqlite
 
 [LANGUAGE]
 locale = en_US
-
-[PUBLIC PROFILES]
-test_profile=$t_path/test_profile.json
 EOF
+
+if ( $ENV{ZONEMASTER_RECORD} ) {
+  $configuration .= <<"EOF";
+[PUBLIC PROFILES]
+test_profile=$t_path/test_profile_network_true.json
+default=$t_path/test_profile_network_true.json
+EOF
+} else {
+  $configuration .= <<"EOF";
+[PUBLIC PROFILES]
+test_profile=$t_path/test_profile_no_network.json
+default=$t_path/test_profile_no_network.json
+EOF
+}
+
+my $config = Zonemaster::Backend::Config->parse( $configuration );
 
 my $db = TestUtil::init_db( $config );
 my $agent = TestUtil::create_testagent( $config );

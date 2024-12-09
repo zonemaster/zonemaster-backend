@@ -34,12 +34,14 @@ addons:
       - build-essential
       - cpanminus
       - libclone-perl
+      - libextutils-pkgconfig-perl
       - libfile-sharedir-perl
       - libfile-slurp-perl
       - libidn2-dev
       - libintl-perl
       - libio-socket-inet6-perl
       - libjson-pp-perl
+      - liblist-compare-perl
       - liblist-moreutils-perl
       - liblocale-msgfmt-perl
       - libmail-rfc822-address-perl

@@ -9,7 +9,7 @@ v11.3.0 2024-12-09 (part of Zonemaster v2024.2 release)
 
  [Features]
  - Makes utilities zmb() and zmtest() supported (not experimental) and adds file
-   function to batch zmb() creation (#1186)
+   function for batch creation in zmb() (#1186)
 
 
 v11.2.0 2024-07-01 (part of Zonemaster v2024.1 release)

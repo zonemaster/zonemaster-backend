@@ -23,7 +23,7 @@ engine = SQLite
 database_file = $tempdir/zonemaster.sqlite
 
 [LANGUAGE]
-locale = en_US fr_FR da_DK fi_FI nb_NO sv_SE
+locale = en_US fr_FR da_DK fi_FI nb_NO sl_SI sv_SE
 EOF
 
 my $engine = Zonemaster::Backend::RPCAPI->new(

@@ -1,0 +1,85 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-09-18 08:43+0200\n"
+"PO-Revision-Date: 2024-09-18 10:05+0200\n"
+"Last-Translator: milijan@arnes.si\n"
+"Language-Team: Zonemaster project\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: ../lib/Zonemaster/Backend/RPCAPI.pm:858
+msgid "Invalid method parameter(s)."
+msgstr "Nepravilni parametri."
+
+#: ../lib/Zonemaster/Backend/RPCAPI.pm:888
+msgid "Missing property"
+msgstr "Manjkajoče polje"
+
+#: ../lib/Zonemaster/Backend/TestAgent.pm:213
+msgid ""
+"Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
+"ASCII names correctly."
+msgstr ""
+"Opozorilo: Zonemaster::LDNS ne podpira IDN, ni mogoče obdelati ne-ASCII "
+"imena."
+
+#. BACKEND_TEST_AGENT:TEST_DIED
+#: ../lib/Zonemaster/Backend/Translator.pm:23
+msgid "An error occured and Zonemaster could not start or finish the test."
+msgstr "Zgodila se je napaka, Zonemaster ne more začeti ali končati testa."
+
+#. BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
+#: ../lib/Zonemaster/Backend/Translator.pm:27
+#, perl-brace-format
+msgid ""
+"The test took too long to run (the current limit is {max_execution_time} "
+"seconds). Maybe there are too many name servers or the name servers are "
+"either unreachable or not responsive enough."
+msgstr ""
+"Test traja predolgo (trenutna meja je {max_execution_time} sekund). Mogoče "
+"je preveč strežnikov za preveriti, ali so neodzivni ali pa počasni."
+
+#: ../lib/Zonemaster/Backend/Validator.pm:162
+msgid "Invalid digest format"
+msgstr "Nepravilen digest format"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:167
+msgid "Algorithm must be a positive integer"
+msgstr "Algoritem mora biti pozitivno število"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:172
+msgid "Digest type must be a positive integer"
+msgstr "Tip izvlečka za DS mora biti pozitivno število"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:177
+msgid "Keytag must be a positive integer"
+msgstr "Oznaka za ključ mora biti pozitivno število"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:282
+msgid "Domain name required"
+msgstr "Domena je obvezna"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:314
+msgid "Invalid language tag format"
+msgstr "Nepravilen format zastavice za jezik"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:317
+msgid "Unkown language string"
+msgstr "Neznan jezik"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:332
+msgid "Invalid IP address"
+msgstr "Neveljaven IP naslov"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:356
+msgid "Invalid profile format"
+msgstr "Neveljaven format profila"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:360
+msgid "Unknown profile"
+msgstr "Neznan profil"

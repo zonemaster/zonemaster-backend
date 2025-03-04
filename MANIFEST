@@ -49,6 +49,7 @@ share/locale/es/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/fi/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/fr/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
+share/locale/sl/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
 share/Makefile
 share/patch/patch_db_zonemaster_backend_ver_9.0.0.pl

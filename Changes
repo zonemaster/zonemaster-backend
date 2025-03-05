@@ -1,6 +1,15 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v11.4.0 2025-03-04 (part of Zonemaster v2024.2.1 release)
+
+ [Features]
+- Adds translation to Slovenian language (#1195, #1185)
+
+ [Fixes]
+- Updates translations (#1199)
+
+
 v11.3.0 2024-12-09 (part of Zonemaster v2024.2 release)
 
  [Release information]

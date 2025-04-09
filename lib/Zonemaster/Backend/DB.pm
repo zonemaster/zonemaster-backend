@@ -521,7 +521,7 @@ sub get_test_history {
             undelegated
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
-        ORDER BY id DESC
+        ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?];
 

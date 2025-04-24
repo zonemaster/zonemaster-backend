@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-24 09:36+0000\n"
-"PO-Revision-Date: 2023-06-01 07:51+0200\n"
+"PO-Revision-Date: 2025-04-25 08:30+0200\n"
 "Last-Translator: richard.persson@norid.no\n"
 "Language-Team: Zonemaster project\n"
 "Language: nb\n"
@@ -54,25 +54,6 @@ msgstr "Keytag må være et positivt tall"
 
 msgid "Domain name required"
 msgstr "Domenenavn påkrevd"
-
-msgid "The domain name is IDNA invalid"
-msgstr "Domenenavnet er ikke korrekt IDNA"
-
-msgid ""
-"The domain name contains non-ascii characters and IDNA support is not "
-"installed"
-msgstr ""
-"Domenenavnet inneholder tegn som ikke er ascii og IDNA-støtte er ikke "
-"installert"
-
-msgid "The domain name character(s) are not supported"
-msgstr "Tegn i domenenavn er ikke supportert"
-
-msgid "The domain name contains consecutive dots"
-msgstr "Domenenavnet inneholder flere punkter på rad"
-
-msgid "The domain name or label is too long"
-msgstr "Domenenavn eller label er for lang"
 
 msgid "Invalid language tag format"
 msgstr "Ugyldig format på språk-tag"

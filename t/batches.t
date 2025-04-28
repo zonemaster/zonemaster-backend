@@ -29,15 +29,15 @@ engine = $db_backend
 
 [MYSQL]
 host     = localhost
-user     = travis_zm
-password = travis_zonemaster
-database = travis_zonemaster
+user     = zonemaster_test
+password = zonemaster
+database = zonemaster_test
 
 [POSTGRESQL]
 host     = localhost
-user     = travis_zonemaster
-password = travis_zonemaster
-database = travis_zonemaster
+user     = zonemaster_test
+password = zonemaster
+database = zonemaster_test
 
 [SQLITE]
 database_file = $tempdir/zonemaster.sqlite

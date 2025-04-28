@@ -1,6 +1,4 @@
 # Zonemaster Backend
-[![Build Status](https://travis-ci.org/zonemaster/zonemaster-backend.svg?branch=master)](https://travis-ci.org/zonemaster/zonemaster-backend)
-
 
 ### Purpose
 This repository is one of the components of the Zonemaster software. For an

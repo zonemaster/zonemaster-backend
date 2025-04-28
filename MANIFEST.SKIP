@@ -5,8 +5,7 @@
 ^.*\.log
 ^.*\.swp$
 ^MANIFEST\.SKIP$
-^\.github/pull_request_template\.md$
-^\.travis\.yml$
+^\.github/
 ^docs/internal-documentation/
 \.po$
 ^share/[^/]*\.mo$

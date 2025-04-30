@@ -15,7 +15,6 @@ on:
 
 env:
   ZONEMASTER_RECORD: 0
-  ZONEMASTER_TRAVIS_TESTING: 1
   compatibility: develop
   # compatibility: latest
 
@@ -57,15 +56,7 @@ jobs:
             libtool \
             m4 \
 
-      - name: Install homegrown dependencies (latest)
-        if: ${{ env.compatibility == 'latest' }}
-        run: |
-          cpanm --sudo --notest \
-            Module::Install \
-            ExtUtils::PkgConfig \
-            Zonemaster::Engine
-
-      - name: Install homegrown dependencies (develop)
+      - name: "Install development versions of Zonemaster::LDNS and Zonemaster::Engine"
         if: ${{ env.compatibility == 'develop' }}
         run: |
           cpanm --sudo --notest \
@@ -75,14 +66,13 @@ jobs:
             Module::Install::XSUtil
           git clone --branch=develop --depth=1 \
             https://github.com/zonemaster/zonemaster-ldns.git
-          perl Makefile.PL  # Generate MYMETA.yml to appease cpanm .
-          ( cd zonemaster-ldns ; cpanm --sudo --notest . )
-          rm -rf zonemaster-ldns
           git clone --branch=develop --depth=1 \
             https://github.com/zonemaster/zonemaster-engine.git
-          perl Makefile.PL  # Generate MYMETA.yml to appease cpanm .
-          ( cd zonemaster-engine ; cpanm --sudo --notest . )
-          rm -rf zonemaster-engine
+          ( cd zonemaster-ldns ; perl Makefile.PL )    # Generate MYMETA.yml to appease cpanm
+          ( cd zonemaster-engine ; perl Makefile.PL )  # Generate MYMETA.yml to appease cpanm
+          make -C zonemaster-engine                    # Generate MO files so they get installed
+          cpanm --sudo --notest ./zonemaster-ldns ./zonemaster-engine
+          rm -rf zonemaster-ldns zonemaster-engine
 
         # Installing Zonemaster::Engine requires root privileges, because of a
         # bug in Mail::SPF preventing normal installation with cpanm as
@@ -100,29 +90,27 @@ jobs:
         #
         # [1]: https://rt.cpan.org/Public/Bug/Display.html?id=34768
       - name: Install remaining dependencies
-        run: cpanm --sudo --verbose --notest --installdeps .
-
-      - name: Install locales
-        run: |
-          sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|es_ES\.UTF-8.*|fi_FI\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sl_SI\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
-          sudo locale-gen
+        run: cpanm --sudo --notest --installdeps .
 
       - name: Install Zonemaster::Backend
-        run: cpanm --sudo --verbose --notest .
+        run: |
+          perl Makefile.PL
+          make              # Generate MO files so they get installed
+          cpanm --sudo --notest --verbose .
 
       - name: Set up database
         if: ${{ matrix.db != 'sqlite' }}
         run: |
           case "${{ matrix.db }}" in
             mariadb)
-              cpanm --sudo --verbose --notest DBD::mysql
+              cpanm --sudo --notest DBD::mysql
               docker run --detach --name ci-mariadb mariadb:10.11
               mysql -u root -e "CREATE USER 'ci'@'localhost' IDENTIFIED BY 'password';"
               mysql -u root -e "CREATE DATABASE zonemaster CHARACTER SET utf8 COLLATE utf8_bin;"
               mysql -u root -e "GRANT ALL ON zonemaster.* TO 'ci'@'localhost';"
               ;;
             postgresql)
-              cpanm --sudo --verbose --notest DBD::Pg
+              cpanm --sudo --notest DBD::Pg
               # PGPASSWORD is used by psql
               export PGPASSWORD=password
               docker run --detach --name ci-postgres -p 5432:5432 --env POSTGRES_PASSWORD="$PGPASSWORD" postgres:16
@@ -134,6 +122,11 @@ jobs:
               psql -h localhost -U postgres -c 'CREATE DATABASE zonemaster OWNER ci;'
               ;;
           esac
+
+      - name: Install locales
+        run: |
+          sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|es_ES\.UTF-8.*|fi_FI\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sl_SI\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
+          sudo locale-gen
 
       - name: Show content of log files
         if: ${{ failure() }}

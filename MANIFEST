@@ -38,9 +38,6 @@ script/zmb
 script/zmtest
 script/zonemaster_backend_rpcapi.psgi
 script/zonemaster_backend_testagent
-share/backend_config.ci_mysql.ini
-share/backend_config.ci_postgresql.ini
-share/backend_config.ci_sqlite.ini
 share/backend_config.ini
 share/cleanup-mysql.sql
 share/cleanup-postgres.sql

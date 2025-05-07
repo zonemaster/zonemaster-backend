@@ -1,0 +1,138 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+      - 'release/**'
+  pull_request:
+    branches:
+      - develop
+      - master
+      - 'release/**'
+
+env:
+  ZONEMASTER_RECORD: 0
+  compatibility: develop
+  # compatibility: latest
+
+jobs:
+  run-tests:
+    strategy:
+      matrix:
+        db: [sqlite, mysql, postgresql]
+        perl: ['5.38']
+        include:
+          - db: sqlite
+            perl: '5.34'
+          - db: sqlite
+            perl: '5.26'
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+
+      - name: Install binary dependencies
+        run: |
+          # * These were taken from the installation instruction.
+          # * Gettext was added so we can run cpanm . on the Engine sources.
+          # * The Perl modules were left out because I couldn't get all of them
+          #   to work with custom Perl versions.
+          # * Cpanminus was left out because actions-setup-perl installs it.
+          sudo apt-get install -y \
+            autoconf \
+            automake \
+            build-essential \
+            gettext \
+            libidn2-dev \
+            libssl-dev \
+            libtool \
+            m4 \
+
+      - name: "Install development versions of Zonemaster::LDNS and Zonemaster::Engine"
+        if: ${{ env.compatibility == 'develop' }}
+        run: |
+          cpanm --sudo --notest \
+            Devel::CheckLib \
+            Module::Install \
+            ExtUtils::PkgConfig \
+            Module::Install::XSUtil
+          git clone --branch=develop --depth=1 \
+            https://github.com/zonemaster/zonemaster-ldns.git
+          git clone --branch=develop --depth=1 \
+            https://github.com/zonemaster/zonemaster-engine.git
+          ( cd zonemaster-ldns ; perl Makefile.PL )    # Generate MYMETA.yml to appease cpanm
+          ( cd zonemaster-engine ; perl Makefile.PL )  # Generate MYMETA.yml to appease cpanm
+          make -C zonemaster-engine                    # Generate MO files so they get installed
+          cpanm --sudo --notest ./zonemaster-ldns ./zonemaster-engine
+          rm -rf zonemaster-ldns zonemaster-engine
+
+        # Installing Zonemaster::Engine requires root privileges, because of a
+        # bug in Mail::SPF preventing normal installation with cpanm as
+        # non-root user (see link below [1]).
+        #
+        # The alternative, if one still wishes to install Zonemaster::Engine
+        # as non-root user, is to install Mail::SPF first with a command like:
+        #
+        #  % cpanm --notest \
+        #        --install-args="--install_path sbin=$HOME/.local/sbin" \
+        #        Mail::SPF
+        #
+        # For the sake of consistency, other Perl packages installed from CPAN
+        # are also installed as root.
+        #
+        # [1]: https://rt.cpan.org/Public/Bug/Display.html?id=34768
+      - name: Install remaining dependencies
+        run: cpanm --sudo --notest --installdeps .
+
+      - name: Install Zonemaster::Backend
+        run: |
+          perl Makefile.PL
+          make              # Generate MO files so they get installed
+          cpanm --sudo --notest --verbose .
+
+      - name: Set up database
+        if: ${{ matrix.db != 'sqlite' }}
+        run: |
+          case "${{ matrix.db }}" in
+            mariadb)
+              cpanm --sudo --notest DBD::mysql
+              docker run --detach --name ci-mariadb mariadb:10.11
+              mysql -u root -e "CREATE USER 'ci'@'localhost' IDENTIFIED BY 'password';"
+              mysql -u root -e "CREATE DATABASE zonemaster CHARACTER SET utf8 COLLATE utf8_bin;"
+              mysql -u root -e "GRANT ALL ON zonemaster.* TO 'ci'@'localhost';"
+              ;;
+            postgresql)
+              cpanm --sudo --notest DBD::Pg
+              # PGPASSWORD is used by psql
+              export PGPASSWORD=password
+              docker run --detach --name ci-postgres -p 5432:5432 --env POSTGRES_PASSWORD="$PGPASSWORD" postgres:16
+              for i in {1..20} ; do
+                pg_isready -h localhost -p 5432 && break
+                sleep 2
+              done
+              psql -h localhost -U postgres -c "CREATE USER ci WITH PASSWORD 'password';"
+              psql -h localhost -U postgres -c 'CREATE DATABASE zonemaster OWNER ci;'
+              ;;
+          esac
+
+      - name: Install locales
+        run: |
+          sudo perl -pi -e 's/^# (da_DK\.UTF-8.*|en_US\.UTF-8.*|es_ES\.UTF-8.*|fi_FI\.UTF-8.*|fr_FR\.UTF-8.*|nb_NO\.UTF-8.*|sl_SI\.UTF-8.*|sv_SE\.UTF-8.*)/$1/' /etc/locale.gen
+          sudo locale-gen
+
+      - name: Show content of log files
+        if: ${{ failure() }}
+        run: cat /home/runner/.cpanm/work/*/build.log
+
+      - name: Test
+        env:
+          ZONEMASTER_BACKEND_CONFIG_FILE: ./share/backend_config.ci_${{ matrix.db }}.ini
+        run: make test TEST_VERBOSE=1

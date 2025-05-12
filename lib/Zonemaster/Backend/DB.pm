@@ -765,6 +765,60 @@ sub get_batch_job_result {
     return \%result;
 }
 
+=head2 batch_status
+
+Returns number of tests per category (finnished, running, waiting) for the given
+batch, provided as "batch_id".
+
+If one or more of parameters "list_running_tests", "list_finished_tests" or
+"list_waiting_tests" are included with true value, the "hash_id" values for
+that category is also included.
+
+=cut
+
+# Standatd SQL, can be here
+sub batch_status {
+    my ( $self, $test_params ) = @_;
+
+    my $batch_id = $test_params->{batch_id};
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batch_id } )
+        unless defined $self->batch_exists_in_db( $batch_id );
+
+    my $dbh = $self->dbh;
+
+    my %result;
+    $result{waiting_count} = 0;
+    $result{running_count} = 0;
+    $result{finished_count} = 0;
+
+    my $query = "
+        SELECT hash_id, progress
+        FROM test_results
+        WHERE batch_id=?";
+
+    my $sth1 = $dbh->prepare( $query );
+    $sth1->execute( $batch_id );
+
+    while ( my $h = $sth1->fetchrow_hashref ) {
+        if ( $h->{progress} eq '0' ) {
+            $result{waiting_count}++;
+            push(@{$result{waiting_tests}}, $h->{hash_id}) if $test_params->{list_waiting_tests};
+        }
+        elsif ( $h->{progress} eq '100' ) {
+            $result{finished_count}++;
+            push(@{$result{finished_tests}}, $h->{hash_id}) if $test_params->{list_finished_tests};
+        }
+        else {
+            $result{running_count}++;
+            push(@{$result{running_tests}}, $h->{hash_id}) if $test_params->{list_running_tests};
+        }
+    }
+
+    return \%result;
+}
+
+
 =head2 process_unfinished_tests($queue_label, $test_run_timeout)
 
 Append a new log entry C<BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST> to all the

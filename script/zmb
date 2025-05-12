@@ -585,7 +585,7 @@ sub cmd_add_batch_job {
 }
 
 
-=head2 get_batch_job_result
+=head2 get_batch_job_result (** deprecated to be removed v2025.2 **)
 
  zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
 
@@ -609,6 +609,58 @@ sub cmd_get_batch_job_result {
         params => {
             batch_id => $opt_batch_id,
         },
+    );
+}
+
+
+=head2 batch_status
+
+ zmb [GLOBAL OPTIONS] batch_status [OPTIONS]
+
+ Options:
+   --batch-id BATCH-ID
+   --list-waiting-tests
+   --list-running-tests
+   --list-finished-tests
+
+"--batch-id" is mandatory.
+
+The command provides the number of tests waiting to be run, tests running and
+test finished, respectively, for the batch.
+
+"--list-waiting-tests", "--list-running-tests" and "--list-finished-tests" are
+optional. If given the test IDs of tests waiting to be run, tests running
+and test finished, respectively, are listed.
+
+=cut
+
+sub cmd_batch_status {
+    my @opts = @_;
+
+    my $opt_batch_id;
+    my $opt_list_waiting_tests;
+    my $opt_list_running_tests;
+    my $opt_list_finished_tests;
+
+    GetOptionsFromArray(
+        \@opts,
+        'batch-id|i=s'        => \$opt_batch_id,
+        'list-waiting-tests'  => \$opt_list_waiting_tests,
+        'list-running-tests'  => \$opt_list_running_tests,
+        'list-finished-tests' => \$opt_list_finished_tests,
+    ) or pod2usage( 2 );
+
+    my %params;
+    $params{batch_id} = $opt_batch_id;
+
+    $params{list_waiting_tests} = "true" if $opt_list_waiting_tests;
+    $params{list_running_tests} = "true" if $opt_list_running_tests;
+    $params{list_finished_tests} = "true" if $opt_list_finished_tests;
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'batch_status',
+        params => \%params,
     );
 }
 

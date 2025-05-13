@@ -618,10 +618,10 @@ sub cmd_get_batch_job_result {
  zmb [GLOBAL OPTIONS] batch_status [OPTIONS]
 
  Options:
-   --batch-id BATCH-ID
-   --list-waiting-tests
-   --list-running-tests
-   --list-finished-tests
+   --batch-id BATCH-ID|--bi BATCH-ID
+   --list-waiting-tests|--lw
+   --list-running-tests|--lr
+   --list-finished-tests|--lf
 
 "--batch-id" is mandatory.
 
@@ -644,10 +644,10 @@ sub cmd_batch_status {
 
     GetOptionsFromArray(
         \@opts,
-        'batch-id|i=s'        => \$opt_batch_id,
-        'list-waiting-tests'  => \$opt_list_waiting_tests,
-        'list-running-tests'  => \$opt_list_running_tests,
-        'list-finished-tests' => \$opt_list_finished_tests,
+        'batch-id|bi=s'        => \$opt_batch_id,
+        'list-waiting-tests|lw'  => \$opt_list_waiting_tests,
+        'list-running-tests|lr'  => \$opt_list_running_tests,
+        'list-finished-tests|lf' => \$opt_list_finished_tests,
     ) or pod2usage( 2 );
 
     my %params;

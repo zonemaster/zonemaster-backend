@@ -150,7 +150,8 @@ subtest 'RPCAPI add_batch_job' => sub {
     };
 };
 
-subtest 'RPCAPI get_batch_job_result' => sub {
+subtest 'RPCAPI get_batch_job_result and batch_status' => sub {
+    # "get_batch_job_result deprecated to be removed by v2025.2
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $rpcapi = init_backend( $config );
     subtest 'batch job exists' => sub {
@@ -170,12 +171,33 @@ subtest 'RPCAPI get_batch_job_result' => sub {
 
         is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
         is( $res->{nb_finished}, 0, 'correct number of finished tests' );
+
+        my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
+
+        is( $res->{waiting_count}, @domains, 'correct number of runninng tests' );
+        is( $res->{running_count}, 0, 'correct number of finished tests' );
+        is( $res->{finished_count}, 0, 'correct number of finished tests' );
+        is( $res->{waiting_tests}, undef, 'correct undefined list of waiting tests' );
+        is( $res->{running_tests}, undef, 'correct undefined list of running tests' );
+        is( $res->{finished_tests}, undef, 'correct undefined list of finished tests' );
+
     };
 
-    subtest 'unknown batch' => sub {
+    subtest 'unknown batch (get_batch_job_result)' => sub {
         my $unknown_batch = 10;
         dies_ok {
             $rpcapi->get_batch_job_result( { batch_id => $unknown_batch } );
+        } 'getting results for an unknown batch_id should die';
+        my $res = $@;
+        is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
+        is( $res->{message}, 'Unknown batch', 'correct error message' );
+        is( $res->{data}->{batch_id}, $unknown_batch, 'correct data type returned' );
+    };
+
+    subtest 'unknown batch (batch_status)' => sub {
+        my $unknown_batch = 10;
+        dies_ok {
+            $rpcapi->batch_status( { batch_id => $unknown_batch } );
         } 'getting results for an unknown batch_id should die';
         my $res = $@;
         is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
@@ -201,11 +223,33 @@ subtest 'batch with several domains' => sub {
 
     is( $res, 1, 'correct batch job id returned' );
 
+    # "get_batch_job_result deprecated to be removed by v2025.2
     $res = $rpcapi->get_batch_job_result( { batch_id => 1 } );
 
     is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
     is( $res->{nb_finished}, 0, 'correct number of finished tests' );
+    
+    # No lists of test IDs requested
+    $res = $rpcapi->batch_status( { batch_id => 1 } );
 
+    is( $res->{waiting_count}, @domains, 'correct number of runninng tests' );
+    is( $res->{running_count}, 0, 'correct number of finished tests' );
+    is( $res->{finished_count}, 0, 'correct number of finished tests' );
+    is( $res->{waiting_tests}, undef, 'correct undefined list of waiting tests' );
+    is( $res->{running_tests}, undef, 'correct undefined list of running tests' );
+    is( $res->{finished_tests}, undef, 'correct undefined list of finished tests' );
+
+    # List of waiting test IDs requested
+    $res = $rpcapi->batch_status( { batch_id => 1, list_waiting_tests => 1 } );
+
+    is( $res->{waiting_count}, @domains, 'correct number of runninng tests' );
+    is( $res->{running_count}, 0, 'correct number of finished tests' );
+    is( $res->{finished_count}, 0, 'correct number of finished tests' );
+    is( scalar @{ $res->{waiting_tests} }, scalar @domains, 'correct number of waiting tests in list' );
+    is( $res->{running_tests}, undef, 'correct undefined list of running tests' );
+    is( $res->{finished_tests}, undef, 'correct undefined list of finished tests' );
+
+    
     subtest 'table "test_results" contains 2 entries' => sub {
         my ( $count ) = $dbh->selectrow_array( q[ SELECT count(*) FROM test_results ] );
         is( $count, @domains, 'two rows in table' );

@@ -767,16 +767,16 @@ sub get_batch_job_result {
 
 =head2 batch_status
 
-Returns number of tests per category (finnished, running, waiting) for the given
-batch, provided as "batch_id".
+Returns number of tests per category (finished, running, waiting) for the given
+batch, provided as C<batch_id>.
 
-If one or more of parameters "list_running_tests", "list_finished_tests" or
-"list_waiting_tests" are included with true value, the "hash_id" values for
+If one or more of parameters C<list_running_tests>, C<list_finished_tests> or
+C<list_waiting_tests> are included with true value, the C<hash_id> values for
 that category is also included.
 
 =cut
 
-# Standatd SQL, can be here
+# Standard SQL, can be here
 sub batch_status {
     my ( $self, $test_params ) = @_;
 

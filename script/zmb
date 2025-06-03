@@ -584,8 +584,7 @@ sub cmd_add_batch_job {
     );
 }
 
-
-=head2 get_batch_job_result (** deprecated to be removed v2025.2 **)
+=head2 get_batch_job_result (** Deprecated to be removed in Zonemaster version v2025.2. Use C<batch_status> instead. **)
 
  zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
 

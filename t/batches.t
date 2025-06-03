@@ -8,6 +8,7 @@ use POSIX qw( strftime );
 use Time::Local qw( timelocal_modern );
 use Test::Exception;
 use Test::More;    # see done_testing()
+use Test::Differences;
 
 my $t_path;
 BEGIN {
@@ -167,20 +168,23 @@ subtest 'RPCAPI get_batch_job_result and batch_status' => sub {
 
         is( $batch_id, 1, 'correct batch job id returned' );
 
-        my $res = $rpcapi->get_batch_job_result( { batch_id => $batch_id } );
+        {
+            my $res = $rpcapi->get_batch_job_result( { batch_id => $batch_id } );
 
-        is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
-        is( $res->{nb_finished}, 0, 'correct number of finished tests' );
+            is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
+            is( $res->{nb_finished}, 0, 'correct number of finished tests' );
+        }
 
-        my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
+        {
+            my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
 
-        is( $res->{waiting_count}, @domains, 'correct number of runninng tests' );
-        is( $res->{running_count}, 0, 'correct number of finished tests' );
-        is( $res->{finished_count}, 0, 'correct number of finished tests' );
-        is( $res->{waiting_tests}, undef, 'correct undefined list of waiting tests' );
-        is( $res->{running_tests}, undef, 'correct undefined list of running tests' );
-        is( $res->{finished_tests}, undef, 'correct undefined list of finished tests' );
-
+            is( $res->{waiting_count}, scalar @domains, 'correct number of runninng tests' );
+            is( $res->{running_count}, 0, 'correct number of finished tests' );
+            is( $res->{finished_count}, 0, 'correct number of finished tests' );
+            ok( !$res->{waiting_tests}, 'list of waiting tests expected to be absent' );
+            ok( !$res->{running_tests}, 'list of running tests expected to be absent' );
+            ok( !$res->{finished_tests}, 'list of finished tests to be absent' );
+        }
     };
 
     subtest 'unknown batch (get_batch_job_result)' => sub {
@@ -228,28 +232,27 @@ subtest 'batch with several domains' => sub {
 
     is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
     is( $res->{nb_finished}, 0, 'correct number of finished tests' );
-    
+
     # No lists of test IDs requested
     $res = $rpcapi->batch_status( { batch_id => 1 } );
 
-    is( $res->{waiting_count}, @domains, 'correct number of runninng tests' );
+    is( $res->{waiting_count}, scalar @domains, 'correct number of running tests' );
     is( $res->{running_count}, 0, 'correct number of finished tests' );
     is( $res->{finished_count}, 0, 'correct number of finished tests' );
-    is( $res->{waiting_tests}, undef, 'correct undefined list of waiting tests' );
-    is( $res->{running_tests}, undef, 'correct undefined list of running tests' );
-    is( $res->{finished_tests}, undef, 'correct undefined list of finished tests' );
+    ok( !$res->{waiting_tests}, 'list of waiting tests expected to be absent' );
+    ok( !$res->{running_tests}, 'list of running tests expected to be absent' );
+    ok( !$res->{finished_tests}, 'list of finished tests expected to be absent' );
 
     # List of waiting test IDs requested
     $res = $rpcapi->batch_status( { batch_id => 1, list_waiting_tests => 1 } );
 
-    is( $res->{waiting_count}, @domains, 'correct number of runninng tests' );
+    is( $res->{waiting_count}, scalar @domains, 'correct number of runninng tests' );
     is( $res->{running_count}, 0, 'correct number of finished tests' );
     is( $res->{finished_count}, 0, 'correct number of finished tests' );
-    is( scalar @{ $res->{waiting_tests} }, scalar @domains, 'correct number of waiting tests in list' );
-    is( $res->{running_tests}, undef, 'correct undefined list of running tests' );
-    is( $res->{finished_tests}, undef, 'correct undefined list of finished tests' );
+    eg_or_diff( $res->{waiting_tests}, \@domains, 'correct contents of waiting_tests' );
+    ok( !$res->{running_tests}, 'list of running tests expected to be absent' );
+    ok( !$res->{finished_tests}, 'list of finished tests expected to be absent' );
 
-    
     subtest 'table "test_results" contains 2 entries' => sub {
         my ( $count ) = $dbh->selectrow_array( q[ SELECT count(*) FROM test_results ] );
         is( $count, @domains, 'two rows in table' );

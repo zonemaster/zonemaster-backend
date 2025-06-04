@@ -651,10 +651,9 @@ sub cmd_batch_status {
 
     my %params;
     $params{batch_id} = $opt_batch_id;
-
-    $params{list_waiting_tests} = JSON->boolean( $opt_list_waiting_tests ) if defined $opt_list_waiting_tests;
-    $params{list_running_tests} = JSON->boolean( $opt_list_running_tests ) if defined $opt_list_running_tests;
-    $params{list_finished_tests} = JSON->boolean( $opt_list_finished_tests ) if defined $opt_list_finished_tests;
+    $params{list_waiting_tests} = json_tern( $opt_list_waiting_tests ) if (defined $opt_list_waiting_tests);
+    $params{list_running_tests} = json_tern( $opt_list_running_tests ) if (defined $opt_list_running_tests);
+    $params{list_finished_tests} = json_tern( $opt_list_finished_tests ) if (defined $opt_list_finished_tests);
 
     return to_jsonrpc(
         id     => 1,
@@ -694,12 +693,14 @@ sub get_commands {
       grep { $_ =~ /^cmd_/ } grep { defined &{"main\::$_"} } keys %{"main\::"};
 }
 
+
 sub json_tern {
     my $value = shift;
-    if ( $value eq 'true' ) {
+
+    if ( $value eq 'true' or $value == 1 ) {
         return JSON::PP::true;
     }
-    elsif ( $value eq 'false' ) {
+    elsif ( $value eq 'false' or $value == 0 ) {
         return JSON::PP::false;
     }
     elsif ( $value eq 'null' ) {

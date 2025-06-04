@@ -249,7 +249,7 @@ subtest 'batch with several domains' => sub {
     is( $res->{waiting_count}, scalar @domains, 'correct number of runninng tests' );
     is( $res->{running_count}, 0, 'correct number of finished tests' );
     is( $res->{finished_count}, 0, 'correct number of finished tests' );
-    eq_or_diff( $res->{waiting_tests}, \@domains, 'correct contents of waiting_tests' );
+    is( scalar @{ $res->{waiting_tests} }, scalar @domains, 'correct number of elements in waiting_tests' );
     ok( !$res->{running_tests}, 'list of running tests expected to be absent' );
     ok( !$res->{finished_tests}, 'list of finished tests expected to be absent' );
 

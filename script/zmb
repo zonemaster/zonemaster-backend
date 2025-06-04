@@ -618,9 +618,9 @@ sub cmd_get_batch_job_result {
 
  Options:
    --batch-id BATCH-ID|--bi BATCH-ID
-   --list-waiting-tests|--lw
-   --list-running-tests|--lr
-   --list-finished-tests|--lf
+   --list-waiting-tests|--lw|--no-list-waiting-tests|--no-lw
+   --list-running-tests|--lr|--no-list-running-tests|--no-lr
+   --list-finished-tests|--lf|--no-list-finished-tests|--no-lf
 
 "--batch-id" is mandatory.
 
@@ -629,7 +629,8 @@ test finished, respectively, for the batch.
 
 "--list-waiting-tests", "--list-running-tests" and "--list-finished-tests" are
 optional. If given the test IDs of tests waiting to be run, tests running
-and test finished, respectively, are listed.
+and test finished, respectively, are listed. If those options are prefixed with
+"no-" then no test IDs will be listed for that category (the default behavior).
 
 =cut
 
@@ -651,9 +652,9 @@ sub cmd_batch_status {
 
     my %params;
     $params{batch_id} = $opt_batch_id;
-    $params{list_waiting_tests} = json_tern( $opt_list_waiting_tests ) if (defined $opt_list_waiting_tests);
-    $params{list_running_tests} = json_tern( $opt_list_running_tests ) if (defined $opt_list_running_tests);
-    $params{list_finished_tests} = json_tern( $opt_list_finished_tests ) if (defined $opt_list_finished_tests);
+    $params{list_waiting_tests} = json_0_or_1_to_boolean( $opt_list_waiting_tests ) if (defined $opt_list_waiting_tests);
+    $params{list_running_tests} = json_0_or_1_to_boolean( $opt_list_running_tests ) if (defined $opt_list_running_tests);
+    $params{list_finished_tests} = json_0_or_1_to_boolean( $opt_list_finished_tests ) if (defined $opt_list_finished_tests);
 
     return to_jsonrpc(
         id     => 1,
@@ -697,10 +698,10 @@ sub get_commands {
 sub json_tern {
     my $value = shift;
 
-    if ( $value eq 'true' or $value == 1 ) {
+    if ( $value eq 'true' ) {
         return JSON::PP::true;
     }
-    elsif ( $value eq 'false' or $value == 0 ) {
+    elsif ( $value eq 'false' ) {
         return JSON::PP::false;
     }
     elsif ( $value eq 'null' ) {
@@ -708,6 +709,20 @@ sub json_tern {
     }
     else {
         die 'Illegal value. Expects "true", "false" or "null" ';
+    }
+}
+
+sub json_0_or_1_to_boolean {
+    my $value = shift;
+
+    if ( $value == 1 ) {
+        return JSON::PP::true;
+    }
+    elsif ( $value == 0 ) {
+        return JSON::PP::false;
+    }
+    else {
+        die 'Illegal value. Expects 0 or 1 ';
     }
 }
 

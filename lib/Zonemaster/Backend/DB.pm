@@ -16,8 +16,8 @@ use POSIX qw( strftime );
 use Readonly;
 use Try::Tiny;
 
-use Zonemaster::Engine::Normalization;
 use Zonemaster::Backend::Errors;
+use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Logger::Entry;
 
 requires qw(
@@ -875,7 +875,7 @@ sub process_dead_test {
 sub _normalize_domain {
     my ( $domain ) = @_;
 
-    my ( $errors, $normalized_domain ) = normalize_name( $domain );
+    my ( $errors, $normalized_domain ) = normalize_name( trim_space( $domain ) );
 
     if ( scalar( @{$errors} ) ) {
         die Zonemaster::Backend::Error::Internal->new( reason => "Normalizing domain returned errors.", data => [ map { $_->string } @{$errors} ] );

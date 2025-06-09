@@ -28,7 +28,7 @@ jobs:
           - db: sqlite
             perl: '5.36'
           - db: sqlite
-            perl: '5.32'
+            perl: '5.26'
 
     runs-on: ubuntu-22.04
 

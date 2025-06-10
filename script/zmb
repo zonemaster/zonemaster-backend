@@ -664,9 +664,9 @@ sub cmd_batch_status {
         'lf'                    => \$opt_lf,
     ) or pod2usage( 2 );
 
-    pod2usage( "'--lw' and '--list-waiting-test' must not be combined" )  if $opt_list_waiting_tests and $opt_lw;
-    pod2usage( "'--lr' and '--list-running-test' must not be combined" )  if $opt_list_running_tests and $opt_lr;
-    pod2usage( "'--lf' and '--list-finished-test' must not be combined" ) if $opt_list_finished_tests and $opt_lf;
+    pod2usage( "'--lw' and '--list-waiting-test' must not be combined" )  if defined $opt_list_waiting_tests and $opt_lw;
+    pod2usage( "'--lr' and '--list-running-test' must not be combined" )  if defined $opt_list_running_tests and $opt_lr;
+    pod2usage( "'--lf' and '--list-finished-test' must not be combined" ) if defined $opt_list_finished_tests and $opt_lf;
     
     my %params;
     $params{batch_id} = $opt_batch_id;
@@ -731,20 +731,6 @@ sub json_tern {
     }
     else {
         die 'Illegal value. Expects "true", "false" or "null" ';
-    }
-}
-
-sub json_0_or_1_to_boolean {
-    my $value = shift;
-
-    if ( $value == 1 ) {
-        return JSON::PP::true;
-    }
-    elsif ( $value == 0 ) {
-        return JSON::PP::false;
-    }
-    else {
-        die 'Illegal value. Expects 0 or 1 ';
     }
 }
 

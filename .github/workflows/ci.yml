@@ -23,10 +23,10 @@ jobs:
     strategy:
       matrix:
         db: [sqlite, mysql, postgresql]
-        perl: ['5.38']
+        perl: ['5.40']
         include:
           - db: sqlite
-            perl: '5.34'
+            perl: '5.36'
           - db: sqlite
             perl: '5.26'
 

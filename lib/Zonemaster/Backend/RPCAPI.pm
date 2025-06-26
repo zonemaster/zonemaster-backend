@@ -22,7 +22,7 @@ use Encode;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
-use Zonemaster::Engine::Normalization;
+use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
@@ -224,7 +224,7 @@ sub get_data_from_parent_zone {
     my $result = eval {
         my %result;
         my $domain = $params->{domain};
-        my ( $_errors, $normalized_domain ) = normalize_name( $domain );
+        my ( $_errors, $normalized_domain ) = normalize_name( trim_space ( $domain ) );
 
         my @ns_list;
         my @ns_names;
@@ -737,9 +737,11 @@ sub batch_create {
     return $result;
 }
 
+# Deprecated to be removed in v2025.2.
 $json_schemas{get_batch_job_result} = joi->object->strict->props(
     batch_id => $zm_validator->batch_id->required
 );
+# Deprecated to be removed in v2025.2.
 sub get_batch_job_result {
     my ( $self, $params ) = @_;
 
@@ -756,15 +758,29 @@ sub get_batch_job_result {
     return $result;
 }
 
-# Experimental
-$json_schemas{batch_status} = $json_schemas{get_batch_job_result};
+
+$json_schemas{batch_status} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'batch_id' ],
+    properties => {
+        batch_id => $zm_validator->batch_id->required,
+        list_waiting_tests => joi->boolean->compile,
+        list_running_tests => joi->boolean->compile,
+        list_finished_tests => joi->boolean->compile,
+    }
+};
 sub batch_status {
-    my $result = get_batch_job_result( @_ );
-    return {
-        running_count    => $result->{nb_running},
-        finished_count   => $result->{nb_finished},
-        finished_job_ids => $result->{finished_job_ids},
+    my ( $self, $params ) = @_;
+
+    my $result;
+    eval {
+        $result = $self->{db}->batch_status($params);
     };
+    if ($@) {
+        handle_exception( $@ );
+    }
+    return $result;
 }
 
 sub _get_locale {

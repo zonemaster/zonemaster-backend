@@ -13,7 +13,7 @@ use Readonly;
 use Locale::TextDomain qw[Zonemaster-Backend];
 use Net::IP::XS;
 use Zonemaster::Engine::Logger::Entry;
-use Zonemaster::Engine::Normalization;
+use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::LDNS;
 
 our @EXPORT_OK = qw(
@@ -282,7 +282,7 @@ sub check_domain {
         return N__ 'Domain name required';
     }
 
-    my ( $errors, $_domain ) = normalize_name( $domain );
+    my ( $errors, $_domain ) = normalize_name( trim_space( $domain ) );
 
     if ( @{$errors} ) {
         return $errors->[0]->message;

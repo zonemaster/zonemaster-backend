@@ -1,6 +1,21 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v11.5.0 2025-06-26 (part of Zonemaster v2025.1 release)
+
+ [Deprecations]
+- API method "get_batch_job_result" is deprecated to be removed in v2025.2.
+  Use method "batch_status" instead. #1215
+
+ [Features]
+- Redefines "batch_status" to replace "get_batch_job_result" #1215
+
+ [Fixes]
+- Updates translation (Norwegian) #1213
+- Adapts to changed Engine API #1143
+- Sorts historic tests by creation date and not ID #1212
+
+
 v11.4.0 2025-03-04 (part of Zonemaster v2024.2.1 release)
 
  [Features]

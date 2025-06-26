@@ -5,12 +5,14 @@
 ^.*\.log
 ^.*\.swp$
 ^MANIFEST\.SKIP$
-^\.github/pull_request_template\.md$
-^\.travis\.yml$
+^\.github/
 ^docs/internal-documentation/
 \.po$
 ^share/[^/]*\.mo$
 ^share/Zonemaster-Backend.pot$
+^share/backend_config\.ci_mysql\.ini$
+^share/backend_config\.ci_postgresql\.ini$
+^share/backend_config\.ci_sqlite\.ini$
 ^share/update-po$
 ^Zonemaster-Backend-[0-9.]*\.tar\.gz
 

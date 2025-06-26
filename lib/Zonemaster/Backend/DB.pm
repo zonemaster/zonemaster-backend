@@ -16,8 +16,8 @@ use POSIX qw( strftime );
 use Readonly;
 use Try::Tiny;
 
-use Zonemaster::Engine::Normalization;
 use Zonemaster::Backend::Errors;
+use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Logger::Entry;
 
 requires qw(
@@ -521,7 +521,7 @@ sub get_test_history {
             undelegated
         FROM test_results
         WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
-        ORDER BY id DESC
+        ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?];
 
@@ -765,6 +765,60 @@ sub get_batch_job_result {
     return \%result;
 }
 
+=head2 batch_status
+
+Returns number of tests per category (finished, running, waiting) for the given
+batch, provided as C<batch_id>.
+
+If one or more of parameters C<list_running_tests>, C<list_finished_tests> or
+C<list_waiting_tests> are included with true value, the C<hash_id> values for
+that category is also included.
+
+=cut
+
+# Standard SQL, can be here
+sub batch_status {
+    my ( $self, $test_params ) = @_;
+
+    my $batch_id = $test_params->{batch_id};
+
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batch_id } )
+        unless defined $self->batch_exists_in_db( $batch_id );
+
+    my $dbh = $self->dbh;
+
+    my %result;
+    $result{waiting_count} = 0;
+    $result{running_count} = 0;
+    $result{finished_count} = 0;
+
+    my $query = "
+        SELECT hash_id, progress
+        FROM test_results
+        WHERE batch_id=?";
+
+    my $sth1 = $dbh->prepare( $query );
+    $sth1->execute( $batch_id );
+
+    while ( my $h = $sth1->fetchrow_hashref ) {
+        if ( $h->{progress} eq '0' ) {
+            $result{waiting_count}++;
+            push(@{$result{waiting_tests}}, $h->{hash_id}) if $test_params->{list_waiting_tests};
+        }
+        elsif ( $h->{progress} eq '100' ) {
+            $result{finished_count}++;
+            push(@{$result{finished_tests}}, $h->{hash_id}) if $test_params->{list_finished_tests};
+        }
+        else {
+            $result{running_count}++;
+            push(@{$result{running_tests}}, $h->{hash_id}) if $test_params->{list_running_tests};
+        }
+    }
+
+    return \%result;
+}
+
+
 =head2 process_unfinished_tests($queue_label, $test_run_timeout)
 
 Append a new log entry C<BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST> to all the
@@ -875,7 +929,7 @@ sub process_dead_test {
 sub _normalize_domain {
     my ( $domain ) = @_;
 
-    my ( $errors, $normalized_domain ) = normalize_name( $domain );
+    my ( $errors, $normalized_domain ) = normalize_name( trim_space( $domain ) );
 
     if ( scalar( @{$errors} ) ) {
         die Zonemaster::Backend::Error::Internal->new( reason => "Normalizing domain returned errors.", data => [ map { $_->string } @{$errors} ] );

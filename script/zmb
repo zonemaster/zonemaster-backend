@@ -584,8 +584,7 @@ sub cmd_add_batch_job {
     );
 }
 
-
-=head2 get_batch_job_result
+=head2 get_batch_job_result (** Deprecated to be removed in Zonemaster version v2025.2. Use C<batch_status> instead. **)
 
  zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
 
@@ -609,6 +608,80 @@ sub cmd_get_batch_job_result {
         params => {
             batch_id => $opt_batch_id,
         },
+    );
+}
+
+
+=head2 batch_status
+
+ zmb [GLOBAL OPTIONS] batch_status [OPTIONS]
+
+ Options:
+   --batch-id BATCH-ID|--bi BATCH-ID
+   --list-waiting-tests true|false|null
+   --list-running-tests true|false|null
+   --list-finished-tests true|false|null
+
+   --lw # Same as "--list-waiting-tests true"
+   --lr # Same as "--list-running-tests true"
+   --lf # Same as "--list-finished-tests true"
+
+"--batch-id" is mandatory.
+
+The command provides the number of tests waiting to be run, tests running and
+test finished, respectively, for the batch.
+
+"--list-waiting-tests", "--list-running-tests" and "--list-finished-tests" are
+optional. If given the test IDs of tests waiting to be run, tests running
+and test finished, respectively, are listed.
+
+"--lw", "--lr" and "--lf" are option.
+
+"--lw" must not be combined with "--list-waiting-tests". "--lr" must not be
+combined with "--list-running-tests". "--lf" must not be combined with
+"--list-finished-tests".
+=cut
+
+sub cmd_batch_status {
+    my @opts = @_;
+
+    my $opt_batch_id;
+    my $opt_list_waiting_tests;
+    my $opt_lw;
+    my $opt_list_running_tests;
+    my $opt_lr;
+    my $opt_list_finished_tests;
+    my $opt_lf;
+
+    GetOptionsFromArray(
+        \@opts,
+        'batch-id|bi=s'         => \$opt_batch_id,
+        'list-waiting-tests=s'  => \$opt_list_waiting_tests,
+        'lw'                    => \$opt_lw,
+        'list-running-tests=s'  => \$opt_list_running_tests,
+        'lr'                    => \$opt_lr,
+        'list-finished-tests=s' => \$opt_list_finished_tests,
+        'lf'                    => \$opt_lf,
+    ) or pod2usage( 2 );
+
+    pod2usage( "'--lw' and '--list-waiting-test' must not be combined" )  if defined $opt_list_waiting_tests and $opt_lw;
+    pod2usage( "'--lr' and '--list-running-test' must not be combined" )  if defined $opt_list_running_tests and $opt_lr;
+    pod2usage( "'--lf' and '--list-finished-test' must not be combined" ) if defined $opt_list_finished_tests and $opt_lf;
+    
+    my %params;
+    $params{batch_id} = $opt_batch_id;
+    $params{list_waiting_tests} = json_tern( $opt_list_waiting_tests ) if $opt_list_waiting_tests and json_tern( $opt_list_waiting_tests );
+    $params{list_running_tests} = json_tern( $opt_list_running_tests ) if $opt_list_running_tests and json_tern( $opt_list_running_tests );
+    $params{list_finished_tests} = json_tern( $opt_list_finished_tests ) if $opt_list_finished_tests and json_tern( $opt_list_finished_tests );
+
+    $params{list_waiting_tests} = JSON::PP::true if $opt_lw;
+    $params{list_running_tests} = JSON::PP::true if $opt_lr;
+    $params{list_finished_tests} = JSON::PP::true if $opt_lf;
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'batch_status',
+        params => \%params,
     );
 }
 
@@ -643,8 +716,10 @@ sub get_commands {
       grep { $_ =~ /^cmd_/ } grep { defined &{"main\::$_"} } keys %{"main\::"};
 }
 
+
 sub json_tern {
     my $value = shift;
+
     if ( $value eq 'true' ) {
         return JSON::PP::true;
     }

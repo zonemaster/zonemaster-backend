@@ -52,9 +52,9 @@ share/locale/nb/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/sl/LC_MESSAGES/Zonemaster-Backend.mo
 share/locale/sv/LC_MESSAGES/Zonemaster-Backend.mo
 share/Makefile
-share/patch/patch_db_zonemaster_backend_ver_9.0.0.pl
 share/patch/patch_db_zonemaster_backend_ver_11.1.0.pl
 share/patch/patch_db_zonemaster_backend_ver_11.2.0.pl
+share/patch/patch_db_zonemaster_backend_ver_9.0.0.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_1.0.3.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.0.pl
 share/patch/patch_mysql_db_zonemaster_backend_ver_5.0.2.pl
@@ -65,9 +65,6 @@ share/patch/patch_postgresql_db_zonemaster_backend_ver_8.0.0.pl
 share/patch/patch_sqlite_db_zonemaster_backend_ver_8.0.0.pl
 share/patch/README.txt
 share/tmpfiles.conf
-share/travis_mysql_backend_config.ini
-share/travis_postgresql_backend_config.ini
-share/travis_sqlite_backend_config.ini
 share/zm-rpcapi.lsb
 share/zm-rpcapi.service
 share/zm-testagent.lsb
@@ -92,5 +89,5 @@ t/test_profile_network_true.json
 t/test_profile_no_network.json
 t/test_validate_syntax.t
 t/TestUtil.pm
-t/validator.t
 t/translator.t
+t/validator.t

@@ -1,4 +1,8 @@
-FROM zonemaster/engine:local
+FROM zonemaster/cli:local AS build
+
+ARG version
+
+USER root
 
 RUN apk add --no-cache \
 	make \
@@ -36,12 +40,27 @@ RUN apk add --no-cache \
 RUN cpanm --notest --no-wget --from https://cpan.metacpan.org/ \
 	Net::Statsd 
 
-ARG version
-
 COPY ./Zonemaster-Backend-${version}.tar.gz ./Zonemaster-Backend-${version}.tar.gz
 
-RUN cpanm --notest --no-wget --from https://cpan.metacpan.org/ \
+RUN cpanm --notest --no-wget --from https://cpan.metacpan.org \
     ./Zonemaster-Backend-${version}.tar.gz
+
+
+FROM zonemaster/cli:local
+USER root
+
+COPY --from=build /usr/local/share/perl5 /usr/local/share/perl5
+COPY --from=build /usr/local/bin/ /usr/local/bin/
+COPY --from=build /usr/lib/perl5 /usr/lib/perl5
+
+RUN apk add --no-cache \
+	perl-config-inifiles \
+	perl-mojolicious \
+	perl-moose \
+	perl-dbi \
+	perl-dbd-sqlite \
+	perl-plack \
+	perl-parallel-forkmanager
 
 # Create zonemaster user and group
 RUN addgroup -S zonemaster
@@ -57,3 +76,6 @@ RUN cd `perl -MFile::ShareDir=dist_dir -E 'say dist_dir("Zonemaster-Backend")'` 
 RUN install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 USER zonemaster
 RUN  $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
+USER zonemaster
+COPY zonemaster_launch /usr/local/bin
+ENTRYPOINT ["/usr/local/bin/zonemaster_launch"]

@@ -78,4 +78,30 @@ USER zonemaster
 RUN  $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
 USER zonemaster
 COPY zonemaster_launch /usr/local/bin
+
+USER root
+ARG S6_OVERLAY_VERSION=3.2.1.0
+
+# Install S6
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
+
+
+# RPCAPI service
+RUN mkdir /etc/s6-overlay/s6-rc.d/rpcapi
+RUN echo "longrun" > /etc/s6-overlay/s6-rc.d/rpcapi/type
+RUN echo "#!/command/with-contenv sh" > /etc/s6-overlay/s6-rc.d/rpcapi/run
+RUN echo "zonemaster_launch rpcapi" >> /etc/s6-overlay/s6-rc.d/rpcapi/run
+
+# TESTAGENT sevice
+RUN mkdir /etc/s6-overlay/s6-rc.d/testagent
+RUN echo "longrun" > /etc/s6-overlay/s6-rc.d/testagent/type
+RUN echo "#!/command/with-contenv sh" > /etc/s6-overlay/s6-rc.d/testagent/run
+RUN echo "zonemaster_launch testagent" >> /etc/s6-overlay/s6-rc.d/testagent/run
+
+RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/rpcapi
+RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/testagent
+
 ENTRYPOINT ["/usr/local/bin/zonemaster_launch"]

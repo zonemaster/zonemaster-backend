@@ -1,4 +1,6 @@
 #!/bin/sh
+
+
 case $1 in
 
   cli)
@@ -8,15 +10,21 @@ case $1 in
 
   rpcapi)
 	/usr/local/bin/starman --listen=0.0.0.0:5000 --preload-app --user=zonemaster --group=zonemaster /usr/local/bin/zonemaster_backend_rpcapi.psgi
+
     ;;
 
   testagent)
 	/usr/local/bin/zonemaster_backend_testagent -user=zonemaster --group=zonemaster foreground
     ;;
+
+  full)
+        exec /init
+    ;;
   *)
     echo "'$1' is not a valid option.
     Available options:
-	- cli
+	- cli       : pass argument to zonemaster-cli then quit
+	- full      : launch both rpcapi & testagent
 	- rpcapi
 	- testagent
     "

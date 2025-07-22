@@ -5,6 +5,8 @@
 ^.*\.log
 ^.*\.swp$
 ^MANIFEST\.SKIP$
+^Dockerfile$
+^zonemaster_launch$
 ^\.github/
 ^docs/internal-documentation/
 \.po$

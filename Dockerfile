@@ -54,6 +54,7 @@ COPY --from=build /usr/local/bin/ /usr/local/bin/
 COPY --from=build /usr/lib/perl5 /usr/lib/perl5
 
 RUN apk add --no-cache \
+	jq \
 	perl-config-inifiles \
 	perl-mojolicious \
 	perl-moose \

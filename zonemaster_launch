@@ -8,6 +8,16 @@ case $1 in
 	zonemaster-cli $@
     ;;
 
+  zmb)
+	shift 1
+	zmb $@
+    ;;
+
+  zmtest)
+	shift 1
+	zmtest $@
+    ;;
+
   rpcapi)
 	/usr/local/bin/starman --listen=0.0.0.0:5000 --preload-app --user=zonemaster --group=zonemaster /usr/local/bin/zonemaster_backend_rpcapi.psgi
 

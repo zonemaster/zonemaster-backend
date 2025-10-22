@@ -151,8 +151,7 @@ subtest 'RPCAPI add_batch_job' => sub {
     };
 };
 
-subtest 'RPCAPI get_batch_job_result and batch_status' => sub {
-    # "get_batch_job_result deprecated to be removed by v2025.2
+subtest 'RPCAPI batch_status' => sub {
     my $config = Zonemaster::Backend::Config->parse( $config );
     my $rpcapi = init_backend( $config );
     subtest 'batch job exists' => sub {
@@ -169,13 +168,6 @@ subtest 'RPCAPI get_batch_job_result and batch_status' => sub {
         is( $batch_id, 1, 'correct batch job id returned' );
 
         {
-            my $res = $rpcapi->get_batch_job_result( { batch_id => $batch_id } );
-
-            is( $res->{nb_running}, scalar @domains, 'correct number of runninng tests' );
-            is( $res->{nb_finished}, 0, 'correct number of finished tests' );
-        }
-
-        {
             my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
 
             is( $res->{waiting_count}, scalar @domains, 'correct number of runninng tests' );
@@ -185,17 +177,6 @@ subtest 'RPCAPI get_batch_job_result and batch_status' => sub {
             ok( !exists $res->{running_tests}, 'list of running tests expected to be absent' );
             ok( !exists $res->{finished_tests}, 'list of finished tests to be absent' );
         }
-    };
-
-    subtest 'unknown batch (get_batch_job_result)' => sub {
-        my $unknown_batch = 10;
-        dies_ok {
-            $rpcapi->get_batch_job_result( { batch_id => $unknown_batch } );
-        } 'getting results for an unknown batch_id should die';
-        my $res = $@;
-        is( $res->{error}, 'Zonemaster::Backend::Error::ResourceNotFound', 'correct error type' );
-        is( $res->{message}, 'Unknown batch', 'correct error message' );
-        is( $res->{data}->{batch_id}, $unknown_batch, 'correct data type returned' );
     };
 
     subtest 'unknown batch (batch_status)' => sub {
@@ -226,12 +207,6 @@ subtest 'batch with several domains' => sub {
     );
 
     is( $res, 1, 'correct batch job id returned' );
-
-    # "get_batch_job_result deprecated to be removed by v2025.2
-    $res = $rpcapi->get_batch_job_result( { batch_id => 1 } );
-
-    is( $res->{nb_running}, @domains, 'correct number of runninng tests' );
-    is( $res->{nb_finished}, 0, 'correct number of finished tests' );
 
     # No lists of test IDs requested
     $res = $rpcapi->batch_status( { batch_id => 1 } );

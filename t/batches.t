@@ -167,16 +167,14 @@ subtest 'RPCAPI batch_status' => sub {
 
         is( $batch_id, 1, 'correct batch job id returned' );
 
-        {
-            my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
+        my $res = $rpcapi->batch_status( { batch_id => $batch_id } );
+        is( $res->{waiting_count}, scalar @domains, 'correct number of runninng tests' );
+        is( $res->{running_count}, 0, 'correct number of finished tests' );
+        is( $res->{finished_count}, 0, 'correct number of finished tests' );
+        ok( !exists $res->{waiting_tests}, 'list of waiting tests expected to be absent' );
+        ok( !exists $res->{running_tests}, 'list of running tests expected to be absent' );
+        ok( !exists $res->{finished_tests}, 'list of finished tests to be absent' );
 
-            is( $res->{waiting_count}, scalar @domains, 'correct number of runninng tests' );
-            is( $res->{running_count}, 0, 'correct number of finished tests' );
-            is( $res->{finished_count}, 0, 'correct number of finished tests' );
-            ok( !exists $res->{waiting_tests}, 'list of waiting tests expected to be absent' );
-            ok( !exists $res->{running_tests}, 'list of running tests expected to be absent' );
-            ok( !exists $res->{finished_tests}, 'list of finished tests to be absent' );
-        }
     };
 
     subtest 'unknown batch (batch_status)' => sub {

@@ -34,9 +34,11 @@ case $1 in
     echo "'$1' is not a valid option.
     Available options:
 	- cli       : pass argument to zonemaster-cli then quit
-	- full      : launch both rpcapi & testagent
+	- full      : start both rpcapi & testagent
 	- rpcapi
 	- testagent
+	- zmb
+	- zmtest
     "
     ;;
 esac;

@@ -76,7 +76,20 @@ sub MY::postamble {
         $text = 'pure_all :: share/Makefile' . "\n"
             . "\t" . 'cd share && $(MAKE) all' . "\n";
     };
-    return $text;
+    my $docker = <<'END_DOCKER';
+
+docker-build:
+	docker build --tag zonemaster/backend:local --build-arg version=$(VERSION) .
+
+docker-tag-version:
+	docker tag zonemaster/backend:local zonemaster/backend:$(VERSION)
+
+docker-tag-latest:
+	docker tag zonemaster/backend:local zonemaster/backend:latest
+
+END_DOCKER
+
+    return $text . $docker;
 };
 
 install_share;

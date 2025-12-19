@@ -169,12 +169,6 @@ my $router = router {
         action => "domain_history"
     };
 
-    # Deprecated to be removed v2025.2
-    connect "get_batch_job_result" => {
-        handler => $handler,
-        action => "get_batch_job_result"
-    };
-
     connect "batch_status" => {
         handler => $handler,
         action => "batch_status"

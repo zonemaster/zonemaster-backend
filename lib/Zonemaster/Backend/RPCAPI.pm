@@ -737,28 +737,6 @@ sub batch_create {
     return $result;
 }
 
-# Deprecated to be removed in v2025.2.
-$json_schemas{get_batch_job_result} = joi->object->strict->props(
-    batch_id => $zm_validator->batch_id->required
-);
-# Deprecated to be removed in v2025.2.
-sub get_batch_job_result {
-    my ( $self, $params ) = @_;
-
-    my $result;
-    eval {
-        my $batch_id = $params->{batch_id};
-
-        $result = $self->{db}->get_batch_job_result($batch_id);
-    };
-    if ($@) {
-        handle_exception( $@ );
-    }
-
-    return $result;
-}
-
-
 $json_schemas{batch_status} = {
     type => 'object',
     additionalProperties => 0,

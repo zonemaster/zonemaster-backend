@@ -35,8 +35,8 @@ requires
   'Router::Simple::Declare'         => 0,
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
-  'Zonemaster::LDNS'                => 5.000000,  # v5.0.0
-  'Zonemaster::Engine'              => 8.000000,  # v8.0.0
+  'Zonemaster::LDNS'                => 5.000001,  # v5.0.1
+  'Zonemaster::Engine'              => 8.001000,  # v8.1.0
   ;
 
 test_requires 'DBD::SQLite' => 1.66;
@@ -76,7 +76,20 @@ sub MY::postamble {
         $text = 'pure_all :: share/Makefile' . "\n"
             . "\t" . 'cd share && $(MAKE) all' . "\n";
     };
-    return $text;
+    my $docker = <<'END_DOCKER';
+
+docker-build:
+	docker build --tag zonemaster/backend:local --build-arg version=$(VERSION) .
+
+docker-tag-version:
+	docker tag zonemaster/backend:local zonemaster/backend:$(VERSION)
+
+docker-tag-latest:
+	docker tag zonemaster/backend:local zonemaster/backend:latest
+
+END_DOCKER
+
+    return $text . $docker;
 };
 
 install_share;

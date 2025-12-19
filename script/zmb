@@ -584,34 +584,6 @@ sub cmd_add_batch_job {
     );
 }
 
-=head2 get_batch_job_result (** Deprecated to be removed in Zonemaster version v2025.2. Use C<batch_status> instead. **)
-
- zmb [GLOBAL OPTIONS] get_batch_job_result [OPTIONS]
-
- Options:
-   --batch-id BATCH-ID
-
-=cut
-
-sub cmd_get_batch_job_result {
-    my @opts = @_;
-
-    my $opt_batch_id;
-    GetOptionsFromArray(
-        \@opts,
-        'batch-id|i=s' => \$opt_batch_id,
-    ) or pod2usage( 2 );
-
-    return to_jsonrpc(
-        id     => 1,
-        method => 'get_batch_job_result',
-        params => {
-            batch_id => $opt_batch_id,
-        },
-    );
-}
-
-
 =head2 batch_status
 
  zmb [GLOBAL OPTIONS] batch_status [OPTIONS]

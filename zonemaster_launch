@@ -1,0 +1,44 @@
+#!/bin/sh
+
+
+case $1 in
+
+  cli)
+	shift 1
+	zonemaster-cli $@
+    ;;
+
+  zmb)
+	shift 1
+	zmb $@
+    ;;
+
+  zmtest)
+	shift 1
+	zmtest $@
+    ;;
+
+  rpcapi)
+	/usr/local/bin/starman --listen=0.0.0.0:5000 --preload-app --user=zonemaster --group=zonemaster /usr/local/bin/zonemaster_backend_rpcapi.psgi
+
+    ;;
+
+  testagent)
+	/usr/local/bin/zonemaster_backend_testagent -user=zonemaster --group=zonemaster foreground
+    ;;
+
+  full)
+        exec /init
+    ;;
+  *)
+    echo "'$1' is not a valid option.
+    Available options:
+	- cli       : pass argument to zonemaster-cli then quit
+	- full      : start both rpcapi & testagent
+	- rpcapi
+	- testagent
+	- zmb
+	- zmtest
+    "
+    ;;
+esac;

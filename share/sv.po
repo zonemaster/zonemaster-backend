@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-21 21:29+0000\n"
-"PO-Revision-Date: 2023-05-21 21:29+0000\n"
+"POT-Creation-Date: 2026-03-02 17:08+0000\n"
+"PO-Revision-Date: 2026-03-02 17:09+0000\n"
 "Last-Translator: mats.dufberg@iis.se\n"
 "Language-Team: Zonemaster project\n"
 "Language: sv\n"
@@ -56,25 +56,6 @@ msgstr "Keytag måste vara ett positivt heltal"
 
 msgid "Domain name required"
 msgstr "Domännamn är obligatoriskt"
-
-msgid "The domain name is IDNA invalid"
-msgstr "Domännamnet är ogiltigt enligt IDN-standarden"
-
-msgid ""
-"The domain name contains non-ascii characters and IDNA support is not "
-"installed"
-msgstr ""
-"Domännamnet innehåller icke-ASCII-tecken, men stöd för IDN är inte "
-"installerat"
-
-msgid "The domain name character(s) are not supported"
-msgstr "Domännamnstecken stöds inte"
-
-msgid "The domain name contains consecutive dots"
-msgstr "Domännamnet innehåller flera punkter i följd"
-
-msgid "The domain name or label is too long"
-msgstr "Domännamnet eller en domännamnsdel är för långt"
 
 msgid "Invalid language tag format"
 msgstr "Ogiltigt format på språkkoden"

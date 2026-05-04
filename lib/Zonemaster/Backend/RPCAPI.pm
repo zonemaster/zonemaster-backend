@@ -52,6 +52,8 @@ sub new {
         croak 'Unrecognized arguments: ' . join( ', ', sort keys %args );
     }
 
+    $db->assert_compatible_schema;
+
     my $obj = {
         config    => $config,
         db        => $db,

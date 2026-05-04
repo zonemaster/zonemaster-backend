@@ -205,6 +205,26 @@ sub create_schema {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'users' table", data => $dbh->errstr() );
 
+    ####################################################################
+    # SCHEMA VERSION
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS schema_version (
+            id INTEGER PRIMARY KEY,
+            version INTEGER NOT NULL,
+            CHECK (id = 1),
+            CHECK (version >= 1)
+        )"
+      )
+      or die Zonemaster::Backend::Error::Internal->new(
+        reason => "Failed to create 'schema_version' table",
+        data   => $dbh->errstr()
+      );
+
+    if ( !defined $dbh->selectrow_array( "SELECT 1 FROM schema_version LIMIT 1" ) ) {
+        $dbh->do( "INSERT INTO schema_version (id, version) VALUES (1, ?)", {}, $Zonemaster::Backend::DB::REQUIRED_SCHEMA_VERSION );
+    }
+
     return;
 }
 
@@ -234,6 +254,7 @@ sub drop_tables {
         }
     }
 
+    $self->dbh->do( "DROP TABLE IF EXISTS schema_version" );
     $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
     $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
     $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
@@ -336,6 +357,15 @@ sub is_duplicate {
     # https://mariadb.com/kb/en/mariadb-error-codes/
     # https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
     return ( $self->dbh->err == 1062 );
+}
+
+sub is_unknown_table {
+    my ( $self ) = @_;
+
+    # for the list of codes see:
+    # https://mariadb.com/kb/en/mariadb-error-codes/
+    # https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
+    return ( $self->dbh->err == 1146 );
 }
 
 no Moose;

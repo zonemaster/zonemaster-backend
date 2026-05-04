@@ -53,7 +53,10 @@ builder {
         my $app = shift;
 
         # Make sure we can connect to the database
-        $config->new_DB();
+        my $dbh = $config->new_DB;
+
+        # Make sure the database has the expected schema version
+        $dbh->assert_compatible_schema;
 
         return $app;
     };

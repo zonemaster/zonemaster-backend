@@ -42,6 +42,7 @@ sub new {
 
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
     $self->{_db} = $dbclass->from_config( $config );
+    $self->{_db}->assert_compatible_schema;
 
     $self->{_profiles} = Zonemaster::Backend::Config->load_profiles(    #
         $config->PUBLIC_PROFILES,

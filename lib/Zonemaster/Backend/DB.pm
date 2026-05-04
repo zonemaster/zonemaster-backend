@@ -6,8 +6,9 @@ use Moose::Role;
 
 use 5.14.2;
 
-use DBI qw(:sql_types);
-use Digest::MD5 qw(md5_hex);
+use Carp        qw( croak );
+use DBI         qw( :sql_types );
+use Digest::MD5 qw( md5_hex );
 use Encode;
 use Exporter qw( import );
 use JSON::PP;
@@ -28,6 +29,7 @@ requires qw(
   get_dbh_specific_attributes
   get_relative_start_time
   is_duplicate
+  is_unknown_table
 );
 
 has 'data_source_name' => (
@@ -53,6 +55,14 @@ has 'dbhandle' => (
     isa      => 'Maybe[DBI::db]',
     required => 1,
 );
+
+=head2 $REQUIRED_SCHEMA_VERSION
+
+A positive integer. The database schema version that this module is compatible with.
+
+=cut
+
+Readonly our $REQUIRED_SCHEMA_VERSION => 1;
 
 =head2 $TEST_WAITING
 
@@ -154,6 +164,66 @@ sub dbh {
     $self->dbhandle( $dbh );
 
     return $self->dbhandle;
+}
+
+=head2 get_schema_version
+
+Detect the schema version of the database.
+
+Returns an unsigned integer.
+
+The C<0> value means the database is in a schema state prior to schema versioning.
+
+=cut
+
+sub get_schema_version {
+    my ( $self ) = @_;
+
+    my $dbh = $self->dbh;
+
+    local $dbh->{RaiseError} = 0;
+    local $dbh->{PrintError} = 0;
+    my $result = $dbh->selectcol_arrayref( "SELECT version FROM schema_version LIMIT 2" );
+
+    if ( $dbh->err ) {
+        if ( !$self->is_unknown_table ) {
+            croak "Failed to read schema version: " . $dbh->errstr;
+        }
+
+        return 0;
+    }
+
+    if (   @$result != 1
+        || !defined $result->[0]
+        || $result->[0] !~ qr{^[1-9][0-9]*$}
+        || $result->[0] < 1 )
+    {
+        croak 'Invalid schema version declaration';
+    }
+
+    return $result->[0];
+}
+
+=head2 assert_compatible_schema
+
+Assert that the database has a schema version that is compatible with this version of
+Zonemaster Backend.
+
+Croaks if the database has an incompatible schema version, or if it is in an illegal state
+with regard to schema version encoding.
+
+=cut
+
+sub assert_compatible_schema {
+    my ( $self ) = @_;
+
+    my $db_schema_version = $self->get_schema_version;
+
+    if ( $db_schema_version ne $REQUIRED_SCHEMA_VERSION ) {
+        croak "Expected schema version $REQUIRED_SCHEMA_VERSION, found $db_schema_version";
+    }
+
+    return;
 }
 
 sub add_api_user {

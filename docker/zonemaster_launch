@@ -1,5 +1,27 @@
 #!/bin/sh
 
+# zonemaster_launch - Docker entrypoint script for Zonemaster Backend
+#
+# This script serves as the entrypoint for the Zonemaster Backend Docker container.
+# It acts as a command dispatcher that starts different Zonemaster components based
+# on the first argument passed to the container.
+#
+# How it works:
+# - The script reads the first argument ($1) and uses a case statement to determine
+#   which component to launch.
+# - For CLI tools (cli, zmb, zmtest), it passes any additional arguments to the
+#   respective command and exits after completion.
+# - For services (rpcapi, testagent), it starts the process in the foreground,
+#   keeping the container running.
+# - The 'full' option executes /init (from s6-overlay) which starts both the
+#   RPC API and testagent services together.
+# - If no valid argument is provided, it displays a help message with available options.
+#
+# Usage:
+#   docker run zonemaster/zonemaster-backend cli <args>     # Run CLI command
+#   docker run zonemaster/zonemaster-backend rpcapi         # Start RPC API server
+#   docker run zonemaster/zonemaster-backend testagent      # Start test agent
+#   docker run zonemaster/zonemaster-backend full           # Start all services
 
 case $1 in
 

@@ -54,13 +54,14 @@ case $1 in
     ;;
   *)
     echo "'$1' is not a valid option.
-    Available options:
-	- cli       : pass argument to zonemaster-cli then quit
-	- full      : start both rpcapi & testagent
-	- rpcapi
-	- testagent
-	- zmb
-	- zmtest
-    "
+Available options:
+  - cli       : pass argument to zonemaster-cli
+  - full      : start both rpcapi & testagent
+  - rpcapi    : start RPC API server
+  - testagent : start test agent
+  - zmb       : run zmb command
+  - zmtest    : run zmtest command"
+    exit 1
     ;;
+
 esac;

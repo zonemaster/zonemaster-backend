@@ -132,10 +132,10 @@ Readonly my $TLD_LABEL_RE           => qr/^([a-z][a-z]+|xn--[a-z0-9-][a-z0-9-]+)
 Readonly my $TLD_BLOCK_RE           => qr/^\[BLOCK\]$/; # Blocking policy
 Readonly my $TLD_URL_NO_PATH_RE     => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]$/; # URL without path
   # URL with path and possibly "[DOMAIN]" variable
-Readonly my $TLD_URL_STRING_RE      => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=%_.&-]*(\[DOMAIN\])?[a-zA-Z0-9\/=%_.&-]*$/;
+Readonly my $TLD_URL_STRING_RE      => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*(\[DOMAIN\])?[a-zA-Z0-9\/=?%_.&-]*$/;
 Readonly my $TLD_VALUE_RE           => qr/^($TLD_BLOCK_RE|$TLD_URL_NO_PATH_RE|$TLD_URL_STRING_RE)$/;
   # URL with path
-Readonly my $TLD_URL_WITH_PATH_RE   => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=%_.&-]*$/;
+Readonly my $TLD_URL_WITH_PATH_RE   => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*$/;
 
 # Boolean
 Readonly my $BOOL_TRUE_RE           => qr/^(true|yes)$/i;

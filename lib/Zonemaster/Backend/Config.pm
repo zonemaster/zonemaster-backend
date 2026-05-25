@@ -359,6 +359,11 @@ sub parse {
         my $path = $get_and_clear->( 'PRIVATE PROFILES', $name );
         $obj->_add_private_profile( $name, $path );
     }
+    
+    for my $name ( $ini->Parameters( 'TLD URL OVERRIDE' ) ) {
+        my $path = $get_and_clear->( 'TLD URL OVERRIDE', $name );
+        $obj->_add_tld_url_override( $name, $path );
+    }
 
     # Check required propertys (part 2/2)
     if ( $obj->DB_engine eq 'MySQL' ) {
@@ -964,7 +969,7 @@ sub _add_tld_url_override {
         die "Envalid value for a TLD label key: $value\n";
     }
 
-    if (untaint_tld_url_no_path( $value )) {
+    if ( untaint_tld_url_no_path( $value )) {
         $value = $value . '/';
     }
 

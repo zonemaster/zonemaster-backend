@@ -29,7 +29,7 @@ use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
-use Zonemaster::Backend::Validator qw[untaint_tld_value];
+use Zonemaster::Backend::Validator qw[ untaint_tld_value untaint_tld_url_no_path untaint_tld_url_with_path ];
 use Zonemaster::Backend::Errors;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
@@ -175,10 +175,6 @@ sub conf_languages {
     return $result;
 }
 
-
-
-
-
 $json_schemas{get_tld_url} = {
     type => 'object',
     additionalProperties => 0,
@@ -189,23 +185,37 @@ $json_schemas{get_tld_url} = {
 };
 sub get_tld_url {
     my ( $self, $params ) = @_;
-    my $domain = $params->{domain};
-    my %result = {};
+    my $domain;
+    ( undef, $domain ) = normalize_name( trim_space ( $params->{domain} ) );
+    
+    my %result;
     my $timeout = $self->{config}->TLD_URL_SETTINGS_lookup_timeout;
     my $iana_rdap_url_base = "https://rdap.iana.org/domain";
     my $dns_name_base_txt_record = "_url._zonemaster";
     my $include_source = $self->{config}->TLD_URL_SETTINGS_include_source;
 
+    #$result{DEBUG} = "DEBUG 0";
+    #$result{DOMAIN} = $domain;
+    #return \%result;
+
     # Empty response if the function is not enabled
     unless ( $self->{config}->TLD_URL_SETTINGS_enable_tld_url ) {
+        $result{DEBUG} = "DEBUG 1";
+	$result{DOMAIN} = $domain;
         return \%result;
     }
 
-    # Normalize domain
-    $domain =~ s/\.?$//; # Root zone will be an empty string
-
     # Empty response if the domain is the root zone
-    unless ( $domain ) {
+    if ( $domain eq '.' ) {
+	$result{DOMAIN} = $domain;
+        $result{DEBUG} = "DEBUG 2";
+        return \%result;
+    }
+
+    # Empty response if the domain is just a TLD
+    if ( $domain =~ /^[^.]+$/) {
+	$result{DOMAIN} = $domain;
+        $result{DEBUG} = "DEBUG 3";
         return \%result;
     }
 
@@ -217,11 +227,8 @@ sub get_tld_url {
 
     # If $tld is empty the domain name was not valid and we just do an empty return
     unless ( $tld ) {
-        return \%result;
-    }
-
-    # Empty response if the domain is just a TLD
-    if ( $domain =~ /^[^.]+$/) {
+	$result{DOMAIN} = $domain;
+        $result{DEBUG} = "DEBUG 4";
         return \%result;
     }
 
@@ -230,10 +237,14 @@ sub get_tld_url {
     my $url;
     if ( exists $overrides{$tld} ) {
         if ( $overrides{$tld} eq '[BLOCK]' ) {
+	    $result{DOMAIN} = $domain;
+	    $result{DEBUG} = "DEBUG 5";
             return \%result;
         } else {
             $url = $overrides{$tld};
-            $url =~ s/\[DOMAIN\]/$domain/;
+            $url =~ s/\Q[DOMAIN]\E/$domain/;
+	    $result{DOMAIN} = $domain;
+	    $result{DEBUG} = "DEBUG 6";
             $result{url} = $url;
             $result{source} = "BACKEND CONF" if $self->{config}->TLD_URL_SETTINGS_include_source;
             return \%result;
@@ -244,22 +255,30 @@ sub get_tld_url {
     my $txtlink = get_tld_url_from_txt_record( $tld, $dns_name_base_txt_record, $domain, $timeout );
     if ( $txtlink ) {
         if ( $txtlink eq '[BLOCK]' ) {
+	    $result{DOMAIN} = $domain;
+	    $result{DEBUG} = "DEBUG 7";
             return \%result;
         } else {
+	    $result{DOMAIN} = $domain;
+	    $result{DEBUG} = "DEBUG 8";
             $result{url} = $txtlink;
             $result{source} = "TXT RECORD" if $self->{config}->TLD_URL_SETTINGS_include_source;
             return \%result;
+	}
     }
 
-
     # Do an IANA RDAP lookup
-    my $rdaplink = get_tld_url_from_rdap( 'na', $iana_rdap_url_base, $timeout );
+    my $rdaplink = get_tld_url_from_rdap( $tld, $iana_rdap_url_base, $timeout );
     if ($rdaplink) {
+	$result{DOMAIN} = $domain;
+        $result{DEBUG} = "DEBUG 9";
         $result{url} = $rdaplink;
         $result{source} = "IANA RDAP" if $self->{config}->TLD_URL_SETTINGS_include_source;
         return \%result;
     }
-
+    
+    $result{DEBUG} = "DEBUG 10";
+    $result{DOMAIN} = $domain;
     return \%result;
 }
 
@@ -272,7 +291,7 @@ sub get_tld_url_from_txt_record {
 
     my $name = $namebase . '.' . $tld;
     my $packet;
-
+    
     eval {
         local $SIG{ALRM} = sub { die "alarm\n" };
         alarm $to;
@@ -282,12 +301,19 @@ sub get_tld_url_from_txt_record {
     # Use $packet if defined
     if ( $packet and $packet->rcode eq q{NOERROR} ) {
         my @txt_rrs = $packet->get_records_for_name( q{TXT}, $name );
-        if ( scalar ( @txt_rrs ) == 1 ) { # Ignore all if more than one
-            if ( untaint_tld_value( $txt_rrs[0] ) ) {
-                $txt_rrs[0] =~ s/\[DOMAIN\]/$dom/;
-                return $txt_rrs[0];
-                }
-            }
+	my @txt_rdata = map { $_->txtdata() } @txt_rrs;
+
+	warn "DEBUG 8-B1", "@txt_rdata";
+	
+        if ( scalar ( @txt_rdata ) == 1 ) { # Ignore all if more than one
+	    my $txtr = $txt_rdata[0];
+	    warn "DEBUG 8-B2", $txtr;
+            if ( untaint_tld_value( $txtr ) ) {
+		warn "DEBUG 8-B3", $txtr;
+                $txtr =~ s/\Q[DOMAIN]\E/$dom/;
+		warn "DEBUG 8-B4", $txtr;
+                return $txtr;
+	    }
         }
     }
     return '';
@@ -320,8 +346,8 @@ sub get_tld_url_from_rdap {
         @{ $data->{links} // [] };
     };
     if (scalar @links > 0) {
-        $links[0] = $links[0] . '/' if untaint_tld_url_no_path ( $links[0] );
-        $link = $links[0] if untaint_tld_url_with_path ( $links[0] );
+        $links[0] = $links[0] . '/' if untaint_tld_url_no_path( $links[0] );
+        $link = $links[0] if untaint_tld_url_with_path( $links[0] );
         return $link;
 
     } else {

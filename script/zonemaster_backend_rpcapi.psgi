@@ -173,6 +173,11 @@ my $router = router {
         handler => $handler,
         action => "batch_status"
     };
+
+    connect "get_tld_url" => {
+        handler => $handler,
+        action => "get_tld_url"
+    };
 };
 
 if ( $config->RPCAPI_enable_user_create or $config->RPCAPI_enable_add_api_user ) {

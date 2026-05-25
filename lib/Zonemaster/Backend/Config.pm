@@ -182,6 +182,7 @@ sub parse {
     my $obj = bless( {}, $class );
     $obj->{_public_profiles}  = {};
     $obj->{_private_profiles} = {};
+    $obj->{_tld_url_override} = {};
 
     my $ini = Config::IniFiles->new( -file => \$text )
       or die "Failed to parse config: " . join( '; ', @Config::IniFiles::errors ) . "\n";
@@ -198,7 +199,18 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI' );
+        my %sections = map { $_ => 1 } ( 'DB',
+                                         'MYSQL',
+                                         'POSTGRESQL',
+                                         'SQLITE',
+                                         'LANGUAGE',
+                                         'PUBLIC PROFILES',
+                                         'PRIVATE PROFILES',
+                                         'ZONEMASTER',
+                                         'METRICS',
+                                         'RPCAPI',
+                                         'TLD URL SETTINGS',
+                                         'TLD URL OVERRIDE');
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -210,6 +222,9 @@ sub parse {
     $obj->_set_DB_polling_interval( '0.5' );
     $obj->_set_MYSQL_port( '3306' );
     $obj->_set_POSTGRESQL_port( '5432' );
+    $obj->_set_TLD_URL_SETTINGS_enable_tld_url( 'true' );
+    $obj->_set_TLD_URL_SETTINGS_lookup_timeout( '3' );
+    $obj->_set_TLD_URL_SETTINGS_include_source( 'true' );
     $obj->_set_ZONEMASTER_max_zonemaster_execution_time( '600' );
     $obj->_set_ZONEMASTER_number_of_processes_for_frontend_testing( '20' );
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
@@ -276,6 +291,15 @@ sub parse {
     }
     if ( defined( my $value = $get_and_clear->( 'SQLITE', 'database_file' ) ) ) {
         $obj->_set_SQLITE_database_file( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'TLD URL SETTINGS', 'enable_tld_url' ) ) ) {
+        $obj->_set_TLD_URL_SETTINGS_enable_tld_url( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'TLD URL SETTINGS', 'lookup_timeout' ) ) ) {
+        $obj->_set_TLD_URL_SETTINGS_lookup_timeout( $value );
+    }
+    if ( defined( my $value = $get_and_clear->( 'TLD URL SETTINGS', 'include_source' ) ) ) {
+        $obj->_set_TLD_URL_SETTINGS_include_source( $value );
     }
     if ( defined( my $value = $get_and_clear->( 'ZONEMASTER', 'max_zonemaster_execution_time' ) ) ) {
         $obj->_set_ZONEMASTER_max_zonemaster_execution_time( $value );
@@ -553,6 +577,35 @@ Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
 Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
 
+=head2 TLD_URL_SETTINGS_enable_tld_url
+
+Get the value of L<TLD_URL_SETTINGS.enable_tld_url|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_tld_url>.
+
+Returns a boolean.
+
+
+=head2 TLD_URL_SETTINGS_lookup_timeout
+
+Get the value of L<TLD_URL_SETTINGS.lookup_timeout|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#lookup_timeout>.
+
+Returns a positive integer.
+
+
+=head2 TLD_URL_SETTINGS_include_source
+
+Get the value of L<TLD_URL_SETTINGS.include_source|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#include_source>.
+
+Returns a boolean.
+
+
+=head2 TLD_URL_OVERRIDE
+
+Get the set of L<TLD URL OVERRIDE|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#tld-url-override-section>.
+
+Returns a hash mapping TLD label (ASCII or A-label) to URL string or blocking policy.
+The TLD label is normalized to lowercase. See the meaning of
+L<URL string or blocking policy|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
+
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
@@ -660,6 +713,10 @@ sub SQLITE_database_file                                { return $_[0]->{_SQLITE
 sub LANGUAGE_locale                                     { return %{ $_[0]->{_LANGUAGE_locale} }; }
 sub PUBLIC_PROFILES                                     { return %{ $_[0]->{_public_profiles} }; }
 sub PRIVATE_PROFILES                                    { return %{ $_[0]->{_private_profiles} }; }
+sub TLD_URL_SETTINGS_enable_tld_url                     { return $_[0]->{_TLD_URL_SETTINGS_enable_tld_url}; }
+sub TLD_URL_SETTINGS_lookup_timeout                     { return $_[0]->{_TLD_URL_SETTINGS_lookup_timeout}; }
+sub TLD_URL_SETTINGS_include_source                     { return $_[0]->{_TLD_URL_SETTINGS_include_source}; }
+sub TLD_URL_OVERRIDE                                    { return %{ $_[0]->{_tld_url_override} }; }
 sub ZONEMASTER_max_zonemaster_execution_time            { return $_[0]->{_ZONEMASTER_max_zonemaster_execution_time}; }
 sub ZONEMASTER_lock_on_queue                            { return $_[0]->{_ZONEMASTER_lock_on_queue}; }
 sub ZONEMASTER_number_of_processes_for_frontend_testing { return $_[0]->{_ZONEMASTER_number_of_processes_for_frontend_testing}; }
@@ -686,6 +743,9 @@ UNITCHECK {
     _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
+    _create_setter( '_set_TLD_URL_SETTINGS_enable_tld_url',                     '_TLD_URL_SETTINGS_enable_tld_url',                     \&untaint_json_bool );
+    _create_setter( '_set_TLD_URL_SETTINGS_lookup_timeout',                     '_TLD_URL_SETTINGS_lookup_timeout',                     \&untaint_strictly_positive_int );
+    _create_setter( '_set_TLD_URL_SETTINGS_include_source',                     '_TLD_URL_SETTINGS_include_source',                     \&untaint_json_bool );
     _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
     _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
     _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
@@ -698,6 +758,7 @@ UNITCHECK {
     _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
+
 
 =head2 new_DB
 
@@ -887,6 +948,31 @@ sub _add_private_profile {
     $self->{_private_profiles}{$name} = $path;
     return;
 }
+
+sub _add_tld_url_override {
+    my ( $self, $tld, $value ) = @_;
+
+    unless ( untaint_tld_label( $tld ) ) {
+      die "Invalid TLD label in TLD URL OVERRIDE section: $tld\n";
+    }
+
+    if ( exists $self->{_tld_url_override}{$tld} ) {
+        die "TLD label not unique: $tld\n";
+    }
+
+    unless ( untaint_tld_value( $value ) ) {
+        die "Envalid value for a TLD label key: $value\n";
+    }
+
+    if (untaint_tld_url_no_path( $value )) {
+        $value = $value . '/';
+    }
+
+    $self->{_tld_url_override}{$tld} = $value;
+    return;
+}
+
+
 
 # Create a setter method with a given name using the given field and validator
 sub _create_setter {

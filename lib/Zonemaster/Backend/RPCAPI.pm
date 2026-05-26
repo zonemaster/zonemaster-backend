@@ -9,8 +9,7 @@ use DBI qw(:utils);
 use Digest::MD5 qw(md5_hex);
 use File::Slurp qw(append_file);
 use HTML::Entities;
-use HTTP::Tiny;
-use JSON::PP qw(decode_json);
+use JSON::PP;
 use JSON::Validator::Joi;
 use Log::Any qw($log);
 use Mojo::JSON::Pointer;
@@ -29,8 +28,9 @@ use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
-use Zonemaster::Backend::Validator qw[ untaint_tld_value untaint_tld_url_no_path untaint_tld_url_with_path ];
+use Zonemaster::Backend::Validator;
 use Zonemaster::Backend::Errors;
+use Zonemaster::Backend::TLD_URL;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 our %json_schemas;
@@ -175,6 +175,15 @@ sub conf_languages {
     return $result;
 }
 
+=head2 get_tld_url
+
+Handles the RPCAPI with the same name. All the "dirty work" is done in
+a separate subroutine Zonemaster::Backend::TLD_URL::process in a
+separate Perl module.
+
+=cut
+
+
 $json_schemas{get_tld_url} = {
     type => 'object',
     additionalProperties => 0,
@@ -187,174 +196,10 @@ sub get_tld_url {
     my ( $self, $params ) = @_;
     my $domain;
     ( undef, $domain ) = normalize_name( trim_space ( $params->{domain} ) );
-    
-    my %result;
-    my $timeout = $self->{config}->TLD_URL_SETTINGS_lookup_timeout;
-    my $iana_rdap_url_base = "https://rdap.iana.org/domain";
-    my $dns_name_base_txt_record = "_url._zonemaster";
-    my $include_source = $self->{config}->TLD_URL_SETTINGS_include_source;
 
-    #$result{DEBUG} = "DEBUG 0";
-    #$result{DOMAIN} = $domain;
-    #return \%result;
+    return Zonemaster::Backend::TLD_URL::process( $self, $domain );
 
-    # Empty response if the function is not enabled
-    unless ( $self->{config}->TLD_URL_SETTINGS_enable_tld_url ) {
-        $result{DEBUG} = "DEBUG 1";
-	$result{DOMAIN} = $domain;
-        return \%result;
-    }
-
-    # Empty response if the domain is the root zone
-    if ( $domain eq '.' ) {
-	$result{DOMAIN} = $domain;
-        $result{DEBUG} = "DEBUG 2";
-        return \%result;
-    }
-
-    # Empty response if the domain is just a TLD
-    if ( $domain =~ /^[^.]+$/) {
-	$result{DOMAIN} = $domain;
-        $result{DEBUG} = "DEBUG 3";
-        return \%result;
-    }
-
-    # Extract TLD from domain
-    my $tld;
-    if ( $domain =~ /\.([a-z][a-z]+|xn--[a-z0-9-][a-z0-9-]+)$/ ) {
-        $tld = $1;
-    }
-
-    # If $tld is empty the domain name was not valid and we just do an empty return
-    unless ( $tld ) {
-	$result{DOMAIN} = $domain;
-        $result{DEBUG} = "DEBUG 4";
-        return \%result;
-    }
-
-    # Fetch any override from the configuration
-    my %overrides = $self->{config}->TLD_URL_OVERRIDE;
-    my $url;
-    if ( exists $overrides{$tld} ) {
-        if ( $overrides{$tld} eq '[BLOCK]' ) {
-	    $result{DOMAIN} = $domain;
-	    $result{DEBUG} = "DEBUG 5";
-            return \%result;
-        } else {
-            $url = $overrides{$tld};
-            $url =~ s/\Q[DOMAIN]\E/$domain/;
-	    $result{DOMAIN} = $domain;
-	    $result{DEBUG} = "DEBUG 6";
-            $result{url} = $url;
-            $result{source} = "BACKEND CONF" if $self->{config}->TLD_URL_SETTINGS_include_source;
-            return \%result;
-        }
-    }
-
-    # Do a lookup of "_url._zonemaster.$tld"
-    my $txtlink = get_tld_url_from_txt_record( $tld, $dns_name_base_txt_record, $domain, $timeout );
-    if ( $txtlink ) {
-        if ( $txtlink eq '[BLOCK]' ) {
-	    $result{DOMAIN} = $domain;
-	    $result{DEBUG} = "DEBUG 7";
-            return \%result;
-        } else {
-	    $result{DOMAIN} = $domain;
-	    $result{DEBUG} = "DEBUG 8";
-            $result{url} = $txtlink;
-            $result{source} = "TXT RECORD" if $self->{config}->TLD_URL_SETTINGS_include_source;
-            return \%result;
-	}
-    }
-
-    # Do an IANA RDAP lookup
-    my $rdaplink = get_tld_url_from_rdap( $tld, $iana_rdap_url_base, $timeout );
-    if ($rdaplink) {
-	$result{DOMAIN} = $domain;
-        $result{DEBUG} = "DEBUG 9";
-        $result{url} = $rdaplink;
-        $result{source} = "IANA RDAP" if $self->{config}->TLD_URL_SETTINGS_include_source;
-        return \%result;
-    }
-    
-    $result{DEBUG} = "DEBUG 10";
-    $result{DOMAIN} = $domain;
-    return \%result;
 }
-
-sub get_tld_url_from_txt_record {
-    my ($tld,      # TLD to be looked up
-        $namebase, # Name base of TXT record
-        $dom,      # Domain TLD is extracted from
-        $to,       # Time out value
-        ) = @_;
-
-    my $name = $namebase . '.' . $tld;
-    my $packet;
-    
-    eval {
-        local $SIG{ALRM} = sub { die "alarm\n" };
-        alarm $to;
-        $packet = Zonemaster::Engine::Recursor->recurse( $name, 'TXT' );
-        alarm 0;
-    };
-    # Use $packet if defined
-    if ( $packet and $packet->rcode eq q{NOERROR} ) {
-        my @txt_rrs = $packet->get_records_for_name( q{TXT}, $name );
-	my @txt_rdata = map { $_->txtdata() } @txt_rrs;
-
-	warn "DEBUG 8-B1", "@txt_rdata";
-	
-        if ( scalar ( @txt_rdata ) == 1 ) { # Ignore all if more than one
-	    my $txtr = $txt_rdata[0];
-	    warn "DEBUG 8-B2", $txtr;
-            if ( untaint_tld_value( $txtr ) ) {
-		warn "DEBUG 8-B3", $txtr;
-                $txtr =~ s/\Q[DOMAIN]\E/$dom/;
-		warn "DEBUG 8-B4", $txtr;
-                return $txtr;
-	    }
-        }
-    }
-    return '';
-}
-
-sub get_tld_url_from_rdap {
-    my ($tld, $urlbase, $timeout) = @_;
-    my $url = $urlbase . '/' . $tld;
-    my $response;
-    my @links = ();
-    my $link = '';
-
-    eval {
-        local $SIG{ALRM} = sub { die "alarm\n" };
-        alarm $timeout;
-        $response = HTTP::Tiny->new->get($url);
-        alarm 0;
-    };
-    if ($@) {
-        if ( $@ eq "alarm\n" ) {
-            handle_exception( "Timeout looking $url up" );
-        } else {
-            handle_exception( "Unexpected error looking $url up: $@" );
-        }
-    }
-    if ($response->{success}) {
-        my $data = decode_json($response->{content});
-        @links = map { $_->{href} }
-        grep { ($_->{rel} // '') eq 'related' }
-        @{ $data->{links} // [] };
-    };
-    if (scalar @links > 0) {
-        $links[0] = $links[0] . '/' if untaint_tld_url_no_path( $links[0] );
-        $link = $links[0] if untaint_tld_url_with_path( $links[0] );
-        return $link;
-
-    } else {
-        return $link;
-    }
-}
-
 
 
 $json_schemas{get_host_by_name} = {

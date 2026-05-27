@@ -26,6 +26,7 @@ lib/Zonemaster/Backend/Log.pm
 lib/Zonemaster/Backend/Metrics.pm
 lib/Zonemaster/Backend/RPCAPI.pm
 lib/Zonemaster/Backend/TestAgent.pm
+lib/Zonemaster/Backend/TLD_URL.pm
 lib/Zonemaster/Backend/Translator.pm
 lib/Zonemaster/Backend/Validator.pm
 LICENSE

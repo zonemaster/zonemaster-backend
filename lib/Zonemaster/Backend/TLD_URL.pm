@@ -239,3 +239,5 @@ sub url_from_rdap {
     }
     return \%result;
 }
+
+1;

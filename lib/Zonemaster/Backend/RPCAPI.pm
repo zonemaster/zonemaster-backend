@@ -198,7 +198,6 @@ sub get_tld_url {
     ( undef, $domain ) = normalize_name( trim_space ( $params->{domain} ) );
 
     return Zonemaster::Backend::TLD_URL::process( $self, $domain );
-
 }
 
 

@@ -44,27 +44,20 @@ sub process {
     my @labels = split( /\./, $domain );
     my $tld = $labels[$#labels]; # Empty if $domain is root '.'
 
-    #$result{DEBUG} = "DEBUG 0";
-    #$result{DOMAIN} = $domain;
-    #return \%result;
-
     # Empty response if the function is not enabled
     unless ( $enable_tld_url ) {
-        #$result{DEBUG} = "DEBUG 1";
-	$result{tld} = $tld if $tld;
+        $result{tld} = $tld if defined $tld and $tld ne '';
         return \%result;
     }
 
     # Empty response if the domain is the root zone
     if ( $domain eq '.' ) {
-        #$result{DEBUG} = "DEBUG 2";
         return \%result;
     }
 
     # Empty response if the domain is just a TLD
     if ( scalar @labels == 1 ) {
-	$result{tld} = $tld;
-        #$result{DEBUG} = "DEBUG 3";
+        $result{tld} = $tld;
         return \%result;
     }
 
@@ -116,13 +109,10 @@ sub url_from_override {
     if ( exists $$href_or{$tld} ) {
         if ( $$href_or{$tld} eq '[BLOCK]' ) {
             $result{tld} = $tld;
-	    #$result{DEBUG} = "DEBUG override 1";
         } else {
             $url = $$href_or{$tld};
             $url =~ s/\Q[DOMAIN]\E/$dom/;
-            #
             $result{tld} = $tld;
-	    #$result{DEBUG} = "DEBUG override 2";
             $result{url} = $url;
             $result{source} = "BACKEND CONF" if $include_source;
         }
@@ -169,10 +159,7 @@ sub url_from_txt_record {
     # Use $packet if defined
     if ( $packet and $packet->rcode eq q{NOERROR} ) {
         my @rrs = $packet->get_records_for_name( q{TXT}, $name );
-	my @txt_rdata = map { $_->txtdata() } @rrs;
-
-	warn "DEBUG TXT 1", "@txt_rdata";
-	
+        my @txt_rdata = map { $_->txtdata() } @rrs;
         if ( scalar ( @txt_rdata ) == 1 ) { # Ignore all if more than one
 	    my $data = $txt_rdata[0];
             if ( untaint_tld_value( $data ) ) { # "[BLOCK]" or URL string
@@ -246,7 +233,6 @@ sub url_from_rdap {
         $link = $links[0] if untaint_tld_url_with_path( $links[0] );
         if ( $link ) {
             $result{tld} = $tld;
-            #$result{DEBUG} = "DEBUG RDAP";
             $result{url} = $link;
             $result{source} = "IANA RDAP" if $include_source;
         }

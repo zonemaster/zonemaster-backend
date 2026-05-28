@@ -32,6 +32,8 @@ Readonly my $SOURCE_IANA_RDAP_STR       => "IANA RDAP";
 
 Processes the domain name ($domain) for Zonemaster::Backend::RPCAPI::get_tld_url
 and returns a complete hash reference to be returned by the RPCAPI.
+See L<domain name|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md>
+for a specification of the features implemented in this module.
 
 =cut
 

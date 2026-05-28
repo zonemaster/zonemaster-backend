@@ -417,7 +417,7 @@ sub untaint_abs_path {
 
 =head2 untaint_tld_label
 
-Accepts a TLD label in ASCII or IDN (A-label).
+Accepts a TLD label in ASCII or an IDN TLD label as A-label.
 
 =cut
 

@@ -46,7 +46,7 @@ case $1 in
     ;;
 
   testagent)
-	/usr/local/bin/zonemaster_backend_testagent -user=zonemaster --group=zonemaster foreground
+	/usr/local/bin/zonemaster_backend_testagent --user=zonemaster --group=zonemaster --logfile=- foreground
     ;;
 
   full)

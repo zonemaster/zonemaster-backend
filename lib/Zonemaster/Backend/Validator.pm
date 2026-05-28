@@ -36,9 +36,10 @@ our @EXPORT_OK = qw(
   untaint_strictly_positive_int
   untaint_strictly_positive_millis
   untaint_tld_label
-  untaint_tld_value
+  untaint_tld_block
   untaint_tld_url_no_path
   untaint_tld_url_with_path
+  untaint_tld_url_string
   check_domain
   check_ip
   check_profile
@@ -70,9 +71,10 @@ our %EXPORT_TAGS = (
           untaint_strictly_positive_int
           untaint_strictly_positive_millis
           untaint_tld_label
-          untaint_tld_value
+          untaint_tld_block
           untaint_tld_url_no_path
           untaint_tld_url_with_path
+          untaint_tld_url_string
           )
     ],
     format => [
@@ -128,14 +130,13 @@ Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
 
 # RE for URL for TLD
-Readonly my $TLD_LABEL_RE           => qr/^([a-z][a-z]+|xn--[a-z0-9-][a-z0-9-]+)$/i; # ASCII or A-label
-Readonly my $TLD_BLOCK_RE           => qr/^\[BLOCK\]$/; # Blocking policy
+Readonly my $TLD_LABEL_RE           => qr/^([a-z][a-z]+|xn--[a-z0-9-][a-z0-9-]+)$/; # ASCII or A-label
+Readonly my $TLD_BLOCK_RE           => qr/^\Q[BLOCK]\E$/; # Blocking policy
 Readonly my $TLD_URL_NO_PATH_RE     => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]$/; # URL without path
+Readonly my $TLD_URL_WITH_PATH_RE   => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*$/; # URL with path
   # URL with path and possibly "[DOMAIN]" variable
 Readonly my $TLD_URL_STRING_RE      => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*(\[DOMAIN\])?[a-zA-Z0-9\/=?%_.&-]*$/;
-Readonly my $TLD_VALUE_RE           => qr/^($TLD_BLOCK_RE|$TLD_URL_NO_PATH_RE|$TLD_URL_STRING_RE)$/;
-  # URL with path
-Readonly my $TLD_URL_WITH_PATH_RE   => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*$/;
+# Readonly my $TLD_VALUE_RE           => qr/^($TLD_BLOCK_RE|$TLD_URL_NO_PATH_RE|$TLD_URL_STRING_RE)$/;
 
 # Boolean
 Readonly my $BOOL_TRUE_RE           => qr/^(true|yes)$/i;
@@ -426,16 +427,15 @@ sub untaint_tld_label {
     return _untaint_pat( $value, $TLD_LABEL_RE );
 }
 
-=head2 untaint_tld_value
+=head2 untaint_tld_block
 
-Accepts a URL string or blocking policy. See the meaning in the
-L<documentation|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
+Accepts a string for blocking (policy)
 
 =cut
 
-sub untaint_tld_value {
+sub untaint_tld_block {
     my ( $value ) = @_;
-    return _untaint_pat( $value, $TLD_VALUE_RE );
+    return _untaint_pat( $value, $TLD_BLOCK_RE );
 }
 
 =head2 untaint_tld_url_no_path
@@ -458,7 +458,33 @@ Accepts a URL for TLD.
 
 sub untaint_tld_url_with_path {
     my ( $value ) = @_;
-    return _untaint_pat( $value, $TLD_URL_WITH_PATH_RE );}
+    return _untaint_pat( $value, $TLD_URL_WITH_PATH_RE );
+}
+
+=head2 untaint_tld_url_string
+
+Accepts a URL for TLD.
+
+=cut
+
+sub untaint_tld_url_string {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $TLD_URL_STRING_RE );
+}
+
+
+# =head2 untaint_tld_value DEPRECATED
+
+# Accepts a URL string or blocking policy. See the meaning in the
+# L<documentation|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
+
+# =cut
+
+# sub untaint_tld_value {
+#     my ( $value ) = @_;
+#     return _untaint_pat( $value, $TLD_VALUE_RE );
+# }
+
 
 =head2 untaint_engine_type
 

@@ -965,12 +965,10 @@ sub _add_tld_url_override {
         die "TLD label not unique: $tld\n";
     }
 
-    unless ( untaint_tld_value( $value ) ) {
-        die "Envalid value for a TLD label key: $value\n";
-    }
-
-    if ( untaint_tld_url_no_path( $value )) {
-        $value = $value . '/';
+    unless ( untaint_tld_block( $value ) or
+             untaint_tld_url_no_path(  $value ) or
+             untaint_tld_url_string( $value ) ) {
+        die "Invalid value for a TLD label key: $value\n";
     }
 
     $self->{_tld_url_override}{$tld} = $value;

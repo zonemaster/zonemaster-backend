@@ -20,11 +20,14 @@ use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
-use Zonemaster::Backend::Validator qw[ untaint_tld_value untaint_tld_url_no_path untaint_tld_url_with_path ];
+use Zonemaster::Backend::Validator qw[ untaint_tld_block untaint_tld_url_no_path untaint_tld_url_with_path untaint_tld_url_string ];
 use Zonemaster::Backend::Errors;
 
 Readonly my $IANA_RDAP_URL_BASE         => "https://rdap.iana.org/domain";
 Readonly my $DNS_NAME_BASE_TXT_RECORD   => "_url._zonemaster";
+Readonly my $SOURCE_BACKEND_CONF_STR    => "BACKEND CONF";
+Readonly my $SOURCE_TXT_RECORD_STR      => "TXT RECORD";
+Readonly my $SOURCE_IANA_RDAP_STR       => "IANA RDAP";
 
 =head2 process ($self, $domain)
 
@@ -107,14 +110,16 @@ sub url_from_override {
     my %result;
     
     if ( exists $$href_or{$tld} ) {
-        if ( $$href_or{$tld} eq '[BLOCK]' ) {
+
+        if ( untaint_tld_block( $$href_or{$tld} ) ) {
             $result{tld} = $tld;
         } else {
             $url = $$href_or{$tld};
-            $url =~ s/\Q[DOMAIN]\E/$dom/;
+            $url = $url . '/' if untaint_tld_url_no_path( $url );
+            $url =~ s/\Q[DOMAIN]\E/$dom/; # If any "[DOMAIN]"
             $result{tld} = $tld;
             $result{url} = $url;
-            $result{source} = "BACKEND CONF" if $include_source;
+            $result{source} = $SOURCE_BACKEND_CONF_STR if $include_source;
         }
     }
     return \%result;
@@ -162,17 +167,17 @@ sub url_from_txt_record {
         my @txt_rdata = map { $_->txtdata() } @rrs;
         if ( scalar ( @txt_rdata ) == 1 ) { # Ignore all if more than one
 	    my $data = $txt_rdata[0];
-            if ( untaint_tld_value( $data ) ) { # "[BLOCK]" or URL string
-                $data =~ s/\Q[DOMAIN]\E/$dom/;  # If URL string and any "[DOMAIN]"
-                if ( $data eq '[BLOCK]' ) {
-                    $result{tld} = $tld;
-                    #$result{DEBUG} = "DEBUG TXT 5";
-                } else {
-                    $result{tld} = $tld;
-                    #$result{DEBUG} = "DEBUG TXT 6";
-                    $result{url} = $data;
-                    $result{source} = "TXT RECORD" if $include_source;
-                }
+            if ( untaint_tld_block( $data ) ) { # "[BLOCK]"
+                $result{tld} = $tld;
+            } elsif ( untaint_tld_url_no_path( $data ) ) { # URL without path
+                $result{tld} = $tld;
+                $result{url} = $data . '/';
+                $result{source} = $SOURCE_TXT_RECORD_STR if $include_source;
+            } elsif ( untaint_tld_url_string( $data ) ) { # URL with path and possible "[DOMAIN]"
+                $data =~ s/\Q[DOMAIN]\E/$dom/;  # If any "[DOMAIN]"
+                $result{tld} = $tld;
+                $result{url} = $data;
+                $result{source} = $SOURCE_TXT_RECORD_STR if $include_source;
             }
         }
     }
@@ -234,7 +239,7 @@ sub url_from_rdap {
         if ( $link ) {
             $result{tld} = $tld;
             $result{url} = $link;
-            $result{source} = "IANA RDAP" if $include_source;
+            $result{source} = $SOURCE_IANA_RDAP_STR if $include_source;
         }
     }
     return \%result;

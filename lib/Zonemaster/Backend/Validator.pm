@@ -134,9 +134,8 @@ Readonly my $TLD_LABEL_RE           => qr/^([a-z][a-z]+|xn--[a-z0-9-][a-z0-9-]+)
 Readonly my $TLD_BLOCK_RE           => qr/^\Q[BLOCK]\E$/; # Blocking policy
 Readonly my $TLD_URL_NO_PATH_RE     => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]$/; # URL without path
 Readonly my $TLD_URL_WITH_PATH_RE   => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*$/; # URL with path
-  # URL with path and possibly "[DOMAIN]" variable
+# URL with path and possibly "[DOMAIN]" variable
 Readonly my $TLD_URL_STRING_RE      => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*(\[DOMAIN\])?[a-zA-Z0-9\/=?%_.&-]*$/;
-# Readonly my $TLD_VALUE_RE           => qr/^($TLD_BLOCK_RE|$TLD_URL_NO_PATH_RE|$TLD_URL_STRING_RE)$/;
 
 # Boolean
 Readonly my $BOOL_TRUE_RE           => qr/^(true|yes)$/i;
@@ -418,7 +417,7 @@ sub untaint_abs_path {
 
 =head2 untaint_tld_label
 
-Accepts a TLD label, ASCII or IDN (A-label)
+Accepts a TLD label in ASCII or IDN (A-label).
 
 =cut
 
@@ -429,7 +428,7 @@ sub untaint_tld_label {
 
 =head2 untaint_tld_block
 
-Accepts a string for blocking (policy)
+Accepts a string for blocking (policy).
 
 =cut
 
@@ -471,19 +470,6 @@ sub untaint_tld_url_string {
     my ( $value ) = @_;
     return _untaint_pat( $value, $TLD_URL_STRING_RE );
 }
-
-
-# =head2 untaint_tld_value DEPRECATED
-
-# Accepts a URL string or blocking policy. See the meaning in the
-# L<documentation|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
-
-# =cut
-
-# sub untaint_tld_value {
-#     my ( $value ) = @_;
-#     return _untaint_pat( $value, $TLD_VALUE_RE );
-# }
 
 
 =head2 untaint_engine_type

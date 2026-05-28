@@ -16,7 +16,6 @@ use Readonly;
 
 # Zonemaster Modules
 use Zonemaster::Engine;
-use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Recursor;
 use Zonemaster::Backend;
 use Zonemaster::Backend::Config;
@@ -77,7 +76,6 @@ sub process {
     return $href_rdap_lookup_result if %$href_rdap_lookup_result;
 
     $result{tld} = $tld;
-    #$result{DEBUG} = "DEBUG last item";
     return \%result;
 }
 
@@ -166,7 +164,7 @@ sub url_from_txt_record {
         my @rrs = $packet->get_records_for_name( q{TXT}, $name );
         my @txt_rdata = map { $_->txtdata() } @rrs;
         if ( scalar ( @txt_rdata ) == 1 ) { # Ignore all if more than one
-	    my $data = $txt_rdata[0];
+	        my $data = $txt_rdata[0];
             if ( untaint_tld_block( $data ) ) { # "[BLOCK]"
                 $result{tld} = $tld;
             } elsif ( untaint_tld_url_no_path( $data ) ) { # URL without path
@@ -229,9 +227,7 @@ sub url_from_rdap {
     }
     if ($response->{success}) {
         my $data = decode_json($response->{content});
-        @links = map { $_->{href} }
-        grep { ($_->{rel} // '') eq 'related' }
-        @{ $data->{links} // [] };
+        @links = map { $_->{href} } grep { ($_->{rel} // '') eq 'related' } @{ $data->{links} // [] };
     };
     if (scalar @links > 0) {
         $links[0] = $links[0] . '/' if untaint_tld_url_no_path( $links[0] );

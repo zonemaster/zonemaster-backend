@@ -19,6 +19,7 @@ use Zonemaster::LDNS;
 our @EXPORT_OK = qw(
   untaint_abs_path
   untaint_bool
+  untaint_json_bool
   untaint_engine_type
   untaint_ip_address
   untaint_ipv4_address
@@ -34,17 +35,26 @@ our @EXPORT_OK = qw(
   untaint_profile_name
   untaint_strictly_positive_int
   untaint_strictly_positive_millis
+  untaint_tld_label
+  untaint_tld_block
+  untaint_tld_url_no_path
+  untaint_tld_url_with_path
+  untaint_tld_url_string
   check_domain
   check_ip
   check_profile
   check_language_tag
 );
 
+
+
+
 our %EXPORT_TAGS = (
     untaint => [
         qw(
           untaint_abs_path
           untaint_bool
+          untaint_json_bool
           untaint_engine_type
           untaint_ip_address
           untaint_ipv4_address
@@ -60,6 +70,11 @@ our %EXPORT_TAGS = (
           untaint_profile_name
           untaint_strictly_positive_int
           untaint_strictly_positive_millis
+          untaint_tld_label
+          untaint_tld_block
+          untaint_tld_url_no_path
+          untaint_tld_url_with_path
+          untaint_tld_url_string
           )
     ],
     format => [
@@ -114,10 +129,23 @@ Readonly my $RELAXED_DOMAIN_NAME_RE => qr/^[.]$|^.{2,254}$/;
 Readonly my $TEST_ID_RE             => qr/^[0-9a-f]{16}$/;
 Readonly my $USERNAME_RE            => qr/^[a-z0-9-.@]{1,50}$/i;
 
+# RE for URL for TLD
+Readonly my $TLD_LABEL_RE           => qr/^([a-z][a-z]+|xn--[a-z0-9-][a-z0-9-]+)$/; # ASCII or A-label
+Readonly my $TLD_BLOCK_RE           => qr/^\Q[BLOCK]\E$/; # Blocking policy
+Readonly my $TLD_URL_NO_PATH_RE     => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]$/; # URL without path
+Readonly my $TLD_URL_WITH_PATH_RE   => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*$/; # URL with path
+# URL with path and possibly "[DOMAIN]" variable
+Readonly my $TLD_URL_STRING_RE      => qr/^(http|https):\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]\/[a-zA-Z0-9\/=?%_.&-]*(\[DOMAIN\])?[a-zA-Z0-9\/=?%_.&-]*$/;
+
 # Boolean
 Readonly my $BOOL_TRUE_RE           => qr/^(true|yes)$/i;
 Readonly my $BOOL_FALSE_RE          => qr/^(false|no)$/i;
 Readonly my $BOOL_RE                => qr/^$BOOL_TRUE_RE|$BOOL_FALSE_RE$/i;
+
+# Boolean, only JSON values
+Readonly my $BOOL_JSON_TRUE_RE      => qr/^true$/i;
+Readonly my $BOOL_JSON_FALSE_RE     => qr/^false$/i;
+Readonly my $BOOL_JSON_RE           => qr/^$BOOL_JSON_TRUE_RE|$BOOL_JSON_FALSE_RE$/i;
 
 sub joi {
     return JSON::Validator::Joi->new;
@@ -387,6 +415,63 @@ sub untaint_abs_path {
     return _untaint_pred( $value, \&file_name_is_absolute );
 }
 
+=head2 untaint_tld_label
+
+Accepts a TLD label in ASCII or an IDN TLD label as A-label.
+
+=cut
+
+sub untaint_tld_label {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $TLD_LABEL_RE );
+}
+
+=head2 untaint_tld_block
+
+Accepts a string for blocking (policy).
+
+=cut
+
+sub untaint_tld_block {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $TLD_BLOCK_RE );
+}
+
+=head2 untaint_tld_url_no_path
+
+Returns true if the string contains a URL with no path. See
+L<documentation|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
+
+=cut
+
+sub untaint_tld_url_no_path {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $TLD_URL_NO_PATH_RE );
+}
+
+=head2 untaint_tld_url_with_path
+
+Accepts a URL for TLD.
+
+=cut
+
+sub untaint_tld_url_with_path {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $TLD_URL_WITH_PATH_RE );
+}
+
+=head2 untaint_tld_url_string
+
+Accepts a URL for TLD.
+
+=cut
+
+sub untaint_tld_url_string {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $TLD_URL_STRING_RE );
+}
+
+
 =head2 untaint_engine_type
 
 Accepts the strings C<"MySQL">, C<"PostgreSQL"> and C<"SQLite">,
@@ -521,6 +606,15 @@ sub untaint_bool {
     my $ret;
     $ret = 1 if defined _untaint_pat( $value, $BOOL_TRUE_RE );
     $ret = 0 if defined _untaint_pat( $value, $BOOL_FALSE_RE );
+    return $ret;
+}
+
+sub untaint_json_bool {
+    my ( $value ) = @_;
+
+    my $ret;
+    $ret = 1 if defined _untaint_pat( $value, $BOOL_JSON_TRUE_RE );
+    $ret = 0 if defined _untaint_pat( $value, $BOOL_JSON_FALSE_RE );
     return $ret;
 }
 

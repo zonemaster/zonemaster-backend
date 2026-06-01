@@ -57,6 +57,15 @@ subtest 'Everything but NoWarnings' => sub {
             number_of_processes_for_batch_testing    = 40
             lock_on_queue                            = 1
             age_reuse_previous_test                  = 800
+
+            [TLD URL SETTINGS]
+            enable_tld_url   =  false
+            lookup_timeout   =  6
+            include_source   =  false
+
+            [TLD URL OVERRIDE]
+            xa         = [BLOCK]
+            xb         = http://nic.xb/domain
         };
         my $config = Zonemaster::Backend::Config->parse( $text );
         isa_ok $config, 'Zonemaster::Backend::Config', 'parse() return value';
@@ -89,6 +98,14 @@ subtest 'Everything but NoWarnings' => sub {
         is $config->ZONEMASTER_number_of_processes_for_batch_testing,    40,   'set: ZONEMASTER.number_of_processes_for_batch_testing';
         is $config->ZONEMASTER_lock_on_queue,                            1,    'set: ZONEMASTER.lock_on_queue';
         is $config->ZONEMASTER_age_reuse_previous_test,                  800,  'set: ZONEMASTER.age_reuse_previous_test';
+
+        is $config->TLD_URL_SETTINGS_enable_tld_url,                     0, 'TLD_URL_SETTINGS_enable_tld_url';
+        is $config->TLD_URL_SETTINGS_lookup_timeout,                     6, 'TLD_URL_SETTINGS_lookup_timeout';
+        is $config->TLD_URL_SETTINGS_include_source,                     0, 'TLD_URL_SETTINGS_include_source';
+        eq_or_diff { $config->TLD_URL_OVERRIDE }, {    #
+            xa    => '[BLOCK]',
+	    xb    => 'http://nic.xb/domain'
+          },
     };
 
     subtest 'Default values' => sub {
@@ -114,6 +131,12 @@ subtest 'Everything but NoWarnings' => sub {
 
         is $config->RPCAPI_enable_add_api_user,  0,   'default: RPCAPI.enable_add_api_user';
         is $config->RPCAPI_enable_add_batch_job, 1,   'default: RPCAPI.enable_add_batch_job';
+
+        is $config->TLD_URL_SETTINGS_enable_tld_url,                     1, 'TLD_URL_SETTINGS_enable_tld_url';
+        is $config->TLD_URL_SETTINGS_lookup_timeout,                     3, 'TLD_URL_SETTINGS_lookup_timeout';
+        is $config->TLD_URL_SETTINGS_include_source,                     1, 'TLD_URL_SETTINGS_include_source';
+        eq_or_diff { $config->TLD_URL_OVERRIDE }, {    #
+	},
     };
 
     SKIP: {
@@ -809,6 +832,205 @@ subtest 'Everything but NoWarnings' => sub {
         Zonemaster::Backend::Config->parse( $text );
     }
     qr/PRIVATE PROFILES.*default/, 'die: Default profile in PRIVATE PROFILES';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL SETTINGS]
+            enable_tld_url   =  no
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value of TLD_URL_SETTINGS_enable_tld_url';
+
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL SETTINGS]
+            enable_tld_url   =  5
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value of TLD_URL_SETTINGS_enable_tld_url';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL SETTINGS]
+            lookup_timeout   =  -1
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value of TLD_URL_SETTINGS_lookup_timeout';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL SETTINGS]
+            lookup_timeout   =  0.5
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value of TLD_URL_SETTINGS_lookup_timeout';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL SETTINGS]
+            include_source   =  yes
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value of TLD_URL_SETTINGS_include_source';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL SETTINGS]
+            include_source   =  10
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value of TLD_URL_SETTINGS_include_source';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            xa         = [BLOCK]
+            xa         = http://nic.xb/domain
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Property not unique/, 'die: TLD_URL_OVERRIDE.xa not unique';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            xa         = [BLOK]
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value in URL string in [TLD URL OVERRIDE]';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            xa         = http://nic.xb/domain/$dom
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid value/, 'die: Invalid value in URL string in [TLD URL OVERRIDE]';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            xa-xb         = [BLOCK]
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid TLD label/, 'die: Invalid TLD string in [TLD URL OVERRIDE]';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            xa         = http://nic.xb/domain1
+            xa         = http://nic.xb/domain2
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Property not unique/, 'die: TLD_URL_OVERRIDE.xa not unique';
+
+    throws_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            dev.xa         = http://nic.xb/domain
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    qr/Invalid TLD label/, 'die: Invalid TLD string in [TLD URL OVERRIDE]';
+
+    lives_ok {
+        my $text = q{
+            [DB]
+            engine = SQLite
+
+            [SQLITE]
+            database_file = /var/db/zonemaster.sqlite
+
+            [TLD URL OVERRIDE]
+            xa         = http://nic.xb
+        };
+        Zonemaster::Backend::Config->parse( $text );
+    }
+    'URL needs no path [TLD URL OVERRIDE]';
+
 
     subtest 'RPCAPI experimental aliases' => sub {
         subtest 'default values' => sub {

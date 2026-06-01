@@ -658,6 +658,43 @@ sub cmd_batch_status {
 }
 
 
+=head2 get_tld_url
+ zmb [GLOBAL OPTIONS] get_tld_url [OPTIONS]
+
+ Options:
+   --domain DOMAIN_NAME
+
+"--domain" is mandatory. The domain name must be provided with ASCII only. Any
+IDN labels must be as A-labels.
+
+The command provides a URL to the TLD that the DOMAIN_NAME belongs to, if
+available and if policy permits. If DOMAIN_NAME is the root or a TLD then no
+URL will be provided.
+=cut
+
+sub cmd_get_tld_url {
+    my @opts = @_;
+
+    my $opt_domain_name;
+
+    GetOptionsFromArray(
+        \@opts,
+        'domain-name|d=s'         => \$opt_domain_name,
+    ) or pod2usage( 2 );
+
+    my %params;
+    $params{domain} = $opt_domain_name;
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'get_tld_url',
+        params => \%params,
+    );
+}
+
+
+
+
 sub show_commands {
     my %specials = (
         man                 => 'Show the full manual page.',

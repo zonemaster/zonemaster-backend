@@ -30,6 +30,7 @@ use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Translator;
 use Zonemaster::Backend::Validator;
 use Zonemaster::Backend::Errors;
+use Zonemaster::Backend::TLD_URL;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 our %json_schemas;
@@ -173,6 +174,32 @@ sub conf_languages {
     };
     return $result;
 }
+
+=head2 get_tld_url
+
+Handles the RPCAPI with the same name. All the "dirty work" is done in
+a separate subroutine Zonemaster::Backend::TLD_URL::process in a
+separate Perl module.
+
+=cut
+
+
+$json_schemas{get_tld_url} = {
+    type => 'object',
+    additionalProperties => 0,
+    required => [ 'domain' ],
+    properties => {
+        domain => $zm_validator->domain_name
+    }
+};
+sub get_tld_url {
+    my ( $self, $params ) = @_;
+    my $domain;
+    ( undef, $domain ) = normalize_name( trim_space ( $params->{domain} ) );
+
+    return Zonemaster::Backend::TLD_URL::process( $self, $domain );
+}
+
 
 $json_schemas{get_host_by_name} = {
     type => 'object',

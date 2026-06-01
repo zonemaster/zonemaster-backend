@@ -76,7 +76,7 @@ The test is waiting to be processed.
 
 =cut
 
-Readonly our $TEST_WAITING => 'WAITING';
+Readonly our $TEST_WAITING => 'waiting';
 
 =head2 $TEST_RUNNING
 
@@ -84,38 +84,39 @@ The test is currently being processed.
 
 =cut
 
-Readonly our $TEST_RUNNING => 'RUNNING';
+Readonly our $TEST_RUNNING => 'running';
 
 =head2 $TEST_COMPLETED
 
 The test was already processed.
 
-This state encompasses all of the following:
+=cut
 
-=over 2
+Readonly our $TEST_COMPLETED => 'completed';
 
-=item
+=head2 $TEST_CANCELLED
 
-The Zonemaster Engine test terminated normally.
-
-=item
-
-A critical error occurred while processing.
-
-=item
-
-The processing was cancelled because it took too long.
-
-=back
+The test was cancelled.
 
 =cut
 
-Readonly our $TEST_COMPLETED => 'COMPLETED';
+Readonly our $TEST_CANCELLED => 'cancelled';
+
+=head2 $TEST_CRASHED
+
+The test crashed.
+
+=cut
+
+Readonly our $TEST_CRASHED => 'crashed';
+
 
 our @EXPORT_OK = qw(
     $TEST_WAITING
     $TEST_RUNNING
     $TEST_COMPLETED
+    $TEST_CANCELLED
+    $TEST_CRASHED
 );
 
 

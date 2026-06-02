@@ -917,11 +917,11 @@ sub select_unfinished_tests {
             SELECT hash_id, results
             FROM test_results
             WHERE started_at < ?
-            AND progress > 0
-            AND progress < 100
+            AND state = ?
             AND queue = ?" );
         $sth->execute(    #
             $self->format_time( time() - $test_run_timeout ),
+            $TEST_RUNNING,
             $queue_label,
         );
         return $sth;
@@ -931,10 +931,10 @@ sub select_unfinished_tests {
             SELECT hash_id, results
             FROM test_results
             WHERE started_at < ?
-            AND progress > 0
-            AND progress < 100" );
+            AND state = ?" );
         $sth->execute(    #
             $self->format_time( time() - $test_run_timeout ),
+            $TEST_RUNNING,
         );
         return $sth;
     }

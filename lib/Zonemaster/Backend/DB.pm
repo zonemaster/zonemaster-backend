@@ -720,13 +720,14 @@ sub get_test_request {
                     SELECT hash_id,
                            batch_id
                     FROM test_results
-                    WHERE progress = 0
+                    WHERE state = ?
                       AND queue = ?
                     ORDER BY priority DESC,
                              id ASC
                     LIMIT 1
                 ],
                 undef,
+                $TEST_WAITING,
                 $queue_label,
             );
         }
@@ -736,11 +737,13 @@ sub get_test_request {
                     SELECT hash_id,
                            batch_id
                     FROM test_results
-                    WHERE progress = 0
+                    WHERE state = ?
                     ORDER BY priority DESC,
                              id ASC
                     LIMIT 1
                 ],
+                undef,
+                $TEST_WAITING,
             );
         }
 

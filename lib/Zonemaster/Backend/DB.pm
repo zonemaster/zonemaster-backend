@@ -298,11 +298,12 @@ sub create_new_test {
                     created_at,
                     priority,
                     queue,
+                    state,
                     fingerprint,
                     params,
                     domain,
                     undelegated
-                ) VALUES (?,?,?,?,?,?,?,?,?)
+                ) VALUES (?,?,?,?,?,?,?,?,?,?)
             ],
             undef,
             $hash_id,
@@ -310,6 +311,7 @@ sub create_new_test {
             $self->format_time( time() ),
             $priority,
             $queue_label,
+            $TEST_WAITING,
             $fingerprint,
             $encoded_params,
             encode_utf8( $test_params->{domain} ),

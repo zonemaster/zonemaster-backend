@@ -427,31 +427,21 @@ sub test_progress {
 sub test_state {
     my ( $self, $test_id ) = @_;
 
-    my ( $progress ) = $self->dbh->selectrow_array(
+    my ( $state ) = $self->dbh->selectrow_array(
         q[
-            SELECT progress
+            SELECT state
             FROM test_results
             WHERE hash_id = ?
         ],
         undef,
         $test_id,
     );
-    if ( !defined $progress ) {
+
+    if ( !defined $state ) {
         die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
     }
 
-    if ( $progress == 0 ) {
-        return $TEST_WAITING;
-    }
-    elsif ( 0 < $progress && $progress < 100 ) {
-        return $TEST_RUNNING;
-    }
-    elsif ( $progress == 100 ) {
-        return $TEST_COMPLETED;
-    }
-    else {
-        die Zonemaster::Backend::Error::Internal->new( reason => 'state could not be determined' );
-    }
+    return $state;
 }
 
 sub set_test_completed {

@@ -773,13 +773,16 @@ sub claim_test {
         q[
             UPDATE test_results
             SET progress = 1,
+                state = ?,
                 started_at = ?
             WHERE hash_id = ?
-              AND progress = 0
+              AND state = ?
         ],
         undef,
+        $TEST_RUNNING,
         $self->format_time( time() ),
         $test_id,
+        $TEST_WAITING,
     );
 
     return $rows_affected == 1;

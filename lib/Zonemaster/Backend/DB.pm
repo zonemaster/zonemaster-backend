@@ -395,12 +395,13 @@ sub test_progress {
                 UPDATE test_results
                 SET progress = ?
                 WHERE hash_id = ?
-                  AND 1 <= progress
+                  AND state = ?
                   AND progress <= ?
             ],
             undef,
             $progress,
             $test_id,
+            $TEST_RUNNING,
             $progress,
         );
         if ( $rows_affected == 0 ) {

@@ -511,16 +511,18 @@ sub store_results {
         q[
             UPDATE test_results
             SET progress = 100,
+                state = ?,
                 ended_at = ?,
                 results = ?
             WHERE hash_id = ?
-              AND 0 < progress
-              AND progress < 100
+              AND state = ?
         ],
         undef,
+        $TEST_COMPLETED,
         $self->format_time( time() ),
         $new_results,
         $test_id,
+        $TEST_RUNNING,
     );
 
     if ( $rows_affected == 0 ) {

@@ -447,7 +447,9 @@ sub test_state {
 }
 
 sub set_test_completed {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $test_id, $state) = @_;
+
+    $state //= $TEST_COMPLETED;
 
     my $current_state = $self->test_state( $test_id );
 
@@ -466,7 +468,7 @@ sub set_test_completed {
               AND progress < 100
         ],
         undef,
-        $TEST_COMPLETED,
+        $state,
         $self->format_time( time() ),
         $test_id,
     );
@@ -893,7 +895,7 @@ sub process_unfinished_tests {
         }
     );
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $self->force_end_test($h->{hash_id}, $msg);
+        $self->force_end_test($h->{hash_id}, $msg, $TEST_CANCELLED);
     }
 }
 
@@ -943,10 +945,10 @@ and mark test with $hash_id as COMPLETED.
 =cut
 
 sub force_end_test {
-    my ( $self, $hash_id, $msg ) = @_;
+    my ( $self, $hash_id, $msg ,$state) = @_;
 
     $self->add_result_entries( $hash_id, $msg );
-    $self->set_test_completed( $hash_id );
+    $self->set_test_completed( $hash_id, $state);
 }
 
 =head2 process_dead_test($hash_id)
@@ -968,7 +970,7 @@ sub process_dead_test {
             timestamp => $self->get_relative_start_time($hash_id)
         }
     );
-    $self->force_end_test($hash_id, $msg);
+    $self->force_end_test($hash_id, $msg, $TEST_CRASHED);
 }
 
 # Converts the domain to lowercase and if the domain is not the root ('.')

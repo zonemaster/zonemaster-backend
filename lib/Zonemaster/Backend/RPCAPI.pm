@@ -3,7 +3,6 @@ package Zonemaster::Backend::RPCAPI;
 use 5.14.2;
 use warnings;
 
-# Public Modules
 use Carp        qw( croak );
 use DBI         qw( :utils );
 use Digest::MD5 qw( md5_hex );
@@ -19,9 +18,6 @@ use Log::Any           qw( $log );
 use Mojo::JSON::Pointer;
 use POSIX        qw( setlocale );
 use Scalar::Util qw( blessed );
-
-# Zonemaster Modules
-use Zonemaster::Backend::Config;
 use Zonemaster::Backend::Errors;
 use Zonemaster::Backend::TLD_URL;
 use Zonemaster::Backend::Translator;
@@ -41,46 +37,28 @@ sub joi {
 }
 
 sub new {
-    my ( $type, $params ) = @_;
+    my ( $class, %args ) = @_;
 
-    my $self = {};
-    bless( $self, $type );
+    my $config = delete $args{config}
+      or croak "Missing 'config' argument";
 
-    if ( !$params || !$params->{config} ) {
-        croak "Missing 'config' parameter";
+    my $db = delete $args{db}
+      or croak "Missing 'db' argument";
+
+    my $profiles = delete $args{profiles}
+      or croak "Missing 'profiles' argument";
+
+    if ( %args ) {
+        croak 'Unrecognized arguments: ' . join( ', ', sort keys %args );
     }
 
-    $self->{config} = $params->{config};
-
-    my $dbtype;
-    if ( $params->{dbtype} ) {
-        $dbtype = $self->{config}->check_db( $params->{dbtype} );
-    }
-    else {
-        $dbtype = $self->{config}->DB_engine;
-    }
-
-    $self->_init_db( $dbtype );
-
-    $self->{_profiles} = Zonemaster::Backend::Config->load_profiles(    #
-        $self->{config}->PUBLIC_PROFILES,
-        $self->{config}->PRIVATE_PROFILES,
-    );
-
-    return ( $self );
-}
-
-sub _init_db {
-    my ( $self, $dbtype ) = @_;
-
-    eval {
-        my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
-        $self->{db} = $dbclass->from_config( $self->{config} );
+    my $obj = {
+        config    => $config,
+        db        => $db,
+        _profiles => $profiles,
     };
 
-    if ( $@ ) {
-        croak "Failed to initialize the [$dbtype] database backend module: $@";
-    }
+    return bless $obj, $class;
 }
 
 sub handle_exception {

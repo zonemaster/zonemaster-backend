@@ -5,6 +5,16 @@ use utf8;
 use Test::More tests => 30;
 use Test::NoWarnings;
 
+my $t_path;
+
+BEGIN {
+    use File::Spec::Functions qw( rel2abs );
+    use File::Basename        qw( dirname );
+    $t_path = dirname( rel2abs( $0 ) );
+}
+use lib $t_path;
+use TestUtil;
+
 use Cwd;
 use File::Temp qw[tempdir];
 use Zonemaster::Backend::Config;
@@ -30,12 +40,7 @@ database_file = $tempdir/zonemaster.sqlite
 test = $cwd/t/test_profile.json
 EOF
 
-my $rpcapi = Zonemaster::Backend::RPCAPI->new(
-    {
-        dbtype => $config->DB_engine,
-        config => $config,
-    }
-);
+my $rpcapi = TestUtil::create_rpcapi( $config, override_dbtype => $config->DB_engine );
 
 ###
 ### JSONRPC request object construction helper

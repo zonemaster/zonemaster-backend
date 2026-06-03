@@ -39,7 +39,11 @@ $SIG{__WARN__} = sub {
     $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
 };
 
-my $config = Zonemaster::Backend::Config->load_config();
+my $config   = Zonemaster::Backend::Config->load_config();
+my $profiles = Zonemaster::Backend::Config->load_profiles(    #
+    $config->PUBLIC_PROFILES,
+    $config->PRIVATE_PROFILES,
+);
 
 Zonemaster::Backend::Metrics->setup($config->METRICS_statsd_host, $config->METRICS_statsd_port);
 Zonemaster::Engine::init_engine();
@@ -55,7 +59,11 @@ builder {
     };
 };
 
-my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
+my $handler = Zonemaster::Backend::RPCAPI->new(
+    config   => $config,
+    db       => $config->new_DB,
+    profiles => $profiles,
+);
 
 my $router = router {
 ############## FRONTEND ####################

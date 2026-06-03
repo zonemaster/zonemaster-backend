@@ -9,8 +9,8 @@ use Carp qw( confess croak );
 use Config::IniFiles;
 use Config;
 use File::ShareDir qw[dist_file];
-use File::Slurp qw( read_file );
-use Log::Any qw( $log );
+use File::Slurp    qw( read_file );
+use Log::Any       qw( $log );
 use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
 use Zonemaster::Backend::DB;
@@ -189,7 +189,7 @@ sub parse {
 
     my $get_and_clear = sub {    # Read and clear a property from a Config::IniFiles object.
         my ( $section, $param ) = @_;
-        my ( $value, @extra ) = $ini->val( $section, $param );
+        my ( $value,   @extra ) = $ini->val( $section, $param );
         if ( @extra ) {
             die "Property not unique: $section.$param\n";
         }
@@ -199,18 +199,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB',
-                                         'MYSQL',
-                                         'POSTGRESQL',
-                                         'SQLITE',
-                                         'LANGUAGE',
-                                         'PUBLIC PROFILES',
-                                         'PRIVATE PROFILES',
-                                         'ZONEMASTER',
-                                         'METRICS',
-                                         'RPCAPI',
-                                         'TLD URL SETTINGS',
-                                         'TLD URL OVERRIDE');
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI', 'TLD URL SETTINGS', 'TLD URL OVERRIDE' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -230,8 +219,8 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_RPCAPI_enable_user_create( 'no' ); # experimental
-    $obj->_set_RPCAPI_enable_batch_create( 'yes' ); # experimental
+    $obj->_set_RPCAPI_enable_user_create( 'no' );      # experimental
+    $obj->_set_RPCAPI_enable_batch_create( 'yes' );    # experimental
     $obj->_set_RPCAPI_enable_add_api_user( 'no' );
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_set_locales( 'en_US' );
@@ -250,6 +239,7 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
+
     #currently no deprecation warnings
 
     # Assign property values (part 2/2)
@@ -328,7 +318,8 @@ sub parse {
         }
         $obj->_set_RPCAPI_enable_add_api_user( $value );
         $obj->_set_RPCAPI_enable_user_create( $value );
-    } else {
+    }
+    else {
         if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
             $obj->_set_RPCAPI_enable_add_api_user( $value );
             $obj->_set_RPCAPI_enable_user_create( $value );
@@ -340,7 +331,8 @@ sub parse {
         }
         $obj->_set_RPCAPI_enable_add_batch_job( $value );
         $obj->_set_RPCAPI_enable_batch_create( $value );
-    } else {
+    }
+    else {
         if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
             $obj->_set_RPCAPI_enable_add_batch_job( $value );
             $obj->_set_RPCAPI_enable_batch_create( $value );
@@ -359,7 +351,7 @@ sub parse {
         my $path = $get_and_clear->( 'PRIVATE PROFILES', $name );
         $obj->_add_private_profile( $name, $path );
     }
-    
+
     for my $name ( $ini->Parameters( 'TLD URL OVERRIDE' ) ) {
         my $path = $get_and_clear->( 'TLD URL OVERRIDE', $name );
         $obj->_add_tld_url_override( $name, $path );
@@ -438,7 +430,6 @@ sub check_db {
 
     return _normalize_engine_type( $db );
 }
-
 
 =head2 DB_engine
 
@@ -729,8 +720,8 @@ sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMA
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
-sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; } # experimental
-sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; } # experimental
+sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; }                             # experimental
+sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; }                            # experimental
 sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
 sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
@@ -758,35 +749,39 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
     _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
     _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
-    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool ); # experimental
-    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool ); # experimental
+    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool );                       # experimental
+    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool );                       # experimental
     _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
 
-
-=head2 new_DB
+=head2 new_DB( %opts )
 
 Create a new database adapter object according to configuration.
 
-The adapter connects to the database before it is returned.
+=head3 INPUTS
 
-=head3 INPUT
+Options:
 
-The database adapter class is selected based on the return value of
-L<DB_engine>.
-The database adapter class constructor is called without arguments and is
-expected to configure itself according to available global configuration.
+=over 4
+
+=item override_dbtype
+
+A L<DB.engine|https://doc.zonemaster.net/latest/configuration/backend.md#engine> value.
+Determines the database adapter class to invoke.
+If not provided, the value of DB.engine is used.
+
+=back
 
 =head3 RETURNS
 
-A configured L<Zonemaster::Backend::DB> object.
+A configured and connected L<Zonemaster::Backend::DB> object.
 
 =head3 EXCEPTIONS
 
 =over 4
 
-=item Dies if no adapter for the configured database engine can be loaded.
+=item Dies if an invalid option is given.
 
 =item Dies if the adapter is unable to connect to the database.
 
@@ -795,9 +790,15 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
-    my ( $self ) = @_;
+    my ( $self, %opts ) = @_;
 
-    my $dbtype  = $self->DB_engine;
+    my $dbtype_opt = delete $opts{override_dbtype};
+
+    if ( %opts ) {
+        croak 'Unrecognized options: ' . join( ', ', sort keys %opts );
+    }
+
+    my $dbtype  = $self->check_db( $dbtype_opt // $self->DB_engine );
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
     my $db      = $dbclass->from_config( $self );
 
@@ -958,24 +959,23 @@ sub _add_tld_url_override {
     my ( $self, $tld, $value ) = @_;
 
     unless ( untaint_tld_label( $tld ) ) {
-      die "Invalid TLD label in TLD URL OVERRIDE section: $tld\n";
+        die "Invalid TLD label in TLD URL OVERRIDE section: $tld\n";
     }
 
     if ( exists $self->{_tld_url_override}{$tld} ) {
         die "TLD label not unique: $tld\n";
     }
 
-    unless ( untaint_tld_block( $value ) or
-             untaint_tld_url_no_path(  $value ) or
-             untaint_tld_url_string( $value ) ) {
+    unless ( untaint_tld_block( $value )
+        or untaint_tld_url_no_path( $value )
+        or untaint_tld_url_string( $value ) )
+    {
         die "Invalid value for a TLD label key: $value\n";
     }
 
     $self->{_tld_url_override}{$tld} = $value;
     return;
 }
-
-
 
 # Create a setter method with a given name using the given field and validator
 sub _create_setter {

@@ -1,10 +1,10 @@
 package Zonemaster::Backend::RPCAPI;
 
-use strict;
-use warnings;
 use 5.14.2;
+use warnings;
 
 # Public Modules
+use Carp        qw( croak );
 use DBI         qw( :utils );
 use Digest::MD5 qw( md5_hex );
 use Encode;
@@ -47,7 +47,7 @@ sub new {
     bless( $self, $type );
 
     if ( !$params || !$params->{config} ) {
-        handle_exception( "Missing 'config' parameter" );
+        croak "Missing 'config' parameter";
     }
 
     $self->{config} = $params->{config};
@@ -79,7 +79,7 @@ sub _init_db {
     };
 
     if ( $@ ) {
-        handle_exception( "Failed to initialize the [$dbtype] database backend module: [$@]" );
+        croak "Failed to initialize the [$dbtype] database backend module: $@";
     }
 }
 

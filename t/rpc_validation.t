@@ -1,6 +1,5 @@
-use strict;
-use warnings;
 use 5.14.2;
+use warnings;
 use utf8;
 
 use Test::More tests => 30;

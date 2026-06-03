@@ -1,9 +1,9 @@
 package Zonemaster::Backend::TestAgent;
-our $VERSION = '1.1.0';
 
-use strict;
-use warnings;
 use 5.14.2;
+use warnings;
+
+our $VERSION = '1.1.0';
 
 use DBI qw(:utils);
 use JSON::PP;

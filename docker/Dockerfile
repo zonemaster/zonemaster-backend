@@ -14,6 +14,7 @@ RUN apk add --no-cache \
 
 RUN apk add --no-cache \
 	jq \
+	perl-capture-tiny \
 	perl-class-method-modifiers \
 	perl-config-inifiles \
 	perl-dbd-sqlite \

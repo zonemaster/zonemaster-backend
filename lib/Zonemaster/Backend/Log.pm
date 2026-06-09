@@ -120,3 +120,54 @@ foreach my $method ( Log::Any::Adapter::Util::detection_methods() ) {
 }
 
 1;
+
+=head1 NAME
+
+Zonemaster::Backend::Log
+
+=head1 SYNOPSIS
+
+    Log::Any::Adapter->set(
+        '+Zonemaster::Backend::Log',
+        log_level      => 'info',
+        json           => 0,
+        file           => '/path/to/logfile.log',
+        with_pid       => 1,
+        with_timestamp => 1,
+    );
+
+=head1 DESCRIPTION
+
+This is an adapter for Log::Any, tailored towards the needs of Zonemaster
+Backend.
+
+The following attributes are supported.
+
+=over 4
+
+=item file
+
+A string. The location of the log file to use. Default: C<->.
+
+The special value C<-> sends output to stdout or stderr depending on the
+C<stderr> attribute.
+
+=item stderr
+
+A boolean. True means log to stderr. False means log to stdout. Default: false.
+
+Ignored if C<file> is anything other than C<->.
+
+=item log_level
+
+The threshold for emitting log entries. Default: info.
+
+The allowed values are specified at L<Log::Any/LOG-LEVELS>.
+
+=item json
+
+A boolean. When true, logs are written in JSON format. Default: false.
+
+=back
+
+=cut

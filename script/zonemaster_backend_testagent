@@ -255,7 +255,7 @@ When FILE is -, the log is written to standard output.
 
 =item B<--loglevel=LEVEL>
 
-The location of the log level to use.
+The threshold for emitting log entries.
 
 The allowed values are specified at L<Log::Any/LOG-LEVELS>.
 

@@ -9,6 +9,8 @@ User=zonemaster
 Group=zonemaster
 ExecStart=/usr/local/bin/zonemaster_backend_testagent \
   --logfile=- \
+  --no-logpid \
+  --no-logtimestamp \
   foreground
 
 [Install]

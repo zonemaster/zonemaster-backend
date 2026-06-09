@@ -43,15 +43,19 @@ my $loglevel;
 my $logjson;
 my $opt_outfile;
 my $opt_help;
+my $opt_logpid       = 1;
+my $opt_logtimestamp = 1;
 GetOptions(
-    'help!'      => \$opt_help,
-    'pidfile=s'  => \$pidfile,
-    'user=s'     => \$user,
-    'group=s'    => \$group,
-    'logfile=s'  => \$logfile,
-    'loglevel=s' => \$loglevel,
-    'logjson!'   => \$logjson,
-    'outfile=s'  => \$opt_outfile,
+    'help!'         => \$opt_help,
+    'pidfile=s'     => \$pidfile,
+    'user=s'        => \$user,
+    'group=s'       => \$group,
+    'logfile=s'     => \$logfile,
+    'loglevel=s'    => \$loglevel,
+    'logjson!'      => \$logjson,
+    'outfile=s'     => \$opt_outfile,
+    'logpid!'       => \$opt_logpid,
+    'logtimestamp!' => \$opt_logtimestamp,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
 pod2usage( -verbose => 1 ) if $opt_help;
@@ -64,9 +68,11 @@ $loglevel = lc $loglevel;
 
 Log::Any::Adapter->set(
     '+Zonemaster::Backend::Log',
-    log_level => $loglevel,
-    json      => $logjson,
-    file      => $logfile,
+    log_level      => $loglevel,
+    json           => $logjson,
+    file           => $logfile,
+    with_pid       => $opt_logpid,
+    with_timestamp => $opt_logtimestamp,
 );
 
 $SIG{__WARN__} = sub {
@@ -262,6 +268,14 @@ The allowed values are specified at L<Log::Any/LOG-LEVELS>.
 =item B<--logjson>
 
 Enable JSON logging when specified.
+
+=item B<--[no-]logtimestamp>
+
+Controls the inclusion of timestamp log entries. Default: enabled.
+
+=item B<--[no-]logpid>
+
+Controls the inclusion of PID in log entries. Default: enabled.
 
 =item B<COMMAND>
 

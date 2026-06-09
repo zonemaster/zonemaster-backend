@@ -30,9 +30,11 @@ local $| = 1;
 
 Log::Any::Adapter->set(
     '+Zonemaster::Backend::Log',
-    log_level => $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
-    json      => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
-    stderr    => 1,
+    log_level      => $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
+    json           => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
+    stderr         => 1,
+    with_pid       => !$ENV{ZM_BACKEND_RPCAPI_NO_LOGPID},
+    with_timestamp => !$ENV{ZM_BACKEND_RPCAPI_NO_LOGTIMESTAMP},
 );
 
 $SIG{__WARN__} = sub {

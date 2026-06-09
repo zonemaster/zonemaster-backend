@@ -30,6 +30,36 @@ subtest 'render entry in text format' => sub {
     like $stdout, qr/abc123/,            'extra parameter value is present';
 };
 
+subtest 'render entry in text format without pid' => sub {
+    my $stdout = capture {
+        my $logger = Zonemaster::Backend::Log->new( with_pid => 0 );
+        $logger->structured( 'error', 'unit.test', 'text message', { request_id => 'abc123' }, );
+    };
+
+    like $stdout, qr{
+        \A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z  # timestamp
+                                                # no pid
+        \s+\[ERROR\]                            # log level
+        \s+\[unit[.]test\]                      # category
+        \s+text[ ]message                       # message
+    }x, 'text log entry contains timestamp, level, category and message, but no pid',;
+};
+
+subtest 'render entry in text format without timestamp' => sub {
+    my $stdout = capture {
+        my $logger = Zonemaster::Backend::Log->new( with_timestamp => 0 );
+        $logger->structured( 'error', 'unit.test', 'text message', { request_id => 'abc123' }, );
+    };
+
+    like $stdout, qr{
+                            # no timestamp
+        \A\[\d+\]           # pid
+        \s+\[ERROR\]        # log level
+        \s+\[unit[.]test\]  # category
+        \s+text[ ]message   # message
+    }x, 'text log entry contains pid, level, category and message, but no timestamp',;
+};
+
 subtest 'render entry in JSON format' => sub {
     my $stdout = capture {
         my $logger = Zonemaster::Backend::Log->new( json => 1 );

@@ -22,7 +22,7 @@ use Zonemaster::Backend::Config;
 my $db_backend = TestUtil::db_backend();
 
 my $datafile = "$t_path/idn.data";
-TestUtil::restore_datafile( $datafile );
+TestUtil::restore_datafile( $datafile ) unless ( $ENV{ZONEMASTER_RECORD} );
 
 my $tempdir = tempdir( CLEANUP => 1 );
 
@@ -121,6 +121,6 @@ subtest 'test IDN nameserver' => sub {
     };
 };
 
-TestUtil::save_datafile( $datafile );
+TestUtil::save_datafile( $datafile ) if ( $ENV{ZONEMASTER_RECORD} );
 
 done_testing();

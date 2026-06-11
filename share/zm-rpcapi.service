@@ -4,10 +4,16 @@ After=network.target mariadb.service postgresql.service
 Wants=mariadb.service postgresql.service
 
 [Service]
-Type=simple
-ExecStart=/usr/local/bin/starman --listen=127.0.0.1:5000 --preload-app --user=zonemaster --group=zonemaster --pid=/run/zonemaster/zm-rpcapi.pid --error-log=/var/log/zonemaster/zm-rpcapi.log --daemonize /usr/local/bin/zonemaster_backend_rpcapi.psgi
+Type=exec
+User=zonemaster
+Group=zonemaster
+Environment=ZM_BACKEND_RPCAPI_NO_LOGPID=1
+Environment=ZM_BACKEND_RPCAPI_NO_LOGTIMESTAMP=1
 KillSignal=SIGQUIT
-PIDFile=/run/zonemaster/zm-rpcapi.pid
+ExecStart=/usr/local/bin/starman \
+  --listen=127.0.0.1:5000 \
+  --preload-app \
+  /usr/local/bin/zonemaster_backend_rpcapi.psgi
 
 [Install]
 WantedBy=multi-user.target

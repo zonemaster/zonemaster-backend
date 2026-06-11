@@ -4,10 +4,14 @@ After=network.target mariadb.service postgresql.service
 Wants=mariadb.service postgresql.service
 
 [Service]
-Type=simple
-ExecStart=/usr/local/bin/zonemaster_backend_testagent --logfile=/var/log/zonemaster/zm-testagent.log --outfile=/var/log/zonemaster/zm-testagent.out --pidfile=/run/zonemaster/zm-testagent.pid --user=zonemaster --group=zonemaster start
-ExecStop=/usr/local/bin/zonemaster_backend_testagent --logfile=/var/log/zonemaster/zm-testagent.log --outfile=/var/log/zonemaster/zm-testagent.out --pidfile=/run/zonemaster/zm-testagent.pid --user=zonemaster --group=zonemaster stop
-PIDFile=/run/zonemaster/zm-testagent.pid
+Type=exec
+User=zonemaster
+Group=zonemaster
+ExecStart=/usr/local/bin/zonemaster_backend_testagent \
+  --logfile=- \
+  --no-logpid \
+  --no-logtimestamp \
+  foreground
 
 [Install]
 WantedBy=multi-user.target

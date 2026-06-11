@@ -11,22 +11,53 @@ use Log::Any::Adapter;
 use Test::Fatal qw( exception );
 use Zonemaster::Backend::Log;
 
-sub tmp_log_file {
-    my $dir = tempdir( CLEANUP => 1 );
-    return "$dir/backend.log";
-}
-
 subtest 'render entry in text format' => sub {
     my $stdout = capture {
         my $logger = Zonemaster::Backend::Log->new;
         $logger->structured( 'error', 'unit.test', 'text message', { request_id => 'abc123' }, );
     };
 
-    like $stdout, qr/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z \[\d+\] \[ERROR\] \[unit\.test\] text message/, 'text log entry contains timestamp, pid, level, category and message';
+    like $stdout, qr{
+        \A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z  # timestamp
+        \s+\[\d+\]                              # pid
+        \s+\[ERROR\]                            # log level
+        \s+\[unit[.]test\]                      # category
+        \s+text[ ]message                       # message
+    }x, 'text log entry contains timestamp, pid, level, category and message',;
 
     like $stdout, qr/Extra parameters:/, 'extra parameters are appended';
     like $stdout, qr/request_id/,        'extra parameter key is present';
     like $stdout, qr/abc123/,            'extra parameter value is present';
+};
+
+subtest 'render entry in text format without pid' => sub {
+    my $stdout = capture {
+        my $logger = Zonemaster::Backend::Log->new( with_pid => 0 );
+        $logger->structured( 'error', 'unit.test', 'text message', { request_id => 'abc123' }, );
+    };
+
+    like $stdout, qr{
+        \A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z  # timestamp
+                                                # no pid
+        \s+\[ERROR\]                            # log level
+        \s+\[unit[.]test\]                      # category
+        \s+text[ ]message                       # message
+    }x, 'text log entry contains timestamp, level, category and message, but no pid',;
+};
+
+subtest 'render entry in text format without timestamp' => sub {
+    my $stdout = capture {
+        my $logger = Zonemaster::Backend::Log->new( with_timestamp => 0 );
+        $logger->structured( 'error', 'unit.test', 'text message', { request_id => 'abc123' }, );
+    };
+
+    like $stdout, qr{
+                            # no timestamp
+        \A\[\d+\]           # pid
+        \s+\[ERROR\]        # log level
+        \s+\[unit[.]test\]  # category
+        \s+text[ ]message   # message
+    }x, 'text log entry contains pid, level, category and message, but no timestamp',;
 };
 
 subtest 'render entry in JSON format' => sub {
@@ -66,7 +97,8 @@ subtest 'redirect output to stderr' => sub {
 };
 
 subtest 'redirect output to file' => sub {
-    my $file = tmp_log_file();
+    my $dir  = tempdir( CLEANUP => 1 );
+    my $file = "$dir/backend.log";
     my ( $stdout, $stderr ) = capture {
         my $logger = Zonemaster::Backend::Log->new( file => $file );
         $logger->structured( 'error', 'unit.test', 'message' );
@@ -79,8 +111,6 @@ subtest 'redirect output to file' => sub {
 };
 
 subtest 'works as a Log::Any adapter' => sub {
-    my $file = tmp_log_file();
-
     Log::Any::Adapter->set(
         { lexically => \my $adapter_scope },
         '+Zonemaster::Backend::Log',

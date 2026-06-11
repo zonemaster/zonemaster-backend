@@ -1,9 +1,9 @@
 package Zonemaster::Backend::TestAgent;
-our $VERSION = '1.1.0';
 
-use strict;
-use warnings;
 use 5.14.2;
+use warnings;
+
+our $VERSION = '1.1.0';
 
 use DBI qw(:utils);
 use JSON::PP;
@@ -42,6 +42,7 @@ sub new {
 
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
     $self->{_db} = $dbclass->from_config( $config );
+    $self->{_db}->assert_compatible_schema;
 
     $self->{_profiles} = Zonemaster::Backend::Config->load_profiles(    #
         $config->PUBLIC_PROFILES,

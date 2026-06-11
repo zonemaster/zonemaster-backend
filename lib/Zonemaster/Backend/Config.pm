@@ -9,8 +9,8 @@ use Carp qw( confess croak );
 use Config::IniFiles;
 use Config;
 use File::ShareDir qw[dist_file];
-use File::Slurp qw( read_file );
-use Log::Any qw( $log );
+use File::Slurp    qw( read_file );
+use Log::Any       qw( $log );
 use Readonly;
 use Zonemaster::Backend::Validator qw( :untaint );
 use Zonemaster::Backend::DB;
@@ -149,7 +149,7 @@ Construct a new Zonemaster::Backend::Config based on a given configuration.
     );
 
 The configuration is interpreted according to the
-L<configuration format specification|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md>.
+L<configuration format specification|https://doc.zonemaster.net/latest/configuration/backend.html>.
 
 Returns a new Zonemaster::Backend::Config instance with its properties set to
 normalized and untainted values according to the given configuration with
@@ -189,7 +189,7 @@ sub parse {
 
     my $get_and_clear = sub {    # Read and clear a property from a Config::IniFiles object.
         my ( $section, $param ) = @_;
-        my ( $value, @extra ) = $ini->val( $section, $param );
+        my ( $value,   @extra ) = $ini->val( $section, $param );
         if ( @extra ) {
             die "Property not unique: $section.$param\n";
         }
@@ -199,18 +199,7 @@ sub parse {
 
     # Validate section names
     {
-        my %sections = map { $_ => 1 } ( 'DB',
-                                         'MYSQL',
-                                         'POSTGRESQL',
-                                         'SQLITE',
-                                         'LANGUAGE',
-                                         'PUBLIC PROFILES',
-                                         'PRIVATE PROFILES',
-                                         'ZONEMASTER',
-                                         'METRICS',
-                                         'RPCAPI',
-                                         'TLD URL SETTINGS',
-                                         'TLD URL OVERRIDE');
+        my %sections = map { $_ => 1 } ( 'DB', 'MYSQL', 'POSTGRESQL', 'SQLITE', 'LANGUAGE', 'PUBLIC PROFILES', 'PRIVATE PROFILES', 'ZONEMASTER', 'METRICS', 'RPCAPI', 'TLD URL SETTINGS', 'TLD URL OVERRIDE' );
         for my $section ( $ini->Sections ) {
             if ( !exists $sections{$section} ) {
                 die "config: unrecognized section: $section\n";
@@ -230,8 +219,8 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_RPCAPI_enable_user_create( 'no' ); # experimental
-    $obj->_set_RPCAPI_enable_batch_create( 'yes' ); # experimental
+    $obj->_set_RPCAPI_enable_user_create( 'no' );      # experimental
+    $obj->_set_RPCAPI_enable_batch_create( 'yes' );    # experimental
     $obj->_set_RPCAPI_enable_add_api_user( 'no' );
     $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
     $obj->_set_locales( 'en_US' );
@@ -250,6 +239,7 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
+
     #currently no deprecation warnings
 
     # Assign property values (part 2/2)
@@ -328,7 +318,8 @@ sub parse {
         }
         $obj->_set_RPCAPI_enable_add_api_user( $value );
         $obj->_set_RPCAPI_enable_user_create( $value );
-    } else {
+    }
+    else {
         if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
             $obj->_set_RPCAPI_enable_add_api_user( $value );
             $obj->_set_RPCAPI_enable_user_create( $value );
@@ -340,7 +331,8 @@ sub parse {
         }
         $obj->_set_RPCAPI_enable_add_batch_job( $value );
         $obj->_set_RPCAPI_enable_batch_create( $value );
-    } else {
+    }
+    else {
         if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
             $obj->_set_RPCAPI_enable_add_batch_job( $value );
             $obj->_set_RPCAPI_enable_batch_create( $value );
@@ -359,7 +351,7 @@ sub parse {
         my $path = $get_and_clear->( 'PRIVATE PROFILES', $name );
         $obj->_add_private_profile( $name, $path );
     }
-    
+
     for my $name ( $ini->Parameters( 'TLD URL OVERRIDE' ) ) {
         my $path = $get_and_clear->( 'TLD URL OVERRIDE', $name );
         $obj->_add_tld_url_override( $name, $path );
@@ -439,10 +431,9 @@ sub check_db {
     return _normalize_engine_type( $db );
 }
 
-
 =head2 DB_engine
 
-Get the value of L<DB.engine|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#engine>.
+Get the value of L<DB.engine|https://doc.zonemaster.net/latest/configuration/backend.html#engine>.
 
 Returns one of C<"SQLite">, C<"PostgreSQL"> or C<"MySQL">.
 
@@ -465,28 +456,28 @@ sub _set_DB_engine {
 
 =head2 DB_polling_interval
 
-Get the value of L<DB.polling_interval|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#polling_interval>.
+Get the value of L<DB.polling_interval|https://doc.zonemaster.net/latest/configuration/backend.html#polling_interval>.
 
 Returns a number.
 
 
 =head2 MYSQL_database
 
-Get the value of L<MYSQL.database|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database>.
+Get the value of L<MYSQL.database|https://doc.zonemaster.net/latest/configuration/backend.md#database>.
 
 Returns a string.
 
 
 =head2 MYSQL_host
 
-Get the value of L<MYSQL.host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#host>.
+Get the value of L<MYSQL.host|https://doc.zonemaster.net/latest/configuration/backend.md#host>.
 
 Returns a string.
 
 
 =head2 MYSQL_port
 
-Returns the L<MYSQL.port|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#port>
+Returns the L<MYSQL.port|https://doc.zonemaster.net/latest/configuration/backend.md#port>
 property from the loaded config.
 
 Returns a number.
@@ -494,35 +485,35 @@ Returns a number.
 
 =head2 MYSQL_password
 
-Get the value of L<MYSQL.password|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#password>.
+Get the value of L<MYSQL.password|https://doc.zonemaster.net/latest/configuration/backend.md#password>.
 
 Returns a string.
 
 
 =head2 MYSQL_user
 
-Get the value of L<MYSQL.user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#user>.
+Get the value of L<MYSQL.user|https://doc.zonemaster.net/latest/configuration/backend.md#user>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_database
 
-Get the value of L<POSTGRESQL.database|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database-1>.
+Get the value of L<POSTGRESQL.database|https://doc.zonemaster.net/latest/configuration/backend.md#database-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_host
 
-Get the value of L<POSTGRESQL.host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#host-1>.
+Get the value of L<POSTGRESQL.host|https://doc.zonemaster.net/latest/configuration/backend.md#host-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_port
 
-Returns the L<POSTGRESQL.port|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#port-1>
+Returns the L<POSTGRESQL.port|https://doc.zonemaster.net/latest/configuration/backend.md#port-1>
 property from the loaded config.
 
 Returns a number.
@@ -530,28 +521,28 @@ Returns a number.
 
 =head2 POSTGRESQL_password
 
-Get the value of L<POSTGRESQL.password|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#password-1>.
+Get the value of L<POSTGRESQL.password|https://doc.zonemaster.net/latest/configuration/backend.md#password-1>.
 
 Returns a string.
 
 
 =head2 POSTGRESQL_user
 
-Get the value of L<POSTGRESQL.user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#user-1>.
+Get the value of L<POSTGRESQL.user|https://doc.zonemaster.net/latest/configuration/backend.md#user-1>.
 
 Returns a string.
 
 
 =head2 SQLITE_database_file
 
-Get the value of L<SQLITE.database_file|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#database_file>.
+Get the value of L<SQLITE.database_file|https://doc.zonemaster.net/latest/configuration/backend.md#database_file>.
 
 Returns a string.
 
 
 =head2 LANGUAGE_locale
 
-Get the value of L<LANGUAGE.locale|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#locale>.
+Get the value of L<LANGUAGE.locale|https://doc.zonemaster.net/latest/configuration/backend.md#locale>.
 
 Returns a mapping from two-letter locale tag prefixes to full locale tags.
 This is represented by a hash mapping prefix to full locale tag.
@@ -566,7 +557,7 @@ E.g.:
 
 =head2 PUBLIC_PROFILES
 
-Get the set of L<PUBLIC PROFILES|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#public-profiles-and-private-profiles-sections>.
+Get the set of L<PUBLIC PROFILES|https://doc.zonemaster.net/latest/configuration/backend.md#public-profiles-and-private-profiles-sections>.
 
 Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
@@ -576,7 +567,7 @@ C<undef> means that the Zonemaster Engine default profile should be used.
 
 =head2 PRIVATE_PROFILES
 
-Get the set of L<PRIVATE PROFILES|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#public-profiles-and-private-profiles-sections>.
+Get the set of L<PRIVATE PROFILES|https://doc.zonemaster.net/latest/configuration/backend.md#public-profiles-and-private-profiles-sections>.
 
 Returns a hash mapping profile names to profile paths.
 The profile names are normalized to lowercase.
@@ -614,7 +605,7 @@ L<URL string or blocking policy|https://github.com/zonemaster/zonemaster/blob/ma
 
 =head2 ZONEMASTER_max_zonemaster_execution_time
 
-Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#max_zonemaster_execution_time>.
+Get the value of L<ZONEMASTER.max_zonemaster_execution_time|https://doc.zonemaster.net/latest/configuration/backend.md#max_zonemaster_execution_time>.
 
 Returns a number.
 
@@ -622,7 +613,7 @@ Returns a number.
 =head2 ZONEMASTER_number_of_processes_for_frontend_testing
 
 Get the value of
-L<ZONEMASTER.number_of_processes_for_frontend_testing|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#number_of_processes_for_frontend_testing>.
+L<ZONEMASTER.number_of_processes_for_frontend_testing|https://doc.zonemaster.net/latest/configuration/backend.md#number_of_processes_for_frontend_testing>.
 
 Returns a number.
 
@@ -630,7 +621,7 @@ Returns a number.
 =head2 ZONEMASTER_number_of_processes_for_batch_testing
 
 Get the value of
-L<ZONEMASTER.number_of_processes_for_batch_testing|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#number_of_processes_for_batch_testing>.
+L<ZONEMASTER.number_of_processes_for_batch_testing|https://doc.zonemaster.net/latest/configuration/backend.md#number_of_processes_for_batch_testing>.
 
 Returns a number.
 
@@ -638,7 +629,7 @@ Returns a number.
 =head2 ZONEMASTER_lock_on_queue
 
 Get the value of
-L<ZONEMASTER.lock_on_queue|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#lock_on_queue>.
+L<ZONEMASTER.lock_on_queue|https://doc.zonemaster.net/latest/configuration/backend.md#lock_on_queue>.
 
 Returns a number.
 
@@ -646,7 +637,7 @@ Returns a number.
 =head2 ZONEMASTER_age_reuse_previous_test
 
 Get the value of
-L<ZONEMASTER.age_reuse_previous_test|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#age_reuse_previous_test>.
+L<ZONEMASTER.age_reuse_previous_test|https://doc.zonemaster.net/latest/configuration/backend.md#age_reuse_previous_test>.
 
 Returns a number.
 
@@ -654,7 +645,7 @@ Returns a number.
 =head2 METRICS_statsd_host
 
 Get the value of
-L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#statsd_host>.
+L<METRICS.statsd_host|https://doc.zonemaster.net/latest/configuration/backend.md#statsd_host>.
 
 Returns a string.
 
@@ -662,7 +653,7 @@ Returns a string.
 =head2 METRICS_statsd_port
 
 Get the value of
-L<METRICS.statsd_host|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#statsd_port>.
+L<METRICS.statsd_host|https://doc.zonemaster.net/latest/configuration/backend.md#statsd_port>.
 
 Returns a number.
 
@@ -671,7 +662,7 @@ Returns a number.
 
 Experimental.
 Get the value of
-L<RPCAPI.enable_user_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_user_create>.
+L<RPCAPI.enable_user_create|https://doc.zonemaster.net/latest/configuration/backend.md#enable_user_create>.
 
 Return 0 or 1
 
@@ -680,7 +671,7 @@ Return 0 or 1
 
 Experimental.
 Get the value of
-L<RPCAPI.enable_batch_create|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_batch_create>.
+L<RPCAPI.enable_batch_create|https://doc.zonemaster.net/latest/configuration/backend.md#enable_batch_create>.
 
 Return 0 or 1
 
@@ -688,7 +679,7 @@ Return 0 or 1
 =head2 RPCAPI_enable_add_api_user
 
 Get the value of
-L<RPCAPI.enable_add_api_user|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_api_user>.
+L<RPCAPI.enable_add_api_user|https://doc.zonemaster.net/latest/configuration/backend.md#enable_add_api_user>.
 
 Return 0 or 1
 
@@ -696,7 +687,7 @@ Return 0 or 1
 =head2 RPCAPI_enable_add_batch_job
 
 Get the value of
-L<RPCAPI.enable_add_batch_job|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_add_batch_job>.
+L<RPCAPI.enable_add_batch_job|https://doc.zonemaster.net/latest/configuration/backend.md#enable_add_batch_job>.
 
 Return 0 or 1
 
@@ -729,8 +720,8 @@ sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMA
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
-sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; } # experimental
-sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; } # experimental
+sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; }                             # experimental
+sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; }                            # experimental
 sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
 sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
 
@@ -758,35 +749,39 @@ UNITCHECK {
     _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
     _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
     _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
-    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool ); # experimental
-    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool ); # experimental
+    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool );                       # experimental
+    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool );                       # experimental
     _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
     _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
 }
 
-
-=head2 new_DB
+=head2 new_DB( %opts )
 
 Create a new database adapter object according to configuration.
 
-The adapter connects to the database before it is returned.
+=head3 INPUTS
 
-=head3 INPUT
+Options:
 
-The database adapter class is selected based on the return value of
-L<DB_engine>.
-The database adapter class constructor is called without arguments and is
-expected to configure itself according to available global configuration.
+=over 4
+
+=item override_dbtype
+
+A L<DB.engine|https://doc.zonemaster.net/latest/configuration/backend.md#engine> value.
+Determines the database adapter class to invoke.
+If not provided, the value of DB.engine is used.
+
+=back
 
 =head3 RETURNS
 
-A configured L<Zonemaster::Backend::DB> object.
+A configured and connected L<Zonemaster::Backend::DB> object.
 
 =head3 EXCEPTIONS
 
 =over 4
 
-=item Dies if no adapter for the configured database engine can be loaded.
+=item Dies if an invalid option is given.
 
 =item Dies if the adapter is unable to connect to the database.
 
@@ -795,9 +790,15 @@ A configured L<Zonemaster::Backend::DB> object.
 =cut
 
 sub new_DB {
-    my ( $self ) = @_;
+    my ( $self, %opts ) = @_;
 
-    my $dbtype  = $self->DB_engine;
+    my $dbtype_opt = delete $opts{override_dbtype};
+
+    if ( %opts ) {
+        croak 'Unrecognized options: ' . join( ', ', sort keys %opts );
+    }
+
+    my $dbtype  = $self->check_db( $dbtype_opt // $self->DB_engine );
     my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
     my $db      = $dbclass->from_config( $self );
 
@@ -958,24 +959,23 @@ sub _add_tld_url_override {
     my ( $self, $tld, $value ) = @_;
 
     unless ( untaint_tld_label( $tld ) ) {
-      die "Invalid TLD label in TLD URL OVERRIDE section: $tld\n";
+        die "Invalid TLD label in TLD URL OVERRIDE section: $tld\n";
     }
 
     if ( exists $self->{_tld_url_override}{$tld} ) {
         die "TLD label not unique: $tld\n";
     }
 
-    unless ( untaint_tld_block( $value ) or
-             untaint_tld_url_no_path(  $value ) or
-             untaint_tld_url_string( $value ) ) {
+    unless ( untaint_tld_block( $value )
+        or untaint_tld_url_no_path( $value )
+        or untaint_tld_url_string( $value ) )
+    {
         die "Invalid value for a TLD label key: $value\n";
     }
 
     $self->{_tld_url_override}{$tld} = $value;
     return;
 }
-
-
 
 # Create a setter method with a given name using the given field and validator
 sub _create_setter {

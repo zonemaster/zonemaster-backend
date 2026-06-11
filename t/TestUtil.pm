@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 
+use Carp qw( croak );
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
 
@@ -74,7 +75,8 @@ sub restore_datafile {
         die q{Stored data file missing} if not -r $datafile;
         Zonemaster::Engine->preload_cache( $datafile );
         Zonemaster::Engine->profile->set( q{no_network}, 1 );
-    } else {
+    }
+    else {
         diag "recording";
     }
 }
@@ -106,27 +108,32 @@ sub init_db {
 }
 
 sub create_rpcapi {
-    my ( $config ) = @_;
+    my ( $config, %opts ) = @_;
 
-    my $rpcapi;
-    eval {
-        $rpcapi = Zonemaster::Backend::RPCAPI->new(
-            {
-                dbtype => $db_backend,
-                config => $config,
-            }
-        );
-    };
-    if ( $@ ) {
-        diag explain( $@ );
-        BAIL_OUT( 'Could not connect to database' );
+    my $dbtype_opt = delete $opts{override_dbtype};
+    if ( %opts ) {
+        croak 'Unrecognized options: ' . join( ', ', sort keys %opts );
     }
 
-    if ( not $rpcapi->isa('Zonemaster::Backend::RPCAPI' ) ) {
+    my $profiles = Zonemaster::Backend::Config->load_profiles(    #
+        $config->PUBLIC_PROFILES,
+        $config->PRIVATE_PROFILES,
+    );
+
+    my $dbtype = $dbtype_opt // $db_backend;
+    my $db     = $config->new_DB( override_dbtype => $dbtype );
+
+    prepare_db( $db );
+
+    my $rpcapi = Zonemaster::Backend::RPCAPI->new(
+        config   => $config,
+        db       => $db,
+        profiles => $profiles,
+    );
+
+    if ( not $rpcapi->isa( 'Zonemaster::Backend::RPCAPI' ) ) {
         BAIL_OUT( 'Not a Zonemaster::Backend::RPCAPI object' );
     }
-
-    prepare_db( $rpcapi->{db} );
 
     return $rpcapi;
 }
@@ -178,10 +185,15 @@ file.
 
 Database tables are dropped and created anew.
 
-=item create_rpcapi($config)
+=item create_rpcapi($config, %opts)
 
 Returns a new Zonemaster::Backend::RPCAPI object using the provided C<$config>
 file.
+
+The C<override_dbtype> option overrides the effective value of C<DB.engine>.
+
+The value of C<DB.engine> in C<$config> is ignored. The effective value is taken from the
+C<override_dbtype> option, C<TARGET> environment variable, or C<SQLite> by default.
 
 Database tables are dropped and created anew.
 

@@ -164,7 +164,10 @@ sub preflight_checks {
     Zonemaster::Backend::Metrics->setup($initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port);
 
     # Validate the Zonemaster-Engine profile
-    Zonemaster::Backend::TestAgent->new( { config => $initial_config } );
+    Zonemaster::Backend::Config->load_profiles(    #
+        $initial_config->PUBLIC_PROFILES,
+        $initial_config->PRIVATE_PROFILES,
+    );
 
     # Connect to the database
     $initial_config->new_DB();

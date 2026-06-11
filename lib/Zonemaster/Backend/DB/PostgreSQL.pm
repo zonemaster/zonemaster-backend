@@ -184,6 +184,26 @@ sub create_schema {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'users' table", data => $dbh->errstr() );
 
+    ####################################################################
+    # SCHEMA VERSION
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS schema_version (
+            id INTEGER PRIMARY KEY,
+            version INTEGER NOT NULL,
+            CHECK (id = 1),
+            CHECK (version >= 1)
+        )"
+      )
+      or die Zonemaster::Backend::Error::Internal->new(
+        reason => "Failed to create 'schema_version' table",
+        data   => $dbh->errstr()
+      );
+
+    if ( !defined $dbh->selectrow_array( "SELECT 1 FROM schema_version LIMIT 1" ) ) {
+        $dbh->do( "INSERT INTO schema_version (id, version) VALUES (1, ?)", {}, $Zonemaster::Backend::DB::REQUIRED_SCHEMA_VERSION );
+    }
+
     return;
 }
 
@@ -203,6 +223,7 @@ sub drop_tables {
     $self->dbh->do( "SET client_min_messages = warning" );
 
     try {
+        $self->dbh->do( "DROP TABLE IF EXISTS schema_version CASCADE" );
         $self->dbh->do( "DROP TABLE IF EXISTS test_results CASCADE" );
         $self->dbh->do( "DROP TABLE IF EXISTS result_entries CASCADE" );
         $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
@@ -304,9 +325,23 @@ sub get_relative_start_time {
 sub is_duplicate {
     my ( $self ) = @_;
 
+    my $state = $self->dbh->state;
+
     # for the list of codes see:
     # https://www.postgresql.org/docs/current/errcodes-appendix.html
-    return ( $self->dbh->state == 23505 );
+    return defined $state
+      && $state eq '23505';
+}
+
+sub is_unknown_table {
+    my ( $self ) = @_;
+
+    my $state = $self->dbh->state;
+
+    # for the list of codes see:
+    # https://www.postgresql.org/docs/current/errcodes-appendix.html
+    return defined $state
+      && $state eq '42P01';
 }
 
 no Moose;

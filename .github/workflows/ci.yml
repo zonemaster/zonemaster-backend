@@ -39,6 +39,9 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
 
+      - name: update
+        run: sudo apt update -y
+
       - name: Install binary dependencies
         run: |
           # * These were taken from the installation instruction.
@@ -142,6 +145,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: update
+        run: sudo apt update -y
 
       - name: apt install
         run: sudo apt-get install -y build-essential git libmodule-install-perl gettext

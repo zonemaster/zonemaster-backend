@@ -81,4 +81,6 @@
 # Avoid MANIFEST test
 t/manifest.t
 
+placeholderfile.txt
+
 #!end included /usr/share/perl/5.20/ExtUtils/MANIFEST.SKIP

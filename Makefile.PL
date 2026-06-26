@@ -35,8 +35,8 @@ requires
   'Router::Simple::Declare'         => 0,
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
-  'Zonemaster::LDNS'                => 5.000001,    # v5.0.1
-  'Zonemaster::Engine'              => 8.001000,    # v8.1.0
+  'Zonemaster::LDNS'                => 5.001000,    # v5.1.0
+  'Zonemaster::Engine'              => 9.000000,    # v9.0.0
   ;
 
 test_requires 'Capture::Tiny';

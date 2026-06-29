@@ -183,6 +183,26 @@ sub create_schema {
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'users' table", data => $dbh->errstr() );
 
+    ####################################################################
+    # SCHEMA VERSION
+    ####################################################################
+    $dbh->do(
+        "CREATE TABLE IF NOT EXISTS schema_version (
+            id INTEGER PRIMARY KEY,
+            version INTEGER NOT NULL,
+            CHECK (id = 1),
+            CHECK (version >= 1)
+        )"
+      )
+      or die Zonemaster::Backend::Error::Internal->new(
+        reason => "Failed to create 'schema_version' table",
+        data   => $dbh->errstr()
+      );
+
+    if ( !defined $dbh->selectrow_array( "SELECT 1 FROM schema_version LIMIT 1" ) ) {
+        $dbh->do( "INSERT INTO schema_version (id, version) VALUES (1, ?)", {}, $Zonemaster::Backend::DB::REQUIRED_SCHEMA_VERSION );
+    }
+
     return;
 }
 
@@ -195,8 +215,9 @@ Drop all the tables if they exist.
 sub drop_tables {
     my ( $self ) = @_;
 
-    $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
+    $self->dbh->do( "DROP TABLE IF EXISTS schema_version" );
     $self->dbh->do( "DROP TABLE IF EXISTS result_entries" );
+    $self->dbh->do( "DROP TABLE IF EXISTS test_results" );
     $self->dbh->do( "DROP TABLE IF EXISTS log_level" );
     $self->dbh->do( "DROP TABLE IF EXISTS users" );
     $self->dbh->do( "DROP TABLE IF EXISTS batch_jobs" );
@@ -293,6 +314,14 @@ sub is_duplicate {
 
     # for the list of codes see: https://sqlite.org/rescode.html
     return ( $self->dbh->err == 2067 );
+}
+
+sub is_unknown_table {
+    my ( $self ) = @_;
+
+    # for the list of codes see: https://sqlite.org/rescode.html
+    return ( $self->dbh->err == 1 )
+      && $self->dbh->errstr =~ /^no such table: /;
 }
 
 no Moose;

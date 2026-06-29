@@ -17,7 +17,7 @@ use Pod::Usage;
 use Getopt::Long;
 use POSIX;
 use Time::HiRes qw[time sleep gettimeofday tv_interval];
-use sigtrap qw(die normal-signals);
+use sigtrap     qw(die normal-signals);
 
 ###
 ### Compile-time stuff.
@@ -43,15 +43,19 @@ my $loglevel;
 my $logjson;
 my $opt_outfile;
 my $opt_help;
+my $opt_logpid       = 1;
+my $opt_logtimestamp = 1;
 GetOptions(
-    'help!'      => \$opt_help,
-    'pidfile=s'  => \$pidfile,
-    'user=s'     => \$user,
-    'group=s'    => \$group,
-    'logfile=s'  => \$logfile,
-    'loglevel=s' => \$loglevel,
-    'logjson!'  => \$logjson,
-    'outfile=s'  => \$opt_outfile,
+    'help!'         => \$opt_help,
+    'pidfile=s'     => \$pidfile,
+    'user=s'        => \$user,
+    'group=s'       => \$group,
+    'logfile=s'     => \$logfile,
+    'loglevel=s'    => \$loglevel,
+    'logjson!'      => \$logjson,
+    'outfile=s'     => \$opt_outfile,
+    'logpid!'       => \$opt_logpid,
+    'logtimestamp!' => \$opt_logtimestamp,
 ) or pod2usage( "Try '$0 --help' for more information." );
 
 pod2usage( -verbose => 1 ) if $opt_help;
@@ -64,13 +68,15 @@ $loglevel = lc $loglevel;
 
 Log::Any::Adapter->set(
     '+Zonemaster::Backend::Log',
-    log_level => $loglevel,
-    json => $logjson,
-    file => $logfile,
+    log_level      => $loglevel,
+    json           => $logjson,
+    file           => $logfile,
+    with_pid       => $opt_logpid,
+    with_timestamp => $opt_logtimestamp,
 );
 
 $SIG{__WARN__} = sub {
-    $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
+    $log->warning( map s/^\s+|\s+$//gr, map s/\n/ /gr, @_ );
 };
 
 ###
@@ -93,28 +99,25 @@ sub main {
     my $agent = Zonemaster::Backend::TestAgent->new( { config => $self->config } );
 
     while ( !$caught_sigterm ) {
-        my $cleanup_timer = [ gettimeofday ];
+        my $cleanup_timer = [gettimeofday];
 
         $self->pm->reap_finished_children();    # Reaps terminated child processes
         $self->pm->on_wait();                   # Sends SIGKILL to overdue child processes
 
-        Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.maximum_processes", $self->pm->max_procs);
-        Zonemaster::Backend::Metrics::gauge("zonemaster.testagent.running_processes", scalar($self->pm->running_procs));
+        Zonemaster::Backend::Metrics::gauge( "zonemaster.testagent.maximum_processes", $self->pm->max_procs );
+        Zonemaster::Backend::Metrics::gauge( "zonemaster.testagent.running_processes", scalar( $self->pm->running_procs ) );
 
-        Zonemaster::Backend::Metrics::timing("zonemaster.testagent.cleanup_duration_seconds", tv_interval($cleanup_timer) * 1000);
+        Zonemaster::Backend::Metrics::timing( "zonemaster.testagent.cleanup_duration_seconds", tv_interval( $cleanup_timer ) * 1000 );
 
-        my $fetch_test_timer = [ gettimeofday ];
+        my $fetch_test_timer = [gettimeofday];
 
         my ( $test_id, $batch_id );
         eval {
-            $self->db->process_unfinished_tests(
-                $self->config->ZONEMASTER_lock_on_queue,
-                $self->config->ZONEMASTER_max_zonemaster_execution_time,
-            );
+            $self->db->process_unfinished_tests( $self->config->ZONEMASTER_lock_on_queue, $self->config->ZONEMASTER_max_zonemaster_execution_time, );
 
             ( $test_id, $batch_id ) = $self->db->get_test_request( $self->config->ZONEMASTER_lock_on_queue );
 
-            Zonemaster::Backend::Metrics::timing("zonemaster.testagent.fetchtests_duration_seconds", tv_interval($fetch_test_timer) * 1000);
+            Zonemaster::Backend::Metrics::timing( "zonemaster.testagent.fetchtests_duration_seconds", tv_interval( $fetch_test_timer ) * 1000 );
         };
         if ( $@ ) {
             $log->error( $@ );
@@ -126,22 +129,22 @@ sub main {
             $log->infof( "Test found: %s", $test_id );
             if ( $self->pm->start( $test_id ) == 0 ) {    # Forks off child process
                 $log->infof( "Test starting: %s", $test_id );
-                Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_started");
-                my $start_time = [ gettimeofday ];
+                Zonemaster::Backend::Metrics::increment( "zonemaster.testagent.tests_started" );
+                my $start_time = [gettimeofday];
                 eval { $agent->run( $test_id, $show_progress ) };
                 if ( $@ ) {
                     chomp $@;
-                    Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_died");
+                    Zonemaster::Backend::Metrics::increment( "zonemaster.testagent.tests_died" );
                     $log->errorf( "Test died: %s: %s", $test_id, $@ );
-                    $self->db->process_dead_test( $test_id )
+                    $self->db->process_dead_test( $test_id );
                 }
                 else {
-                    Zonemaster::Backend::Metrics::increment("zonemaster.testagent.tests_completed");
+                    Zonemaster::Backend::Metrics::increment( "zonemaster.testagent.tests_completed" );
                     $log->infof( "Test completed: %s", $test_id );
                 }
-                Zonemaster::Backend::Metrics::timing("zonemaster.testagent.tests_duration_seconds", tv_interval($start_time) * 1000);
+                Zonemaster::Backend::Metrics::timing( "zonemaster.testagent.tests_duration_seconds", tv_interval( $start_time ) * 1000 );
                 $agent->reset();
-                $self->pm->finish;                   # Terminates child process
+                $self->pm->finish;    # Terminates child process
             }
         }
         else {
@@ -157,31 +160,31 @@ sub main {
 }
 
 sub preflight_checks {
+
     # Make sure we can load the configuration file
-    $log->debug("Starting pre-flight check");
+    $log->debug( "Starting pre-flight check" );
     my $initial_config = Zonemaster::Backend::Config->load_config();
 
-    Zonemaster::Backend::Metrics->setup($initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port);
+    Zonemaster::Backend::Metrics->setup( $initial_config->METRICS_statsd_host, $initial_config->METRICS_statsd_port );
 
     # Validate the Zonemaster-Engine profile
-    Zonemaster::Backend::TestAgent->new( { config => $initial_config } );
+    Zonemaster::Backend::Config->load_profiles(    #
+        $initial_config->PUBLIC_PROFILES,
+        $initial_config->PRIVATE_PROFILES,
+    );
 
     # Connect to the database
     $initial_config->new_DB();
-    $log->debug("Completed pre-flight check");
+    $log->debug( "Completed pre-flight check" );
 
     return $initial_config;
 }
-
-
 
 my $initial_config;
 
 # Make sure the environment is alright before forking (only on startup)
 if ( grep /^foreground$|^restart$|^start$/, @ARGV ) {
-    eval {
-        $initial_config = preflight_checks();
-    };
+    eval { $initial_config = preflight_checks(); };
     if ( $@ ) {
         $log->critical( "Aborting startup: $@" );
         print STDERR "Aborting startup: $@";
@@ -217,8 +220,8 @@ my $daemon = Daemon::Control->with_plugins( qw( +Zonemaster::Backend::Config::DC
 );
 
 $daemon->init_config( $ENV{PERLBREW_ROOT} . '/etc/bashrc' ) if ( $ENV{PERLBREW_ROOT} );
-$daemon->user($user) if $user;
-$daemon->group($group) if $group;
+$daemon->user( $user )                                      if $user;
+$daemon->group( $group )                                    if $group;
 
 exit $daemon->run;
 
@@ -258,13 +261,21 @@ When FILE is -, the log is written to standard output.
 
 =item B<--loglevel=LEVEL>
 
-The location of the log level to use.
+The threshold for emitting log entries.
 
 The allowed values are specified at L<Log::Any/LOG-LEVELS>.
 
 =item B<--logjson>
 
 Enable JSON logging when specified.
+
+=item B<--[no-]logtimestamp>
+
+Controls the inclusion of timestamp log entries. Default: enabled.
+
+=item B<--[no-]logpid>
+
+Controls the inclusion of PID in log entries. Default: enabled.
 
 =item B<COMMAND>
 

@@ -1,10 +1,19 @@
-use strict;
-use warnings;
 use 5.14.2;
+use warnings;
 use utf8;
 
 use Test::More tests => 2;
 use Test::NoWarnings;
+
+my $t_path;
+
+BEGIN {
+    use File::Spec::Functions qw( rel2abs );
+    use File::Basename        qw( dirname );
+    $t_path = dirname( rel2abs( $0 ) );
+}
+use lib $t_path;
+use TestUtil;
 
 use Encode;
 use File::ShareDir qw[dist_file];
@@ -26,12 +35,7 @@ database_file = $tempdir/zonemaster.sqlite
 locale = en_US fr_FR da_DK fi_FI nb_NO sl_SI sv_SE
 EOF
 
-my $engine = Zonemaster::Backend::RPCAPI->new(
-    {
-        dbtype => $config->DB_engine,
-        config => $config,
-    }
-);
+my $engine = TestUtil::create_rpcapi( $config, override_dbtype => $config->DB_engine );
 
 sub start_domain_validate_params {
     return $engine->validate_params( $Zonemaster::Backend::RPCAPI::json_schemas{start_domain_test}, @_ );

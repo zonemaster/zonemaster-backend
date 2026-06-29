@@ -1,6 +1,22 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v12.1.0 2026-06-29 (part of Zonemaster v2026.1 release)
+
+ [Release information]
+ - Migration of the database is required by this release to add
+   correct schema version. Follow the instructions in the
+   Zonemaster-Backend upgrade guide to upgrade to version 12.1.0.
+
+ [Features]
+ - Adds schema version to the database (#1241)
+ - Adds URL to TLD feature for GUI in RPCAPI (#1243)
+
+ [Fixes]
+ - Systemd integration (#1244)
+ - Improves Docker implementation (#1242)
+
+
 v12.0.0 2025-12-17 (part of Zonemaster v2025.2 release)
 
  [Breaking changes]

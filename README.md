@@ -50,6 +50,15 @@ The Zonemaster Backend documentation is split up into several documents:
   it through its life cycle, all using JSON-RPC calls to the *RPC API daemon*.
 * The [API] documentation describes the *RPC API daemon* inteface in detail.
 
+## CI artifact
+
+A tarball (`Zonemaster-Backend-<version>.tar.gz`) is built and uploaded as a GitHub Actions artifact on every push and pull request. This artifact can be useful for release testing and PR review.
+To download it:
+1. Go to the [Actions tab](https://github.com/zonemaster/zonemaster-backend/actions) of the repository.
+2. Select a workflow run (e.g. for a specific PR or branch).
+3. Scroll to the bottom of the run summary to the **Artifacts** section.
+4. Download the artifact named `Zonemaster-Backend-<version>-<short_sha>`.
+The artifact name includes the module version and the first 7 characters of the commit SHA.
 
 ## License
 

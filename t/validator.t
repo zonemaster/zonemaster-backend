@@ -212,4 +212,99 @@ subtest 'Everything but NoWarnings' => sub {
         is scalar untaint_strictly_positive_millis( '-1' ),        undef,       'reject: -1';
         ok !tainted( untaint_strictly_positive_millis( taint( '0.5' ) ) ), 'launder taint';
     };
+
+    subtest 'untaint_tld_label' => sub {
+        is scalar untaint_tld_label( 'ax' ),                  'ax',                  'accept: ax';
+        is scalar untaint_tld_label( 'globaltld' ),           'globaltld',           'accept: globaltld';
+        is scalar untaint_tld_label( 'xn--rksmrgs-5wao1o' ),  'xn--rksmrgs-5wao1o',  'accept: xn--rksmrgs-5wao1o';
+        is scalar untaint_tld_label( 'AX' ),                  undef,                 'reject: AX';
+        is scalar untaint_tld_label( 'Global' ),              undef,                 'reject: Global';
+        is scalar untaint_tld_label( 'Räksmörgås' ),          undef,                 'reject: Räksmörgås';
+        is scalar untaint_tld_label( 'non-tld' ),             undef,                 'reject: non-tld';
+        is scalar untaint_tld_label( 'xx--rksmrgs-5wao1o' ),  undef,                 'reject: xx--rksmrgs-5wao1o';
+        is scalar untaint_tld_label( 'xn--' ),                undef,                 'reject: xn--';
+        is scalar untaint_tld_label( 'test.xa' ),             undef,                 'reject: test.xa';
+        is scalar untaint_tld_label( 'x' ),                   undef,                 'reject: a';
+        is scalar untaint_tld_label( 'ax.' ),                 undef,                 'reject: "ax."';
+        is scalar untaint_tld_label( '.' ),                   undef,                 'reject: "."';
+        is scalar untaint_tld_label( '' ),                    undef,                 'reject: ""';
+        ok !tainted( untaint_tld_label( taint( 'ax' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_tld_block' => sub {
+        is scalar untaint_tld_block( '[BLOCK]' ),                  '[BLOCK]',                  'accept: [BLOCK]';
+        is scalar untaint_tld_block( '[BLOK]' ),                    undef,                     'reject: [BLOK]';
+        is scalar untaint_tld_block( '[ BLOCK]' ),                  undef,                     'reject: [ BLOCK]';
+        is scalar untaint_tld_block( '[BLOCK ]' ),                  undef,                     'reject: [BLOCK ]';
+        is scalar untaint_tld_block( '[block]' ),                   undef,                     'reject: [block]';
+        ok !tainted( untaint_tld_block( taint( '[BLOCK]' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_tld_url_no_path' => sub {
+        is scalar untaint_tld_url_no_path( 'https://domain.nic.xa' ),           'https://domain.nic.xa',                 'accept: https://domain.nic.xa';
+        is scalar untaint_tld_url_no_path( 'http://domain.nic.xa' ),            'http://domain.nic.xa',                  'accept: http://domain.nic.xa';
+        is scalar untaint_tld_url_no_path( 'https://xn--rksmrgs-5wao1o.se' ),   'https://xn--rksmrgs-5wao1o.se',         'accept: https://xn--rksmrgs-5wao1o.se';
+        is scalar untaint_tld_url_no_path( 'https:/domain.nic.xa' ),            undef,                                   'reject: https:/domain.nic.xa';
+        is scalar untaint_tld_url_no_path( 'ftp://domain.nic.xa' ),             undef,                                   'reject: ftp://domain.nic.xa';
+        is scalar untaint_tld_url_no_path( 'https://domain.nic.xa/' ),          undef,                                   'reject: https://domain.nic.xa/';
+        is scalar untaint_tld_url_no_path( 'https://domain.nic.xa/domain' ),    undef,                                   'reject: https://domain.nic.xa/domain';
+        is scalar untaint_tld_url_no_path( 'https://DOMAIN_NIC.XA' ),           undef,                                   'reject: https://DOMAIN_NIC.XA';
+        ok !tainted( untaint_tld_url_no_path( taint( 'https://domain.nic.xa' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_tld_url_with_path' => sub {
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/' ),                          'https://domain.nic.xa/',                          'accept: https://domain.nic.xa/';
+        is scalar untaint_tld_url_with_path( 'http://domain.nic.xa/' ),                           'http://domain.nic.xa/',                           'accept: http://domain.nic.xa/';
+        is scalar untaint_tld_url_with_path( 'https://xn--rksmrgs-5wao1o.se/' ),                  'https://xn--rksmrgs-5wao1o.se/',                  'accept: https://xn--rksmrgs-5wao1o.se/';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search/domain' ),             'https://domain.nic.xa/search/domain',             'accept: https://domain.nic.xa/search/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/SEARCH/domain' ),             'https://domain.nic.xa/SEARCH/domain',             'accept: https://domain.nic.xa/SEARCH/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search=now/domain' ),         'https://domain.nic.xa/search=now/domain',         'accept: https://domain.nic.xa/search=now/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search=0123456789/domain' ),  'https://domain.nic.xa/search=0123456789/domain',  'accept: https://domain.nic.xa/search=0123456789/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search?now/domain' ),         'https://domain.nic.xa/search?now/domain',         'accept: https://domain.nic.xa/search?now/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search%now/domain' ),         'https://domain.nic.xa/search%now/domain',         'accept: https://domain.nic.xa/search%now/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search_now.now/domain' ),     'https://domain.nic.xa/search_now.now/domain',     'accept: https://domain.nic.xa/search_now.now/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search&now-now/domain' ),     'https://domain.nic.xa/search&now-now/domain',     'accept: https://domain.nic.xa/search&now-now/domain';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/search$now-now/domain' ),     undef,                                             'reject: https://domain.nic.xa/search$now-now/domain';
+        is scalar untaint_tld_url_with_path( 'https://DOMAIN.NIC.XA/' ),                          undef,                                             'reject: https://DOMAIN.NIC.XA/';
+        is scalar untaint_tld_url_with_path( 'https://domain.nic.xa/[DOMAIN]' ),                  undef,                                             'reject: https://domain.nic.xa/[DOMAIN]';
+        ok !tainted( untaint_tld_url_with_path( taint( 'https://domain.nic.xa/' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_tld_url_string' => sub {
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/[DOMAIN]' ),                  'https://domain.nic.xa/[DOMAIN]',                  'accept: https://domain.nic.xa/[DOMAIN]';
+        is scalar untaint_tld_url_string( 'http://domain.nic.xa/[DOMAIN]' ),                   'http://domain.nic.xa/[DOMAIN]',                   'accept: http://domain.nic.xa/[DOMAIN]';
+        is scalar untaint_tld_url_string( 'https://xn--rksmrgs-5wao1o.se/' ),                  'https://xn--rksmrgs-5wao1o.se/',                  'accept: https://xn--rksmrgs-5wao1o.se/';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search/[DOMAIN]/domain' ),    'https://domain.nic.xa/search/[DOMAIN]/domain',    'accept: https://domain.nic.xa/search/[DOMAIN]/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/SEARCH/domain' ),             'https://domain.nic.xa/SEARCH/domain',             'accept: https://domain.nic.xa/SEARCH/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search=now/domain' ),         'https://domain.nic.xa/search=now/domain',         'accept: https://domain.nic.xa/search=now/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search=0123456789/domain' ),  'https://domain.nic.xa/search=0123456789/domain',  'accept: https://domain.nic.xa/search=0123456789/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search?now/domain' ),         'https://domain.nic.xa/search?now/domain',         'accept: https://domain.nic.xa/search?now/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search%now/domain' ),         'https://domain.nic.xa/search%now/domain',         'accept: https://domain.nic.xa/search%now/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search_now.now/domain' ),     'https://domain.nic.xa/search_now.now/domain',     'accept: https://domain.nic.xa/search_now.now/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search&now-now/domain' ),     'https://domain.nic.xa/search&now-now/domain',     'accept: https://domain.nic.xa/search&now-now/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/search$now-now/domain' ),     undef,                                            'reject: https://domain.nic.xa/search&now-now/domain';
+        is scalar untaint_tld_url_string( 'https://domain.nic.xa/[domain]' ),                  undef,                                            'reject: https://domain.nic.xa/[domain]';
+        ok !tainted( untaint_tld_url_string( taint( 'https://domain.nic.xa/[DOMAIN]' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_json_bool' => sub {
+        is scalar untaint_json_bool( 'true' ),                  1,                       'accept: true';
+        is scalar untaint_json_bool( 'false' ),                 0,                       'accept: false';
+        is scalar untaint_json_bool( 'yes' ),                   undef,                   'reject: yes';
+        is scalar untaint_json_bool( 'no' ),                    undef,                   'reject: no';
+        is scalar untaint_json_bool( '1' ),                     undef,                   'reject: 1';
+        is scalar untaint_json_bool( '0' ),                     undef,                   'reject: 0';
+        ok !tainted( untaint_json_bool( taint( 'true' ) ) ), 'launder taint';
+    };
+
+    subtest 'untaint_bool' => sub {
+        is scalar untaint_bool( 'true' ),                  1,                       'accept: true';
+        is scalar untaint_bool( 'false' ),                 0,                       'accept: false';
+        is scalar untaint_bool( 'yes' ),                   1,                       'accept: yes';
+        is scalar untaint_bool( 'no' ),                    0,                       'accept: no';
+        is scalar untaint_bool( '1' ),                     undef,                   'reject: 1';
+        is scalar untaint_bool( '0' ),                     undef,                   'reject: 0';
+        ok !tainted( untaint_bool( taint( 'true' ) ) ), 'launder taint';
+    };
+
 };

@@ -22,7 +22,7 @@ use Zonemaster::Backend::Config;
 my $db_backend = TestUtil::db_backend();
 
 my $datafile = "$t_path/test01.data";
-TestUtil::restore_datafile( $datafile );
+TestUtil::restore_datafile( $datafile ) unless ( $ENV{ZONEMASTER_RECORD} );
 
 my $tempdir = tempdir( CLEANUP => 1 );
 
@@ -208,9 +208,9 @@ subtest 'API calls' => sub {
 
         my $ds_value = {
             'algorithm' => 13,
-            'digest' => '1303e8da8fb60db500d5bea1ee5dc9a2bcc93dfe2fc43d346576658feccf5749', # must match case
+            'digest' => '8163abf45792942cf4ee38cca31f6a6832fcdc6d402338fc687827690c4132f6', # must match case
             'digtype' => 2,
-            'keytag' => 29133
+            'keytag' => 65381
         };
         is( scalar( @{ $res->{ds_list} } ), 1, 'Has only one DS set' );
         is_deeply( $res->{ds_list}[0], $ds_value, 'Has correct DS values' );
@@ -420,6 +420,6 @@ subtest 'normalize "domain" column' => sub {
     }
 };
 
-TestUtil::save_datafile( $datafile );
+TestUtil::save_datafile( $datafile ) if ( $ENV{ZONEMASTER_RECORD} );
 
 done_testing();

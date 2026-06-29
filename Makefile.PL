@@ -35,14 +35,16 @@ requires
   'Router::Simple::Declare'         => 0,
   'Starman'                         => 0,
   'Try::Tiny'                       => 0.12,
-  'Zonemaster::LDNS'                => 5.000001,  # v5.0.1
-  'Zonemaster::Engine'              => 8.001000,  # v8.1.0
+  'Zonemaster::LDNS'                => 5.001000,    # v5.1.0
+  'Zonemaster::Engine'              => 9.000000,    # v9.0.0
   ;
 
+test_requires 'Capture::Tiny';
 test_requires 'DBD::SQLite' => 1.66;
 test_requires 'Test::Differences';
+test_requires 'Test::Fatal';
 test_requires 'Test::Exception';
-test_requires 'Time::Local' => 1.26;
+test_requires 'Time::Local'      => 1.26;
 test_requires 'Test::NoWarnings' => 0;
 
 recommends 'DBD::mysql';
@@ -61,25 +63,24 @@ no_index directory => 'Doc';
 
 # Make all platforms include inc/Module/Install/External.pm
 requires_external_bin 'find';
-if ($^O eq "freebsd") {
+if ( $^O eq "freebsd" ) {
     requires_external_bin 'gmake';
-};
+}
 
 sub MY::postamble {
     my $text;
-    if ($^O eq "freebsd") {
+    if ( $^O eq "freebsd" ) {
+
         # Make FreeBSD use gmake for share/Makefile
-        $text = 'GMAKE ?= "gmake"' . "\n"
-            . 'pure_all :: share/Makefile' . "\n"
-            . "\t" . 'cd share && $(GMAKE) all' . "\n";
-    } else {
-        $text = 'pure_all :: share/Makefile' . "\n"
-            . "\t" . 'cd share && $(MAKE) all' . "\n";
-    };
+        $text = 'GMAKE ?= "gmake"' . "\n" . 'pure_all :: share/Makefile' . "\n" . "\t" . 'cd share && $(GMAKE) all' . "\n";
+    }
+    else {
+        $text = 'pure_all :: share/Makefile' . "\n" . "\t" . 'cd share && $(MAKE) all' . "\n";
+    }
     my $docker = <<'END_DOCKER';
 
 docker-build:
-	docker build --tag zonemaster/backend:local --build-arg version=$(VERSION) .
+	docker build -f docker/Dockerfile --tag zonemaster/backend:local --build-arg version=$(VERSION) .
 
 docker-tag-version:
 	docker tag zonemaster/backend:local zonemaster/backend:$(VERSION)
@@ -90,7 +91,7 @@ docker-tag-latest:
 END_DOCKER
 
     return $text . $docker;
-};
+}
 
 install_share;
 

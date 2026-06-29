@@ -1,35 +1,32 @@
 package Zonemaster::Backend::RPCAPI;
 
-use strict;
-use warnings;
 use 5.14.2;
+use warnings;
 
-# Public Modules
-use DBI qw(:utils);
-use Digest::MD5 qw(md5_hex);
-use File::Slurp qw(append_file);
+use Carp        qw( croak );
+use DBI         qw( :utils );
+use Digest::MD5 qw( md5_hex );
+use Encode;
+use File::Slurp qw( append_file );
 use HTML::Entities;
 use JSON::PP;
 use JSON::Validator::Joi;
-use Log::Any qw($log);
-use Mojo::JSON::Pointer;
-use Scalar::Util qw(blessed);
 use JSON::Validator::Schema::Draft7;
-use Locale::TextDomain qw[Zonemaster-Backend];
-use Locale::Messages qw[LC_MESSAGES LC_ALL];
-use POSIX qw (setlocale);
-use Encode;
-
-# Zonemaster Modules
-use Zonemaster::Engine;
+use Locale::Messages   qw( LC_MESSAGES LC_ALL );
+use Locale::TextDomain qw( Zonemaster-Backend );
+use Log::Any           qw( $log );
+use Mojo::JSON::Pointer;
+use POSIX        qw( setlocale );
+use Scalar::Util qw( blessed );
+use Zonemaster::Backend::Errors;
+use Zonemaster::Backend::TLD_URL;
+use Zonemaster::Backend::Translator;
+use Zonemaster::Backend::Validator;
+use Zonemaster::Backend;
 use Zonemaster::Engine::Normalization qw( normalize_name trim_space );
 use Zonemaster::Engine::Profile;
 use Zonemaster::Engine::Recursor;
-use Zonemaster::Backend;
-use Zonemaster::Backend::Config;
-use Zonemaster::Backend::Translator;
-use Zonemaster::Backend::Validator;
-use Zonemaster::Backend::Errors;
+use Zonemaster::Engine;
 
 my $zm_validator = Zonemaster::Backend::Validator->new;
 our %json_schemas;
@@ -40,51 +37,36 @@ sub joi {
 }
 
 sub new {
-    my ( $type, $params ) = @_;
+    my ( $class, %args ) = @_;
 
-    my $self = {};
-    bless( $self, $type );
+    my $config = delete $args{config}
+      or croak "Missing 'config' argument";
 
-    if ( ! $params || ! $params->{config} ) {
-        handle_exception("Missing 'config' parameter");
+    my $db = delete $args{db}
+      or croak "Missing 'db' argument";
+
+    my $profiles = delete $args{profiles}
+      or croak "Missing 'profiles' argument";
+
+    if ( %args ) {
+        croak 'Unrecognized arguments: ' . join( ', ', sort keys %args );
     }
 
-    $self->{config} = $params->{config};
+    $db->assert_compatible_schema;
 
-    my $dbtype;
-    if ( $params->{dbtype} ) {
-        $dbtype = $self->{config}->check_db($params->{dbtype});
-    } else {
-        $dbtype = $self->{config}->DB_engine;
-    }
-
-    $self->_init_db($dbtype);
-
-    $self->{_profiles} = Zonemaster::Backend::Config->load_profiles(    #
-        $self->{config}->PUBLIC_PROFILES,
-        $self->{config}->PRIVATE_PROFILES,
-    );
-
-    return ( $self );
-}
-
-sub _init_db {
-    my ( $self, $dbtype ) = @_;
-
-    eval {
-        my $dbclass = Zonemaster::Backend::DB->get_db_class( $dbtype );
-        $self->{db} = $dbclass->from_config( $self->{config} );
+    my $obj = {
+        config    => $config,
+        db        => $db,
+        _profiles => $profiles,
     };
 
-    if ($@) {
-        handle_exception("Failed to initialize the [$dbtype] database backend module: [$@]");
-    }
+    return bless $obj, $class;
 }
 
 sub handle_exception {
     my ( $exception ) = @_;
 
-    if ( !$exception->isa('Zonemaster::Backend::Error') ) {
+    if ( !$exception->isa( 'Zonemaster::Backend::Error' ) ) {
         my $reason = $exception;
         $exception = Zonemaster::Backend::Error::Internal->new( reason => $reason );
     }
@@ -92,26 +74,28 @@ sub handle_exception {
     my $log_extra = $exception->as_hash;
     delete $log_extra->{message};
 
-    if ( $exception->isa('Zonemaster::Backend::Error::Internal') ) {
-        $log->error($exception->as_string, $log_extra);
-    } else {
-        $log->info($exception->as_string, $log_extra);
+    if ( $exception->isa( 'Zonemaster::Backend::Error::Internal' ) ) {
+        $log->error( $exception->as_string, $log_extra );
+    }
+    else {
+        $log->info( $exception->as_string, $log_extra );
     }
 
     die $exception->as_hash;
 }
 
 $json_schemas{version_info} = joi->object->strict;
+
 sub version_info {
     my ( $self ) = @_;
 
     my %ver;
     eval {
-        $ver{zonemaster_ldns} = Zonemaster::LDNS->VERSION;
-        $ver{zonemaster_engine} = Zonemaster::Engine->VERSION;
+        $ver{zonemaster_ldns}    = Zonemaster::LDNS->VERSION;
+        $ver{zonemaster_engine}  = Zonemaster::Engine->VERSION;
         $ver{zonemaster_backend} = Zonemaster::Backend->VERSION;
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -120,11 +104,13 @@ sub version_info {
 
 # Experimental
 $json_schemas{system_versions} = $json_schemas{version_info};
+
 sub system_versions {
     return version_info( @_ );
 }
 
 $json_schemas{profile_names} = joi->object->strict;
+
 sub profile_names {
     my ( $self ) = @_;
 
@@ -139,16 +125,16 @@ sub profile_names {
 
 # Experimental
 $json_schemas{conf_profiles} = $json_schemas{profile_names};
+
 sub conf_profiles {
-    my $result = {
-        profiles => profile_names( @_ )
-    };
+    my $result = { profiles => profile_names( @_ ) };
     return $result;
 }
 
 # Return the list of language tags supported by get_test_results(). The tags are
 # derived from the locale tags set in the configuration file.
 $json_schemas{get_language_tags} = joi->object->strict;
+
 sub get_language_tags {
     my ( $self ) = @_;
 
@@ -167,33 +153,60 @@ sub get_language_tags {
 
 # Experimental
 $json_schemas{conf_languages} = $json_schemas{get_language_tags};
+
 sub conf_languages {
-    my $result = {
-        languages => get_language_tags( @_ )
-    };
+    my $result = { languages => get_language_tags( @_ ) };
     return $result;
 }
 
-$json_schemas{get_host_by_name} = {
-    type => 'object',
+=head2 get_tld_url
+
+Handles the RPCAPI with the same name. All the "dirty work" is done in
+a separate subroutine Zonemaster::Backend::TLD_URL::process in a
+separate Perl module.
+
+=cut
+
+$json_schemas{get_tld_url} = {
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'hostname' ],
-    properties => {
+    required             => ['domain'],
+    properties           => {
+        domain => $zm_validator->domain_name
+    }
+};
+
+sub get_tld_url {
+    my ( $self, $params ) = @_;
+    my $domain;
+    ( undef, $domain ) = normalize_name( trim_space( $params->{domain} ) );
+
+    return Zonemaster::Backend::TLD_URL::process( $self, $domain );
+}
+
+$json_schemas{get_host_by_name} = {
+    type                 => 'object',
+    additionalProperties => 0,
+    required             => ['hostname'],
+    properties           => {
         hostname => $zm_validator->domain_name
     }
 };
+
 sub get_host_by_name {
     my ( $self, $params ) = @_;
     my @adresses;
 
     eval {
-        my $ns_name  = $params->{hostname};
+        my $ns_name = $params->{hostname};
 
-        @adresses = map { {$ns_name => $_->short} } $recursor->get_addresses_for($ns_name);
+        @adresses = map {
+            { $ns_name => $_->short }
+        } $recursor->get_addresses_for( $ns_name );
         @adresses = { $ns_name => '0.0.0.0' } if not @adresses;
 
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -202,46 +215,46 @@ sub get_host_by_name {
 
 # Experimental
 $json_schemas{lookup_address_records} = $json_schemas{get_host_by_name};
+
 sub lookup_address_records {
-    my $result = {
-        address_records => get_host_by_name( @_ )
-    };
+    my $result = { address_records => get_host_by_name( @_ ) };
     return $result;
 }
 
 $json_schemas{get_data_from_parent_zone} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'domain' ],
-    properties => {
-        domain => $zm_validator->domain_name,
+    required             => ['domain'],
+    properties           => {
+        domain   => $zm_validator->domain_name,
         language => $zm_validator->language_tag,
     }
 };
+
 sub get_data_from_parent_zone {
     my ( $self, $params ) = @_;
 
     my $result = eval {
         my %result;
         my $domain = $params->{domain};
-        my ( $_errors, $normalized_domain ) = normalize_name( trim_space ( $domain ) );
+        my ( $_errors, $normalized_domain ) = normalize_name( trim_space( $domain ) );
 
         my @ns_list;
         my @ns_names;
 
         my $zone = Zonemaster::Engine->zone( $normalized_domain );
-        push @ns_list, { ns => $_->name->string, ip => $_->address->short} for @{$zone->glue};
+        push @ns_list, { ns => $_->name->string, ip => $_->address->short } for @{ $zone->glue };
 
         my @ds_list;
 
-        $zone = Zonemaster::Engine->zone($normalized_domain);
+        $zone = Zonemaster::Engine->zone( $normalized_domain );
         my $ds_p = $zone->parent->query_one( $zone->name, 'DS', { dnssec => 1, cd => 1, recurse => 1 } );
-        if ($ds_p) {
+        if ( $ds_p ) {
             my @ds = $ds_p->get_records( 'DS', 'answer' );
 
             foreach my $ds ( @ds ) {
                 next unless $ds->type eq 'DS';
-                push(@ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest });
+                push( @ds_list, { keytag => $ds->keytag, algorithm => $ds->algorithm, digtype => $ds->digtype, digest => $ds->hexdigest } );
             }
         }
 
@@ -249,45 +262,47 @@ sub get_data_from_parent_zone {
         $result{ds_list} = \@ds_list;
         return \%result;
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
-    elsif ($result) {
+    elsif ( $result ) {
         return $result;
     }
 }
 
 # Experimental
 $json_schemas{lookup_delegation_data} = $json_schemas{get_data_from_parent_zone};
+
 sub lookup_delegation_data {
     return get_data_from_parent_zone( @_ );
 }
 
 $json_schemas{start_domain_test} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'domain' ],
-    properties => {
-        domain => $zm_validator->domain_name,
-        ipv4 => joi->boolean->compile,
-        ipv6 => joi->boolean->compile,
+    required             => ['domain'],
+    properties           => {
+        domain      => $zm_validator->domain_name,
+        ipv4        => joi->boolean->compile,
+        ipv6        => joi->boolean->compile,
         nameservers => {
-            type => 'array',
+            type  => 'array',
             items => $zm_validator->nameserver
         },
         ds_info => {
-            type => 'array',
+            type  => 'array',
             items => $zm_validator->ds_info
         },
-        profile => $zm_validator->profile_name,
-        client_id => $zm_validator->client_id->compile,
+        profile        => $zm_validator->profile_name,
+        client_id      => $zm_validator->client_id->compile,
         client_version => $zm_validator->client_version->compile,
-        config => joi->string->compile,
-        priority => $zm_validator->priority->compile,
-        queue => $zm_validator->queue->compile,
-        language => $zm_validator->language_tag,
+        config         => joi->string->compile,
+        priority       => $zm_validator->priority->compile,
+        queue          => $zm_validator->queue->compile,
+        language       => $zm_validator->language_tag,
     }
 };
+
 sub start_domain_test {
     my ( $self, $params ) = @_;
 
@@ -303,7 +318,7 @@ sub start_domain_test {
 
         $result = $self->{db}->create_new_test( $params->{domain}, $params, $self->{config}->ZONEMASTER_age_reuse_previous_test );
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -312,16 +327,16 @@ sub start_domain_test {
 
 # Experimental
 $json_schemas{job_create} = $json_schemas{start_domain_test};
+
 sub job_create {
-    my $result = {
-        job_id => start_domain_test( @_ )
-    };
+    my $result = { job_id => start_domain_test( @_ ) };
     return $result;
 }
 
-$json_schemas{test_progress} = joi->object->strict->props(
+$json_schemas{test_progress} = joi->object->strict->props(    #
     test_id => $zm_validator->test_id->required
 );
+
 sub test_progress {
     my ( $self, $params ) = @_;
 
@@ -330,7 +345,7 @@ sub test_progress {
         my $test_id = $params->{test_id};
         $result = $self->{db}->test_progress( $test_id );
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -338,23 +353,23 @@ sub test_progress {
 }
 
 # Experimental
-$json_schemas{job_status} = joi->object->strict->props(
+$json_schemas{job_status} = joi->object->strict->props(    #
     job_id => $zm_validator->test_id->required
 );
+
 sub job_status {
     my ( $self, $params ) = @_;
 
     $params->{test_id} = delete $params->{job_id};
 
-    my $result = {
-        progress => $self->test_progress( $params )
-    };
+    my $result = { progress => $self->test_progress( $params ) };
     return $result;
 }
 
-$json_schemas{get_test_params} = joi->object->strict->props(
+$json_schemas{get_test_params} = joi->object->strict->props(    #
     test_id => $zm_validator->test_id->required
 );
+
 sub get_test_params {
     my ( $self, $params ) = @_;
 
@@ -364,7 +379,7 @@ sub get_test_params {
 
         $result = $self->{db}->get_test_params( $test_id );
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -372,9 +387,10 @@ sub get_test_params {
 }
 
 # Experimental
-$json_schemas{job_params} = joi->object->strict->props(
+$json_schemas{job_params} = joi->object->strict->props(    #
     job_id => $zm_validator->test_id->required
 );
+
 sub job_params {
     my ( $self, $params ) = @_;
 
@@ -384,19 +400,20 @@ sub job_params {
 }
 
 $json_schemas{get_test_results} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'id', 'language' ],
-    properties => {
-        id => $zm_validator->test_id->required->compile,
+    required             => [ 'id', 'language' ],
+    properties           => {
+        id       => $zm_validator->test_id->required->compile,
         language => $zm_validator->language_tag,
     }
 };
+
 sub get_test_results {
     my ( $self, $params ) = @_;
 
     my $result;
-    eval{
+    eval {
 
         my $locale = $self->_get_locale( $params );
 
@@ -408,7 +425,7 @@ sub get_test_results {
             die "Failed to set locale: $locale";
         }
 
-        eval { $translator->data } if $translator; # Provoke lazy loading of translation data
+        eval { $translator->data } if $translator;    # Provoke lazy loading of translation data
 
         my @zm_results;
         my %testcases;
@@ -426,13 +443,13 @@ sub get_test_results {
                 next;
             }
 
-            $res->{module} = $test_res->{module};
+            $res->{module}  = $test_res->{module};
             $res->{message} = $translator->translate_tag( $test_res ) . "\n";
             $res->{message} =~ s/,/, /isg;
             $res->{message} =~ s/;/; /isg;
-            $res->{level} = $test_res->{level};
-            $res->{testcase} = $test_res->{testcase} // 'UNSPECIFIED';
-            $testcases{$res->{testcase}} = $translator->test_case_description($res->{testcase});
+            $res->{level}                  = $test_res->{level};
+            $res->{testcase}               = $test_res->{testcase} // 'UNSPECIFIED';
+            $testcases{ $res->{testcase} } = $translator->test_case_description( $res->{testcase} );
 
             if ( $test_res->{module} eq 'SYSTEM' ) {
                 if ( $res->{message} =~ /policy\.json/ ) {
@@ -462,16 +479,16 @@ sub get_test_results {
             push( @zm_results, $res );
         }
 
-        $result = $test_info;
+        $result                          = $test_info;
         $result->{testcase_descriptions} = \%testcases;
-        $result->{results} = \@zm_results;
+        $result->{results}               = \@zm_results;
 
         $translator->locale( $previous_locale );
 
         $result = $test_info;
         $result->{results} = \@zm_results;
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -480,14 +497,15 @@ sub get_test_results {
 
 # Experimental
 $json_schemas{job_results} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'job_id', 'language' ],
-    properties => {
-        job_id => $zm_validator->test_id->required->compile,
+    required             => [ 'job_id', 'language' ],
+    properties           => {
+        job_id   => $zm_validator->test_id->required->compile,
         language => $zm_validator->language_tag,
     }
 };
+
 sub job_results {
     my ( $self, $params ) = @_;
 
@@ -505,23 +523,24 @@ sub job_results {
 }
 
 $json_schemas{get_test_history} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'frontend_params' ],
-    properties => {
-        offset => joi->integer->min(0)->compile,
-        limit => joi->integer->min(0)->compile,
-        filter => joi->string->regex('^(?:all|delegated|undelegated)$')->compile,
+    required             => ['frontend_params'],
+    properties           => {
+        offset          => joi->integer->min( 0 )->compile,
+        limit           => joi->integer->min( 0 )->compile,
+        filter          => joi->string->regex( '^(?:all|delegated|undelegated)$' )->compile,
         frontend_params => {
-            type => 'object',
+            type                 => 'object',
             additionalProperties => 0,
-            required => [ 'domain' ],
-            properties => {
+            required             => ['domain'],
+            properties           => {
                 domain => $zm_validator->domain_name
             }
         }
     }
 };
+
 sub get_test_history {
     my ( $self, $params ) = @_;
 
@@ -529,15 +548,17 @@ sub get_test_history {
 
     eval {
         $params->{offset} //= 0;
-        $params->{limit} //= 200;
+        $params->{limit}  //= 200;
         $params->{filter} //= "all";
 
         $results = $self->{db}->get_test_history( $params );
-        my @results = map { { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false } } @$results;
+        my @results = map {
+            { %$_, undelegated => $_->{undelegated} ? JSON::PP::true : JSON::PP::false }
+        } @$results;
         $results = \@results;
 
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -546,23 +567,24 @@ sub get_test_history {
 
 # Experimental
 $json_schemas{domain_history} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'params' ],
-    properties => {
-        offset => joi->integer->min(0)->compile,
-        limit => joi->integer->min(0)->compile,
-        filter => joi->string->regex('^(?:all|delegated|undelegated)$')->compile,
+    required             => ['params'],
+    properties           => {
+        offset => joi->integer->min( 0 )->compile,
+        limit  => joi->integer->min( 0 )->compile,
+        filter => joi->string->regex( '^(?:all|delegated|undelegated)$' )->compile,
         params => {
-            type => 'object',
+            type                 => 'object',
             additionalProperties => 0,
-            required => [ 'domain' ],
-            properties => {
+            required             => ['domain'],
+            properties           => {
                 domain => $zm_validator->domain_name
             }
         }
     }
 };
+
 sub domain_history {
     my ( $self, $params ) = @_;
 
@@ -573,7 +595,7 @@ sub domain_history {
     return {
         history => [
             map {
-                {
+                {    #
                     job_id         => $_->{id},
                     created_at     => $_->{created_at},
                     overall_result => $_->{overall_result},
@@ -586,8 +608,9 @@ sub domain_history {
 
 $json_schemas{add_api_user} = joi->object->strict->props(
     username => $zm_validator->username->required,
-    api_key => $zm_validator->api_key->required,
+    api_key  => $zm_validator->api_key->required,
 );
+
 sub add_api_user {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
@@ -608,11 +631,11 @@ sub add_api_user {
         else {
             die Zonemaster::Backend::Error::PermissionDenied->new(
                 message => 'Call to "add_api_user" method not permitted from a remote IP',
-                data => { remote_ip => $remote_ip }
+                data    => { remote_ip => $remote_ip }
             );
         }
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -621,50 +644,50 @@ sub add_api_user {
 
 # Experimental
 $json_schemas{user_create} = $json_schemas{add_api_user};
+
 sub user_create {
-    my $result = {
-        success => add_api_user( @_ )
-    };
+    my $result = { success => add_api_user( @_ ) };
     return $result;
 }
 
 $json_schemas{add_batch_job} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'username', 'api_key', 'domains' ],
-    properties => {
+    required             => [ 'username', 'api_key', 'domains' ],
+    properties           => {
         username => $zm_validator->username->required->compile,
-        api_key => $zm_validator->api_key->required->compile,
-        domains => {
-            type => "array",
+        api_key  => $zm_validator->api_key->required->compile,
+        domains  => {
+            type            => "array",
             additionalItems => 0,
-            items => $zm_validator->domain_name,
-            minItems => 1
+            items           => $zm_validator->domain_name,
+            minItems        => 1
         },
         test_params => {
-            type => 'object',
+            type                 => 'object',
             additionalProperties => 0,
-            properties => {
-                ipv4 => joi->boolean->compile,
-                ipv6 => joi->boolean->compile,
+            properties           => {
+                ipv4        => joi->boolean->compile,
+                ipv6        => joi->boolean->compile,
                 nameservers => {
-                    type => 'array',
+                    type  => 'array',
                     items => $zm_validator->nameserver
                 },
                 ds_info => {
-                    type => 'array',
+                    type  => 'array',
                     items => $zm_validator->ds_info
                 },
-                profile => $zm_validator->profile_name,
-                client_id => $zm_validator->client_id->compile,
+                profile        => $zm_validator->profile_name,
+                client_id      => $zm_validator->client_id->compile,
                 client_version => $zm_validator->client_version->compile,
-                config => joi->string->compile,
-                priority => $zm_validator->priority->compile,
-                queue => $zm_validator->queue->compile,
+                config         => joi->string->compile,
+                priority       => $zm_validator->priority->compile,
+                queue          => $zm_validator->queue->compile,
             }
         }
     }
 };
+
 sub add_batch_job {
     my ( $self, $params ) = @_;
 
@@ -680,7 +703,7 @@ sub add_batch_job {
 
         $results = $self->{db}->add_batch_job( $params );
     };
-    if ($@) {
+    if ( $@ ) {
         handle_exception( $@ );
     }
 
@@ -689,73 +712,71 @@ sub add_batch_job {
 
 # Experimental
 $json_schemas{batch_create} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'username', 'api_key', 'domains' ],
-    properties => {
+    required             => [ 'username', 'api_key', 'domains' ],
+    properties           => {
         username => $zm_validator->username->required->compile,
-        api_key => $zm_validator->api_key->required->compile,
-        domains => {
-            type => "array",
+        api_key  => $zm_validator->api_key->required->compile,
+        domains  => {
+            type            => "array",
             additionalItems => 0,
-            items => $zm_validator->domain_name,
-            minItems => 1
+            items           => $zm_validator->domain_name,
+            minItems        => 1
         },
         job_params => {
-            type => 'object',
+            type                 => 'object',
             additionalProperties => 0,
-            properties => {
-                ipv4 => joi->boolean->compile,
-                ipv6 => joi->boolean->compile,
+            properties           => {
+                ipv4        => joi->boolean->compile,
+                ipv6        => joi->boolean->compile,
                 nameservers => {
-                    type => 'array',
+                    type  => 'array',
                     items => $zm_validator->nameserver
                 },
                 ds_info => {
-                    type => 'array',
+                    type  => 'array',
                     items => $zm_validator->ds_info
                 },
-                profile => $zm_validator->profile_name,
-                client_id => $zm_validator->client_id->compile,
+                profile        => $zm_validator->profile_name,
+                client_id      => $zm_validator->client_id->compile,
                 client_version => $zm_validator->client_version->compile,
-                config => joi->string->compile,
-                priority => $zm_validator->priority->compile,
-                queue => $zm_validator->queue->compile,
+                config         => joi->string->compile,
+                priority       => $zm_validator->priority->compile,
+                queue          => $zm_validator->queue->compile,
             }
         }
     }
 };
+
 sub batch_create {
     my ( $self, $params ) = @_;
 
     $params->{test_params} = delete $params->{job_params};
 
-    my $result = {
-        batch_id => $self->add_batch_job( $params )
-    };
+    my $result = { batch_id => $self->add_batch_job( $params ) };
 
     return $result;
 }
 
 $json_schemas{batch_status} = {
-    type => 'object',
+    type                 => 'object',
     additionalProperties => 0,
-    required => [ 'batch_id' ],
-    properties => {
-        batch_id => $zm_validator->batch_id->required,
-        list_waiting_tests => joi->boolean->compile,
-        list_running_tests => joi->boolean->compile,
+    required             => ['batch_id'],
+    properties           => {
+        batch_id            => $zm_validator->batch_id->required,
+        list_waiting_tests  => joi->boolean->compile,
+        list_running_tests  => joi->boolean->compile,
         list_finished_tests => joi->boolean->compile,
     }
 };
+
 sub batch_status {
     my ( $self, $params ) = @_;
 
     my $result;
-    eval {
-        $result = $self->{db}->batch_status($params);
-    };
-    if ($@) {
+    eval { $result = $self->{db}->batch_status( $params ); };
+    if ( $@ ) {
         handle_exception( $@ );
     }
     return $result;
@@ -788,9 +809,10 @@ sub _set_error_message_locale {
     my ( $self, $params ) = @_;
 
     my @error_response = ();
-    my $locale = $self->_get_locale( $params );
+    my $locale         = $self->_get_locale( $params );
 
-    if (not defined $locale or $locale eq "") {
+    if ( not defined $locale or $locale eq "" ) {
+
         # Don't translate message if locale is not defined
         $locale = "C";
     }
@@ -802,27 +824,29 @@ sub _set_error_message_locale {
 
 my $rpc_request = joi->object->props(
     jsonrpc => joi->string->required,
-    method => $zm_validator->jsonrpc_method()->required,
-    id => joi->type([qw(null number string)]));
+    method  => $zm_validator->jsonrpc_method()->required,
+    id      => joi->type( [qw(null number string)] )
+);
+
 sub jsonrpc_validate {
     my ( $self, $jsonrpc_request ) = @_;
 
-    my @error_rpc = $rpc_request->validate($jsonrpc_request);
-    if ((ref($jsonrpc_request) eq 'HASH' && !exists $jsonrpc_request->{id}) || @error_rpc) {
+    my @error_rpc = $rpc_request->validate( $jsonrpc_request );
+    if ( ( ref( $jsonrpc_request ) eq 'HASH' && !exists $jsonrpc_request->{id} ) || @error_rpc ) {
         $self->_set_error_message_locale;
         return {
             jsonrpc => '2.0',
-            id => undef,
-            error => {
-                code => '-32600',
+            id      => undef,
+            error   => {
+                code    => '-32600',
                 message => 'The JSON sent is not a valid request object.',
-                data => "@error_rpc"
+                data    => "@error_rpc"
             }
-        }
+        };
     }
 
-    my $method_schema = $json_schemas{$jsonrpc_request->{method}};
-    if (blessed $method_schema) {
+    my $method_schema = $json_schemas{ $jsonrpc_request->{method} };
+    if ( blessed $method_schema) {
         $method_schema = $method_schema->compile;
     }
 
@@ -833,24 +857,24 @@ sub jsonrpc_validate {
     if ( exists $method_schema->{required} and not exists $jsonrpc_request->{params} ) {
         return {
             jsonrpc => '2.0',
-            id => $jsonrpc_request->{id},
-            error => {
-                code => '-32602',
+            id      => $jsonrpc_request->{id},
+            error   => {
+                code    => '-32602',
                 message => "Missing 'params' object",
             }
         };
     }
     elsif ( exists $jsonrpc_request->{params} ) {
-        my @error_response = $self->validate_params($method_schema, $jsonrpc_request->{params});
+        my @error_response = $self->validate_params( $method_schema, $jsonrpc_request->{params} );
 
         if ( scalar @error_response ) {
             return {
                 jsonrpc => '2.0',
-                id => $jsonrpc_request->{id},
-                error => {
-                    code => '-32602',
-                    message => decode_utf8(__ 'Invalid method parameter(s).'),
-                    data => \@error_response
+                id      => $jsonrpc_request->{id},
+                error   => {
+                    code    => '-32602',
+                    message => decode_utf8( __ 'Invalid method parameter(s).' ),
+                    data    => \@error_response
                 }
             };
         }
@@ -865,40 +889,43 @@ sub validate_params {
 
     push @error_response, $self->_set_error_message_locale( $params );
 
-    if (blessed $method_schema) {
+    if ( blessed $method_schema) {
         $method_schema = $method_schema->compile;
     }
-    my $jv = JSON::Validator::Schema::Draft7->new->coerce('booleans,numbers,strings')->data($method_schema);
-    $jv->formats(Zonemaster::Backend::Validator::formats( $self->{config} ));
+    my $jv = JSON::Validator::Schema::Draft7->new->coerce( 'booleans,numbers,strings' )->data( $method_schema );
+    $jv->formats( Zonemaster::Backend::Validator::formats( $self->{config} ) );
     my @json_validation_error = $jv->validate( $params );
 
     # Customize error message from json validation
     foreach my $err ( @json_validation_error ) {
         my $message = $err->message;
-        my @details = @{$err->details};
+        my @details = @{ $err->details };
 
         # Handle 'required' errors globally so it does not get overwritten
-        if ($details[1] eq 'required') {
+        if ( $details[1] eq 'required' ) {
             $message = N__ 'Missing property';
-        } else {
+        }
+        else {
             my @path = split '/', $err->path, -1;
-            shift @path; # first item is an empty string
+            shift @path;    # first item is an empty string
             my $found = 1;
-            my $data = Mojo::JSON::Pointer->new($method_schema);
+            my $data  = Mojo::JSON::Pointer->new( $method_schema );
 
-            foreach my $p (@path) {
-                if ( $data->contains("/properties/$p") ) {
-                    $data = $data->get("/properties/$p")
-                } elsif ( $p =~ /^\d+$/ and $data->contains("/items") ) {
-                    $data = $data->get("/items")
-                } else {
+            foreach my $p ( @path ) {
+                if ( $data->contains( "/properties/$p" ) ) {
+                    $data = $data->get( "/properties/$p" );
+                }
+                elsif ( $p =~ /^\d+$/ and $data->contains( "/items" ) ) {
+                    $data = $data->get( "/items" );
+                }
+                else {
                     $found = 0;
                     last;
                 }
-                $data = Mojo::JSON::Pointer->new($data);
+                $data = Mojo::JSON::Pointer->new( $data );
             }
 
-            if ($found and exists $data->data->{'x-error-message'}) {
+            if ( $found and exists $data->data->{'x-error-message'} ) {
                 $message = $data->data->{'x-error-message'};
             }
         }
@@ -908,7 +935,9 @@ sub validate_params {
     }
 
     # Translate messages
-    @error_response = map { { %$_,  ( message => decode_utf8 __ $_->{message} ) } } @error_response;
+    @error_response = map {
+        { %$_, ( message => decode_utf8 __ $_->{message} ) }
+    } @error_response;
 
     return @error_response;
 }

@@ -14,6 +14,7 @@ RUN apk add --no-cache \
 
 RUN apk add --no-cache \
 	jq \
+	perl-capture-tiny \
 	perl-class-method-modifiers \
 	perl-config-inifiles \
 	perl-dbd-sqlite \
@@ -78,7 +79,7 @@ RUN install -v -m 755 -o zonemaster -g zonemaster -d /var/lib/zonemaster
 USER zonemaster
 RUN  $(perl -MFile::ShareDir -le 'print File::ShareDir::dist_dir("Zonemaster-Backend")')/create_db.pl
 USER zonemaster
-COPY zonemaster_launch /usr/local/bin
+COPY docker/zonemaster_launch /usr/local/bin
 
 USER root
 ARG S6_OVERLAY_VERSION=3.2.1.0

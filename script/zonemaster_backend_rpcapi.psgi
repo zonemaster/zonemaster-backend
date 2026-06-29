@@ -20,7 +20,7 @@ use Try::Tiny;
 BEGIN {
     $ENV{PERL_JSON_BACKEND} = 'JSON::PP';
     undef $ENV{LANGUAGE};
-};
+}
 
 use Zonemaster::Backend::RPCAPI;
 use Zonemaster::Backend::Config;
@@ -30,18 +30,24 @@ local $| = 1;
 
 Log::Any::Adapter->set(
     '+Zonemaster::Backend::Log',
-    log_level => $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
-    json => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
-    stderr => 1
+    log_level      => $ENV{ZM_BACKEND_RPCAPI_LOGLEVEL},
+    json           => $ENV{ZM_BACKEND_RPCAPI_LOGJSON},
+    stderr         => 1,
+    with_pid       => !$ENV{ZM_BACKEND_RPCAPI_NO_LOGPID},
+    with_timestamp => !$ENV{ZM_BACKEND_RPCAPI_NO_LOGTIMESTAMP},
 );
 
 $SIG{__WARN__} = sub {
-    $log->warning(map s/^\s+|\s+$//gr, map s/\n/ /gr, @_);
+    $log->warning( map s/^\s+|\s+$//gr, map s/\n/ /gr, @_ );
 };
 
-my $config = Zonemaster::Backend::Config->load_config();
+my $config   = Zonemaster::Backend::Config->load_config();
+my $profiles = Zonemaster::Backend::Config->load_profiles(    #
+    $config->PUBLIC_PROFILES,
+    $config->PRIVATE_PROFILES,
+);
 
-Zonemaster::Backend::Metrics->setup($config->METRICS_statsd_host, $config->METRICS_statsd_port);
+Zonemaster::Backend::Metrics->setup( $config->METRICS_statsd_host, $config->METRICS_statsd_port );
 Zonemaster::Engine::init_engine();
 
 builder {
@@ -49,198 +55,228 @@ builder {
         my $app = shift;
 
         # Make sure we can connect to the database
-        $config->new_DB();
+        my $dbh = $config->new_DB;
+
+        # Make sure the database has the expected schema version
+        $dbh->assert_compatible_schema;
 
         return $app;
     };
 };
 
-my $handler = Zonemaster::Backend::RPCAPI->new( { config => $config } );
+my $handler = Zonemaster::Backend::RPCAPI->new(
+    config   => $config,
+    db       => $config->new_DB,
+    profiles => $profiles,
+);
 
 my $router = router {
 ############## FRONTEND ####################
     connect "version_info" => {
         handler => $handler,
-        action => "version_info"
+        action  => "version_info"
     };
 
     # Experimental
     connect "system_versions" => {
         handler => $handler,
-        action => "system_versions"
+        action  => "system_versions"
     };
 
     connect "profile_names" => {
         handler => $handler,
-        action => "profile_names"
+        action  => "profile_names"
     };
 
     # Experimental
     connect "conf_profiles" => {
         handler => $handler,
-        action => "conf_profiles"
+        action  => "conf_profiles"
     };
 
     connect "get_language_tags" => {
         handler => $handler,
-        action => "get_language_tags"
+        action  => "get_language_tags"
     };
 
     # Experimental
     connect "conf_languages" => {
         handler => $handler,
-        action => "conf_languages"
+        action  => "conf_languages"
     };
 
     connect "get_host_by_name" => {
         handler => $handler,
-        action => "get_host_by_name"
+        action  => "get_host_by_name"
     };
 
     # Experimental
     connect "lookup_address_records" => {
         handler => $handler,
-        action => "lookup_address_records"
+        action  => "lookup_address_records"
     };
 
     connect "get_data_from_parent_zone" => {
         handler => $handler,
-        action => "get_data_from_parent_zone"
+        action  => "get_data_from_parent_zone"
     };
 
     # Experimental
     connect "lookup_delegation_data" => {
         handler => $handler,
-        action => "lookup_delegation_data"
+        action  => "lookup_delegation_data"
     };
 
     connect "start_domain_test" => {
         handler => $handler,
-        action => "start_domain_test"
+        action  => "start_domain_test"
     };
 
     # Experimental
     connect "job_create" => {
         handler => $handler,
-        action => "job_create"
+        action  => "job_create"
     };
 
     connect "test_progress" => {
         handler => $handler,
-        action => "test_progress"
+        action  => "test_progress"
     };
 
     # Experimental
     connect "job_status" => {
         handler => $handler,
-        action => "job_status"
+        action  => "job_status"
     };
 
     connect "get_test_params" => {
         handler => $handler,
-        action => "get_test_params"
+        action  => "get_test_params"
     };
 
     # Experimental
     connect "job_params" => {
         handler => $handler,
-        action => "job_params"
+        action  => "job_params"
     };
 
     connect "get_test_results" => {
         handler => $handler,
-        action => "get_test_results"
+        action  => "get_test_results"
     };
 
     # Experimental
     connect "job_results" => {
         handler => $handler,
-        action => "job_results"
+        action  => "job_results"
     };
 
     connect "get_test_history" => {
         handler => $handler,
-        action => "get_test_history"
+        action  => "get_test_history"
     };
 
     # Experimental
     connect "domain_history" => {
         handler => $handler,
-        action => "domain_history"
+        action  => "domain_history"
     };
 
     connect "batch_status" => {
         handler => $handler,
-        action => "batch_status"
+        action  => "batch_status"
+    };
+
+    connect "get_tld_url" => {
+        handler => $handler,
+        action  => "get_tld_url"
     };
 };
 
 if ( $config->RPCAPI_enable_user_create or $config->RPCAPI_enable_add_api_user ) {
-    $log->info('Enabling add_api_user method');
-    $router->connect("add_api_user", {
-        handler => $handler,
-        action => "add_api_user"
-    });
-    $router->connect("user_create", {
-        handler => $handler,
-        action => "user_create"
-    });
+    $log->info( 'Enabling add_api_user method' );
+    $router->connect(
+        "add_api_user",
+        {
+            handler => $handler,
+            action  => "add_api_user"
+        }
+    );
+    $router->connect(
+        "user_create",
+        {
+            handler => $handler,
+            action  => "user_create"
+        }
+    );
 }
 
 if ( $config->RPCAPI_enable_batch_create or $config->RPCAPI_enable_add_batch_job ) {
-    $log->info('Enabling add_batch_job method');
-    $router->connect("add_batch_job", {
-        handler => $handler,
-        action => "add_batch_job"
-    });
-    $router->connect("batch_create", {
-        handler => $handler,
-        action => "batch_create"
-    });
+    $log->info( 'Enabling add_batch_job method' );
+    $router->connect(
+        "add_batch_job",
+        {
+            handler => $handler,
+            action  => "add_batch_job"
+        }
+    );
+    $router->connect(
+        "batch_create",
+        {
+            handler => $handler,
+            action  => "batch_create"
+        }
+    );
 }
 
-my $dispatch = JSON::RPC::Dispatch->new(
-    router => $router,
-);
+my $dispatch = JSON::RPC::Dispatch->new( router => $router, );
 
 my $rpcapi_app = sub {
-    my $env = shift;
-    my $req = Plack::Request->new($env);
-    my $res = {};
-    my $content = {};
+    my $env        = shift;
+    my $req        = Plack::Request->new( $env );
+    my $res        = {};
+    my $content    = {};
     my $json_error = '';
     try {
         my $json = $req->content;
-        $content = decode_json($json);
-    } catch {
-        $json_error = (split /at \//, $_)[0];
+        $content = decode_json( $json );
+    }
+    catch {
+        $json_error = ( split /at \//, $_ )[0];
     };
 
-    if ($json_error eq '') {
-        my $errors = $handler->jsonrpc_validate($content);
-        if ($errors ne '') {
-          $res = Plack::Response->new(200);
-          $res->content_type('application/json');
-          $res->body( encode_json($errors) );
-          $res->finalize;
-        } else {
+    if ( $json_error eq '' ) {
+        my $errors = $handler->jsonrpc_validate( $content );
+        if ( $errors ne '' ) {
+            $res = Plack::Response->new( 200 );
+            $res->content_type( 'application/json' );
+            $res->body( encode_json( $errors ) );
+            $res->finalize;
+        }
+        else {
             local $log->context->{rpc_method} = $content->{method};
-            $res = $dispatch->handle_psgi($env, $env->{REMOTE_ADDR});
-            my $status = Zonemaster::Backend::Metrics->code_to_status(decode_json(@{@$res[2]}[0])->{error}->{code});
-            Zonemaster::Backend::Metrics::increment("zonemaster.rpcapi.requests.$content->{method}.$status");
+            $res = $dispatch->handle_psgi( $env, $env->{REMOTE_ADDR} );
+            my $status = Zonemaster::Backend::Metrics->code_to_status( decode_json( @{ @$res[2] }[0] )->{error}->{code} );
+            Zonemaster::Backend::Metrics::increment( "zonemaster.rpcapi.requests.$content->{method}.$status" );
             $res;
         }
-    } else {
-        $res = Plack::Response->new(200);
-        $res->content_type('application/json');
-        $res->body( encode_json({
+    }
+    else {
+        $res = Plack::Response->new( 200 );
+        $res->content_type( 'application/json' );
+        $res->body(
+            encode_json(
+                {
                     jsonrpc => '2.0',
-                    id => undef,
-                    error => {
-                        code => '-32700',
+                    id      => undef,
+                    error   => {
+                        code    => '-32700',
                         message => 'Invalid JSON was received by the server.',
-                        data => "$json_error"
-                    }}) );
+                        data    => "$json_error"
+                    }
+                }
+            )
+        );
         $res->finalize;
 
     }

@@ -5,9 +5,8 @@ v12.1.0 2026-06-29 (part of Zonemaster v2026.1 release)
 
  [Release information]
  - Migration of the database is required by this release to add
-   correct schema version. Go the instruction in the
-   Zonemaster-Backend upgrade guide and follow the instructions
-   to upgrade to version 12.1.0.
+   correct schema version. Follow the instructions in the
+   Zonemaster-Backend upgrade guide to upgrade to version 12.1.0.
 
  [Features]
  - Adds schema version to the database (#1241)

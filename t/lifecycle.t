@@ -30,7 +30,7 @@ use TestUtil;
 
 use Zonemaster::Engine;
 use Zonemaster::Backend::Config;
-use Zonemaster::Backend::DB qw( $TEST_WAITING $TEST_RUNNING $TEST_COMPLETED );
+use Zonemaster::Backend::DB qw( $TEST_WAITING $TEST_RUNNING $TEST_COMPLETED $TEST_CANCELLED $TEST_CRASHED);
 
 sub advance_time {
     my ( $delta ) = @_;

@@ -487,6 +487,8 @@ sub select_test_results {
             SELECT
                 hash_id,
                 created_at,
+                started_at,
+                ended_at,
                 params
             FROM test_results
             WHERE hash_id = ?

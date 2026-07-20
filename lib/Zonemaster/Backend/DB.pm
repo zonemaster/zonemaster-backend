@@ -62,6 +62,8 @@ has 'dbhandlepid' => (
     required => 0,
 );
 
+=head1 CONSTANTS
+
 =head2 $REQUIRED_SCHEMA_VERSION
 
 A positive integer. The database schema version that this module is compatible with.
@@ -118,6 +120,65 @@ our @EXPORT_OK = qw(
     $TEST_CANCELLED
     $TEST_CRASHED
 );
+
+
+=head1 TEST STATES
+
+Each test in the database is always in exactly one of five formal states. The
+state is stored in the C<state> column of the C<test_results> table and is
+enforced by a C<CHECK> constraint.
+
+=over 4
+
+=item B<waiting>
+
+The test has been created but is waiting to be picked up for processing.
+This is the initial state set by C<create_new_test()>.
+In this state C<progress> is C<0> and C<started_at> is C<NULL>.
+
+=item B<running>
+
+The test has been claimed by a worker and is currently being processed.
+This state is entered through C<claim_test()>.
+In this state C<progress> is in the range 1-99 inclusive and
+C<started_at> is set.
+
+=item B<completed>
+
+The test finished normally.
+This state is entered through C<set_test_completed()> or C<store_results()>.
+In this state C<progress> is C<100> and C<ended_at> is set.
+
+=item B<cancelled>
+
+The test was terminated because it exceeded the configured maximum execution
+time.
+This state is entered through C<process_unfinished_tests()>.
+In this state C<progress> is C<100> and C<ended_at> is set.
+The result entries include a C<BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST>
+message.
+
+=item B<crashed>
+
+The test worker crashed while processing the test.
+This state is entered through C<process_dead_test()>.
+In this state C<progress> is C<100> and C<ended_at> is set.
+The result entries include a C<BACKEND_TEST_AGENT:TEST_DIED> message.
+
+=back
+
+=head2 State transitions
+
+The only legal state transitions are:
+
+  waiting -> running
+  running -> completed
+  running -> cancelled
+  running -> crashed
+
+Any other state change is illegal and causes an error.
+
+=cut
 
 
 =head2 get_db_class
@@ -427,6 +488,28 @@ sub test_progress {
     return $result;
 }
 
+=head2 test_state( $test_id )
+
+Get the state of the test associated with C<$test_id>.
+
+Returns one of the state constants documented in L</TEST STATES>.
+
+Dies when:
+
+=over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+an error occurs in the database interface
+
+=back
+
+=cut
+
 sub test_state {
     my ( $self, $test_id ) = @_;
 
@@ -446,6 +529,37 @@ sub test_state {
 
     return $state;
 }
+
+=head2 set_test_completed( $test_id, [$state] )
+
+Transition a test from the C<running> state to a terminal state.
+
+C<$state> is optional and defaults to C<completed>.
+It must be one of the terminal states documented in L</TEST STATES>
+(C<completed>, C<cancelled> or C<crashed>).
+
+In the database the test is updated with C<progress> set to 100, the given
+C<state> and C<ended_at> set to the current time.
+
+Dies when:
+
+=over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+attempting to update a test that is not in the C<running> state
+
+=item
+
+an error occurs in the database interface
+
+=back
+
+=cut
 
 sub set_test_completed {
     my ( $self, $test_id, $state) = @_;

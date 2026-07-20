@@ -1,5 +1,16 @@
 Release history for Zonemaster component Zonemaster-Backend
 
+v12.2.0 YYYY-MM-DD (part of Zonemaster v2026.2 release)
+
+ [Release information]
+ - Migration of the database is required by this release to add
+   the test state column. Follow the instructions in the
+   Zonemaster-Backend upgrade guide to upgrade to version 12.2.0.
+
+ [Features]
+ - Adds formal test states (waiting, running, completed, cancelled,
+   crashed) to the database (#1246)
+
 
 v12.1.1 2026-07-22 (part of Zonemaster v2026.1.1 release)
 

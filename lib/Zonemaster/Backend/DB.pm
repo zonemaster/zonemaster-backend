@@ -70,7 +70,7 @@ A positive integer. The database schema version that this module is compatible w
 
 =cut
 
-Readonly our $REQUIRED_SCHEMA_VERSION => 1;
+Readonly our $REQUIRED_SCHEMA_VERSION => 2;
 
 =head2 $TEST_WAITING
 

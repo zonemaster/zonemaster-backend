@@ -56,6 +56,12 @@ has 'dbhandle' => (
     required => 1,
 );
 
+has 'dbhandlepid' => (
+    is       => 'rw',
+    isa      => 'Maybe[Int]',
+    required => 0,
+);
+
 =head2 $REQUIRED_SCHEMA_VERSION
 
 A positive integer. The database schema version that this module is compatible with.
@@ -135,7 +141,10 @@ sub get_db_class {
 sub dbh {
     my ( $self ) = @_;
 
-    if ( $self->dbhandle && $self->dbhandle->ping ) {
+    # Do not return the DB handle if it belongs to a different process: we
+    # might have forked and be in the child process. If we are not careful, we
+    # might be messing with someone else's database connection!
+    if ( $self->dbhandle && $self->dbhandle->ping && $self->dbhandlepid && $self->dbhandlepid == $$ ) {
         return $self->dbhandle;
     }
 
@@ -162,6 +171,7 @@ sub dbh {
     );
 
     $self->dbhandle( $dbh );
+    $self->dbhandlepid( $$ );
 
     return $self->dbhandle;
 }

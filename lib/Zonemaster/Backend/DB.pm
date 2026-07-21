@@ -562,7 +562,7 @@ an error occurs in the database interface
 =cut
 
 sub set_test_completed {
-    my ( $self, $test_id, $state) = @_;
+    my ( $self, $test_id, $state ) = @_;
 
     $state //= $TEST_COMPLETED;
 
@@ -1067,10 +1067,10 @@ and mark test with $hash_id as COMPLETED.
 =cut
 
 sub force_end_test {
-    my ( $self, $hash_id, $msg , $state ) = @_;
+    my ( $self, $hash_id, $msg, $state ) = @_;
 
     $self->add_result_entries( $hash_id, $msg );
-    $self->set_test_completed( $hash_id, $state);
+    $self->set_test_completed( $hash_id, $state );
 }
 
 =head2 process_dead_test($hash_id)

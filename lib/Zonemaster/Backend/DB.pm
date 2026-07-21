@@ -1067,7 +1067,7 @@ and mark test with $hash_id as COMPLETED.
 =cut
 
 sub force_end_test {
-    my ( $self, $hash_id, $msg ,$state) = @_;
+    my ( $self, $hash_id, $msg , $state ) = @_;
 
     $self->add_result_entries( $hash_id, $msg );
     $self->set_test_completed( $hash_id, $state);

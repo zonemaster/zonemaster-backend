@@ -375,20 +375,22 @@ sub job_status {
         $params->{test_id} = delete $params->{job_id};
         my $test_id = $params->{test_id};
 
+	my $job_results = $self->{db}->select_test_results( $test_id );
+
         $result = {
             state => $self->{db}->test_state( $test_id ),
-            created_at => $self->{db}->select_test_results( $test_id )->{created_at},
+            created_at => $job_results->{created_at},
         };
 
         if ( $result->{state} ne $TEST_WAITING ) {
-            $result->{started_at} = $self->{db}->select_test_results( $test_id )->{started_at};
+            $result->{started_at} = $job_results->{started_at};
             $result->{progress}   = $self->{db}->test_progress( $test_id );
         }
 
         if ( $result->{state} eq $TEST_COMPLETED
             || $result->{state} eq $TEST_CANCELLED
             || $result->{state} eq $TEST_CRASHED ) {
-                $result->{ended_at} = $self->{db}->select_test_results( $test_id )->{ended_at};
+                $result->{ended_at} = $job_results->{ended_at};
         }
     };
     if ($@) {

@@ -375,7 +375,7 @@ sub job_status {
         $params->{test_id} = delete $params->{job_id};
         my $test_id = $params->{test_id};
 
-	my $job_results = $self->{db}->select_test_results( $test_id );
+        my $job_results = $self->{db}->select_test_results( $test_id );
 
         $result = {
             state => $self->{db}->test_state( $test_id ),

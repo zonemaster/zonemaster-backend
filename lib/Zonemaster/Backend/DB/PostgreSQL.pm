@@ -70,14 +70,14 @@ sub create_schema {
                 priority integer DEFAULT 10,
                 queue integer DEFAULT 0,
                 progress integer DEFAULT 0,
-                state VARCHAR(20) NOT NULL DEFAULT "waiting",
+                state VARCHAR(20) NOT NULL DEFAULT \'waiting\',
                 fingerprint varchar(32),
                 params json NOT NULL,
                 undelegated integer NOT NULL DEFAULT 0,
                 results json,
 
                 UNIQUE (hash_id),
-                CHECK (state IN ("waiting", "running", "completed", "cancelled", "crashed"))
+                CHECK (state IN (\'waiting\', \'running\', \'completed\', \'cancelled\', \'crashed\'))
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );

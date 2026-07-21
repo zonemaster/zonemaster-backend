@@ -579,13 +579,13 @@ sub set_test_completed {
                 state = ?,
                 ended_at = ?
             WHERE hash_id = ?
-              AND 0 < progress
-              AND progress < 100
+              AND state = ?
         ],
         undef,
         $state,
         $self->format_time( time() ),
         $test_id,
+        $TEST_RUNNING,
     );
 
     if ( $rows_affected == 0 ) {

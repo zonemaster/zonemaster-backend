@@ -618,8 +618,8 @@ sub select_test_results {
         unless defined $result;
 
     $result->{created_at} = $self->to_iso8601( $result->{created_at} );
-    $result->{started_at} = $self->to_iso8601( $result->{started_at} );
-    $result->{ended_at}   = $self->to_iso8601( $result->{endded_at} );
+    $result->{started_at} = $self->to_iso8601( $result->{started_at} ) if defined $result->{started_at};
+    $result->{ended_at}   = $self->to_iso8601( $result->{ended_at} )   if defined $result->{ended_at};
 
     return $result;
 }

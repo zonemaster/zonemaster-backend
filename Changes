@@ -1,6 +1,13 @@
 Release history for Zonemaster component Zonemaster-Backend
 
 
+v12.1.1 2026-07-22 (part of Zonemaster v2026.1.1 release)
+
+ [Fixes]
+ - Prevents DB handles to be reused in child processes (#1256);
+   a regression introduced in the previous release
+
+
 v12.1.0 2026-06-29 (part of Zonemaster v2026.1 release)
 
  [Release information]

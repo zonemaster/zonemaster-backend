@@ -1062,7 +1062,7 @@ sub select_unfinished_tests {
 =head2 force_end_test($hash_id, $msg)
 
 Store the L<Zonemaster::Engine::Logger::Entry> $msg log entry into the database
-and mark test with $hash_id as COMPLETED.
+and mark test with $hash_id as COMPLETED / CANCELLED / CRASHED.
 
 =cut
 

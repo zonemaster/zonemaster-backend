@@ -569,7 +569,7 @@ sub set_test_completed {
     my $current_state = $self->test_state( $test_id );
 
     if ( $current_state ne $TEST_RUNNING ) {
-        die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to COMPLETED' );
+        die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to terminal state (COMPLETED/CANCELLED/CRASHED)' );
     }
 
     my $rows_affected = $self->dbh->do(

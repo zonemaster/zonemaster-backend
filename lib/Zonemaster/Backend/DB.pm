@@ -718,7 +718,7 @@ sub get_test_history {
             created_at,
             undelegated
         FROM test_results
-        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
+        WHERE state IN('completed', 'cancelled', 'crashed') AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?];

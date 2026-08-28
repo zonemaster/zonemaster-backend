@@ -1,0 +1,86 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 19:25+0300\n"
+"PO-Revision-Date: 2026-08-28 22:56+0300\n"
+"Last-Translator: kolatitov132@gmail.com\n"
+"Language-Team: Zonemaster Team\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+
+#: ../lib/Zonemaster/Backend/RPCAPI.pm:876
+msgid "Invalid method parameter(s)."
+msgstr "Некоректний параметр(и) методу."
+
+#: ../lib/Zonemaster/Backend/RPCAPI.pm:906
+msgid "Missing property"
+msgstr "Відсутня властивість"
+
+#: ../lib/Zonemaster/Backend/TestAgent.pm:214
+msgid ""
+"Warning: Zonemaster::LDNS not compiled with IDN support, cannot handle non-"
+"ASCII names correctly."
+msgstr ""
+"Попередження: Zonemaster::LDNS скомпільовано без підтримки IDN, неможливо "
+"коректно обробляти імена, що містять не-ASCII символи."
+
+#. BACKEND_TEST_AGENT:TEST_DIED
+#: ../lib/Zonemaster/Backend/Translator.pm:23
+msgid "An error occured and Zonemaster could not start or finish the test."
+msgstr "Сталася помилка, і Zonemaster не зміг розпочати або завершити тест."
+
+#. BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST
+#: ../lib/Zonemaster/Backend/Translator.pm:27
+#, perl-brace-format
+msgid ""
+"The test took too long to run (the current limit is {max_execution_time} "
+"seconds). Maybe there are too many name servers or the name servers are "
+"either unreachable or not responsive enough."
+msgstr ""
+"Тест виконувався занадто довго (поточний ліміт — {max_execution_time} "
+"секунд). Можливо, серверів імен занадто багато, або сервери імен недоступні "
+"чи недостатньо швидко відповідають."
+
+#: ../lib/Zonemaster/Backend/Validator.pm:190
+msgid "Invalid digest format"
+msgstr "Некоректний формат хешу"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:195
+msgid "Algorithm must be a positive integer"
+msgstr "Алгоритм має бути додатним цілим числом"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:200
+msgid "Digest type must be a positive integer"
+msgstr "Тип хешу має бути додатним цілим числом"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:205
+msgid "Keytag must be a positive integer"
+msgstr "Тег ключа має бути додатним цілим числом"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:310
+msgid "Domain name required"
+msgstr "Доменне ім'я є обов'язковим"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:342
+msgid "Invalid language tag format"
+msgstr "Некоректний формат тегу мови"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:345
+msgid "Unkown language string"
+msgstr "Невідомий рядок мови"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:360
+msgid "Invalid IP address"
+msgstr "Некоректна IP-адреса"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:384
+msgid "Invalid profile format"
+msgstr "Некоректний формат профілю"
+
+#: ../lib/Zonemaster/Backend/Validator.pm:388
+msgid "Unknown profile"
+msgstr "Невідомий профіль"

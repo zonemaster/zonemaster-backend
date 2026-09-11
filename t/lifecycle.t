@@ -73,6 +73,26 @@ sub count_died_messages {
     return scalar grep { $_->{tag} eq 'TEST_DIED' } @{ $results->{results} };
 }
 
+sub assert_state_timestamps {
+    my ( $db, $test_id, $state ) = @_;
+    my $result = $db->select_test_results( $test_id );
+
+    ok defined $result->{created_at}, "$state test has a creation timestamp";
+
+    if ( $state eq $TEST_WAITING ) {
+        ok !defined $result->{started_at}, "Waiting test has no start timestamp";
+        ok !defined $result->{ended_at},   "Waiting test has no end timestamp";
+    }
+    elsif ( $state eq $TEST_RUNNING ) {
+        ok defined $result->{started_at}, "Running test has a start timestamp";
+        ok !defined $result->{ended_at},  "Running test has no end timestamp";
+    }
+    else {
+        ok defined $result->{started_at}, "Terminal $state test has a start timestamp";
+        ok defined $result->{ended_at},   "Terminal $state test has an end timestamp";
+    }
+}
+
 subtest 'Everything but Test::NoWarnings' => sub {
     lives_ok {    # Make sure we get to print log messages in case of errors.
         my $db = TestUtil::init_db( $config );
@@ -82,6 +102,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
             is ref $testid1, '', "create_new_test should return 'testid' scalar";
             my $current_state = $db->test_state( $testid1 );
             is $current_state, $TEST_WAITING, "New test starts out in 'waiting' state.";
+            assert_state_timestamps( $db, $testid1, $TEST_WAITING );
 
             my @cases = (
                 {
@@ -138,6 +159,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
                         is $current_state,
                           $case->{new_state},
                           "and it should move the test to '$case->{new_state}' state.";
+                        assert_state_timestamps( $db, $testid1, $case->{new_state} );
                     }
                     else {
                         $current_state = $db->test_state( $testid1 );
@@ -233,6 +255,8 @@ subtest 'Everything but Test::NoWarnings' => sub {
             is $db->test_progress( $testid2 ), 100, 'terminate test AFTER its timeout';
             is $db->test_state( $testid3 ), $TEST_RUNNING, 'test at timeout remains running';
             is $db->test_state( $testid2 ), $TEST_CANCELLED, 'test after timeout is cancelled';
+            assert_state_timestamps( $db, $testid3, $TEST_RUNNING );
+            assert_state_timestamps( $db, $testid2, $TEST_CANCELLED );
 
             is count_cancellation_messages( $db->test_results( $testid3 ) ), 0, 'no cancellation message present AT timeout';
             is count_cancellation_messages( $db->test_results( $testid2 ) ), 1, 'one cancellation message present AFTER timeout';
@@ -246,6 +270,7 @@ subtest 'Everything but Test::NoWarnings' => sub {
 
             is $db->test_progress( $testid4 ), 100, 'terminates test';
             is $db->test_state( $testid4 ), $TEST_CRASHED, 'terminated test is marked as crashed';
+            assert_state_timestamps( $db, $testid4, $TEST_CRASHED );
 
             is count_died_messages( $db->test_results( $testid4 ) ), 1, 'one died message present after crash';
         };

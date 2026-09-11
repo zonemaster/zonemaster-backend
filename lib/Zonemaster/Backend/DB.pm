@@ -568,11 +568,19 @@ sub set_test_completed {
 
     $state //= $TEST_COMPLETED;
 
+    unless (
+      defined $state
+      && grep { $_ eq $state } ( $TEST_COMPLETED, $TEST_CANCELLED, $TEST_CRASHED )
+    ) {
+      die Zonemaster::Backend::Error::Internal->new(reason => 'invalid terminal state',);
+    }
+
     my $current_state = $self->test_state( $test_id );
 
     if ( $current_state ne $TEST_RUNNING ) {
         die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to terminal state (COMPLETED/CANCELLED/CRASHED)' );
     }
+
 
     my $rows_affected = $self->dbh->do(
         q[

@@ -18,6 +18,7 @@ use Log::Any           qw( $log );
 use Mojo::JSON::Pointer;
 use POSIX        qw( setlocale );
 use Scalar::Util qw( blessed );
+use Zonemaster::Backend::DB qw( $TEST_WAITING $TEST_RUNNING $TEST_COMPLETED $TEST_CANCELLED $TEST_CRASHED );
 use Zonemaster::Backend::Errors;
 use Zonemaster::Backend::TLD_URL;
 use Zonemaster::Backend::Translator;
@@ -353,16 +354,49 @@ sub test_progress {
 }
 
 # Experimental
-$json_schemas{job_status} = joi->object->strict->props(    #
+# {
+#     "state": state,          // in all states
+#     "created_at": timestamp, // in all states
+#     "started_at": timestamp, // only in states "running", "completed", "cancelled" and "crashed"
+#     "ended_at": timestamp,   // only in states "completed", "cancelled" and "crashed"
+#     "progress": int          // only in states "running", "completed", "cancelled" and "crashed"
+# }
+
+$json_schemas{job_status} = joi->object->strict->props(
     job_id => $zm_validator->test_id->required
 );
 
 sub job_status {
     my ( $self, $params ) = @_;
 
-    $params->{test_id} = delete $params->{job_id};
 
-    my $result = { progress => $self->test_progress( $params ) };
+    my $result;
+    eval {
+        $params->{test_id} = delete $params->{job_id};
+        my $test_id = $params->{test_id};
+
+        my $job_results = $self->{db}->select_test_results( $test_id );
+
+        $result = {
+            state => $self->{db}->test_state( $test_id ),
+            created_at => $job_results->{created_at},
+        };
+
+        if ( $result->{state} ne $TEST_WAITING ) {
+            $result->{started_at} = $job_results->{started_at};
+            $result->{progress}   = $self->{db}->test_progress( $test_id );
+        }
+
+        if ( $result->{state} eq $TEST_COMPLETED
+            || $result->{state} eq $TEST_CANCELLED
+            || $result->{state} eq $TEST_CRASHED ) {
+                $result->{ended_at} = $job_results->{ended_at};
+        }
+    };
+    if ($@) {
+        handle_exception( $@ );
+    }
+
     return $result;
 }
 

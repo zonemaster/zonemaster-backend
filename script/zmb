@@ -314,6 +314,32 @@ sub cmd_get_test_params {
     );
 }
 
+=head2 job_status
+
+ zmb [GLOBAL OPTIONS] job_status [OPTIONS]
+
+ Options:
+   --job-id JOB_ID
+
+=cut
+
+sub cmd_job_status {
+    my @opts = @_;
+
+    my $opt_job_id;
+    GetOptionsFromArray(    #
+        \@opts,
+        'job-id|t=s' => \$opt_job_id,
+    ) or pod2usage( 2 );
+
+    return to_jsonrpc(
+        id     => 1,
+        method => 'job_status',
+        params => {
+            job_id => $opt_job_id,
+        },
+    );
+}
 
 =head2 get_test_results
 

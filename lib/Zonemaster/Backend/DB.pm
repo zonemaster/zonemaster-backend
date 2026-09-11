@@ -128,6 +128,8 @@ Each test in the database is always in exactly one of five formal states. The
 state is stored in the C<state> column of the C<test_results> table and is
 enforced by a C<CHECK> constraint.
 
+The complete state model is documented in C<docs/formal-test-states.md>.
+
 =over 4
 
 =item B<waiting>
@@ -939,7 +941,10 @@ sub get_test_params {
 =head2 batch_status
 
 Returns number of tests per category (finished, running, waiting) for the given
-batch, provided as C<batch_id>.
+batch, provided as C<batch_id>. The categories are determined from the formal
+test state: C<waiting> and C<running> retain their respective categories, and
+all terminal states (C<completed>, C<cancelled> and C<crashed>) are counted as
+finished.
 
 If one or more of parameters C<list_running_tests>, C<list_finished_tests> or
 C<list_waiting_tests> are included with true value, the C<hash_id> values for
@@ -964,7 +969,7 @@ sub batch_status {
     $result{finished_count} = 0;
 
     my $query = "
-        SELECT hash_id, progress
+        SELECT hash_id, state
         FROM test_results
         WHERE batch_id=?";
 
@@ -972,17 +977,17 @@ sub batch_status {
     $sth1->execute( $batch_id );
 
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{progress} eq '0' ) {
+        if ( $h->{state} eq $TEST_WAITING ) {
             $result{waiting_count}++;
             push(@{$result{waiting_tests}}, $h->{hash_id}) if $test_params->{list_waiting_tests};
         }
-        elsif ( $h->{progress} eq '100' ) {
-            $result{finished_count}++;
-            push(@{$result{finished_tests}}, $h->{hash_id}) if $test_params->{list_finished_tests};
-        }
-        else {
+        elsif ( $h->{state} eq $TEST_RUNNING ) {
             $result{running_count}++;
             push(@{$result{running_tests}}, $h->{hash_id}) if $test_params->{list_running_tests};
+        }
+        else {
+            $result{finished_count}++;
+            push(@{$result{finished_tests}}, $h->{hash_id}) if $test_params->{list_finished_tests};
         }
     }
 

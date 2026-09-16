@@ -35,6 +35,7 @@ MANIFEST			This list of files
 META.yml
 README.md
 script/add-batch-job.pl
+script/configure-preset-profiles.sh
 script/zmb
 script/zmtest
 script/zonemaster_backend_rpcapi.psgi

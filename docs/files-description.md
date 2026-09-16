@@ -12,10 +12,6 @@
 ./share/backend_config.ini
     A sample configuration file
 
-./CodeSnippets/Client.pm
-./CodeSnippets/client.pl
-    A sample script and library to communicate with the backend.
-
 ./lib/Zonemaster/Backend/DB.pm
     The Database abstraction layer.
 
@@ -34,15 +30,5 @@
 ./lib/Zonemaster/Backend/TestAgent.pm
     The TestAgent main module.
 
-./script/execute_zonemaster_P10.pl
-./script/execute_zonemaster_P5.pl
-    The scripts to execute tests with differents priorities (application level priorities).
-
-./script/execute_tests.pl
-    The main Test Agent entry point to execute from crontab.
-
-./t/test01.t
-./t/test_mysql_backend.pl
-./t/test_postgresql_backend.pl
-./t/test_validate_syntax.t
+./t/*
     Test files.

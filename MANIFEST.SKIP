@@ -7,6 +7,7 @@
 ^MANIFEST\.SKIP$
 ^docker/Dockerfile$
 ^docker/zonemaster_launch$
+^docker/docker-compose.yml$
 ^\.github/
 ^docs/internal-documentation/
 \.po$

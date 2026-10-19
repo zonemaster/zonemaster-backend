@@ -60,6 +60,7 @@ RUN apk add --no-cache \
 	perl-mojolicious \
 	perl-moose \
 	perl-dbi \
+	perl-dbd-pg \
 	perl-dbd-sqlite \
 	perl-plack \
 	perl-parallel-forkmanager

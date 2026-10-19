@@ -219,10 +219,9 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_RPCAPI_enable_user_create( 'no' );      # experimental
-    $obj->_set_RPCAPI_enable_batch_create( 'yes' );    # experimental
-    $obj->_set_RPCAPI_enable_add_api_user( 'no' );
-    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
+    $obj->_set_RPCAPI_enable_batch_create( 'yes' );
+    $obj->_set_RPCAPI_enable_add_api_user( 'no' );     # Deprecated to be removed with v2027.1
+    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );   # Deprecated to be removed with v2027.1
     $obj->_set_locales( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
@@ -239,8 +238,16 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-
-    #currently no deprecation warnings
+    if ( defined( $ini->val( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+        push @warnings, "Use of RPCAPI.enable_add_batch_job is deprecated. Remove it and use RPCAPI.enable_batch_create instead.";
+    }
+    if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+        if ( $value eq "no" or $value eq "false" ) {
+            push @warnings, "Use of RPCAPI.enable_add_api_user is deprecated. Default value is no/false. Remove it.";
+        } else {
+            push @warnings, "Use of RPCAPI.enable_add_api_user is deprecated. Use RPCAPI.batch_api_key instead.";
+        }
+    }
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {

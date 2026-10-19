@@ -606,11 +606,14 @@ sub domain_history {
     };
 }
 
+
+# Deprecated to be removed in v2027.1.
 $json_schemas{add_api_user} = joi->object->strict->props(
     username => $zm_validator->username->required,
     api_key  => $zm_validator->api_key->required,
 );
 
+# Deprecated to be removed in v2027.1.
 sub add_api_user {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
@@ -642,14 +645,7 @@ sub add_api_user {
     return $result;
 }
 
-# Experimental
-$json_schemas{user_create} = $json_schemas{add_api_user};
-
-sub user_create {
-    my $result = { success => add_api_user( @_ ) };
-    return $result;
-}
-
+# Deprecated to be removed in v2027.1.
 $json_schemas{add_batch_job} = {
     type                 => 'object',
     additionalProperties => 0,
@@ -688,6 +684,7 @@ $json_schemas{add_batch_job} = {
     }
 };
 
+# Deprecated to be removed in v2027.1.
 sub add_batch_job {
     my ( $self, $params ) = @_;
 

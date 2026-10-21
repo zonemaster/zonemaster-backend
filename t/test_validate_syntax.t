@@ -32,7 +32,7 @@ engine = SQLite
 database_file = $tempdir/zonemaster.sqlite
 
 [LANGUAGE]
-locale = en_US fr_FR da_DK fi_FI nb_NO sl_SI sv_SE
+locale = en_US fr_FR da_DK fi_FI nb_NO sl_SI sv_SE uk_UA
 EOF
 
 my $engine = TestUtil::create_rpcapi( $config, override_dbtype => $config->DB_engine );

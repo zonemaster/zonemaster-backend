@@ -299,7 +299,7 @@ sub formats {
 
 =head2 check_domain(%value)
 
-Validates a L<domain name|https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#domain-name>.
+Validates a L<domain name|https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html#domain-name>.
 
 =cut
 
@@ -321,7 +321,7 @@ sub check_domain {
 
 =head2 check_language_tag($value, %locales)
 
-Validates a L<https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#language-tag>.
+Validates a L<https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html#language-tag>.
 
 =over
 
@@ -350,7 +350,7 @@ sub check_language_tag {
 
 =head2 check_ip($value)
 
-Validates an L<IP address|https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#ip-address>.
+Validates an L<IP address|https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html#ip-address>.
 
 =cut
 
@@ -365,7 +365,7 @@ sub check_ip {
 
 =head2 check_profile($value, %profiles)
 
-Validates a L<profile name|https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md#profile-name>.
+Validates a L<profile name|https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html#profile-name>.
 
 =over
 
@@ -440,7 +440,7 @@ sub untaint_tld_block {
 =head2 untaint_tld_url_no_path
 
 Returns true if the string contains a URL with no path. See
-L<documentation|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
+L<documentation|https://doc.zonemaster.net/latest/configuration/tld-url-specification.html#url-string-or-blocking-policy>.
 
 =cut
 

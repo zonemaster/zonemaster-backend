@@ -66,12 +66,12 @@ This is free software under a 2-clause BSD license. The full text of the license
 be found in the [LICENSE](LICENSE) file included in this respository.
 
 
-[API]:                            https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md
+[API]:                            https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html
 [Architecture]:                   docs/Architecture.md
-[Configuration documentation]:    https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md
-[Getting Started]:                https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/getting-started.md
-[Installation instructions]:      https://github.com/zonemaster/zonemaster/blob/master/docs/public/installation/zonemaster-backend.md
+[Configuration documentation]:    https://doc.zonemaster.net/latest/configuration/backend.html
+[Getting Started]:                https://doc.zonemaster.net/latest/using/backend/getting-started.html
+[Installation instructions]:      https://doc.zonemaster.net/latest/installation/zonemaster-backend.html
 [Typographic Conventions]:        docs/TypographicConventions.md
-[Upgrade document]:               https://github.com/zonemaster/zonemaster/blob/master/docs/public/upgrading/backend.md
-[Zonemaster-Engine installation]: https://github.com/zonemaster/zonemaster/blob/master/docs/public/installation/zonemaster-engine.md
+[Upgrade document]:               https://doc.zonemaster.net/latest/upgrading/backend.html
+[Zonemaster-Engine installation]: https://doc.zonemaster.net/latest/installation/zonemaster-engine.html
 [Zonemaster repository]:          https://github.com/zonemaster/zonemaster

@@ -372,8 +372,7 @@ sub job_status {
 
     my $result;
     eval {
-        $params->{test_id} = delete $params->{job_id};
-        my $test_id = $params->{test_id};
+        my $test_id = $params->{job_id};
 
         my $job_results = $self->{db}->select_test_results( $test_id );
 

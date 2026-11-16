@@ -59,7 +59,7 @@ my $success = eval {
     $dbh->do( "UPDATE test_results SET state = 'running' WHERE progress > 0 AND progress < 100" );
 
     # Update schema version.
-    $dbh->do( "UPDATE schema_version SET version = ? WHERE id = 1", {}, $TARGET_SCHEMA_VERSION );
+    $dbh->do( "UPDATE schema_version SET version = ? WHERE id = ?", {}, $TARGET_SCHEMA_VERSION, $EXPECTED_SCHEMA_VERSION );
 
     $dbh->commit;
     1;
@@ -74,7 +74,7 @@ if ( !$success ) {
         $msg .=
             "Note: MySQL does not support transactional DDL, so the database may be left partially "
           . "migrated (the changes above were not rolled back). Before re-running this script, "
-          . "manually undo any changes that were already applied, e.g.: "
+          . "manually undo any changes that were already applied, i.e.: "
           . "ALTER TABLE test_results DROP CONSTRAINT test_results_state_check; "
           . "ALTER TABLE test_results DROP COLUMN state;\n";
     }

@@ -46,8 +46,8 @@ The Zonemaster Backend documentation is split up into several documents:
   components and how they operate. It also discusses all central concepts
   needed to understand the Zonemaster backend, and contains a glossary over
   domain specific technical terms.
-* The [Getting Started] guide walks you through creating a *test* and following
-  it through its life cycle, all using JSON-RPC calls to the *RPC API daemon*.
+* The [JSON-RPC API guide] provides a practical introduction to using the
+  Zonemaster Backend API.
 * The [API] documentation describes the *RPC API daemon* inteface in detail.
 
 
@@ -60,7 +60,7 @@ be found in the [LICENSE](LICENSE) file included in this respository.
 [API]:                            https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html
 [Architecture]:                   docs/Architecture.md
 [Configuration documentation]:    https://doc.zonemaster.net/latest/configuration/backend.html
-[Getting Started]:                https://doc.zonemaster.net/latest/using/backend/getting-started.html
+[JSON-RPC API guide]:             https://doc.zonemaster.net/latest/using/backend/Using-Zonemaster-Backend-JSON-RPC-API.html
 [Installation instructions]:      https://doc.zonemaster.net/latest/installation/zonemaster-backend.html
 [Typographic Conventions]:        docs/TypographicConventions.md
 [Upgrade document]:               https://doc.zonemaster.net/latest/upgrading/backend.html

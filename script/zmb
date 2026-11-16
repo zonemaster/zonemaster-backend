@@ -263,11 +263,15 @@ sub cmd_start_domain_test {
 
  zmb [GLOBAL OPTIONS] test_progress [OPTIONS]
 
+ Obsolete, will be removed in version 2027.2
+
  Options:
    --test-id TEST_ID
 
 =cut
 
+# Obsolete
+# Need to be removed for 2027.2
 sub cmd_test_progress {
     my @opts = @_;
 
@@ -725,6 +729,7 @@ sub show_commands {
     my %specials = (
         man                 => 'Show the full manual page.',
         non_existing_method => 'Call a non-existing RPC method.',
+        test_progress       => 'Deprecated, use job_status instead',
     );
     my @commands  = get_commands();
     my $max_width = 0;

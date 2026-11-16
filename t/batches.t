@@ -175,6 +175,24 @@ subtest 'RPCAPI batch_status' => sub {
         ok( !exists $res->{running_tests}, 'list of running tests expected to be absent' );
         ok( !exists $res->{finished_tests}, 'list of finished tests to be absent' );
 
+        my ( $test_id ) = $rpcapi->{db}->dbh->selectrow_array(
+            'SELECT hash_id FROM test_results WHERE batch_id = ?',
+            undef,
+            $batch_id,
+        );
+
+        ok( $rpcapi->{db}->claim_test( $test_id ), 'batch test enters running state' );
+        $res = $rpcapi->batch_status( { batch_id => $batch_id } );
+        is( $res->{waiting_count}, 0, 'running test is not counted as waiting' );
+        is( $res->{running_count}, 1, 'running test is counted as running' );
+        is( $res->{finished_count}, 0, 'running test is not counted as finished' );
+
+        $rpcapi->{db}->store_results( $test_id, '{}' );
+        $res = $rpcapi->batch_status( { batch_id => $batch_id } );
+        is( $res->{waiting_count}, 0, 'completed test is not counted as waiting' );
+        is( $res->{running_count}, 0, 'completed test is not counted as running' );
+        is( $res->{finished_count}, 1, 'completed test is counted as finished' );
+
     };
 
     subtest 'unknown batch (batch_status)' => sub {

@@ -575,32 +575,32 @@ Profile paths are always strings (contrast with L<PUBLIC_PROFILES>).
 
 =head2 TLD_URL_SETTINGS_enable_tld_url
 
-Get the value of L<TLD_URL_SETTINGS.enable_tld_url|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#enable_tld_url>.
+Get the value of L<TLD_URL_SETTINGS.enable_tld_url|https://doc.zonemaster.net/latest/configuration/backend.html#enable_tld_url>.
 
 Returns a boolean.
 
 
 =head2 TLD_URL_SETTINGS_lookup_timeout
 
-Get the value of L<TLD_URL_SETTINGS.lookup_timeout|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#lookup_timeout>.
+Get the value of L<TLD_URL_SETTINGS.lookup_timeout|https://doc.zonemaster.net/latest/configuration/backend.html#lookup_timeout>.
 
 Returns a positive integer.
 
 
 =head2 TLD_URL_SETTINGS_include_source
 
-Get the value of L<TLD_URL_SETTINGS.include_source|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#include_source>.
+Get the value of L<TLD_URL_SETTINGS.include_source|https://doc.zonemaster.net/latest/configuration/backend.html#include_source>.
 
 Returns a boolean.
 
 
 =head2 TLD_URL_OVERRIDE
 
-Get the set of L<TLD URL OVERRIDE|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md#tld-url-override-section>.
+Get the set of L<TLD URL OVERRIDE|https://doc.zonemaster.net/latest/configuration/backend.html#tld-url-override-section>.
 
 Returns a hash mapping TLD label (ASCII or A-label) to URL string or blocking policy.
 The TLD label is normalized to lowercase. See the meaning of
-L<URL string or blocking policy|https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/tld-url-specification.md#url-string-or-blocking-policy>.
+L<URL string or blocking policy|https://doc.zonemaster.net/latest/configuration/tld-url-specification.html#url-string-or-blocking-policy>.
 
 
 =head2 ZONEMASTER_max_zonemaster_execution_time

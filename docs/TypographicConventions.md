@@ -24,5 +24,5 @@ The Zonemaster Backend documentation uses the following typographic conventions:
 > * notes and commentary
 >
 
-[API]:          https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md
+[API]:          https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html
 [Architecture]: Architecture.md

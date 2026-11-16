@@ -46,8 +46,8 @@ The Zonemaster Backend documentation is split up into several documents:
   components and how they operate. It also discusses all central concepts
   needed to understand the Zonemaster backend, and contains a glossary over
   domain specific technical terms.
-* The [Getting Started] guide walks you through creating a *test* and following
-  it through its life cycle, all using JSON-RPC calls to the *RPC API daemon*.
+* The [JSON-RPC API guide] provides a practical introduction to using the
+  Zonemaster Backend API.
 * The [API] documentation describes the *RPC API daemon* inteface in detail.
 
 ## CI artifact
@@ -66,12 +66,12 @@ This is free software under a 2-clause BSD license. The full text of the license
 be found in the [LICENSE](LICENSE) file included in this respository.
 
 
-[API]:                            https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/rpcapi-reference.md
+[API]:                            https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html
 [Architecture]:                   docs/Architecture.md
-[Configuration documentation]:    https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md
-[Getting Started]:                https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/getting-started.md
-[Installation instructions]:      https://github.com/zonemaster/zonemaster/blob/master/docs/public/installation/zonemaster-backend.md
+[Configuration documentation]:    https://doc.zonemaster.net/latest/configuration/backend.html
+[JSON-RPC API guide]:             https://doc.zonemaster.net/latest/using/backend/Using-Zonemaster-Backend-JSON-RPC-API.html
+[Installation instructions]:      https://doc.zonemaster.net/latest/installation/zonemaster-backend.html
 [Typographic Conventions]:        docs/TypographicConventions.md
-[Upgrade document]:               https://github.com/zonemaster/zonemaster/blob/master/docs/public/upgrading/backend.md
-[Zonemaster-Engine installation]: https://github.com/zonemaster/zonemaster/blob/master/docs/public/installation/zonemaster-engine.md
+[Upgrade document]:               https://doc.zonemaster.net/latest/upgrading/backend.html
+[Zonemaster-Engine installation]: https://doc.zonemaster.net/latest/installation/zonemaster-engine.html
 [Zonemaster repository]:          https://github.com/zonemaster/zonemaster

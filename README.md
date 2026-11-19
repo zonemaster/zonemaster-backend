@@ -11,10 +11,11 @@ in [batches across multiple domains][Batches documentation].
 Zonemaster-Backend is optional and only needs to be installed when there
 is a need to store Zonemaster test runs in a user-managed database for
 subsequent analysis or archival.
+It is also needed for running Zonemaster-GUI.
 
 ### Prerequisites
 
-Before you install the Zonemaster Backend, you need Zonemaster-Engine installed.
+Before you install Zonemaster-Backend, you need Zonemaster-Engine installed.
 See the [Zonemaster-Engine installation instructions][Zonemaster-Engine installation].
 
 
@@ -64,10 +65,10 @@ be found in the [LICENSE](LICENSE) file included in this respository.
 
 [API]:                            https://doc.zonemaster.net/latest/using/backend/rpcapi-reference.html
 [Architecture]:                   docs/Architecture.md
-[Batches documentation]:          https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/Using-Zonemaster-Backend-for-batch-testing.md
-[Configuration documentation]:    https://github.com/zonemaster/zonemaster/blob/master/docs/public/configuration/backend.md
-[Getting Started]:                https://github.com/zonemaster/zonemaster/blob/master/docs/public/using/backend/Using-Zonemaster-Backend-JSON-RPC-API.md
-[Installation instructions]:      https://github.com/zonemaster/zonemaster/blob/master/docs/public/installation/zonemaster-backend.md
+[Batches documentation]:          https://doc.zonemaster.net/latest/using/backend/Using-Zonemaster-Backend-for-batch-testing.html
+[Configuration documentation]:    https://doc.zonemaster.net/latest/configuration/backend.html
+[JSON-RPC API guide]:             https://doc.zonemaster.net/latest/using/backend/Using-Zonemaster-Backend-JSON-RPC-API.html
+[Installation instructions]:      https://doc.zonemaster.net/latest/installation/zonemaster-backend.html
 [Typographic Conventions]:        docs/TypographicConventions.md
 [Upgrade document]:               https://doc.zonemaster.net/latest/upgrading/backend.html
 [Zonemaster-Engine installation]: https://doc.zonemaster.net/latest/installation/zonemaster-engine.html

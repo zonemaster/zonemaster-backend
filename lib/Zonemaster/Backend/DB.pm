@@ -23,6 +23,7 @@ use Zonemaster::Engine::Logger::Entry;
 
 requires qw(
   add_batch_job
+  batch_create
   create_schema
   drop_tables
   from_config
@@ -68,7 +69,7 @@ A positive integer. The database schema version that this module is compatible w
 
 =cut
 
-Readonly our $REQUIRED_SCHEMA_VERSION => 1;
+Readonly our $REQUIRED_SCHEMA_VERSION => 2;
 
 =head2 $TEST_WAITING
 
@@ -264,7 +265,7 @@ sub add_api_user {
 }
 
 sub create_new_test {
-    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params, $batch_id ) = @_;
+    my ( $self, $domain, $test_params, $seconds_between_tests_with_same_params ) = @_;
 
     my $dbh = $self->dbh;
 
@@ -293,7 +294,6 @@ sub create_new_test {
             q[
                 INSERT INTO test_results (
                     hash_id,
-                    batch_id,
                     created_at,
                     priority,
                     queue,
@@ -305,7 +305,6 @@ sub create_new_test {
             ],
             undef,
             $hash_id,
-            $batch_id,
             $self->format_time( time() ),
             $priority,
             $queue_label,
@@ -319,8 +318,13 @@ sub create_new_test {
     return $hash_id;
 }
 
-# Search for recent test result with the test same parameters, where
-# "threshold" gives the oldest start time.
+=head2 recent_test_hash_id
+
+Search for recent test result with the test same parameters, where
+"threshold" gives the oldest start time.
+
+=cut
+
 sub recent_test_hash_id {
     my ( $self, $fingerprint, $threshold ) = @_;
 
@@ -645,18 +649,29 @@ sub get_test_history {
     return \@results;
 }
 
+=head2 create_new_batch_job
+
+Create a batch and resturns Batch ID and Hash Batch ID
+
+=cut
+
 sub create_new_batch_job {
     my ( $self, $username ) = @_;
+    
+    my $now         = time();
+    my $new_hash_batch_id = 'B-' . substr(md5_hex($now.rand()), 0, 16);
+    $username = 'NONAME' unless $username;
 
     my $dbh = $self->dbh;
-    $dbh->do( q[ INSERT INTO batch_jobs (username, created_at) VALUES (?,?) ],
+    $dbh->do( q[ INSERT INTO batch_jobs (hash_batch_id, username, created_at) VALUES (?,?,?) ],
         undef,
+        $new_hash_batch_id,
         $username,
         $self->format_time( time() ),
     );
     my $new_batch_id = $dbh->last_insert_id( undef, undef, "batch_jobs", undef );
 
-    return $new_batch_id;
+    return ($new_batch_id,$new_hash_batch_id);
 }
 
 sub user_authorized {
@@ -673,15 +688,60 @@ sub user_authorized {
     return $id;
 }
 
-sub batch_exists_in_db {
-    my ( $self, $batch_id ) = @_;
+=head2 valid_batch_api_key
 
+Validate the Batch API key from the API call against the configured
+list of Batch API keys.
+
+=cut
+sub valid_batch_api_key {
+    my ( $self, $batch_api_key, $confapikeys ) = @_;
+    my @confkeys = @$confapikeys;
+    return scalar grep(/^$batch_api_key$/, @confkeys);
+}
+
+=head2 valid_small_batch
+
+Check if a anonymous batch is within the configured limits.
+
+=cut
+
+sub valid_small_batch {
+    my ( $self, $size, $maxsize) = @_;
+    # my $confsize = $self->{config}->RPCAPI_max_anonymous_batch_size;;
+    if ( $size <= $maxsize ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+=head2 batch_exists_in_db
+
+Verify that given Batch ID or Hash Batch ID exists in the table. Support for
+Batch ID is deprecated to be removed in v2027.1.
+
+=cut
+
+sub batch_exists_in_db {
+    my ( $self, $batchid ) = @_;
+
+    my ( $id );
     my $dbh = $self->dbh;
-    my ( $id ) = $dbh->selectrow_array(
-        q[ SELECT id FROM batch_jobs WHERE id = ? ],
-        undef,
-        $batch_id
-    );
+
+    if ( $batchid =~ /^B-/ ) {
+        ( $id ) = $dbh->selectrow_array(
+            q[ SELECT id FROM batch_jobs WHERE hash_batch_id = ? ],
+            undef,
+            $batchid
+        );
+    } else {
+        ( $id ) = $dbh->selectrow_array(
+            q[ SELECT id FROM batch_jobs WHERE id = ? ],
+            undef,
+            $batchid
+        );
+    }
 
     return $id;
 }
@@ -694,7 +754,8 @@ If $queue_label is defined it must be an integer.
 If defined, only tests in the associated queue are considered.
 Otherwise tests from all queues are considered.
 
-Returns the test id and the batch id of the claimed test.
+Returns the test id and the batch id of the claimed test. The Hash Batch ID
+is not returned even it exists. It is only membership of a batch that matters.
 If there are no waiting tests to claim, C<undef> is returned for both ids.
 
 Only tests in the "waiting" state are considered.
@@ -821,31 +882,41 @@ If one or more of parameters C<list_running_tests>, C<list_finished_tests> or
 C<list_waiting_tests> are included with true value, the C<hash_id> values for
 that category is also included.
 
+Handles both Batch ID and Hash Batch ID.
+
 =cut
 
 # Standard SQL, can be here
 sub batch_status {
     my ( $self, $test_params ) = @_;
 
-    my $batch_id = $test_params->{batch_id};
+    my $batchid = $test_params->{batch_id}; # Either Batch ID or Hash Batch ID.
 
-    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batch_id } )
-        unless defined $self->batch_exists_in_db( $batch_id );
+    die Zonemaster::Backend::Error::ResourceNotFound->new( message => "Unknown batch", data => { batch_id => $batchid } )
+        unless defined $self->batch_exists_in_db( $batchid );
 
     my $dbh = $self->dbh;
+    my $id_field;
 
     my %result;
     $result{waiting_count} = 0;
     $result{running_count} = 0;
     $result{finished_count} = 0;
 
+    if ( $batchid =~ /^B-/ ) {
+        $id_field = 'hash_batch_id';
+    } else {
+        $id_field = 'batch_id';
+    }
+
     my $query = "
         SELECT hash_id, progress
         FROM test_results
-        WHERE batch_id=?";
+        WHERE $id_field=?";
+
 
     my $sth1 = $dbh->prepare( $query );
-    $sth1->execute( $batch_id );
+    $sth1->execute( $batchid );
 
     while ( my $h = $sth1->fetchrow_hashref ) {
         if ( $h->{progress} eq '0' ) {

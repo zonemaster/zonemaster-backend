@@ -159,6 +159,27 @@ sub conf_languages {
     return $result;
 }
 
+=head2 conf_max_anonymous_batch_size
+
+Handles the RPCAPI with the same name. Returns a non-negative integer.
+
+=cut
+
+sub conf_max_anonymous_batch_size {
+    my ( $self ) = @_;
+
+    my $size;
+    eval {
+        $size = $self->{config}->RPCAPI_max_anonymous_batch_size;
+    };
+
+    if ( $@ ) {
+        handle_exception( $@ );
+    }
+    return $size;
+}
+
+
 =head2 get_tld_url
 
 Handles the RPCAPI with the same name. All the "dirty work" is done in
@@ -606,11 +627,14 @@ sub domain_history {
     };
 }
 
+
+# Deprecated to be removed in v2027.1.
 $json_schemas{add_api_user} = joi->object->strict->props(
     username => $zm_validator->username->required,
     api_key  => $zm_validator->api_key->required,
 );
 
+# Deprecated to be removed in v2027.1.
 sub add_api_user {
     my ( $self, $params, undef, $remote_ip ) = @_;
 
@@ -642,14 +666,7 @@ sub add_api_user {
     return $result;
 }
 
-# Experimental
-$json_schemas{user_create} = $json_schemas{add_api_user};
-
-sub user_create {
-    my $result = { success => add_api_user( @_ ) };
-    return $result;
-}
-
+# Deprecated to be removed in v2027.1.
 $json_schemas{add_batch_job} = {
     type                 => 'object',
     additionalProperties => 0,
@@ -688,6 +705,7 @@ $json_schemas{add_batch_job} = {
     }
 };
 
+# Deprecated to be removed in v2027.1.
 sub add_batch_job {
     my ( $self, $params ) = @_;
 
@@ -710,14 +728,18 @@ sub add_batch_job {
     return $results;
 }
 
-# Experimental
+=head2 batch_create
+
+Handles the RPCAPI with the same name. Returns a Hash batch ID.
+
+=cut
+
 $json_schemas{batch_create} = {
     type                 => 'object',
     additionalProperties => 0,
-    required             => [ 'username', 'api_key', 'domains' ],
+    required             => [ 'domains' ],
     properties           => {
-        username => $zm_validator->username->required->compile,
-        api_key  => $zm_validator->api_key->required->compile,
+        batch_api_key => $zm_validator->batch_api_key->compile,
         domains  => {
             type            => "array",
             additionalItems => 0,
@@ -752,11 +774,26 @@ $json_schemas{batch_create} = {
 sub batch_create {
     my ( $self, $params ) = @_;
 
-    $params->{test_params} = delete $params->{job_params};
+    my $confapikeys = $self->{config}->RPCAPI_batch_api_key; # Hash ref
+    my $maxsize = $self->{config}->RPCAPI_max_anonymous_batch_size;
 
-    my $result = { batch_id => $self->add_batch_job( $params ) };
+    my $results;
+    eval {
+        $params->{test_params}{profile}  //= "default";
+        $params->{test_params}{priority} //= 5;
+        $params->{test_params}{queue}    //= 0;
 
-    return $result;
+        my $profile = $self->{_profiles}{ $params->{test_params}{profile} };
+        $params->{test_params}{ipv4} //= $profile->get( "net.ipv4" );
+        $params->{test_params}{ipv6} //= $profile->get( "net.ipv6" );
+
+        $results = $self->{db}->batch_create( $params, $confapikeys, $maxsize );
+    };
+    if ( $@ ) {
+        handle_exception( $@ );
+    }
+
+    return $results;
 }
 
 $json_schemas{batch_status} = {

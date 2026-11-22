@@ -111,7 +111,7 @@ sub main {
 
         my $fetch_test_timer = [gettimeofday];
 
-        my ( $test_id, $batch_id );
+        my ( $test_id, $batch_id ); # If Hash Batch ID is undef, then Batch ID is also undef.
         eval {
             $self->db->process_unfinished_tests( $self->config->ZONEMASTER_lock_on_queue, $self->config->ZONEMASTER_max_zonemaster_execution_time, );
 

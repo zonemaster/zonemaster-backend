@@ -58,6 +58,10 @@ my $success = eval {
     $dbh->do( "UPDATE test_results SET state = 'completed' WHERE progress = 100" );
     $dbh->do( "UPDATE test_results SET state = 'running' WHERE progress > 0 AND progress < 100" );
 
+    # Create INDEX
+    $dbh->do( "CREATE INDEX test_results__batch_id_state ON test_results (batch_id, state)" );
+    $dbh->do( "CREATE INDEX test_results__state ON test_results (state)" );
+
     # Update schema version.
     $dbh->do( "UPDATE schema_version SET version = ? WHERE id = ?", {}, $TARGET_SCHEMA_VERSION, $EXPECTED_SCHEMA_VERSION );
 

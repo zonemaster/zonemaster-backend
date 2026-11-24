@@ -111,6 +111,16 @@ sub create_schema {
             'CREATE INDEX test_results__progress ON test_results (progress)'
         );
     }
+    if ( not exists($indexes->{test_results__batch_id_state}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__batch_id_state ON test_results (batch_id, state)'
+        );
+    }
+    if ( not exists($indexes->{test_results__state}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__state ON test_results (state)'
+        );
+    }
     if ( not exists($indexes->{test_results__domain_undelegated}) ) {
         $dbh->do(
             'CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)'

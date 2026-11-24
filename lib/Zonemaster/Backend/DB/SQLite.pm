@@ -98,6 +98,12 @@ sub create_schema {
         'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
     );
     $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__batch_id_state ON test_results (batch_id, state)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__state ON test_results (state)'
+    );
+    $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'
     );
 

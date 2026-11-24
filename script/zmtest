@@ -74,19 +74,24 @@ fi
 while true
 do
     output="$(zmb "${server_url}" job_status --job-id "${testid}")" || exit $?
-    state="$(printf "%s" "${output}" | "${JQ}" -r .result.state)" || exit $?
+    state=$(
+        printf "%s" "${output}" | \
+            "${JQ}" -r '.result as {state: $s, progress: $p} |
+                        if $s == "running" then
+                            "\($s): \($p)% done"
+                        else
+                            $s
+                        end'
+    )
 
-    if [ "${state}" == "waiting" ] ; then
-        printf "\r${state}" >&2
-    else
-        progress="$(printf "%s" "${output}" | "${JQ}" -r .result.progress)" || exit $?
-        printf "\r${state}: ${progress}%% done" >&2
-        
-        if [ "${progress}" -eq 100 ] ; then
+    printf "\r%s" "${state}" >&2
+
+    case "${state}" in
+        completed | cancelled | crashed )
             echo >&2
-        break
-        fi
-    fi
+            break
+            ;;
+    esac
 
     sleep 1
 

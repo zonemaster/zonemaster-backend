@@ -62,13 +62,15 @@ has 'dbhandlepid' => (
     required => 0,
 );
 
+=head1 CONSTANTS
+
 =head2 $REQUIRED_SCHEMA_VERSION
 
 A positive integer. The database schema version that this module is compatible with.
 
 =cut
 
-Readonly our $REQUIRED_SCHEMA_VERSION => 1;
+Readonly our $REQUIRED_SCHEMA_VERSION => 2;
 
 =head2 $TEST_WAITING
 
@@ -76,7 +78,7 @@ The test is waiting to be processed.
 
 =cut
 
-Readonly our $TEST_WAITING => 'WAITING';
+Readonly our $TEST_WAITING => 'waiting';
 
 =head2 $TEST_RUNNING
 
@@ -84,39 +86,101 @@ The test is currently being processed.
 
 =cut
 
-Readonly our $TEST_RUNNING => 'RUNNING';
+Readonly our $TEST_RUNNING => 'running';
 
 =head2 $TEST_COMPLETED
 
 The test was already processed.
 
-This state encompasses all of the following:
+=cut
 
-=over 2
+Readonly our $TEST_COMPLETED => 'completed';
 
-=item
+=head2 $TEST_CANCELLED
 
-The Zonemaster Engine test terminated normally.
-
-=item
-
-A critical error occurred while processing.
-
-=item
-
-The processing was cancelled because it took too long.
-
-=back
+The test was cancelled.
 
 =cut
 
-Readonly our $TEST_COMPLETED => 'COMPLETED';
+Readonly our $TEST_CANCELLED => 'cancelled';
+
+=head2 $TEST_CRASHED
+
+The test crashed.
+
+=cut
+
+Readonly our $TEST_CRASHED => 'crashed';
+
 
 our @EXPORT_OK = qw(
     $TEST_WAITING
     $TEST_RUNNING
     $TEST_COMPLETED
+    $TEST_CANCELLED
+    $TEST_CRASHED
 );
+
+
+=head1 TEST STATES
+
+Each test in the database is always in exactly one of five formal states. The
+state is stored in the C<state> column of the C<test_results> table and is
+enforced by a C<CHECK> constraint.
+
+The complete state model is documented in C<docs/formal-test-states.md>.
+
+=over 4
+
+=item B<waiting>
+
+The test has been created but is waiting to be picked up for processing.
+This is the initial state set by C<create_new_test()>.
+In this state C<progress> is C<0> and C<started_at> is C<NULL>.
+
+=item B<running>
+
+The test has been claimed by a worker and is currently being processed.
+This state is entered through C<claim_test()>.
+In this state C<progress> is in the range 1-99 inclusive and
+C<started_at> is set.
+
+=item B<completed>
+
+The test finished normally.
+This state is entered through C<set_test_completed()> or C<store_results()>.
+In this state C<progress> is C<100> and C<ended_at> is set.
+
+=item B<cancelled>
+
+The test was terminated because it exceeded the configured maximum execution
+time.
+This state is entered through C<process_unfinished_tests()>.
+In this state C<progress> is C<100> and C<ended_at> is set.
+The result entries include a C<BACKEND_TEST_AGENT:UNABLE_TO_FINISH_TEST>
+message.
+
+=item B<crashed>
+
+The test worker crashed while processing the test.
+This state is entered through C<process_dead_test()>.
+In this state C<progress> is C<100> and C<ended_at> is set.
+The result entries include a C<BACKEND_TEST_AGENT:TEST_DIED> message.
+
+=back
+
+=head2 State transitions
+
+The only legal state transitions are:
+
+  waiting -> running
+  running -> completed
+  running -> cancelled
+  running -> crashed
+
+Any other state change is illegal and causes an error.
+
+=cut
 
 
 =head2 get_db_class
@@ -297,11 +361,12 @@ sub create_new_test {
                     created_at,
                     priority,
                     queue,
+                    state,
                     fingerprint,
                     params,
                     domain,
                     undelegated
-                ) VALUES (?,?,?,?,?,?,?,?,?)
+                ) VALUES (?,?,?,?,?,?,?,?,?,?)
             ],
             undef,
             $hash_id,
@@ -309,6 +374,7 @@ sub create_new_test {
             $self->format_time( time() ),
             $priority,
             $queue_label,
+            $TEST_WAITING,
             $fingerprint,
             $encoded_params,
             encode_utf8( $test_params->{domain} ),
@@ -392,12 +458,13 @@ sub test_progress {
                 UPDATE test_results
                 SET progress = ?
                 WHERE hash_id = ?
-                  AND 1 <= progress
+                  AND state = ?
                   AND progress <= ?
             ],
             undef,
             $progress,
             $test_id,
+            $TEST_RUNNING,
             $progress,
         );
         if ( $rows_affected == 0 ) {
@@ -423,57 +490,112 @@ sub test_progress {
     return $result;
 }
 
+=head2 test_state( $test_id )
+
+Get the state of the test associated with C<$test_id>.
+
+Returns one of the state constants documented in L</TEST STATES>.
+
+Dies when:
+
+=over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+an error occurs in the database interface
+
+=back
+
+=cut
+
 sub test_state {
     my ( $self, $test_id ) = @_;
 
-    my ( $progress ) = $self->dbh->selectrow_array(
+    my ( $state ) = $self->dbh->selectrow_array(
         q[
-            SELECT progress
+            SELECT state
             FROM test_results
             WHERE hash_id = ?
         ],
         undef,
         $test_id,
     );
-    if ( !defined $progress ) {
+
+    if ( !defined $state ) {
         die Zonemaster::Backend::Error::Internal->new( reason => 'job not found' );
     }
 
-    if ( $progress == 0 ) {
-        return $TEST_WAITING;
-    }
-    elsif ( 0 < $progress && $progress < 100 ) {
-        return $TEST_RUNNING;
-    }
-    elsif ( $progress == 100 ) {
-        return $TEST_COMPLETED;
-    }
-    else {
-        die Zonemaster::Backend::Error::Internal->new( reason => 'state could not be determined' );
-    }
+    return $state;
 }
 
+=head2 set_test_completed( $test_id, [$state] )
+
+Transition a test from the C<running> state to a terminal state.
+
+C<$state> is optional and defaults to C<completed>.
+It must be one of the terminal states documented in L</TEST STATES>
+(C<completed>, C<cancelled> or C<crashed>).
+
+In the database the test is updated with C<progress> set to 100, the given
+C<state> and C<ended_at> set to the current time.
+
+Dies when:
+
+=over 2
+
+=item
+
+attempting to access a test that does not exist
+
+=item
+
+attempting to update a test that is not in the C<running> state
+
+=item
+
+an error occurs in the database interface
+
+=back
+
+=cut
+
 sub set_test_completed {
-    my ( $self, $test_id ) = @_;
+    my ( $self, $test_id, $state ) = @_;
+
+    $state //= $TEST_COMPLETED;
+
+    unless (
+      defined $state
+      && grep { $_ eq $state } ( $TEST_COMPLETED, $TEST_CANCELLED, $TEST_CRASHED )
+    ) {
+      die Zonemaster::Backend::Error::Internal->new(reason => 'invalid terminal state',);
+    }
 
     my $current_state = $self->test_state( $test_id );
 
     if ( $current_state ne $TEST_RUNNING ) {
-        die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to COMPLETED' );
+        die Zonemaster::Backend::Error::Internal->new( reason => 'illegal transition to terminal state (COMPLETED/CANCELLED/CRASHED)' );
     }
+
 
     my $rows_affected = $self->dbh->do(
         q[
             UPDATE test_results
             SET progress = 100,
+                state = ?,
                 ended_at = ?
             WHERE hash_id = ?
-              AND 0 < progress
-              AND progress < 100
+              AND state = ?
         ],
         undef,
+        $state,
         $self->format_time( time() ),
         $test_id,
+        $TEST_RUNNING,
     );
 
     if ( $rows_affected == 0 ) {
@@ -489,6 +611,8 @@ sub select_test_results {
             SELECT
                 hash_id,
                 created_at,
+                started_at,
+                ended_at,
                 params
             FROM test_results
             WHERE hash_id = ?
@@ -504,6 +628,8 @@ sub select_test_results {
         unless defined $result;
 
     $result->{created_at} = $self->to_iso8601( $result->{created_at} );
+    $result->{started_at} = $self->to_iso8601( $result->{started_at} ) if defined $result->{started_at};
+    $result->{ended_at}   = $self->to_iso8601( $result->{ended_at} )   if defined $result->{ended_at};
 
     return $result;
 }
@@ -516,16 +642,18 @@ sub store_results {
         q[
             UPDATE test_results
             SET progress = 100,
+                state = ?,
                 ended_at = ?,
                 results = ?
             WHERE hash_id = ?
-              AND 0 < progress
-              AND progress < 100
+              AND state = ?
         ],
         undef,
+        $TEST_COMPLETED,
         $self->format_time( time() ),
         $new_results,
         $test_id,
+        $TEST_RUNNING,
     );
 
     if ( $rows_affected == 0 ) {
@@ -600,7 +728,7 @@ sub get_test_history {
             created_at,
             undelegated
         FROM test_results
-        WHERE progress = 100 AND domain = ? AND ( ? IS NULL OR undelegated = ? )
+        WHERE state IN('completed', 'cancelled', 'crashed') AND domain = ? AND ( ? IS NULL OR undelegated = ? )
         ORDER BY created_at DESC
         LIMIT ?
         OFFSET ?];
@@ -721,13 +849,14 @@ sub get_test_request {
                     SELECT hash_id,
                            batch_id
                     FROM test_results
-                    WHERE progress = 0
+                    WHERE state = ?
                       AND queue = ?
                     ORDER BY priority DESC,
                              id ASC
                     LIMIT 1
                 ],
                 undef,
+                $TEST_WAITING,
                 $queue_label,
             );
         }
@@ -737,11 +866,13 @@ sub get_test_request {
                     SELECT hash_id,
                            batch_id
                     FROM test_results
-                    WHERE progress = 0
+                    WHERE state = ?
                     ORDER BY priority DESC,
                              id ASC
                     LIMIT 1
                 ],
+                undef,
+                $TEST_WAITING,
             );
         }
 
@@ -780,13 +911,16 @@ sub claim_test {
         q[
             UPDATE test_results
             SET progress = 1,
+                state = ?,
                 started_at = ?
             WHERE hash_id = ?
-              AND progress = 0
+              AND state = ?
         ],
         undef,
+        $TEST_RUNNING,
         $self->format_time( time() ),
         $test_id,
+        $TEST_WAITING,
     );
 
     return $rows_affected == 1;
@@ -815,7 +949,10 @@ sub get_test_params {
 =head2 batch_status
 
 Returns number of tests per category (finished, running, waiting) for the given
-batch, provided as C<batch_id>.
+batch, provided as C<batch_id>. The categories are determined from the formal
+test state: C<waiting> and C<running> retain their respective categories, and
+all terminal states (C<completed>, C<cancelled> and C<crashed>) are counted as
+finished.
 
 If one or more of parameters C<list_running_tests>, C<list_finished_tests> or
 C<list_waiting_tests> are included with true value, the C<hash_id> values for
@@ -840,7 +977,7 @@ sub batch_status {
     $result{finished_count} = 0;
 
     my $query = "
-        SELECT hash_id, progress
+        SELECT hash_id, state
         FROM test_results
         WHERE batch_id=?";
 
@@ -848,17 +985,17 @@ sub batch_status {
     $sth1->execute( $batch_id );
 
     while ( my $h = $sth1->fetchrow_hashref ) {
-        if ( $h->{progress} eq '0' ) {
+        if ( $h->{state} eq $TEST_WAITING ) {
             $result{waiting_count}++;
             push(@{$result{waiting_tests}}, $h->{hash_id}) if $test_params->{list_waiting_tests};
         }
-        elsif ( $h->{progress} eq '100' ) {
-            $result{finished_count}++;
-            push(@{$result{finished_tests}}, $h->{hash_id}) if $test_params->{list_finished_tests};
-        }
-        else {
+        elsif ( $h->{state} eq $TEST_RUNNING ) {
             $result{running_count}++;
             push(@{$result{running_tests}}, $h->{hash_id}) if $test_params->{list_running_tests};
+        }
+        else {
+            $result{finished_count}++;
+            push(@{$result{finished_tests}}, $h->{hash_id}) if $test_params->{list_finished_tests};
         }
     }
 
@@ -893,7 +1030,7 @@ sub process_unfinished_tests {
         }
     );
     while ( my $h = $sth1->fetchrow_hashref ) {
-        $self->force_end_test($h->{hash_id}, $msg);
+        $self->force_end_test($h->{hash_id}, $msg, $TEST_CANCELLED);
     }
 }
 
@@ -912,11 +1049,11 @@ sub select_unfinished_tests {
             SELECT hash_id, results
             FROM test_results
             WHERE started_at < ?
-            AND progress > 0
-            AND progress < 100
+            AND state = ?
             AND queue = ?" );
         $sth->execute(    #
             $self->format_time( time() - $test_run_timeout ),
+            $TEST_RUNNING,
             $queue_label,
         );
         return $sth;
@@ -926,10 +1063,10 @@ sub select_unfinished_tests {
             SELECT hash_id, results
             FROM test_results
             WHERE started_at < ?
-            AND progress > 0
-            AND progress < 100" );
+            AND state = ?" );
         $sth->execute(    #
             $self->format_time( time() - $test_run_timeout ),
+            $TEST_RUNNING,
         );
         return $sth;
     }
@@ -938,15 +1075,15 @@ sub select_unfinished_tests {
 =head2 force_end_test($hash_id, $msg)
 
 Store the L<Zonemaster::Engine::Logger::Entry> $msg log entry into the database
-and mark test with $hash_id as COMPLETED.
+and mark test with $hash_id as COMPLETED / CANCELLED / CRASHED.
 
 =cut
 
 sub force_end_test {
-    my ( $self, $hash_id, $msg ) = @_;
+    my ( $self, $hash_id, $msg, $state ) = @_;
 
     $self->add_result_entries( $hash_id, $msg );
-    $self->set_test_completed( $hash_id );
+    $self->set_test_completed( $hash_id, $state );
 }
 
 =head2 process_dead_test($hash_id)
@@ -968,7 +1105,7 @@ sub process_dead_test {
             timestamp => $self->get_relative_start_time($hash_id)
         }
     );
-    $self->force_end_test($hash_id, $msg);
+    $self->force_end_test($hash_id, $msg, $TEST_CRASHED);
 }
 
 # Converts the domain to lowercase and if the domain is not the root ('.')

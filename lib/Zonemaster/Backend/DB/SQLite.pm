@@ -73,12 +73,14 @@ sub create_schema {
                  priority integer DEFAULT 10,
                  queue integer DEFAULT 0,
                  progress integer DEFAULT 0,
+                 state VARCHAR(20) NOT NULL DEFAULT "waiting",
                  fingerprint character varying(32),
                  params text NOT NULL,
                  results text DEFAULT NULL,
                  undelegated boolean NOT NULL DEFAULT false,
 
-                 UNIQUE (hash_id)
+                 UNIQUE (hash_id),
+                 CHECK (state IN ("waiting", "running", "completed", "cancelled", "crashed"))
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );

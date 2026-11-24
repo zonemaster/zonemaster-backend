@@ -73,12 +73,14 @@ sub create_schema {
                  priority integer DEFAULT 10,
                  queue integer DEFAULT 0,
                  progress integer DEFAULT 0,
+                 state VARCHAR(20) NOT NULL DEFAULT "waiting",
                  fingerprint character varying(32),
                  params text NOT NULL,
                  results text DEFAULT NULL,
                  undelegated boolean NOT NULL DEFAULT false,
 
-                 UNIQUE (hash_id)
+                 UNIQUE (hash_id),
+                 CHECK (state IN ("waiting", "running", "completed", "cancelled", "crashed"))
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -94,6 +96,12 @@ sub create_schema {
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__batch_id_state ON test_results (batch_id, state)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__state ON test_results (state)'
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'

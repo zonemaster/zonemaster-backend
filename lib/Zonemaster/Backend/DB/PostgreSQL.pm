@@ -70,12 +70,14 @@ sub create_schema {
                 priority integer DEFAULT 10,
                 queue integer DEFAULT 0,
                 progress integer DEFAULT 0,
+                state VARCHAR(20) NOT NULL DEFAULT \'waiting\',
                 fingerprint varchar(32),
                 params json NOT NULL,
                 undelegated integer NOT NULL DEFAULT 0,
                 results json,
 
-                UNIQUE (hash_id)
+                UNIQUE (hash_id),
+                CHECK (state IN (\'waiting\', \'running\', \'completed\', \'cancelled\', \'crashed\'))
             )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "PostgreSQL error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -91,6 +93,12 @@ sub create_schema {
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__batch_id_state ON test_results (batch_id, state)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__state ON test_results (state)'
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__domain_undelegated ON test_results (domain, undelegated)'

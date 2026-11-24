@@ -73,12 +73,14 @@ sub create_schema {
             priority integer DEFAULT 10,
             queue integer DEFAULT 0,
             progress integer DEFAULT 0,
+            state VARCHAR(20) NOT NULL DEFAULT \'waiting\',
             fingerprint character varying(32),
             params blob NOT NULL,
             results mediumblob DEFAULT NULL,
             undelegated integer NOT NULL DEFAULT 0,
 
-            UNIQUE (hash_id)
+            UNIQUE (hash_id),
+            CHECK (state IN (\'waiting\', \'running\', \'completed\', \'cancelled\', \'crashed\'))
         ) ENGINE=InnoDB
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "MySQL error, could not create 'test_results' table", data => $dbh->errstr() );
@@ -107,6 +109,16 @@ sub create_schema {
     if ( not exists($indexes->{test_results__progress}) ) {
         $dbh->do(
             'CREATE INDEX test_results__progress ON test_results (progress)'
+        );
+    }
+    if ( not exists($indexes->{test_results__batch_id_state}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__batch_id_state ON test_results (batch_id, state)'
+        );
+    }
+    if ( not exists($indexes->{test_results__state}) ) {
+        $dbh->do(
+            'CREATE INDEX test_results__state ON test_results (state)'
         );
     }
     if ( not exists($indexes->{test_results__domain_undelegated}) ) {

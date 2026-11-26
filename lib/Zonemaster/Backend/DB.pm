@@ -696,8 +696,7 @@ list of Batch API keys.
 =cut
 sub valid_batch_api_key {
     my ( $self, $batch_api_key, $confapikeys ) = @_;
-    my @confkeys = @$confapikeys;
-    return scalar grep(/^$batch_api_key$/, @confkeys);
+    return scalar grep { $_ eq $batch_api_key } @$confapikeys;
 }
 
 =head2 valid_small_batch
@@ -707,13 +706,8 @@ Check if a anonymous batch is within the configured limits.
 =cut
 
 sub valid_small_batch {
-    my ( $self, $size, $maxsize) = @_;
-    # my $confsize = $self->{config}->RPCAPI_max_anonymous_batch_size;;
-    if ( $size <= $maxsize ) {
-        return 1;
-    } else {
-        return 0;
-    }
+    my ( $self, $size, $maxsize ) = @_;
+    return ( $size <= $maxsize );
 }
 
 =head2 batch_exists_in_db
@@ -729,19 +723,9 @@ sub batch_exists_in_db {
     my ( $id );
     my $dbh = $self->dbh;
 
-    if ( $batchid =~ /^B-/ ) {
-        ( $id ) = $dbh->selectrow_array(
-            q[ SELECT id FROM batch_jobs WHERE hash_batch_id = ? ],
-            undef,
-            $batchid
-        );
-    } else {
-        ( $id ) = $dbh->selectrow_array(
-            q[ SELECT id FROM batch_jobs WHERE id = ? ],
-            undef,
-            $batchid
-        );
-    }
+    my $id_field = ( $batch_id =~ /^B-/ ) ? 'hash_batch_id' : 'id';
+    my $query = qq[ SELECT id FROM batch_jobs WHERE $id_field = ? ];
+    my ( $id ) = $dbh->selectrow_array( $query, undef, $batchid );
 
     return $id;
 }

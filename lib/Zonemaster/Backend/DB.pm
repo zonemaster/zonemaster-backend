@@ -720,7 +720,6 @@ Batch ID is deprecated to be removed in v2027.1.
 sub batch_exists_in_db {
     my ( $self, $batchid ) = @_;
 
-    my ( $id );
     my $dbh = $self->dbh;
 
     my $id_field = ( $batch_id =~ /^B-/ ) ? 'hash_batch_id' : 'id';

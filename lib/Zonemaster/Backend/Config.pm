@@ -219,13 +219,15 @@ sub parse {
     $obj->_set_ZONEMASTER_number_of_processes_for_batch_testing( '20' );
     $obj->_set_ZONEMASTER_lock_on_queue( '0' );
     $obj->_set_ZONEMASTER_age_reuse_previous_test( '600' );
-    $obj->_set_RPCAPI_enable_user_create( 'no' );      # experimental
-    $obj->_set_RPCAPI_enable_batch_create( 'yes' );    # experimental
-    $obj->_set_RPCAPI_enable_add_api_user( 'no' );
-    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );
+    $obj->_set_RPCAPI_enable_batch_create( 'yes' );
+    $obj->_set_RPCAPI_enable_add_api_user( 'no' );     # Deprecated to be removed with v2027.1
+    $obj->_set_RPCAPI_enable_add_batch_job( 'yes' );   # Deprecated to be removed with v2027.1
+    $obj->_set_RPCAPI_batch_api_key();
+    $obj->_set_RPCAPI_max_anonymous_batch_size( '5' );
     $obj->_set_locales( 'en_US' );
     $obj->_add_public_profile( 'default', undef );
     $obj->_set_METRICS_statsd_port( '8125' );
+
 
     # Assign property values (part 1/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'engine' ) ) ) {
@@ -239,8 +241,16 @@ sub parse {
 
     # Check deprecated properties and assign fallback values
     my @warnings;
-
-    #currently no deprecation warnings
+    if ( defined( $ini->val( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
+        push @warnings, "Use of RPCAPI.enable_add_batch_job is deprecated. Remove it and use RPCAPI.enable_batch_create instead.";
+    }
+    if ( defined( my $value = $ini->val( 'RPCAPI', 'enable_add_api_user' ) ) ) {
+        if ( $value eq "no" or $value eq "false" ) {
+            push @warnings, "Use of RPCAPI.enable_add_api_user is deprecated. Default value is no/false. Remove it.";
+        } else {
+            push @warnings, "Use of RPCAPI.enable_add_api_user is deprecated. Use RPCAPI.batch_api_key instead.";
+        }
+    }
 
     # Assign property values (part 2/2)
     if ( defined( my $value = $get_and_clear->( 'DB', 'polling_interval' ) ) ) {
@@ -312,18 +322,8 @@ sub parse {
     if ( defined( my $value = $get_and_clear->( 'METRICS', 'statsd_port' ) ) ) {
         $obj->_set_METRICS_statsd_port( $value );
     }
-    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_user_create' ) ) ) {
-        if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-            die "Error: cannot specify both RPCAPI.enable_add_api_user and RPCAPI.enable_user_create\n";
-        }
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
         $obj->_set_RPCAPI_enable_add_api_user( $value );
-        $obj->_set_RPCAPI_enable_user_create( $value );
-    }
-    else {
-        if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_add_api_user' ) ) ) {
-            $obj->_set_RPCAPI_enable_add_api_user( $value );
-            $obj->_set_RPCAPI_enable_user_create( $value );
-        }
     }
     if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'enable_batch_create' ) ) ) {
         if ( defined( $get_and_clear->( 'RPCAPI', 'enable_add_batch_job' ) ) ) {
@@ -338,6 +338,19 @@ sub parse {
             $obj->_set_RPCAPI_enable_batch_create( $value );
         }
     }
+
+    {
+        my @values = $ini->val( 'RPCAPI', 'batch_api_key' );
+        if ( @values ) {
+            $ini->delval( 'RPCAPI', 'batch_api_key' );
+            $obj->_set_RPCAPI_batch_api_key( \@values );
+        }
+    }
+    if ( defined( my $value = $get_and_clear->( 'RPCAPI', 'max_anonymous_batch_size' ) ) ) {
+        $obj->_set_RPCAPI_max_anonymous_batch_size( $value );
+
+    }
+
     if ( defined( my $value = $get_and_clear->( 'LANGUAGE', 'locale' ) ) ) {
         $obj->_set_locales( $value );
     }
@@ -658,15 +671,6 @@ L<METRICS.statsd_host|https://doc.zonemaster.net/latest/configuration/backend.md
 Returns a number.
 
 
-=head2 RPCAPI_enable_user_create
-
-Experimental.
-Get the value of
-L<RPCAPI.enable_user_create|https://doc.zonemaster.net/latest/configuration/backend.md#enable_user_create>.
-
-Return 0 or 1
-
-
 =head2 RPCAPI_enable_batch_create
 
 Experimental.
@@ -720,40 +724,43 @@ sub ZONEMASTER_number_of_processes_for_batch_testing    { return $_[0]->{_ZONEMA
 sub ZONEMASTER_age_reuse_previous_test                  { return $_[0]->{_ZONEMASTER_age_reuse_previous_test}; }
 sub METRICS_statsd_host                                 { return $_[0]->{_METRICS_statsd_host}; }
 sub METRICS_statsd_port                                 { return $_[0]->{_METRICS_statsd_port}; }
-sub RPCAPI_enable_user_create                           { return $_[0]->{_RPCAPI_enable_user_create}; }                             # experimental
-sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; }                            # experimental
-sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }
-sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; }
+sub RPCAPI_enable_batch_create                          { return $_[0]->{_RPCAPI_enable_batch_create}; }
+sub RPCAPI_enable_add_api_user                          { return $_[0]->{_RPCAPI_enable_add_api_user}; }  # Deprecated to be removed in v2027.1
+sub RPCAPI_enable_add_batch_job                         { return $_[0]->{_RPCAPI_enable_add_batch_job}; } # Deprecated to be removed in v2027.1
+# sub RPCAPI_batch_api_key                                { return @{$_[0]->{_RPCAPI_batch_api_key} }; }
+sub RPCAPI_batch_api_key                                { return $_[0]->{_RPCAPI_batch_api_key}; } # Returns a hash ref
+sub RPCAPI_max_anonymous_batch_size                     { return $_[0]->{_RPCAPI_max_anonymous_batch_size}; }
 
 # Compile time generation of setters for the properties documented above
 UNITCHECK {
     _create_setter( '_set_DB_polling_interval',                                 '_DB_polling_interval',                                 \&untaint_strictly_positive_millis );
     _create_setter( '_set_MYSQL_host',                                          '_MYSQL_host',                                          \&untaint_host );
-    _create_setter( '_set_MYSQL_port',                                          '_MYSQL_port',                                          \&untaint_strictly_positive_int );
+    _create_setter( '_set_MYSQL_port',                                          '_MYSQL_port',                                          \&untaint_strictly_positive_int_m5d );
     _create_setter( '_set_MYSQL_user',                                          '_MYSQL_user',                                          \&untaint_mariadb_user );
     _create_setter( '_set_MYSQL_password',                                      '_MYSQL_password',                                      \&untaint_password );
     _create_setter( '_set_MYSQL_database',                                      '_MYSQL_database',                                      \&untaint_mariadb_database );
     _create_setter( '_set_POSTGRESQL_host',                                     '_POSTGRESQL_host',                                     \&untaint_host );
-    _create_setter( '_set_POSTGRESQL_port',                                     '_POSTGRESQL_port',                                     \&untaint_strictly_positive_int );
+    _create_setter( '_set_POSTGRESQL_port',                                     '_POSTGRESQL_port',                                     \&untaint_strictly_positive_int_m5d );
     _create_setter( '_set_POSTGRESQL_user',                                     '_POSTGRESQL_user',                                     \&untaint_postgresql_ident );
     _create_setter( '_set_POSTGRESQL_password',                                 '_POSTGRESQL_password',                                 \&untaint_password );
     _create_setter( '_set_POSTGRESQL_database',                                 '_POSTGRESQL_database',                                 \&untaint_postgresql_ident );
     _create_setter( '_set_SQLITE_database_file',                                '_SQLITE_database_file',                                \&untaint_abs_path );
     _create_setter( '_set_TLD_URL_SETTINGS_enable_tld_url',                     '_TLD_URL_SETTINGS_enable_tld_url',                     \&untaint_json_bool );
-    _create_setter( '_set_TLD_URL_SETTINGS_lookup_timeout',                     '_TLD_URL_SETTINGS_lookup_timeout',                     \&untaint_strictly_positive_int );
+    _create_setter( '_set_TLD_URL_SETTINGS_lookup_timeout',                     '_TLD_URL_SETTINGS_lookup_timeout',                     \&untaint_strictly_positive_int_m5d );
     _create_setter( '_set_TLD_URL_SETTINGS_include_source',                     '_TLD_URL_SETTINGS_include_source',                     \&untaint_json_bool );
-    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int );
-    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int );
-    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int );
-    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int );
+    _create_setter( '_set_ZONEMASTER_max_zonemaster_execution_time',            '_ZONEMASTER_max_zonemaster_execution_time',            \&untaint_strictly_positive_int_m5d );
+    _create_setter( '_set_ZONEMASTER_lock_on_queue',                            '_ZONEMASTER_lock_on_queue',                            \&untaint_non_negative_int_m5d );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_frontend_testing', '_ZONEMASTER_number_of_processes_for_frontend_testing', \&untaint_strictly_positive_int_m5d );
+    _create_setter( '_set_ZONEMASTER_number_of_processes_for_batch_testing',    '_ZONEMASTER_number_of_processes_for_batch_testing',    \&untaint_non_negative_int_m5d );
+    _create_setter( '_set_ZONEMASTER_age_reuse_previous_test',                  '_ZONEMASTER_age_reuse_previous_test',                  \&untaint_strictly_positive_int_m5d );
     _create_setter( '_set_METRICS_statsd_host',                                 '_METRICS_statsd_host',                                 \&untaint_host );
-    _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int );
-    _create_setter( '_set_RPCAPI_enable_user_create',                           '_RPCAPI_enable_user_create',                           \&untaint_bool );                       # experimental
-    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool );                       # experimental
-    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );
-    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );
+    _create_setter( '_set_METRICS_statsd_port',                                 '_METRICS_statsd_port',                                 \&untaint_strictly_positive_int_m5d );
+    _create_setter( '_set_RPCAPI_enable_batch_create',                          '_RPCAPI_enable_batch_create',                          \&untaint_bool );
+    _create_setter( '_set_RPCAPI_enable_add_api_user',                          '_RPCAPI_enable_add_api_user',                          \&untaint_bool );     # Deprecated
+    _create_setter( '_set_RPCAPI_enable_add_batch_job',                         '_RPCAPI_enable_add_batch_job',                         \&untaint_bool );     # Deprecated
+    _create_setter( '_set_RPCAPI_max_anonymous_batch_size',                     '_RPCAPI_max_anonymous_batch_size',                     \&untaint_non_negative_int );
 }
+
 
 =head2 new_DB( %opts )
 
@@ -882,6 +889,20 @@ sub new_PM {
     return $pm;
 }
 
+sub _set_RPCAPI_batch_api_key {
+    my ( $self, $values ) = @_;
+
+    for my $val ( @$values ) {
+        untaint_batch_api_key( $val )    #
+          // die "Illegal batch_api_key in RPCAPI.batch_api_key: $val\n";
+    }
+
+    $self->{_RPCAPI_batch_api_key} = $values;
+    
+    return;
+}
+
+
 sub _set_locales {
     my ( $self, $value ) = @_;
 
@@ -910,6 +931,9 @@ sub _set_locales {
 
     return;
 }
+
+
+
 
 sub _add_public_profile {
     my ( $self, $name, $path ) = @_;

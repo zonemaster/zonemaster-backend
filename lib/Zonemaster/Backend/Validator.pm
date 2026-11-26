@@ -18,6 +18,7 @@ use Zonemaster::LDNS;
 
 our @EXPORT_OK = qw(
   untaint_abs_path
+  untaint_batch_api_key
   untaint_bool
   untaint_json_bool
   untaint_engine_type
@@ -29,11 +30,12 @@ our @EXPORT_OK = qw(
   untaint_locale_tag
   untaint_mariadb_database
   untaint_mariadb_user
+  untaint_non_negative_int_m5d
   untaint_non_negative_int
   untaint_password
   untaint_postgresql_ident
   untaint_profile_name
-  untaint_strictly_positive_int
+  untaint_strictly_positive_int_m5d
   untaint_strictly_positive_millis
   untaint_tld_label
   untaint_tld_block
@@ -53,6 +55,7 @@ our %EXPORT_TAGS = (
     untaint => [
         qw(
           untaint_abs_path
+          untaint_batch_api_key
           untaint_bool
           untaint_json_bool
           untaint_engine_type
@@ -64,11 +67,12 @@ our %EXPORT_TAGS = (
           untaint_locale_tag
           untaint_mariadb_database
           untaint_mariadb_user
+          untaint_non_negative_int_m5d
           untaint_non_negative_int
           untaint_password
           untaint_postgresql_ident
           untaint_profile_name
-          untaint_strictly_positive_int
+          untaint_strictly_positive_int_m5d
           untaint_strictly_positive_millis
           untaint_tld_label
           untaint_tld_block
@@ -93,7 +97,8 @@ Readonly my $IPV4_RE => qr/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/;
 # Does not check the length and number of the hex groups, nor the value ranges in the IPv4 groups
 Readonly my $IPV6_RE => qr/^[0-9a-f:]*:[0-9a-f:]+(:[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$/i;
 
-Readonly my $API_KEY_RE                 => qr/^[a-z0-9-_]{1,512}$/i;
+Readonly my $API_KEY_RE                 => qr/^[a-z0-9-_]{1,512}$/i; # Deprecated
+Readonly my $BATCH_API_KEY_RE           => qr/^[a-z0-9]{10,64}$/i;
 Readonly my $CLIENT_ID_RE               => qr/^[a-z0-9-+~_.: ]{1,50}$/i;
 Readonly my $CLIENT_VERSION_RE          => qr/^[a-z0-9-+~_.: ]{1,50}$/i;
 Readonly my $DIGEST_RE                  => qr/^[a-f0-9]{40}$|^[a-f0-9]{64}$|^[a-f0-9]{96}$/i;
@@ -105,6 +110,9 @@ Readonly my $LDH_DOMAIN_RE1             => qr{^[a-z0-9_./-]{1,253}[.]?$}i;
 Readonly my $LDH_DOMAIN_RE2             => qr{^(?:[.]|[^.]{1,63}(?:[.][^.]{1,63})*[.]?)$};
 Readonly my $LOCALE_TAG_RE              => qr/^[a-z]{2}_[A-Z]{2}$/;
 Readonly my $MARIADB_DATABASE_LENGTH_RE => qr/^.{1,64}$/;
+Readonly my $HASH_BATCH_ID_RE           => qr/^B-[0-9a-f]{16}$/;
+Readonly my $INT_BATCH_ID_RE            => qr/^[1-9][0-9]*$/; # Deprecated in v2027.1
+Readonly my $BATCH_ID_RE                => qr/^($INT_BATCH_ID_RE|$HASH_BATCH_ID_RE)$/;
 
 # See: https://mariadb.com/kb/en/identifier-names/#unquoted
 Readonly my $MARIADB_IDENT_RE       => qr/^[0-9a-z\$_]+$/i;
@@ -114,10 +122,13 @@ Readonly my $MARIADB_USER_LENGTH_RE => qr/^.{1,80}$/u;
 Readonly my $MILLIS_RE => qr/^(?:0|[1-9][0-9]{0,4})(?:[.][0-9]{1,3})?$/;
 
 # Up to 5 digits
-Readonly my $NON_NEGATIVE_INT_RE => qr/^(?:0|[1-9][0-9]{0,4})$/;
+Readonly my $NON_NEGATIVE_INT_M5D_RE => qr/^(?:0|[1-9][0-9]{0,4})$/;
 
 # At least one non-zero digit
 Readonly my $NON_ZERO_NUM_RE => qr/[1-9]/;
+
+# Unlimited non-negative integer
+Readonly my $NON_NEGATIVE_INT_RE => qr/^(?:0|[1-9][0-9]*)$/;
 
 # Printable ASCII but first character must not be space or '<'
 Readonly my $PASSWORD_RE => qr/^(?:[\x21-\x3b\x3d-\x7e][\x20-\x7e]{0,99})?$/;
@@ -163,8 +174,11 @@ sub new {
 sub api_key {
     return joi->string->regex( $API_KEY_RE );
 }
+sub batch_api_key {
+    return joi->string->regex( $BATCH_API_KEY_RE );
+}
 sub batch_id {
-    return joi->integer->positive;
+    return joi->string->regex( $BATCH_ID_RE );
 }
 sub client_id {
     return joi->string->regex( $CLIENT_ID_RE );
@@ -575,9 +589,9 @@ sub untaint_password {
     return _untaint_pat( $value, $PASSWORD_RE );
 }
 
-sub untaint_strictly_positive_int {
+sub untaint_strictly_positive_int_m5d { # Maximum 5 digits
     my ( $value ) = @_;
-    return _untaint_pat( $value, $NON_NEGATIVE_INT_RE, $NON_ZERO_NUM_RE );
+    return _untaint_pat( $value, $NON_NEGATIVE_INT_M5D_RE, $NON_ZERO_NUM_RE );
 }
 
 sub untaint_strictly_positive_millis {
@@ -588,6 +602,11 @@ sub untaint_strictly_positive_millis {
 sub untaint_postgresql_ident {
     my ( $value ) = @_;
     return _untaint_pat( $value, $POSTGRESQL_IDENT_RE );
+}
+
+sub untaint_non_negative_int_m5d { # Maximum 5 digits
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $NON_NEGATIVE_INT_M5D_RE );
 }
 
 sub untaint_non_negative_int {
@@ -644,5 +663,9 @@ sub _untaint_pred {
 }
 
 
+sub untaint_batch_api_key {
+    my ( $value ) = @_;
+    return _untaint_pat( $value, $BATCH_API_KEY_RE );
+}
 
 1;

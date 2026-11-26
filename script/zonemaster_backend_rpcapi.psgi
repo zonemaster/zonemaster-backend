@@ -187,32 +187,34 @@ my $router = router {
         action  => "batch_status"
     };
 
+    connect "conf_max_anonymous_batch_size" => {
+        handler => $handler,
+        action => "conf_max_anonymous_batch_size",
+    };
+
     connect "get_tld_url" => {
         handler => $handler,
         action  => "get_tld_url"
     };
 };
 
-if ( $config->RPCAPI_enable_user_create or $config->RPCAPI_enable_add_api_user ) {
-    $log->info( 'Enabling add_api_user method' );
-    $router->connect(
-        "add_api_user",
-        {
-            handler => $handler,
-            action  => "add_api_user"
-        }
-    );
-    $router->connect(
-        "user_create",
-        {
-            handler => $handler,
-            action  => "user_create"
-        }
-    );
+
+if ( $config->RPCAPI_enable_add_api_user ) {
+     $log->info( 'Enabling add_api_user method' );
+     # "add_api_user" is deprecated to be removed in v2027.1
+     $router->connect(
+         "add_api_user",
+         {
+             handler => $handler,
+             action => "add_api_user"
+         }
+         );
 }
 
+
 if ( $config->RPCAPI_enable_batch_create or $config->RPCAPI_enable_add_batch_job ) {
-    $log->info( 'Enabling add_batch_job method' );
+    $log->info('Enabling add_batch_job/batch_create methods');
+    # "add_batch_job" is deprecated to be removed in  v2027.1
     $router->connect(
         "add_batch_job",
         {

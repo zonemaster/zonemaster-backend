@@ -67,6 +67,7 @@ sub create_schema {
                  hash_id VARCHAR(16) NOT NULL,
                  domain VARCHAR(255) NOT NULL,
                  batch_id integer NULL,
+                 hash_batch_id VARCHAR(18),
                  created_at DATETIME NOT NULL,
                  started_at DATETIME DEFAULT NULL,
                  ended_at DATETIME DEFAULT NULL,
@@ -91,6 +92,9 @@ sub create_schema {
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__batch_id_progress ON test_results (batch_id, progress)'
+    );
+    $dbh->do(
+        'CREATE INDEX IF NOT EXISTS test_results__hash_batch_id_progress ON test_results (hash_batch_id, progress)'
     );
     $dbh->do(
         'CREATE INDEX IF NOT EXISTS test_results__progress ON test_results (progress)'
@@ -162,8 +166,11 @@ sub create_schema {
     $dbh->do(
         'CREATE TABLE IF NOT EXISTS batch_jobs (
                  id integer PRIMARY KEY,
+                 hash_batch_id VARCHAR(18) NOT NULL,
                  username character varying(50) NOT NULL,
-                 created_at DATETIME NOT NULL
+                 created_at DATETIME NOT NULL,
+
+                 UNIQUE (hash_batch_id)
            )
         '
     ) or die Zonemaster::Backend::Error::Internal->new( reason => "SQLite error, could not create 'batch_jobs' table", data => $dbh->errstr() );
@@ -225,14 +232,15 @@ sub drop_tables {
     return;
 }
 
+
 sub add_batch_job {
     my ( $self, $params ) = @_;
-    my $batch_id;
+    my ($batch_id, $hash_batch_id);
 
     my $dbh = $self->dbh;
 
     if ( $self->user_authorized( $params->{username}, $params->{api_key} ) ) {
-        $batch_id = $self->create_new_batch_job( $params->{username} );
+        ( $batch_id, $hash_batch_id ) = $self->create_new_batch_job( $params->{username} );
 
         my $test_params = $params->{test_params};
         my $priority    = $test_params->{priority};
@@ -242,6 +250,7 @@ sub add_batch_job {
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
+        eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_batch_id_progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
         eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
 
@@ -250,13 +259,14 @@ sub add_batch_job {
                 hash_id,
                 domain,
                 batch_id,
+                hash_batch_id,
                 created_at,
                 priority,
                 queue,
                 fingerprint,
                 params,
                 undelegated
-            ) VALUES (?,?,?,?,?,?,?,?,?)'
+            ) VALUES (?,?,?,?,?,?,?,?,?,?)'
         );
         foreach my $domain ( @{$params->{domains}} ) {
             $test_params->{domain} = _normalize_domain( $domain );
@@ -270,6 +280,7 @@ sub add_batch_job {
                 $hash_id,
                 $test_params->{domain},
                 $batch_id,
+                $hash_batch_id,
                 $self->format_time( time() ),
                 $priority,
                 $queue_label,
@@ -281,6 +292,7 @@ sub add_batch_job {
         $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
         $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
         $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+        $dbh->do( "CREATE INDEX test_results__hash_batch_id_progress ON test_results (hash_batch_id, progress)" );
         $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
         $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
 
@@ -293,6 +305,90 @@ sub add_batch_job {
 
     return $batch_id;
 }
+
+
+sub batch_create {
+    my ( $self, $params, $confapikeys, $maxsize ) = @_;
+    my ($batch_id, $hash_batch_id);
+
+    my $dbh = $self->dbh;
+    my $ok2create = 0;
+
+    if ( $params->{batch_api_key} ) {
+        unless ( $self->valid_batch_api_key( $params->{batch_api_key}, $confapikeys ) ) {
+            die Zonemaster::Backend::Error::PermissionDenied->new( message => 'Invalid Batch API key to create batch. See ini file for valid key.' );
+        }
+    } else { # Verify size of batch
+        my $size = scalar( @{$params->{domains}} );
+        unless ( $self->valid_small_batch( $size, $maxsize ) ) {
+            die Zonemaster::Backend::Error::PermissionDenied->new( message => 'Too large batch to be created without valid Batch API key' );
+        }
+    }
+
+    ($batch_id, $hash_batch_id) = $self->create_new_batch_job();
+
+    my $test_params = $params->{test_params};
+    my $priority    = $test_params->{priority};
+    my $queue_label = $test_params->{queue};
+
+    $dbh->{AutoCommit} = 0;
+    eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_id " );};
+    eval {$dbh->do( "DROP INDEX IF EXISTS test_results__fingerprint " );};
+    eval {$dbh->do( "DROP INDEX IF EXISTS test_results__batch_id_progress " );};
+    eval {$dbh->do( "DROP INDEX IF EXISTS test_results__hash_batch_id_progress " );};
+    eval {$dbh->do( "DROP INDEX IF EXISTS test_results__progress " );};
+    eval {$dbh->do( "DROP INDEX IF EXISTS test_results__domain_undelegated " );};
+
+    my $sth = $dbh->prepare( '
+            INSERT INTO test_results (
+                hash_id,
+                domain,
+                batch_id,
+                hash_batch_id,
+                created_at,
+                priority,
+                queue,
+                fingerprint,
+                params,
+                undelegated
+            ) VALUES (?,?,?,?,?,?,?,?,?,?)'
+        );
+    foreach my $domain ( @{$params->{domains}} ) {
+        $test_params->{domain} = _normalize_domain( $domain );
+
+        my $fingerprint = $self->generate_fingerprint( $test_params );
+        my $encoded_params = $self->encode_params( $test_params );
+        my $undelegated = $self->undelegated ( $test_params );
+
+        my $hash_id = substr(md5_hex(time().rand()), 0, 16);
+        $sth->execute(
+                $hash_id,
+                $test_params->{domain},
+                $batch_id,
+                $hash_batch_id,
+                $self->format_time( time() ),
+                $priority,
+                $queue_label,
+                $fingerprint,
+                $encoded_params,
+                $undelegated,
+            );
+    }
+    $dbh->do( "CREATE INDEX test_results__hash_id ON test_results (hash_id, created_at)" );
+    $dbh->do( "CREATE INDEX test_results__fingerprint ON test_results (fingerprint)" );
+    $dbh->do( "CREATE INDEX test_results__batch_id_progress ON test_results (batch_id, progress)" );
+    $dbh->do( "CREATE INDEX test_results__hash_batch_id_progress ON test_results (hash_batch_id, progress)" );
+    $dbh->do( "CREATE INDEX test_results__progress ON test_results (progress)" );
+    $dbh->do( "CREATE INDEX test_results__domain_undelegated ON test_results (domain, undelegated)" );
+
+    $dbh->commit();
+    $dbh->{AutoCommit} = 1;
+
+    return $hash_batch_id;
+}
+
+
+
 
 sub get_relative_start_time {
     my ( $self, $hash_id ) = @_;
